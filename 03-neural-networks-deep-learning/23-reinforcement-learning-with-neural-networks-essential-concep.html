@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reinforcement Learning with Neural Networks: Essential Concepts — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-nn">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Neural Networks / Deep Learning</a><span class="sep">/</span><span>23</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Neural Networks / Deep Learning · Video 23 · 24.0 min</div>
+    <h1>Reinforcement Learning with Neural Networks: Essential Concepts</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=9hbQieQh7-o" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: —</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video shows how to train a neural network when we do not know the correct outputs in advance. Reinforcement learning means learning from rewards instead of known answers. The video uses one such method, called policy gradients.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>A small network takes our hunger and outputs the probability of going to Norm's Fry Hut instead of Squatch's Fry Shack. We pick a place at random using that probability. We then guess that the place we picked was the right choice, and that guess lets us calculate a derivative. After we get our fries, a reward tells us whether the guess was right. Multiplying the derivative by the reward points it in the correct direction, and gradient descent does the rest.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>It is snack time, and we must choose between Squatch's Fry Shack and Norm's Fry Hut. A coin flip would ignore how hungry we are. It would also ignore that each shop might serve a large or a skimpy order of fries. A large order is great when we are hungry and wasteful when we are not.</p>
+    <p>So Josh builds a neural network. Its input is our hunger, and its output is \(P_{\text{Norm}}\), the probability that we go to Norm's. Only one parameter needs training here: a bias, which is a single number inside the network. The trouble is that we do not know in advance which shop will give us a large or small order. That means we cannot write down the ideal output for each input.</p>
+    <p>Reinforcement learning solves this. The trick is to guess the ideal output, use the guess to get a derivative, and then let a reward fix the derivative if the guess was wrong.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 310" role="img" aria-label="The policy gradient loop: network gives probabilities, a random pick chooses a shop, a guess gives a derivative, a reward scales it, gradient descent updates the bias">
+        <defs>
+          <marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker>
+        </defs>
+        <rect x="20" y="30" width="220" height="74" rx="8" class="sv-acc-soft"/>
+        <text x="130" y="60" text-anchor="middle" class="sv-tb">1. Network outputs P Norm</text>
+        <text x="130" y="84" text-anchor="middle" class="sv-tm">hunger 0.0 → P Norm 0.5</text>
+        <rect x="270" y="30" width="220" height="74" rx="8" class="sv-acc-soft"/>
+        <text x="380" y="60" text-anchor="middle" class="sv-tb">2. Random pick</text>
+        <text x="380" y="84" text-anchor="middle" class="sv-tm">0.2 → Squatch's</text>
+        <rect x="520" y="30" width="220" height="74" rx="8" class="sv-key-soft"/>
+        <text x="630" y="60" text-anchor="middle" class="sv-tb">3. Guess: pick was right</text>
+        <text x="630" y="84" text-anchor="middle" class="sv-tm">derivative = 0.5</text>
+        <rect x="520" y="200" width="220" height="74" rx="8" class="sv-good-soft"/>
+        <text x="630" y="230" text-anchor="middle" class="sv-tb">4. Order fries → reward</text>
+        <text x="630" y="254" text-anchor="middle" class="sv-tm">small order: reward = +1</text>
+        <rect x="270" y="200" width="220" height="74" rx="8" class="sv-good-soft"/>
+        <text x="380" y="230" text-anchor="middle" class="sv-tb">5. Updated derivative</text>
+        <text x="380" y="254" text-anchor="middle" class="sv-tm">0.5 × 1 = 0.5</text>
+        <rect x="20" y="200" width="220" height="74" rx="8" class="sv-paper2"/>
+        <text x="130" y="230" text-anchor="middle" class="sv-tb">6. Gradient descent</text>
+        <text x="130" y="254" text-anchor="middle" class="sv-tm">bias 0.0 − 0.5 = −0.5</text>
+        <line x1="242" y1="67" x2="266" y2="67" class="sv-stroke-ink" stroke-width="2" marker-end="url(#ah1)"/>
+        <line x1="492" y1="67" x2="516" y2="67" class="sv-stroke-ink" stroke-width="2" marker-end="url(#ah1)"/>
+        <line x1="630" y1="106" x2="630" y2="196" class="sv-stroke-ink" stroke-width="2" marker-end="url(#ah1)"/>
+        <line x1="518" y1="237" x2="494" y2="237" class="sv-stroke-ink" stroke-width="2" marker-end="url(#ah1)"/>
+        <line x1="268" y1="237" x2="244" y2="237" class="sv-stroke-ink" stroke-width="2" marker-end="url(#ah1)"/>
+        <line x1="130" y1="198" x2="130" y2="108" class="sv-stroke-acc" stroke-width="2" marker-end="url(#ah1)"/>
+        <rect x="200" y="136" width="380" height="34" rx="6" class="sv-paper"/>
+        <text x="390" y="158" text-anchor="middle" class="sv-t">Reward &gt; 0 keeps the direction. Reward &lt; 0 flips it.</text>
+      </svg>
+      <figcaption>The guess makes a derivative possible; the reward decides whether to follow it or go the opposite way.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li><b>Recall normal backpropagation.</b> With known ideal outputs, we measure the difference between them and the network's outputs. The derivative of that difference with respect to the bias is a slope. It tells us which way to move the bias.</li>
+      <li><b>Read the derivative's sign.</b> A negative derivative means we should increase the bias (shift right). A positive derivative means we should decrease it (shift left).</li>
+      <li><b>See the limitation.</b> This only works because the training data holds the ideal outputs. Without them we have no difference, no derivative, and no direction.</li>
+      <li><b>Pick an action from the probabilities.</b> Run the hunger through the network to get \(P_{\text{Norm}}\). Lay the two probabilities end to end from 0 to 1, draw a random number, and go wherever it lands.</li>
+      <li><b>Guess that the pick was right.</b> If we went to Squatch's, the ideal \(P_{\text{Squatch}}\) is 1 and the ideal \(P_{\text{Norm}}\) is 0. Now we can measure a difference and calculate a derivative. The follow-up video shows this difference uses cross entropy.</li>
+      <li><b>Get the reward.</b> Order the fries and judge the result against our hunger. A good outcome means the guess was correct, so the reward is positive. A bad outcome means it was wrong, so the reward is negative.</li>
+      <li><b>Multiply and update.</b> Multiply the derivative by the reward to get the updated derivative. Plug it into gradient descent to update the bias. Repeat with many hunger values between 0 and 1.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 260" role="img" aria-label="Comparison of supervised backpropagation with known targets and reinforcement learning with guessed targets and rewards">
+        <defs>
+          <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker>
+        </defs>
+        <rect x="20" y="20" width="350" height="220" rx="8" class="sv-acc-soft"/>
+        <text x="195" y="48" text-anchor="middle" class="sv-tb">Backpropagation (targets known)</text>
+        <rect x="45" y="66" width="300" height="40" rx="6" class="sv-paper"/>
+        <text x="195" y="91" text-anchor="middle" class="sv-t">Training data: input + ideal output</text>
+        <line x1="195" y1="108" x2="195" y2="128" class="sv-stroke-ink" stroke-width="2" marker-end="url(#ah2)"/>
+        <rect x="45" y="130" width="300" height="40" rx="6" class="sv-paper"/>
+        <text x="195" y="155" text-anchor="middle" class="sv-t">Difference → derivative</text>
+        <line x1="195" y1="172" x2="195" y2="192" class="sv-stroke-ink" stroke-width="2" marker-end="url(#ah2)"/>
+        <rect x="45" y="194" width="300" height="36" rx="6" class="sv-paper"/>
+        <text x="195" y="217" text-anchor="middle" class="sv-t">Derivative already points the right way</text>
+        <rect x="390" y="20" width="350" height="220" rx="8" class="sv-key-soft"/>
+        <text x="565" y="48" text-anchor="middle" class="sv-tb">Policy gradients (targets unknown)</text>
+        <rect x="415" y="66" width="300" height="40" rx="6" class="sv-paper"/>
+        <text x="565" y="91" text-anchor="middle" class="sv-t">Guess: the chosen shop was right</text>
+        <line x1="565" y1="108" x2="565" y2="128" class="sv-stroke-ink" stroke-width="2" marker-end="url(#ah2)"/>
+        <rect x="415" y="130" width="300" height="40" rx="6" class="sv-paper"/>
+        <text x="565" y="155" text-anchor="middle" class="sv-t">Difference → derivative</text>
+        <line x1="565" y1="172" x2="565" y2="192" class="sv-stroke-ink" stroke-width="2" marker-end="url(#ah2)"/>
+        <rect x="415" y="194" width="300" height="36" rx="6" class="sv-paper"/>
+        <text x="565" y="217" text-anchor="middle" class="sv-t">Derivative × reward fixes the direction</text>
+      </svg>
+      <figcaption>The only change from backpropagation is that a guess replaces the known target, and a reward corrects the guess.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>The video does not show the full derivative calculation; that comes in the follow-up video. These are the rules it does use.</p>
+    <div class="formula"><span class="lbl">Two choices share the probability</span><div class="math">$$ P_{\text{Squatch}} = 1 - P_{\text{Norm}} $$</div><p class="explain"><b>Symbols:</b> \(P_{\text{Norm}}\) is the network's output, the probability of going to Norm's. \(P_{\text{Squatch}}\) is the probability of going to Squatch's. <b>What it tells you:</b> the two probabilities fill the line from 0 to 1, so a random number picks exactly one shop.</p></div>
+    <div class="formula"><span class="lbl">Updated derivative</span><div class="math">$$ \text{updated derivative} = \frac{d\,\text{difference}}{d\,\text{bias}} \times \text{reward} $$</div><p class="explain"><b>Symbols:</b> \(\frac{d\,\text{difference}}{d\,\text{bias}}\) is the derivative of the difference between the guessed ideal value and the network's output, with respect to the bias. The reward is positive for a correct guess and negative for a wrong one. <b>What it tells you:</b> a negative reward flips the derivative's direction, and a bigger reward makes the step bigger.</p></div>
+    <div class="formula"><span class="lbl">Gradient descent step</span><div class="math">$$ \text{step size} = \text{learning rate} \times \text{updated derivative} $$ $$ \text{new bias} = \text{old bias} - \text{step size} $$</div><p class="explain"><b>Symbols:</b> the learning rate scales how far we move (1.0 in the video). The step size is how much the bias changes. <b>What it tells you:</b> a positive updated derivative lowers the bias, and a negative one raises it.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p><b>Round 1.</b> We are not hungry, so hunger = 0.0 and the bias starts at 0.0. The network gives \(P_{\text{Norm}} = 0.5\), so \(P_{\text{Squatch}} = 1 - 0.5 = 0.5\). The random number is 0.2, which lands in Squatch's region. We guess Squatch's was right, so the ideal \(P_{\text{Squatch}}\) is 1.0 against the actual 0.5. The derivative is 0.5.</p>
+      <p>The order is small because Squatch ate some fries. We were not hungry, so that is good and the reward is 1.0. Updated derivative = 0.5 × 1.0 = 0.5. Step size = 1.0 × 0.5 = 0.5. New bias = 0.0 − 0.5 = −0.5.</p>
+      <p><b>Round 2.</b> Hunger is again 0.0. Now \(P_{\text{Norm}} = 0.4\) and \(P_{\text{Squatch}} = 0.6\). That makes sense, because last time Squatch's worked out. The random number is 0.9, which lands in Norm's region. We guess Norm's was right, so the ideal \(P_{\text{Norm}}\) is 1.0 against 0.4. The derivative is −0.6.</p>
+      <p>Norm serves a huge pile of fries, but we are not hungry, so the guess was wrong and the reward is −1. Updated derivative = −0.6 × −1 = 0.6. Step size = 1.0 × 0.6 = 0.6. New bias = −0.5 − 0.6 = −1.1. Now \(P_{\text{Norm}}\) at hunger 0.0 drops to 0.2.</p>
+      <p><b>After training.</b> Using many hunger values from 0 to 1, the bias settles around −10. At hunger 0.0, \(P_{\text{Norm}}\) is 0, so we always go to Squatch's. At hunger 1.0, \(P_{\text{Norm}}\) is 1, so we always go to Norm's. Squatch usually eats most of our fries, and Norm usually does not.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> The guess is not a clever prediction. We always guess that whatever we just picked was the right choice. The reward checks that guess afterwards.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The rewards do not have to be 1 and −1. Any positive value works for a correct guess and any negative value for a wrong one. If Squatch gave us no fries at all, the reward could be 2.0 when not hungry or −2.0 when hungry, which doubles the step.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not mix up the sign rule. A positive derivative means decrease the bias, because gradient descent subtracts the step size. In round 2 the raw derivative was −0.6, but the reward flipped it to +0.6, so the bias still went down.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Training on one hunger value is not enough. The video uses inputs across 0 to 1, and training is done when the bias stops moving and hovers around one value.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>Why can't we train this network with ordinary backpropagation?</summary><div class="a">Backpropagation needs the ideal output for each input to measure a difference. Here we do not know in advance whether a shop will give a large or small order. So there is no target, no difference, and no derivative to follow.</div></details>
+    <details class="qa" open><summary>How do policy gradients get a derivative without a known target?</summary><div class="a">We assume the action we just sampled was the correct one. That gives an ideal probability of 1 for that action, which we compare with the network's output. From that difference we can calculate a derivative as usual.</div></details>
+    <details class="qa" open><summary>What role does the reward play?</summary><div class="a">We multiply the derivative by the reward. A positive reward keeps the direction, because the guess was right. A negative reward flips it, which corrects a wrong guess. The size of the reward scales how big the step is.</div></details>
+    <details class="qa" open><summary>Why does the network choose a shop randomly instead of taking the higher probability?</summary><div class="a">In the video, we draw a random number between 0 and 1 and go to whichever shop's region it lands in. So even the less likely shop can be chosen, as when 0.9 sent us to Norm's in round 2. That pick earned a negative reward, which pushed the network further toward Squatch's for low hunger.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Reinforcement learning trains a network when the ideal outputs are not known in advance.</li>
+      <li>The network outputs probabilities, and a random number picks the action.</li>
+      <li>We guess that the chosen action was correct, which lets us calculate a derivative.</li>
+      <li>After seeing the outcome, we set a positive reward for a correct guess and a negative reward for a wrong one.</li>
+      <li>Multiplying the derivative by the reward gives an updated derivative that points the right way.</li>
+      <li>Gradient descent uses the updated derivative to change the bias, here from 0.0 to −0.5 to −1.1.</li>
+      <li>After many updates across hunger values, the bias hovers near −10 and the network picks Squatch's when full and Norm's when hungry.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Reinforcement Learning</span><span class="board-tag">guess it was right, let the reward judge</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 200" role="img" aria-label="On a bias number line, round 1 steps from 0.0 to −0.5; in round 2 the raw derivative −0.6 would push the bias right, but reward −1 flips it, so the bias moves left to −1.1 and P Norm falls to 0.2.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <line x1="22" y1="112" x2="385" y2="112" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <path d="M184 105 Q 130 30 78 103" class="sv-stroke-key" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <path d="M196 105 Q 253 40 310 106" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="6 6" marker-end="url(#board-arr)"/>
+            <path d="M285 120 Q 240 172 197 121" class="sv-stroke-key" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="290" cy="112" r="7" class="sv-paper"/>
+              <circle cx="190" cy="112" r="7" class="sv-key"/>
+              <circle cx="70" cy="112" r="8" class="sv-good"/>
+            </g>
+            <text x="130" y="50" text-anchor="middle" class="sv-tb">× reward −1</text>
+            <text x="206" y="50" class="sv-ts">raw derivative −0.6</text>
+            <text x="385" y="100" text-anchor="end" class="sv-ts">bias →</text>
+            <text x="300" y="138" class="sv-t">start 0.0</text>
+            <text x="182" y="138" text-anchor="end" class="sv-t">−0.5</text>
+            <text x="70" y="140" text-anchor="middle" class="sv-tb">−1.1</text>
+            <text x="70" y="166" text-anchor="middle" class="sv-ts">P Norm 0.2</text>
+            <text x="241" y="174" text-anchor="middle" class="sv-t">0.5 × reward +1</text>
+          </svg>
+          <p>We guess the shop we picked was right, and that guess gives a derivative. A positive reward keeps its direction and a negative one flips it, so in round 2 the bias still drops, to −1.1.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Policy gradients</dt><dd>The method here: learn from rewards, not known answers.</dd>
+            <dt>\(P_{\text{Norm}}\)</dt><dd>The network's output: the probability of going to Norm's.</dd>
+            <dt>Bias</dt><dd>The one number we train. It starts at 0.0.</dd>
+            <dt>Reward</dt><dd>Positive if the guess was right, negative if it was wrong.</dd>
+            <dt>Updated derivative</dt><dd>The derivative times the reward. Gradient descent uses it.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Backprop needs targets</b>we have none, so no derivative</li>
+            <li><b>Pick at random</b>go where a random number lands</li>
+            <li><b>Guess it's right</b>its ideal is 1 → a derivative</li>
+            <li><b>Get the reward</b>good outcome +, bad outcome −</li>
+            <li><b>Multiply</b>derivative × reward</li>
+            <li><b>Update the bias</b>gradient descent step</li>
+          </ol>
+          <p class="loop">↺ repeat with many hunger values from 0 to 1 until the bias hovers near −10</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$P_{\text{Squatch}}=1-P_{\text{Norm}}$$
+          $$\text{updated}=\frac{d\,\text{diff}}{d\,b}\times\text{reward}$$
+          $$b_{\text{new}}=b_{\text{old}}-\text{rate}\times\text{updated}$$
+          <ul class="keys">
+            <li>\(b\) is the bias; diff is the difference between the guessed ideal and the output.</li>
+            <li>updated is the updated derivative; rate is the learning rate, 1.0 here.</li>
+            <li>A negative reward flips the direction.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>random → pick</th><th>deriv</th><th>reward</th><th>new bias</th></tr>
+            <tr><td>0.2 → Squatch's</td><td>0.5</td><td>+1</td><td>−0.5</td></tr>
+            <tr><td>0.9 → Norm's</td><td>−0.6</td><td>−1</td><td>−1.1</td></tr>
+            <tr class="final"><td>many rounds</td><td>…</td><td>…</td><td>≈ −10</td></tr>
+          </table>
+          <p class="hand">Reward −1 flips −0.6 to 0.6, so the bias still drops. Trained: hunger 0.0 means Squatch's, hunger 1.0 means Norm's.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">The guess is a clever prediction.</span><span class="yes">We always guess our pick was right; the reward checks it afterwards.</span></li>
+            <li><span class="no">Rewards must be +1 and −1.</span><span class="yes">Any positive value for right, any negative for wrong; 2.0 doubles the step.</span></li>
+            <li><span class="no">The raw derivative's sign sets the direction.</span><span class="yes">The reward can flip it: −0.6 became +0.6, so the bias still went down.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="index.html"><small>Previous</small>Back to Neural Networks / Deep Learning</a> <a href="24-reinforcement-learning-with-neural-networks-mathematical-det.html"><small>Next</small>Reinforcement Learning with Neural Networks: Mathematical Details</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

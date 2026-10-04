@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Calculating the Mean, Variance and Standard Deviation — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>07</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 07 · 14.4 min</div>
+    <h1>Calculating the Mean, Variance and Standard Deviation</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=SzZ6GpcfoQY" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video shows the exact arithmetic behind the mean, the variance and the standard deviation. It also shows why the formula changes when you only have a small sample instead of the whole population.</p>
+    <div class="summary"><span class="lbl">In one breath</span>
+      <p>A normal curve needs two numbers: where it sits and how wide it is. The mean says where it sits. The variance and the standard deviation say how wide it is. If you have every measurement in the population, you calculate these numbers exactly. In real life you almost never have every measurement, so you estimate them from a small sample. The estimate of the mean uses the same formula, but the estimate of the variance divides by \(n-1\) instead of \(n\).</p>
+    </div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+
+    <p>Josh keeps the example from the earlier videos. We count mRNA transcripts for gene X inside liver cells. If that means nothing to you, count green apples in grocery stores instead. The population is all 240 billion cells; the sample is the five we measured.</p>
+
+    <p>If we measured all 240 billion cells, we could fit a normal curve to their histogram. Two numbers fix that curve. The <strong>population mean</strong> says where to centre it. The <strong>population variance</strong>, or its square root the <strong>population standard deviation</strong>, says how wide to make it. Here the mean is 20 and the standard deviation is 10.</p>
+
+    <p>These are not estimates. They came from every measurement, so they are the true values. That is rare and expensive. Almost always we hold a few measurements and make a best guess instead. Josh calls this <em>calculating</em> versus <em>estimating</em>.</p>
+
+    <p>The symbols mark the difference. The Greek letter \(\mu\) is the population mean. The symbol \(\bar{x}\), read "x-bar", is the estimated mean, also called the sample mean. With more data, \(\bar{x}\) drifts closer to \(\mu\).</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 310" role="img" aria-label="A number line of mRNA counts showing the true population curve centred on 20 with standard deviation 10, and the estimated curve from five measurements centred on 17.6 with standard deviation 10.1">
+        <defs>
+          <marker id="f1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-acc"/></marker>
+          <marker id="f1k" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-key"/></marker>
+        </defs>
+
+        <line x1="40" y1="22" x2="70" y2="22" class="sv-stroke-acc" stroke-width="3"/>
+        <text x="78" y="26" class="sv-ts">All 240 billion cells: &#956; = 20, &#963; = 10</text>
+        <line x1="400" y1="22" x2="430" y2="22" class="sv-stroke-key" stroke-width="3" stroke-dasharray="5 4"/>
+        <text x="438" y="26" class="sv-ts">Estimate from 5 cells: x&#772; = 17.6, s = 10.1</text>
+        <circle cx="46" cy="44" r="5" class="sv-good"/>
+        <text x="60" y="48" class="sv-ts">The five measurements we actually took: 3, 13, 19, 24, 29</text>
+
+        <path d="M 60,250 C 150,250 250,132 324,132 C 398,132 498,250 588,250" class="sv-stroke-acc" stroke-width="2.5"/>
+        <path d="M 26,250 C 118,250 218,140 292,140 C 366,140 466,250 558,250" class="sv-stroke-key" stroke-width="2.5" stroke-dasharray="6 4"/>
+
+        <line x1="324" y1="132" x2="324" y2="250" class="sv-stroke-acc" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <line x1="292" y1="140" x2="292" y2="250" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <rect x="228" y="104" width="60" height="20" rx="3" class="sv-paper"/>
+        <text x="284" y="119" class="sv-t" text-anchor="end">x&#772; = 17.6</text>
+        <rect x="330" y="104" width="58" height="20" rx="3" class="sv-paper"/>
+        <text x="334" y="119" class="sv-t">&#956; = 20</text>
+
+        <line x1="192" y1="214" x2="456" y2="214" class="sv-stroke-acc" stroke-width="1.5" marker-start="url(#f1a)" marker-end="url(#f1a)"/>
+        <rect x="286" y="192" width="76" height="18" rx="3" class="sv-paper"/>
+        <text x="324" y="206" class="sv-ts" text-anchor="middle">&#963; = 10 each way</text>
+        <line x1="159" y1="236" x2="426" y2="236" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="5 4" marker-start="url(#f1k)" marker-end="url(#f1k)"/>
+        <text x="434" y="240" class="sv-ts">s = 10.1</text>
+
+        <line x1="40" y1="250" x2="730" y2="250" class="sv-line" stroke-width="1.5"/>
+        <line x1="60" y1="250" x2="60" y2="257" class="sv-line" stroke-width="1.5"/>
+        <line x1="192" y1="250" x2="192" y2="257" class="sv-line" stroke-width="1.5"/>
+        <line x1="324" y1="250" x2="324" y2="257" class="sv-line" stroke-width="1.5"/>
+        <line x1="456" y1="250" x2="456" y2="257" class="sv-line" stroke-width="1.5"/>
+        <line x1="588" y1="250" x2="588" y2="257" class="sv-line" stroke-width="1.5"/>
+        <text x="60" y="271" class="sv-ts" text-anchor="middle">0</text>
+        <text x="192" y="271" class="sv-ts" text-anchor="middle">10</text>
+        <text x="324" y="271" class="sv-ts" text-anchor="middle">20</text>
+        <text x="456" y="271" class="sv-ts" text-anchor="middle">30</text>
+        <text x="588" y="271" class="sv-ts" text-anchor="middle">40</text>
+        <text x="395" y="294" class="sv-ts" text-anchor="middle">mRNA transcripts for gene X in one cell</text>
+
+        <circle cx="100" cy="250" r="5" class="sv-good"/>
+        <circle cx="232" cy="250" r="5" class="sv-good"/>
+        <circle cx="311" cy="250" r="5" class="sv-good"/>
+        <circle cx="377" cy="250" r="5" class="sv-good"/>
+        <circle cx="443" cy="250" r="5" class="sv-good"/>
+      </svg>
+      <figcaption>The mean fixes the centre of the curve and the standard deviation fixes its width. The dashed curve, from only five cells, sits close to the true curve.</figcaption>
+    </figure>
+
+    <p>The second half of the video is about the width. The variance is the average of the squared distances between the data and the mean. We square for a simple reason. Measurements left of the mean give negative distances and those on the right give positive ones. Unsquared, they would cancel and the total would collapse to zero.</p>
+
+    <p>Squaring has one side effect: the units get squared too. Our variance of 100 means 100 transcripts squared, which we cannot draw on the axis. So we take the square root and get the standard deviation, 10 transcripts. Now we can draw the mean plus or minus 10.</p>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+
+    <ol class="steps">
+      <li>Decide what you have. Measure the whole population and you can <em>calculate</em> the true parameters. Measure a sample and you can only <em>estimate</em> them.</li>
+      <li>Find the mean. Add the measurements and divide by how many there are. Same arithmetic either way; only the symbol changes, \(\mu\) or \(\bar{x}\).</li>
+      <li>Subtract the mean from every measurement. Each result is a distance from the centre, negative below and positive above.</li>
+      <li>Square each distance. This kills the minus signs, so left cannot cancel right.</li>
+      <li>Add up the squared distances. The Greek letter sigma, \(\sum\), means add the terms.</li>
+      <li>Divide the total by \(n\) for a population, or by \(n-1\) for a sample. The result is the variance.</li>
+      <li>Take the square root. That is the standard deviation, back in the original units.</li>
+    </ol>
+
+    <p>Step six is the only place the two situations differ. We measure distances from the sample mean \(\bar{x}\), not the true \(\mu\). Those distances are the smallest possible, so dividing by \(n\) reports too little spread. Dividing by \(n-1\) corrects it.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Two panels of bars. Squared distances from the sample mean 17.6 add up to 407.2. The same squared distances from the population mean 20 add up to 436, which is larger.">
+        <rect x="20" y="20" width="350" height="260" rx="8" class="sv-paper2"/>
+        <text x="36" y="44" class="sv-tb">From the sample mean, x&#772; = 17.6</text>
+        <text x="36" y="72" class="sv-ts">count</text>
+        <text x="76" y="72" class="sv-ts">squared distance</text>
+        <text x="36" y="99" class="sv-ts">3</text>
+        <rect x="76" y="88" width="181" height="13" class="sv-key-soft"/>
+        <text x="263" y="99" class="sv-ts">213.16</text>
+        <text x="36" y="129" class="sv-ts">13</text>
+        <rect x="76" y="118" width="18" height="13" class="sv-key-soft"/>
+        <text x="100" y="129" class="sv-ts">21.16</text>
+        <text x="36" y="159" class="sv-ts">19</text>
+        <rect x="76" y="148" width="2" height="13" class="sv-key-soft"/>
+        <text x="84" y="159" class="sv-ts">1.96</text>
+        <text x="36" y="189" class="sv-ts">24</text>
+        <rect x="76" y="178" width="35" height="13" class="sv-key-soft"/>
+        <text x="117" y="189" class="sv-ts">40.96</text>
+        <text x="36" y="219" class="sv-ts">29</text>
+        <rect x="76" y="208" width="110" height="13" class="sv-key-soft"/>
+        <text x="192" y="219" class="sv-ts">129.96</text>
+        <line x1="36" y1="234" x2="354" y2="234" class="sv-line" stroke-width="1"/>
+        <text x="36" y="256" class="sv-t">Sum = 407.2</text>
+
+        <rect x="390" y="20" width="350" height="260" rx="8" class="sv-paper2"/>
+        <text x="406" y="44" class="sv-tb">From the population mean, &#956; = 20</text>
+        <text x="406" y="72" class="sv-ts">count</text>
+        <text x="446" y="72" class="sv-ts">squared distance</text>
+        <text x="406" y="99" class="sv-ts">3</text>
+        <rect x="446" y="88" width="246" height="13" class="sv-acc-soft"/>
+        <text x="698" y="99" class="sv-ts">289</text>
+        <text x="406" y="129" class="sv-ts">13</text>
+        <rect x="446" y="118" width="42" height="13" class="sv-acc-soft"/>
+        <text x="494" y="129" class="sv-ts">49</text>
+        <text x="406" y="159" class="sv-ts">19</text>
+        <rect x="446" y="148" width="1" height="13" class="sv-acc-soft"/>
+        <text x="453" y="159" class="sv-ts">1</text>
+        <text x="406" y="189" class="sv-ts">24</text>
+        <rect x="446" y="178" width="14" height="13" class="sv-acc-soft"/>
+        <text x="466" y="189" class="sv-ts">16</text>
+        <text x="406" y="219" class="sv-ts">29</text>
+        <rect x="446" y="208" width="69" height="13" class="sv-acc-soft"/>
+        <text x="521" y="219" class="sv-ts">81</text>
+        <line x1="406" y1="234" x2="724" y2="234" class="sv-line" stroke-width="1"/>
+        <text x="406" y="256" class="sv-t">Sum = 436, and that is larger</text>
+      </svg>
+      <figcaption>Both panels use the same bar scale. The sample mean gives the smaller total, so dividing by \(n-1\) makes up the shortfall.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Mean: same formula either way</span>
+      <div class="math">$$ \mu = \frac{1}{n}\sum_{i=1}^{n} x_i \qquad\qquad \bar{x} = \frac{1}{n}\sum_{i=1}^{n} x_i $$</div>
+      <p class="explain"><b>Symbols:</b> \(x_i\) is the \(i\)-th measurement and \(n\) is how many there are. \(\sum_{i=1}^{n}\) means add the terms from first to last. \(\mu\) uses all 240 billion cells; \(\bar{x}\) uses the 5 you measured. <b>What it tells you:</b> the arithmetic is identical, only the data set differs. The mean is where you place the peak of the curve.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Population variance and standard deviation</span>
+      <div class="math">$$ \sigma^2 = \frac{\sum_{i=1}^{n}\left(x_i - \mu\right)^2}{n}, \qquad \sigma = \sqrt{\sigma^2} $$</div>
+      <p class="explain"><b>Symbols:</b> \(\sigma^2\) is the population variance and \(\sigma\) the population standard deviation. \(x_i - \mu\) is the distance from one measurement to the true mean. \(n\) is the size of the whole population. <b>What it tells you:</b> the variance is the average squared distance from the centre. Its square root returns to the original units, so you can draw \(\mu \pm \sigma\).</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Estimated variance and standard deviation — use these</span>
+      <div class="math">$$ s^2 = \frac{\sum_{i=1}^{n}\left(x_i - \bar{x}\right)^2}{n-1}, \qquad s = \sqrt{s^2} $$</div>
+      <p class="explain"><b>Symbols:</b> \(s^2\) is the estimated variance and \(s\) the estimated standard deviation. \(x_i - \bar{x}\) is the distance to the sample mean, because we do not know \(\mu\). \(n\) is the sample size. <b>What it tells you:</b> two things change from the population formula. \(\mu\) becomes \(\bar{x}\), and \(n\) becomes \(n-1\) so the answer is not too small.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+
+    <div class="example"><span class="lbl">Example</span>
+      <p>Five liver cells gave 3, 13, 19, 24 and 29 transcripts. The true population values, which we would never normally see, are \(\mu = 20\) and \(\sigma = 10\).</p>
+
+      <p>First the estimated mean. Add the counts and divide by five.</p>
+      <div class="math">$$ \bar{x} = \frac{3 + 13 + 19 + 24 + 29}{5} = \frac{88}{5} = 17.6 $$</div>
+
+      <p>Next, subtract 17.6 from each count and square the result.</p>
+
+      <table>
+        <tr><th>Measurement \(x\)</th><th>3</th><th>13</th><th>19</th><th>24</th><th>29</th><th>Total</th></tr>
+        <tr><td>\(x - \bar{x}\)</td><td>-14.6</td><td>-4.6</td><td>1.4</td><td>6.4</td><td>11.4</td><td>0</td></tr>
+        <tr><td>\((x - \bar{x})^2\)</td><td>213.16</td><td>21.16</td><td>1.96</td><td>40.96</td><td>129.96</td><td>407.2</td></tr>
+      </table>
+
+      <p>Now divide the total by \(n-1\), which is 4 because we have five measurements.</p>
+      <div class="math">$$ s^2 = \frac{407.2}{5-1} = \frac{407.2}{4} = 101.8 $$</div>
+
+      <p>Finally take the square root to get the estimated standard deviation.</p>
+      <div class="math">$$ s = \sqrt{101.8} \approx 10.1 $$</div>
+
+      <p>So five cells give a curve centred on 17.6 with a width of 10.1. The true curve is centred on 20 with a width of 10. On all 240 billion cells the video gets a variance of 100 transcripts squared, so \(\sigma = \sqrt{100} = 10\).</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Do not divide by \(n\) when you have a sample. It is the most common slip and it always errs the same way: your reported spread is too small.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Only the variance formula changes between calculating and estimating. The mean is the same either way. There is no \(n-1\) anywhere in the mean.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>The variance is not in the units you measured; it is in those units squared. You cannot plot it on the data axis. Report the standard deviation instead.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Check your software's default. Most packages estimate the variance, but Microsoft Excel makes you choose. <code>var.p</code> divides by \(n\); <code>var.s</code> divides by \(n-1\). Since you nearly always hold a sample, <code>var.s</code> is nearly always right.</p>
+    </div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>Why do we divide by n minus 1 instead of n?</summary>
+      <div class="a">Because we measure distances from the sample mean, not the true mean, which we do not know. The sample mean sits in the middle of our data, so those distances are the smallest possible. That makes the sum of squares too small. Dividing by \(n-1\) corrects the bias.</div>
+    </details>
+
+    <details class="qa" open><summary>Why square the differences instead of just adding them?</summary>
+      <div class="a">Points below the mean give negative differences and points above give positive ones. Added raw, they cancel and the total is zero no matter how spread the data are. Squaring makes every term positive, so real spread cannot cancel itself.</div>
+    </details>
+
+    <details class="qa" open><summary>Variance or standard deviation: which do you report?</summary>
+      <div class="a">The variance is the average squared distance from the mean, so its units are squared. The standard deviation is its square root, back in the original units. I report the standard deviation, because a reader can compare it directly to the data.</div>
+    </details>
+
+    <details class="qa" open><summary>When would you use the population formula that divides by n?</summary>
+      <div class="a">Only when the data really are the entire population. That happens with a closed set, such as every employee on the payroll, when you only describe that set. In practice it is rare, so the estimating formula is the safe default.</div>
+    </details>
+
+    <details class="qa" open><summary>How far can you trust an estimate from five measurements?</summary>
+      <div class="a">In the video, five cells gave a mean of 17.6 against a true 20, and a standard deviation of 10.1 against a true 10. Useful, and it saved enormous work. But a small sample can easily land further off, so I would quantify the uncertainty too.</div>
+    </details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap">
+      <ul>
+        <li>A normal curve needs a centre and a width: the mean and the standard deviation.</li>
+        <li>The mean is the sum of the measurements divided by how many there are, for population or sample alike.</li>
+        <li>Write \(\mu\) for the true population mean and \(\bar{x}\) for the sample estimate.</li>
+        <li>The variance is the average squared distance from the mean; we square so left cannot cancel right.</li>
+        <li>The standard deviation is its square root, back in the original units, so you can draw it.</li>
+        <li>Divide by \(n\) for a population, but by \(n-1\) for a sample, to avoid underestimating the spread.</li>
+        <li>Five liver cells gave \(\bar{x} = 17.6\) and \(s = 10.1\), close to the true \(\mu = 20\) and \(\sigma = 10\).</li>
+        <li>You almost always hold a sample, so use the estimating formulas and check your software.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Mean, variance, standard deviation</span><span class="board-tag">where the curve sits, and how wide</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 280" role="img" aria-label="Five counts on a line with their mean, 17.6, as the centre. Arrows show each count's distance from the mean, minus to the left and plus to the right. Below, the width s is about 10.1 each way.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <line x1="216" y1="40" x2="216" y2="186" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round"/>
+            <line x1="216" y1="62" x2="72" y2="62" class="sv-stroke-key" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="216" y1="84" x2="328" y2="84" class="sv-stroke-acc" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="216" y1="106" x2="278" y2="106" class="sv-stroke-acc" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="216" y1="128" x2="172" y2="128" class="sv-stroke-key" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="216" y1="150" x2="228" y2="150" class="sv-stroke-acc" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-dasharray="2 6">
+              <line x1="70" y1="68" x2="70" y2="176"/>
+              <line x1="330" y1="90" x2="330" y2="176"/>
+              <line x1="280" y1="112" x2="280" y2="176"/>
+              <line x1="170" y1="134" x2="170" y2="176"/>
+              <line x1="230" y1="156" x2="230" y2="176"/>
+            </g>
+            <line x1="20" y1="186" x2="380" y2="186" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="70" cy="186" r="7" class="sv-good"/>
+              <circle cx="170" cy="186" r="7" class="sv-good"/>
+              <circle cx="230" cy="186" r="7" class="sv-good"/>
+              <circle cx="280" cy="186" r="7" class="sv-good"/>
+              <circle cx="330" cy="186" r="7" class="sv-good"/>
+            </g>
+            <line x1="117" y1="232" x2="315" y2="232" class="sv-stroke-good" stroke-width="3" stroke-linecap="round" marker-start="url(#board-arr)" marker-end="url(#board-arr)"/>
+            <text x="216" y="28" text-anchor="middle" class="sv-tb">centre x&#772; = 17.6</text>
+            <text x="143" y="52" text-anchor="middle" class="sv-t">−14.6</text>
+            <text x="273" y="74" text-anchor="middle" class="sv-t">+11.4</text>
+            <text x="70" y="210" text-anchor="middle" class="sv-ts">3</text>
+            <text x="170" y="210" text-anchor="middle" class="sv-ts">13</text>
+            <text x="230" y="210" text-anchor="middle" class="sv-ts">19</text>
+            <text x="280" y="210" text-anchor="middle" class="sv-ts">24</text>
+            <text x="330" y="210" text-anchor="middle" class="sv-ts">29</text>
+            <text x="216" y="262" text-anchor="middle" class="sv-tb">width: s ≈ 10.1</text>
+          </svg>
+          <p>The mean sets where the curve sits. Each count's distance from it is minus on the left and plus on the right, so raw distances cancel to 0. Square them, add, divide by \(n-1\) for a sample, then take the root: that is the width.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Population</dt><dd>Every measurement, like all 240 billion liver cells.</dd>
+            <dt>Sample</dt><dd>The few you measured, like five cells.</dd>
+            <dt>\(\mu\) and \(\bar{x}\)</dt><dd>The true mean, and its estimate from a sample.</dd>
+            <dt>Variance</dt><dd>Average squared distance from the mean, in squared units.</dd>
+            <dt>Standard deviation</dt><dd>Square root of the variance, back in the original units.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Population or sample</b>calculate, or only estimate</li>
+            <li><b>Find the mean</b>sum ÷ how many</li>
+            <li><b>Subtract the mean</b>minus below, plus above</li>
+            <li><b>Square and add</b>so left cannot cancel right</li>
+            <li><b>Divide</b>\(n-1\) for samples, \(n\) for populations</li>
+            <li><b>Square root</b>standard deviation, original units</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\mu \text{ or } \bar{x}=\frac{1}{n}\sum x_i$$
+          $$\sigma^2=\frac{\sum(x_i-\mu)^2}{n}$$
+          $$s^2=\frac{\sum(x_i-\bar{x})^2}{n-1}$$
+          <ul class="keys">
+            <li>\(\mu,\sigma\): true population values. \(\bar{x},s\): sample estimates.</li>
+            <li>\(x_i\) is one measurement; \(n\) is how many.</li>
+            <li>Standard deviation: \(\sigma=\sqrt{\sigma^2}\) and \(s=\sqrt{s^2}\).</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>step</th><th>five cells</th></tr>
+            <tr><td>mean</td><td>88 ÷ 5 = 17.6</td></tr>
+            <tr><td>distances</td><td>−14.6 −4.6 1.4 6.4 11.4</td></tr>
+            <tr><td>square, add</td><td>407.2</td></tr>
+            <tr><td>÷ (5 − 1)</td><td>s² = 101.8</td></tr>
+            <tr class="final"><td>√</td><td>s ≈ 10.1 ✓</td></tr>
+          </table>
+          <p class="hand">Five cells estimate centre 17.6 and width 10.1. All 240 billion cells give the true 20 and 10.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Divide by \(n\) for a sample too.</span><span class="yes">That always reports too little spread. Use \(n-1\) (Excel's var.s, not var.p).</span></li>
+            <li><span class="no">The mean needs \(n-1\) as well.</span><span class="yes">Only the variance changes. The mean is the same either way.</span></li>
+            <li><span class="no">The variance is in the data's units.</span><span class="yes">Its units are squared, so it cannot go on the axis. Report the standard deviation.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="06-population-and-estimated-parameters.html"><small>Previous</small>Population and Estimated Parameters</a> <a href="08-what-is-a-mathematical-model.html"><small>Next</small>What is a (mathematical) model?</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

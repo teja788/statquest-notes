@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quantile-Quantile Plots (QQ plots) — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>52</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 52 · 6.9 min</div>
+    <h1>Quantile-Quantile Plots (QQ plots)</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=okjYjClSjOg" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Assumes you know what a quantile is (see video 51).</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">A QQ plot is a picture that answers one question: does my data follow a given distribution? It compares the quantiles of the data with the quantiles of a reference distribution.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh measures expression in 15 genes and asks if the data is normally distributed. He cuts the data into 15 quantiles, then cuts a normal curve into 15 groups of equal probability. He pairs the quantiles in rank order and draws each pair as a dot. Dots on a straight line mean the two shapes match. Here the normal curve fits poorly, but a uniform distribution fits well.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>A quantile is a cut point that splits data into groups of the same size. The clever part is that the same idea works on a smooth curve. For a normal curve, "equal-sized groups" means groups with equal probability.</p>
+    <p>Values near the middle of a normal curve are common, so the middle groups come out narrow. Values far out in the tails are rare, so the edge groups must be wide to hold the same probability. That is why the cut lines are not evenly spaced.</p>
+    <p>You now have two lists of the same length. A QQ plot puts one list on each axis and draws them as pairs. If the two shapes agree, the pairs climb together in a straight line.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 330" role="img" aria-label="A normal curve cut into equal-probability groups on the left, and the first three quantile pairs plotted on a QQ graph on the right">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" class="sv-ink2"/></marker>
+        </defs>
+        <text x="30" y="28" class="sv-t">Normal curve, 15 equal-probability groups</text>
+        <path d="M40,240 C110,238 130,210 160,140 C175,105 205,105 220,140 C250,210 270,238 340,240 L340,240 L40,240 Z" class="sv-acc-soft"/>
+        <path d="M40,240 C110,238 130,210 160,140 C175,105 205,105 220,140 C250,210 270,238 340,240" class="sv-stroke-acc" stroke-width="2"/>
+        <line x1="35" y1="240" x2="348" y2="240" class="sv-stroke-ink" stroke-width="1.5"/>
+        <g class="sv-stroke-acc" stroke-width="1">
+          <line x1="70" y1="240" x2="70" y2="236"/>
+          <line x1="105" y1="240" x2="105" y2="224"/>
+          <line x1="133" y1="240" x2="133" y2="202"/>
+          <line x1="155" y1="240" x2="155" y2="168"/>
+          <line x1="172" y1="240" x2="172" y2="138"/>
+          <line x1="185" y1="240" x2="185" y2="122"/>
+          <line x1="198" y1="240" x2="198" y2="122"/>
+          <line x1="212" y1="240" x2="212" y2="138"/>
+          <line x1="230" y1="240" x2="230" y2="168"/>
+          <line x1="255" y1="240" x2="255" y2="202"/>
+          <line x1="285" y1="240" x2="285" y2="224"/>
+          <line x1="315" y1="240" x2="315" y2="236"/>
+        </g>
+        <text x="38" y="260" class="sv-ts">wide at the edge</text>
+        <text x="192" y="262" text-anchor="middle" class="sv-ts">narrow</text>
+        <text x="345" y="260" text-anchor="end" class="sv-ts">wide again</text>
+        <line x1="352" y1="180" x2="426" y2="180" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"/>
+        <text x="389" y="170" text-anchor="middle" class="sv-ts">pair them</text>
+        <text x="440" y="28" class="sv-t">Step 4: plot each pair as a dot</text>
+        <line x1="440" y1="55" x2="440" y2="250" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="440" y1="250" x2="735" y2="250" class="sv-stroke-ink" stroke-width="1.5"/>
+        <g class="sv-stroke-key" stroke-width="1.4" stroke-dasharray="4 3">
+          <line x1="440" y1="232" x2="484" y2="232"/>
+          <line x1="484" y1="250" x2="484" y2="232"/>
+        </g>
+        <circle cx="484" cy="232" r="4.5" class="sv-key"/>
+        <circle cx="504" cy="217" r="4.5" class="sv-key"/>
+        <circle cx="525" cy="193" r="4.5" class="sv-key"/>
+        <text x="484" y="268" text-anchor="middle" class="sv-tm">-1.5</text>
+        <text x="433" y="236" text-anchor="end" class="sv-tm">0.6</text>
+        <text x="588" y="292" text-anchor="middle" class="sv-ts">Normal curve quantiles</text>
+        <text x="408" y="152" text-anchor="middle" class="sv-ts" transform="rotate(-90 408 152)">Data quantiles</text>
+        <text x="600" y="130" class="sv-ts">repeat for all 15 pairs</text>
+      </svg>
+      <figcaption>Notice the spacing on the curve: edge groups are wide, middle groups are narrow, because every group holds the same probability.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Give each data point its own quantile. With 15 measurements you get 15 cut lines that split the data into equal-sized groups.</li>
+      <li>Get yourself a reference distribution. Any normal curve will do; its centre and width do not matter.</li>
+      <li>Add the same number of cut lines to the curve, each group holding equal probability.</li>
+      <li>Plot the QQ graph. Data quantiles go on the Y axis and reference quantiles on the X axis. Put a dot where each horizontal and vertical line meet.</li>
+    </ol>
+    <p>When every dot is on the graph, draw a straight line through them and look. In the video the dots do not sit well on the line, so Josh runs the same four steps again with a uniform distribution. This time the dots hug the line, so the uniform distribution describes the data better.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Two QQ plots side by side: against a normal curve the points bend away from the line, against a uniform distribution they sit on it">
+        <text x="40" y="28" class="sv-t">Data vs normal curve</text>
+        <line x1="60" y1="55" x2="60" y2="245" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="60" y1="245" x2="355" y2="245" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="70" y1="235" x2="345" y2="70" class="sv-stroke-acc" stroke-width="2"/>
+        <g class="sv-key">
+          <circle cx="85" cy="234" r="4"/><circle cx="110" cy="216" r="4"/><circle cx="135" cy="198" r="4"/>
+          <circle cx="160" cy="184" r="4"/><circle cx="185" cy="170" r="4"/><circle cx="210" cy="155" r="4"/>
+          <circle cx="235" cy="140" r="4"/><circle cx="260" cy="124" r="4"/><circle cx="285" cy="104" r="4"/>
+          <circle cx="310" cy="84" r="4"/><circle cx="330" cy="64" r="4"/>
+        </g>
+        <text x="208" y="277" text-anchor="middle" class="sv-ts">Normal quantiles</text>
+        <text x="30" y="150" text-anchor="middle" class="sv-ts" transform="rotate(-90 30 150)">Data quantiles</text>
+        <text x="420" y="28" class="sv-t">Data vs uniform distribution</text>
+        <line x1="440" y1="55" x2="440" y2="245" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="440" y1="245" x2="735" y2="245" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="450" y1="235" x2="725" y2="70" class="sv-stroke-good" stroke-width="2"/>
+        <g class="sv-good">
+          <circle cx="465" cy="225" r="4"/><circle cx="490" cy="209" r="4"/><circle cx="515" cy="197" r="4"/>
+          <circle cx="540" cy="180" r="4"/><circle cx="565" cy="167" r="4"/><circle cx="590" cy="150" r="4"/>
+          <circle cx="615" cy="136" r="4"/><circle cx="640" cy="122" r="4"/><circle cx="665" cy="105" r="4"/>
+          <circle cx="690" cy="92" r="4"/><circle cx="715" cy="77" r="4"/>
+        </g>
+        <text x="588" y="277" text-anchor="middle" class="sv-ts">Uniform quantiles</text>
+        <text x="410" y="150" text-anchor="middle" class="sv-ts" transform="rotate(-90 410 150)">Data quantiles</text>
+      </svg>
+      <figcaption>On the left the dots drift off the line, so the fit is not good. On the right they stay on it, so the uniform distribution is the better match.</figcaption>
+    </figure>
+    <p>The same method also compares two data sets. Josh compares the gene data with a much smaller second one. That set gives only four quartiles. Quartiles are just quantiles when you have four of them. So he takes four quartiles from the original data too, and plots the four pairs. With so few dots the answer stays weak.</p>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>The video does all its work by drawing, not by algebra. One standard rule still tells you where the reference quantiles sit, and it lands close to Josh's numbers.</p>
+    <div class="formula"><span class="lbl">Reference quantile position</span><div class="math">$$ x_i = \Phi^{-1}\!\left(\frac{i}{n+1}\right) $$</div><p class="explain"><b>Symbols:</b> \(n\) is how many data points you have, 15 here. \(i\) is the rank of a point, so \(i=1\) is the smallest. \(\Phi^{-1}\) is the inverse normal CDF. You give it a probability, and it returns the value on the standard normal curve with that much area to its left. <b>What it tells you:</b> the \(i\)-th reference quantile cuts off a fraction \(i/(n+1)\) of the curve's area. That is what "equal-probability groups" means.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh reads the first three normal quantiles off the curve as -1.5, -1.2 and -0.89. The first three quantiles in the data are 0.6, 1.1 and 1.9.</p>
+      <p>So the first three dots sit at \((-1.5,\,0.6)\), \((-1.2,\,1.1)\) and \((-0.89,\,1.9)\). Repeat until all 15 pairs are drawn. Then judge how straight the cloud of dots looks.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> A QQ plot checks shape, not values. The dots only need to lie on <em>a</em> straight line, not on the 45-degree line. That is why any normal curve works: a different centre or width just changes the line's intercept and slope.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Few quantiles means a weak answer. In the four-quartile comparison Josh cannot decide anything firm. Judge a QQ plot with the sample size in mind.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A bad fit does not mean your data is broken. It only means this reference distribution is wrong. Josh simply tries a uniform distribution next, and it fits.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What does a QQ plot actually show?</summary><div class="a">It plots the quantiles of my data against the quantiles of a reference distribution, one pair per dot. If the two have the same shape, the dots fall on a straight line. So a QQ plot is a visual test of distributional shape, not of the raw values.</div></details>
+    <details class="qa" open><summary>Why are the cut lines on the normal curve unevenly spaced?</summary><div class="a">Each group has to hold the same probability, not the same width. The middle of the curve is dense, so those groups are narrow. The tails are sparse, so the edge groups have to be wide to collect the same probability.</div></details>
+    <details class="qa" open><summary>The dots are on a straight line, but not the diagonal. Is that a problem?</summary><div class="a">No. Straightness is the thing that matters, because it means the shapes agree. The slope reflects a difference in spread and the intercept a difference in centre, and both are easy to correct. I would only worry if the dots curved or bent.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>A QQ plot asks whether your data follows a chosen distribution.</li>
+      <li>Cut your data into quantiles, then cut the reference distribution into the same number of equal-probability groups.</li>
+      <li>Equal probability makes the middle groups narrow and the edge groups wide.</li>
+      <li>Plot data quantiles on Y against reference quantiles on X, one dot per pair.</li>
+      <li>Dots on a straight line mean the two shapes match; curving dots mean they do not.</li>
+      <li>The gene data fits a uniform distribution far better than a normal curve.</li>
+      <li>The same recipe compares two data sets, but few quantiles give a weak answer.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">QQ plots</span><span class="board-tag">pair the quantiles, look for a straight line</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 300" role="img" aria-label="A normal curve under the x axis is cut into equal-probability groups, wide at the edges and narrow in the middle. Each cut pairs with a data quantile on the y axis to make one dot, and the dots fall on a straight line when the two shapes match.">
+            <line x1="60" y1="22" x2="60" y2="184" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="60" y1="184" x2="388" y2="184" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linecap="round">
+              <line x1="52" y1="168.3" x2="60" y2="168.3"/>
+              <line x1="52" y1="142.1" x2="60" y2="142.1"/>
+              <line x1="52" y1="122.5" x2="60" y2="122.5"/>
+              <line x1="52" y1="105" x2="60" y2="105"/>
+              <line x1="52" y1="87.5" x2="60" y2="87.5"/>
+              <line x1="52" y1="67.9" x2="60" y2="67.9"/>
+              <line x1="52" y1="41.8" x2="60" y2="41.8"/>
+            </g>
+            <path d="M83.2 262 L83.2 258.7 L95.6 256.8 L108 254.2 L120.4 250.5 L132.8 245.9 L145.2 240.2 L157.6 233.8 L170 226.8 L182.4 219.9 L194.8 213.6 L207.2 208.5 L219.6 205.2 L232 204 L244.4 205.2 L256.8 208.5 L269.2 213.6 L281.6 219.9 L294 226.8 L306.4 233.8 L318.8 240.2 L331.2 245.9 L343.6 250.5 L356 254.2 L368.4 256.8 L380.8 258.7 L380.8 262 Z" class="sv-paper"/>
+            <polyline points="83.2,258.7 95.6,256.8 108,254.2 120.4,250.5 132.8,245.9 145.2,240.2 157.6,233.8 170,226.8 182.4,219.9 194.8,213.6 207.2,208.5 219.6,205.2 232,204 244.4,205.2 256.8,208.5 269.2,213.6 281.6,219.9 294,226.8 306.4,233.8 318.8,240.2 331.2,245.9 343.6,250.5 356,254.2 368.4,256.8 380.8,258.7" class="sv-stroke-acc" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <g class="sv-stroke-acc" stroke-width="2" stroke-linecap="round">
+              <line x1="160.7" y1="262" x2="160.7" y2="232.1"/>
+              <line x1="190.2" y1="262" x2="190.2" y2="215.9"/>
+              <line x1="212.2" y1="262" x2="212.2" y2="207"/>
+              <line x1="232" y1="262" x2="232" y2="204"/>
+              <line x1="251.8" y1="262" x2="251.8" y2="207"/>
+              <line x1="273.8" y1="262" x2="273.8" y2="215.9"/>
+              <line x1="303.3" y1="262" x2="303.3" y2="232.1"/>
+            </g>
+            <line x1="76" y1="262" x2="388" y2="262" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <g class="sv-stroke-key" stroke-width="2" stroke-dasharray="5 4" stroke-linecap="round">
+              <line x1="160.7" y1="228" x2="160.7" y2="177"/>
+              <line x1="64" y1="168.3" x2="152" y2="168.3"/>
+            </g>
+            <line x1="150" y1="177.7" x2="318" y2="28.7" class="sv-stroke-good" stroke-width="3" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="160.7" cy="168.3" r="6" class="sv-key"/>
+              <circle cx="190.2" cy="142.1" r="6" class="sv-key"/>
+              <circle cx="212.2" cy="122.5" r="6" class="sv-key"/>
+              <circle cx="232" cy="105" r="6" class="sv-key"/>
+              <circle cx="251.8" cy="87.5" r="6" class="sv-key"/>
+              <circle cx="273.8" cy="67.9" r="6" class="sv-key"/>
+              <circle cx="303.3" cy="41.8" r="6" class="sv-key"/>
+            </g>
+            <text x="40" y="103" text-anchor="middle" transform="rotate(-90 40 103)" class="sv-ts">data quantiles</text>
+            <text x="386" y="172" text-anchor="end" class="sv-ts">normal quantiles</text>
+            <text x="236" y="46" text-anchor="end" class="sv-tb">straight line</text>
+            <text x="236" y="72" text-anchor="end" class="sv-tb">= same shape</text>
+            <text x="122" y="286" text-anchor="middle" class="sv-t">wide</text>
+            <text x="232" y="286" text-anchor="middle" class="sv-t">narrow</text>
+            <text x="342" y="286" text-anchor="middle" class="sv-t">wide</text>
+          </svg>
+          <p>Cut the data into quantiles, and a normal curve into the same number of equal-probability groups. Pair them in rank order, one dot per pair. Dots on a straight line mean the two shapes match.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Quantile</dt><dd>A cut point that splits data into groups of the same size.</dd>
+            <dt>Equal probability</dt><dd>Every group on the curve holds the same probability.</dd>
+            <dt>Reference distribution</dt><dd>The shape you test against. Any normal curve will do.</dd>
+            <dt>QQ plot</dt><dd>Data quantiles on Y against reference quantiles on X.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Cut the data</b>15 genes, 15 quantiles</li>
+            <li><b>Pick a reference</b>any normal curve will do</li>
+            <li><b>Cut the curve</b>same count, equal probability</li>
+            <li><b>Plot the pairs</b>data on Y, reference on X</li>
+            <li><b>Judge the line</b>straight means same shape</li>
+          </ol>
+          <p class="loop">↺ dots drift off? redo steps 2 to 5 with a uniform distribution</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$x_i=\Phi^{-1}\!\left(\frac{i}{n+1}\right)$$
+          <ul class="keys">
+            <li>\(x_i\) is the \(i\)-th reference quantile; \(i=1\) is the smallest; \(n=15\) points.</li>
+            <li>\(\Phi^{-1}\) is the inverse normal CDF: it returns the value with that much area to its left.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>pair</th><th>normal (X)</th><th>data (Y)</th></tr>
+            <tr><td>1</td><td>−1.5</td><td>0.6</td></tr>
+            <tr><td>2</td><td>−1.2</td><td>1.1</td></tr>
+            <tr><td>3</td><td>−0.89</td><td>1.9</td></tr>
+            <tr><td>4 to 15</td><td>…</td><td>…</td></tr>
+            <tr class="final"><td>all 15</td><td colspan="2">off the line → uniform fits ✓</td></tr>
+          </table>
+          <p class="hand">Pairs go smallest with smallest. With all 15 drawn, judge how straight the dots look.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Dots must sit on the 45-degree line.</span><span class="yes">Any straight line will do. Centre and width only change its slope and intercept.</span></li>
+            <li><span class="no">Four quartiles give a firm answer.</span><span class="yes">Few quantiles give a weak answer. Judge with the sample size in mind.</span></li>
+            <li><span class="no">A bad fit means broken data.</span><span class="yes">It only means this reference is wrong. A uniform one fit the same data.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="51-quantiles-and-percentiles.html"><small>Previous</small>Quantiles and Percentiles</a> <a href="53-quantile-normalization.html"><small>Next</small>Quantile Normalization</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

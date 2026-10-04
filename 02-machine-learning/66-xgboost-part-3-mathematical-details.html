@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>XGBoost Part 3 (of 4): Mathematical Details — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>66</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 66 · 27.4 min</div>
+    <h1>XGBoost Part 3 (of 4): Mathematical Details</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=ZVFeW798-2I" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video derives the two formulas that drive XGBoost: the output value of a leaf and the similarity score. It also shows that regression and classification differ only in the loss function.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>XGBoost picks the leaf output value that minimises a loss function plus a ridge-style penalty. The loss can be hard to minimise directly. So XGBoost swaps it for a second-order Taylor approximation: a parabola built from the loss's first and second derivatives. Setting the parabola's slope to zero gives the output value in one line. Flipping the same parabola upside down gives the similarity score.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>XGBoost starts with an initial prediction, usually 0.5. The residuals are the gaps between the observed values and that prediction. A loss function turns those gaps into one number that says how bad the prediction is. For regression Josh uses one half of the squared residual. For classification he uses the negative log likelihood, also called log loss.</p>
+    <p>A new tree must add something to the prediction. XGBoost puts all residuals in one leaf and asks a simple question: what single output value makes the total loss as small as possible? To that total it adds a regularization term, \( \tfrac{1}{2}\lambda\,O_{value}^{2} \). This works exactly like ridge regression. It punishes large output values, so the leaf stays modest.</p>
+    <p>Josh first sets lambda to zero and answers the question by hand. He tries an output value of 0, then −1, then +1, and plots the total loss each time. The plotted points trace a parabola. The best output value sits at the bottom of that parabola, where the derivative is zero. When lambda grows, the bottom of the parabola slides toward zero. That is regularization doing its job.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 376" role="img" aria-label="Total loss plotted against the leaf output value, with the optimum shifting toward zero as lambda grows">
+        <defs>
+          <marker id="arr1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" class="sv-ink"></path>
+          </marker>
+        </defs>
+        <line class="sv-line" stroke-width="1.5" x1="80" y1="270" x2="726" y2="270"></line>
+        <line class="sv-line" stroke-width="1.5" x1="80" y1="45" x2="80" y2="270"></line>
+        <line class="sv-line" stroke-width="1" stroke-dasharray="4 4" x1="329" y1="50" x2="329" y2="336"></line>
+        <polyline class="sv-stroke-acc" stroke-width="2.5" points="89,53 151,107 222,159 293,200 364,231 436,252 507,261 536,262 578,260 649,249 720,227"></polyline>
+        <circle class="sv-key" cx="151" cy="107" r="5"></circle>
+        <circle class="sv-key" cx="329" cy="217" r="5"></circle>
+        <circle class="sv-key" cx="507" cy="261" r="5"></circle>
+        <text class="sv-ts" x="151" y="94" text-anchor="middle">109.4</text>
+        <text class="sv-ts" x="329" y="204" text-anchor="middle">104.4</text>
+        <text class="sv-ts" x="507" y="248" text-anchor="middle">102.4</text>
+        <line class="sv-line" stroke-width="1.5" x1="151" y1="270" x2="151" y2="276"></line>
+        <line class="sv-line" stroke-width="1.5" x1="507" y1="270" x2="507" y2="276"></line>
+        <text class="sv-ts" x="151" y="290" text-anchor="middle">−1</text>
+        <text class="sv-ts" x="329" y="290" text-anchor="middle">0</text>
+        <text class="sv-ts" x="507" y="290" text-anchor="middle">1</text>
+        <text class="sv-ts" x="620" y="292" text-anchor="start">output value</text>
+        <text class="sv-ts" x="34" y="160" text-anchor="middle" transform="rotate(-90 34 160)">total loss</text>
+        <line class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#arr1)" x1="522" y1="326" x2="356" y2="326"></line>
+        <circle class="sv-acc" cx="536" cy="326" r="5"></circle>
+        <circle class="sv-key" cx="418" cy="326" r="5"></circle>
+        <circle class="sv-good" cx="343" cy="326" r="5"></circle>
+        <text class="sv-ts" x="536" y="348" text-anchor="middle">λ = 0</text>
+        <text class="sv-ts" x="426" y="348" text-anchor="middle">λ = 4</text>
+        <text class="sv-ts" x="336" y="348" text-anchor="middle">λ = 40</text>
+      </svg>
+      <figcaption>Notice that the three hand-picked output values sit on one parabola, and that the optimum slides toward zero as lambda grows.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Choose a loss function. Regression uses half the squared residual. Classification uses the negative log likelihood.</li>
+      <li>Write the objective for the new tree: the sum of the losses plus the ridge-style penalty on the output value.</li>
+      <li>Replace the prediction inside the loss with the old prediction plus the new output value. Now the objective depends on one unknown.</li>
+      <li>Put every residual in one leaf. Try a few output values by hand and plot the totals to see the shape.</li>
+      <li>Replace each loss term with its second-order Taylor approximation. Plain gradient boost did this only for classification. XGBoost does it for both tasks.</li>
+      <li>Drop the terms that do not contain the output value, then group the rest into one linear and one squared term.</li>
+      <li>Take the derivative, set it to zero, and solve. This gives the general output value formula.</li>
+      <li>Plug in the gradient and the Hessian of your loss. This gives the regression or the classification version.</li>
+      <li>Multiply the simplified objective by −1 and substitute the optimal output value. The height of the flipped peak is the similarity score.</li>
+    </ol>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 320" role="img" aria-label="The simplified objective parabola and the same parabola flipped by minus one, whose peak height is the similarity score">
+        <defs>
+          <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" class="sv-ink"></path>
+          </marker>
+        </defs>
+        <line class="sv-line" stroke-width="1.5" x1="80" y1="160" x2="720" y2="160"></line>
+        <text class="sv-ts" x="70" y="165" text-anchor="end">0</text>
+        <polyline class="sv-stroke-acc" stroke-width="2.5" points="180,94 230,150 280,194 330,225 380,244 430,250 480,244 530,225 580,194 630,150 680,94"></polyline>
+        <polyline class="sv-stroke-key" stroke-width="2.5" points="180,226 230,170 280,126 330,95 380,76 430,70 480,76 530,95 580,126 630,170 680,226"></polyline>
+        <line class="sv-line" stroke-width="1.2" stroke-dasharray="5 5" x1="430" y1="250" x2="430" y2="70"></line>
+        <line class="sv-stroke-ink" stroke-width="1.5" x1="430" y1="153" x2="430" y2="167"></line>
+        <line class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#arr2)" x1="470" y1="160" x2="470" y2="74"></line>
+        <rect class="sv-paper" x="352" y="170" width="156" height="20"></rect>
+        <text class="sv-t" x="430" y="185" text-anchor="middle">optimal output value</text>
+        <rect class="sv-paper" x="478" y="102" width="134" height="38"></rect>
+        <text class="sv-t" x="482" y="116" text-anchor="start">similarity score</text>
+        <text class="sv-ts" x="482" y="134" text-anchor="start">(code uses 2× this)</text>
+        <text class="sv-ts" x="430" y="278" text-anchor="middle">the simplified objective, minimised here</text>
+        <text class="sv-ts" x="430" y="46" text-anchor="middle">the same curve multiplied by −1</text>
+      </svg>
+      <figcaption>Notice that both curves peak or dip above the same output value, so the flip does not change the optimal output value.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Loss for regression</span><div class="math">$$ L(y_i, p_i) = \tfrac{1}{2}\,(y_i - p_i)^2 $$</div>
+    <p class="explain"><b>Symbols:</b> \(y_i\) is the observed value of observation \(i\); \(p_i\) is the prediction for that same observation. <b>What it tells you:</b> each observation contributes half its squared residual, and the half is there only to make later derivatives tidy.</p></div>
+
+    <div class="formula"><span class="lbl">Loss for classification</span><div class="math">$$ L(y_i, p_i) = -\big[\, y_i \log(p_i) + (1-y_i)\log(1-p_i) \,\big] $$</div>
+    <p class="explain"><b>Symbols:</b> \(y_i\) is the observed label, 0 or 1; \(p_i\) is the predicted probability between 0 and 1. <b>What it tells you:</b> this is the negative log likelihood, the same loss as in gradient boost for classification.</p></div>
+
+    <div class="formula"><span class="lbl">What XGBoost minimises</span><div class="math">$$ \sum_{i=1}^{n} L\!\left(y_i,\; p_i^{0} + O_{value}\right) \; + \; \tfrac{1}{2}\lambda\, O_{value}^{2} $$</div>
+    <p class="explain"><b>Step:</b> each prediction becomes the old prediction plus the new output value, so the output value is the only unknown. <b>Symbols:</b> \(p_i^{0}\) is the previous prediction; \(O_{value}\) is the output value of the leaf; \(\lambda\) is the regularization parameter; \(n\) is the number of residuals in the leaf. <b>What it tells you:</b> the leaf must lower the loss, but a large output value costs extra.</p></div>
+
+    <div class="formula"><span class="lbl">Second-order Taylor approximation</span><div class="math">$$ L\!\left(y_i,\, p_i^{0} + O_{value}\right) \approx L\!\left(y_i,\, p_i^{0}\right) + g_i\,O_{value} + \tfrac{1}{2}h_i\,O_{value}^{2} $$</div>
+    <p class="explain"><b>Step:</b> each loss is swapped for a parabola in the output value, because a parabola is easy to minimise. <b>Symbols:</b> \(L(y_i, p_i^{0})\) is the loss at the old prediction. \(g_i\) is the first derivative of the loss, called the gradient. \(h_i\) is the second derivative, called the Hessian.</p></div>
+
+    <div class="formula"><span class="lbl">Put the approximation into the objective</span>
+    <div class="math">$$ \sum_{i=1}^{n}\Big[L\!\left(y_i, p_i^{0}\right) + g_i\,O_{value} + \tfrac{1}{2}h_i\,O_{value}^{2}\Big] + \tfrac{1}{2}\lambda\,O_{value}^{2} $$</div>
+    <p class="explain"><b>Step:</b> the approximation replaces every loss term in the sum, and the penalty is added back.</p>
+    <div class="math">$$ \Big(\sum_{i=1}^{n} g_i\Big)\, O_{value} \; + \; \tfrac{1}{2}\Big(\sum_{i=1}^{n} h_i + \lambda\Big)\, O_{value}^{2} $$</div>
+    <p class="explain"><b>Step:</b> the \(L(y_i, p_i^{0})\) terms are dropped, because they have no output value and cannot move the minimum. The linear terms and the squared terms are then collected, so \(\lambda\) joins the squared term.</p></div>
+
+    <div class="formula"><span class="lbl">Set the derivative to zero</span>
+    <div class="math">$$ \sum g_i +\Big(\sum h_i + \lambda\Big)\, O_{value} = 0 $$</div>
+    <p class="explain"><b>Step:</b> we take the derivative with respect to \(O_{value}\) and set it to zero, because the bottom of a parabola has zero slope. The exponent 2 comes down and cancels the one half.</p>
+    <div class="math">$$ O_{value} = \frac{-\sum g_i}{\sum h_i + \lambda} $$</div>
+    <p class="explain"><b>Step:</b> we subtract \(\sum g_i\) from both sides, then divide by \(\sum h_i + \lambda\). <b>What it tells you:</b> this is the output value for any loss; only the derivatives change.</p></div>
+
+    <div class="formula"><span class="lbl">Output value for regression</span><div class="math">$$ g_i = -(y_i - p_i), \quad h_i = 1 \;\;\Longrightarrow\;\; O_{value} = \frac{\sum (y_i - p_i)}{n + \lambda} $$</div>
+    <p class="explain"><b>Step:</b> we plug in the derivatives of the regression loss. The gradient is the negative residual, so its minus sign cancels the one in front. <b>Symbols:</b> \(y_i - p_i\) is the residual; each \(h_i = 1\), so the denominator is \(n + \lambda\).</p></div>
+
+    <div class="formula"><span class="lbl">Output value for classification</span><div class="math">$$ g_i = -(y_i - p_i), \quad h_i = p_i\,(1-p_i) \;\;\Longrightarrow\;\; O_{value} = \frac{\sum (y_i - p_i)}{\sum p_i(1-p_i) + \lambda} $$</div>
+    <p class="explain"><b>Step:</b> we plug in the derivatives of log loss. The numerator is again the sum of residuals; only the denominator changes. <b>Symbols:</b> \(p_i\) is the previously predicted probability, not the log odds.</p></div>
+
+    <div class="formula"><span class="lbl">Similarity score</span>
+    <div class="math">$$ -\Big(\sum g_i\Big)\, O_{value} - \tfrac{1}{2}\Big(\sum h_i + \lambda\Big)\, O_{value}^{2} $$</div>
+    <p class="explain"><b>Step:</b> we multiply the simplified objective by −1, so its lowest point becomes a highest point.</p>
+    <div class="math">$$ = \frac{\left(\sum g_i\right)^{2}}{\sum h_i + \lambda} - \frac{1}{2}\cdot\frac{\left(\sum g_i\right)^{2}}{\sum h_i + \lambda} $$</div>
+    <p class="explain"><b>Step:</b> we substitute the optimal output value. In the first term two minus signs cancel; in the second, one \(\sum h_i + \lambda\) cancels.</p>
+    <div class="math">$$ = \frac{1}{2}\cdot\frac{\left(\sum g_i\right)^{2}}{\sum h_i + \lambda} \quad\longrightarrow\quad \text{Similarity} = \frac{\left(\sum g_i\right)^{2}}{\sum h_i + \lambda} $$</div>
+    <p class="explain"><b>Step:</b> we add the two terms to get the peak height from the original manuscript. The software drops the one half. Similarity is only compared with other similarities, so scaling every score alike changes no decision.</p></div>
+
+    <div class="formula"><span class="lbl">Similarity for each task</span><div class="math">$$ \frac{\left(\sum (y_i-p_i)\right)^{2}}{n + \lambda} \qquad\text{and}\qquad \frac{\left(\sum (y_i-p_i)\right)^{2}}{\sum p_i(1-p_i) + \lambda} $$</div>
+    <p class="explain"><b>Symbols:</b> the left formula is for regression, the right one for classification. <b>What it tells you:</b> these are exactly the similarity scores used in Parts 1 and 2, now with a derivation behind them.</p></div>
+
+    <div class="formula"><span class="lbl">Cover</span><div class="math">$$ \text{Cover} = \sum_{i=1}^{n} h_i $$</div>
+    <p class="explain"><b>Symbols:</b> \(h_i\) is the Hessian of one residual. <b>What it tells you:</b> cover is the similarity denominator minus lambda, so for regression it is simply the count of residuals, and for classification it is the sum of \(p_i(1-p_i)\).</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh uses three regression observations, an initial prediction of 0.5, and \(\lambda = 0\). With lambda at zero the penalty disappears, so only the summed loss matters.</p>
+      <p>With an output value of 0 the prediction stays at 0.5, and the summed loss \(\tfrac{1}{2}\sum (y_i - p_i)^2\) is <b>104.4</b>. With an output value of −1 the prediction drops to −0.5. That shrinks the first residual but enlarges the other two, and the total rises to <b>109.4</b>. With an output value of +1 the prediction rises to 1.5, the last two residuals shrink, and the total falls to <b>102.4</b>.</p>
+      <p>So +1 is the best of the three guesses. Plotting the whole function shows a parabola whose lowest point sits a little to the right of +1. Setting \(\lambda = 4\) pulls that lowest point back toward zero, and \(\lambda = 40\) pulls it almost onto zero. The output value formula \(\sum(y_i-p_i)/(n+\lambda)\) gives that same x-coordinate directly, without any guessing.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> The original objective also contains \(\gamma T\), where \(T\) is the number of leaves and \(\gamma\) is a pruning penalty. Josh leaves it out on purpose. Pruning happens after the full tree is built, so that term never affects the output value or the similarity score.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Dropping the constant terms changes the value of the function, but not the location of its minimum. So the simplified expression is no longer equal to the loss. Only the optimal output value carries over.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The manuscript similarity carries a factor of one half, and the implementations drop it. Both give the same splits. Only compare similarity scores that come from the same convention.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> For classification, the leaf output value lives in log odds, but the Hessian uses the previously predicted probability. Mixing the two scales is the easiest way to get the denominator wrong.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>Why does XGBoost use a second-order Taylor approximation?</summary><div class="a">Some losses, like log loss, are hard to minimise directly. The approximation replaces each loss with a parabola in the output value. A parabola has a one-line solution, so XGBoost gets the optimal leaf value directly. Plain gradient boost used this trick only for classification; XGBoost uses it for both tasks.</div></details>
+    <details class="qa" open><summary>What are G and H in the XGBoost formulas?</summary><div class="a">G is the first derivative of the loss with respect to the prediction, called the gradient. H is the second derivative, called the Hessian. For both losses in the video, G is the negative residual. H is one for regression and \(p(1-p)\) for classification.</div></details>
+    <details class="qa" open><summary>What actually changes between regression and classification in XGBoost?</summary><div class="a">Only the loss function. Everything else is the same machinery. You write down the gradient and the Hessian of the loss. Then you drop them into the same output value formula and the same similarity formula.</div></details>
+    <details class="qa" open><summary>How does lambda change the tree?</summary><div class="a">Lambda sits in the denominator of both the output value and the similarity score. A larger lambda pulls the output value toward zero, exactly like ridge regression shrinks coefficients. It also lowers similarity scores, and it lowers them most for leaves with few residuals. So lambda both softens the predictions and discourages small, noisy leaves.</div></details>
+    <details class="qa" open><summary>What is cover, in derivative terms?</summary><div class="a">Cover is the similarity denominator without lambda, which means it is the sum of the Hessians in a leaf. For regression each Hessian is one, so cover is just the number of residuals in the leaf. For classification each Hessian is \(p(1-p)\), so cover depends on the previous probabilities in the leaf.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>XGBoost picks the leaf output value that minimises a loss function plus a ridge-style penalty on that value.</li>
+      <li>The prediction inside the loss is the old prediction plus the new output value, so there is one unknown.</li>
+      <li>A second-order Taylor approximation turns any loss into a parabola built from the gradient G and the Hessian H.</li>
+      <li>Setting the derivative to zero gives the output value as minus the sum of the G's over the sum of the H's plus lambda.</li>
+      <li>Flipping the simplified parabola with minus one and substituting that output value gives the similarity score.</li>
+      <li>Regression uses G equal to the negative residual and H equal to one, so the denominator is the residual count plus lambda.</li>
+      <li>Classification keeps the same G but uses H equal to p times one minus p, and cover is simply the sum of the Hessians.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">XGBoost mathematical details</span><span class="board-tag">one parabola gives output value and similarity</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 290" role="img" aria-label="A bowl-shaped Taylor parabola sits below the zero line and its copy flipped by minus one sits above it. The bowl's bottom, where the slope is 0, is the best output value, and the flipped peak's height is the similarity score. As lambda grows, the bottom moves toward 0.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <line x1="20" y1="130" x2="382" y2="130" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <path d="M60 130 Q170 -20 280 130" class="sv-stroke-key" stroke-width="3" stroke-dasharray="6 8" stroke-linecap="round"/>
+            <path d="M60 130 Q170 280 280 130" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round"/>
+            <line x1="170" y1="66" x2="170" y2="194" class="sv-stroke-ink" stroke-width="2.5" marker-start="url(#board-arr)" marker-end="url(#board-arr)"/>
+            <line x1="128" y1="205" x2="212" y2="205" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="60" y1="140" x2="60" y2="246" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="2 6" stroke-linecap="round"/>
+            <line x1="168" y1="264" x2="80" y2="264" class="sv-stroke-good" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="170" cy="55" r="7" class="sv-key"/>
+              <circle cx="170" cy="205" r="8" class="sv-good"/>
+            </g>
+            <text x="170" y="32" text-anchor="middle" class="sv-tb">peak = similarity</text>
+            <text x="182" y="106" class="sv-tb">× −1</text>
+            <text x="384" y="154" text-anchor="end" class="sv-ts">output value</text>
+            <text x="256" y="184" class="sv-ts">Taylor parabola</text>
+            <text x="222" y="211" class="sv-t">slope = 0</text>
+            <text x="170" y="240" text-anchor="middle" class="sv-tb">best output value</text>
+            <text x="60" y="270" text-anchor="middle" class="sv-tb">0</text>
+            <text x="180" y="270" class="sv-t">as λ grows</text>
+          </svg>
+          <p>XGBoost swaps each loss for a Taylor parabola built from G and H. Its bottom, where the slope is 0, is the output value, and a bigger λ pulls it toward 0. Flipped by −1, its peak height is the similarity score.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Output value</dt><dd>What the new leaf adds to the old prediction.</dd>
+            <dt>G and H</dt><dd>The gradient and the Hessian: first and second derivatives of the loss.</dd>
+            <dt>Lambda (λ)</dt><dd>A ridge-style penalty that pulls the output value toward 0.</dd>
+            <dt>Similarity score</dt><dd>Height of the flipped peak; only compared with other similarities.</dd>
+            <dt>Cover</dt><dd>Sum of the Hessians in a leaf; for regression, the residual count.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Pick a loss</b>½ squared residual or log loss</li>
+            <li><b>Add a penalty</b>ridge-style, on the output value</li>
+            <li><b>Taylor swap</b>each loss becomes a parabola</li>
+            <li><b>Slope = 0</b>drop constants, solve for output value</li>
+            <li><b>Plug in</b>G, H for regression or classification</li>
+            <li><b>Flip × −1</b>peak height = similarity</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$O_{value}=\frac{-\sum g_i}{\sum h_i+\lambda}$$
+          $$\text{Similarity}=\frac{\left(\sum g_i\right)^{2}}{\sum h_i+\lambda}$$
+          $$g_i=-(y_i-p_i),\quad h_i=1\ \text{or}\ p_i(1-p_i)$$
+          <ul class="keys">
+            <li>\(g_i\), \(h_i\) are G and H of residual \(i\); \(y_i\) is observed, \(p_i\) the previous prediction.</li>
+            <li>\(h_i=1\) is regression, so the denominator is \(n+\lambda\); \(p_i(1-p_i)\) is classification.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>output value</th><th>prediction</th><th>loss (λ = 0)</th></tr>
+            <tr><td>0</td><td>0.5</td><td>104.4</td></tr>
+            <tr><td>−1</td><td>−0.5</td><td>109.4</td></tr>
+            <tr><td>+1</td><td>1.5</td><td>102.4</td></tr>
+            <tr class="final"><td>a bit over +1</td><td>…</td><td>lowest ✓</td></tr>
+          </table>
+          <p class="hand">The output value formula finds that bottom directly. λ = 4 pulls it toward 0; λ = 40 almost onto 0.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">The simplified parabola equals the loss.</span><span class="yes">Dropping constants changes its value, not where its minimum is.</span></li>
+            <li><span class="no">The ½ in similarity changes the splits.</span><span class="yes">The software drops the manuscript's ½. Splits match, but compare scores from one convention.</span></li>
+            <li><span class="no">The classification Hessian uses log odds.</span><span class="yes">It uses the previous probability; only the output value is in log odds.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="65-xgboost-part-2-classification.html"><small>Previous</small>XGBoost Part 2 (of 4): Classification</a> <a href="67-xgboost-part-4-crazy-cool-optimizations.html"><small>Next</small>XGBoost Part 4 (of 4): Crazy Cool Optimizations</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

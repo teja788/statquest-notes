@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PCA - Practical Tips — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>32</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 32 · 8.3 min</div>
+    <h1>PCA - Practical Tips</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=oRvgq966yZg" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Follow-up to: PCA step by step</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Josh gives three practical tips for running PCA on real data: scale your variables, center your data, and know how many principal components you can expect.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>PCA looks for the directions of largest variation. A variable measured on a big scale looks important only because its numbers are big, so divide each variable by its standard deviation first. Many programs do not center the data by default, and PCA without centering fits a line through the origin that is not the line you want. There is one principal component per variable, but a component only matters if its eigenvalue is above zero. With fewer samples than variables, the number of samples sets the real limit.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh uses math and reading scores from a group of students. Math scores run from 0 to 100. Reading scores run only from 0 to 10. On one graph, the math values spread across the whole width. The reading values sit squashed near the bottom.</p>
+    <p>If we center that data and run PCA, the recipe for PC1 mixes 0.99 parts math with 0.1 part reading. That looks like math is ten times better than reading at capturing variation in aptitude. It is not. Math only wins because its scale is ten times larger.</p>
+    <p>Now divide every math score by 10 and plot again. The two variables now cover the same range. Centering and PCA give a PC1 that mixes math and reading in equal parts, about 0.77 each. The message flips: reading and math are equally good at capturing variation. The standard fix is to divide each variable by its own standard deviation. A wide-ranging variable has a large standard deviation, so it shrinks a lot. A narrow variable has a small standard deviation, so it barely changes.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 360" role="img" aria-label="Two scatter plots of math and reading scores, before and after scaling, with the PC1 recipe under each">
+        <rect x="20" y="14" width="340" height="290" rx="6" class="sv-paper2"></rect>
+        <rect x="400" y="14" width="340" height="290" rx="6" class="sv-paper2"></rect>
+        <text x="34" y="34" class="sv-tb">Before scaling</text>
+        <text x="414" y="34" class="sv-tb">After scaling</text>
+
+        <line x1="60" y1="275" x2="300" y2="275" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <line x1="60" y1="275" x2="60" y2="45" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <text x="180" y="296" class="sv-ts" text-anchor="middle">math (0 to 100)</text>
+        <text x="50" y="160" class="sv-ts" text-anchor="middle" transform="rotate(-90 50 160)">reading (0 to 10)</text>
+        <line x1="95" y1="271" x2="285" y2="252" class="sv-stroke-key" stroke-width="2.5"></line>
+        <circle cx="118" cy="268" r="4.5" class="sv-acc"></circle>
+        <circle cx="147" cy="266" r="4.5" class="sv-acc"></circle>
+        <circle cx="164" cy="266" r="4.5" class="sv-acc"></circle>
+        <circle cx="193" cy="261" r="4.5" class="sv-acc"></circle>
+        <circle cx="212" cy="261" r="4.5" class="sv-acc"></circle>
+        <circle cx="226" cy="257" r="4.5" class="sv-acc"></circle>
+        <circle cx="255" cy="257" r="4.5" class="sv-acc"></circle>
+        <circle cx="272" cy="254" r="4.5" class="sv-acc"></circle>
+        <rect x="150" y="215" width="150" height="24" rx="4" class="sv-paper"></rect>
+        <text x="225" y="232" class="sv-tm" text-anchor="middle">PC1 lies flat</text>
+
+        <line x1="440" y1="275" x2="680" y2="275" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <line x1="440" y1="275" x2="440" y2="45" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <text x="560" y="296" class="sv-ts" text-anchor="middle">math ÷ 10 (0 to 10)</text>
+        <text x="430" y="160" class="sv-ts" text-anchor="middle" transform="rotate(-90 430 160)">reading (0 to 10)</text>
+        <line x1="480" y1="222" x2="668" y2="52" class="sv-stroke-key" stroke-width="2.5"></line>
+        <circle cx="498" cy="206" r="4.5" class="sv-acc"></circle>
+        <circle cx="527" cy="183" r="4.5" class="sv-acc"></circle>
+        <circle cx="544" cy="183" r="4.5" class="sv-acc"></circle>
+        <circle cx="573" cy="137" r="4.5" class="sv-acc"></circle>
+        <circle cx="592" cy="137" r="4.5" class="sv-acc"></circle>
+        <circle cx="606" cy="91" r="4.5" class="sv-acc"></circle>
+        <circle cx="635" cy="91" r="4.5" class="sv-acc"></circle>
+        <circle cx="652" cy="68" r="4.5" class="sv-acc"></circle>
+        <rect x="452" y="72" width="150" height="24" rx="4" class="sv-paper"></rect>
+        <text x="527" y="89" class="sv-tm" text-anchor="middle">PC1 runs at 45°</text>
+
+        <rect x="20" y="308" width="340" height="30" rx="4" class="sv-key-soft"></rect>
+        <rect x="400" y="308" width="340" height="30" rx="4" class="sv-good-soft"></rect>
+        <text x="190" y="328" class="sv-tm" text-anchor="middle">PC1 = 0.99 math + 0.1 reading</text>
+        <text x="570" y="328" class="sv-tm" text-anchor="middle">PC1 = 0.77 math + 0.77 reading</text>
+      </svg>
+      <figcaption>Notice that the data did not change, only the units. Scaling moves PC1 from "almost all math" to "math and reading equally".</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Check the scales of your variables. If one variable ranges over 0 to 100 and another over 0 to 10, they are not comparable yet.</li>
+      <li>Divide each variable by its own standard deviation. This is the standard practice, and it stops PCA from favouring the variable with the widest numbers.</li>
+      <li>Center the data by subtracting the mean of each variable. Centering is the very first step of PCA, but not every program does it for you.</li>
+      <li>Check your software. PCA done with SVD on uncentered data still fits a line through the origin, and the components you get will not be the ones you expect.</li>
+      <li>Work out how many components you can expect. Count your variables, count your samples, and take the smaller limit.</li>
+      <li>Ignore components whose eigenvalue is zero. They exist as lines, but no data spreads along them, so they explain nothing.</li>
+    </ol>
+    <p>The third tip needs a picture. With math and reading, we measure two things per student, so we plot in two dimensions. PC1 is the best fitting line through the origin. PC2 is the line perpendicular to PC1. A third component would need a line perpendicular to both, and in two dimensions no such line exists. Rotate a third line and you can match one of them, never both. So two measurements per sample allow at most two components.</p>
+    <p>The number of samples matters too. Two points always define exactly one line. If we had only two students, PC1 goes through both of them, and any perpendicular line collects all the projected points at the origin. Its eigenvalue is zero, so there is really only one component. The same thing happens if math and reading are 100% correlated: PC1 accounts for all the variation and the perpendicular line accounts for none. Three points define a plane, and a plane has two axes, so three students give at most two components.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Two centered points give one useful principal component, while three centered points give two">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" class="sv-ink2"></path>
+          </marker>
+        </defs>
+        <rect x="20" y="14" width="340" height="266" rx="6" class="sv-paper2"></rect>
+        <rect x="400" y="14" width="340" height="266" rx="6" class="sv-paper2"></rect>
+        <text x="34" y="36" class="sv-tb">2 students, 2 subjects</text>
+        <text x="414" y="36" class="sv-tb">3 students, 2 subjects</text>
+
+        <line x1="110" y1="228" x2="290" y2="108" class="sv-stroke-key" stroke-width="2.5"></line>
+        <line x1="178" y1="135" x2="222" y2="201" class="sv-stroke-acc" stroke-width="2" stroke-dasharray="5 4"></line>
+        <circle cx="140" cy="208" r="5.5" class="sv-acc"></circle>
+        <circle cx="260" cy="128" r="5.5" class="sv-acc"></circle>
+        <circle cx="200" cy="168" r="6" class="sv-ink"></circle>
+        <line x1="140" y1="208" x2="196" y2="171" class="sv-stroke-ink" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#ah)"></line>
+        <line x1="260" y1="128" x2="204" y2="165" class="sv-stroke-ink" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#ah)"></line>
+        <rect x="236" y="86" width="52" height="22" rx="4" class="sv-paper"></rect>
+        <text x="262" y="102" class="sv-tm" text-anchor="middle">PC1</text>
+        <rect x="86" y="128" width="86" height="22" rx="4" class="sv-paper"></rect>
+        <text x="129" y="144" class="sv-tm" text-anchor="middle">PC2 line</text>
+        <text x="200" y="256" class="sv-ts" text-anchor="middle">both points project onto the origin</text>
+        <text x="200" y="274" class="sv-tm" text-anchor="middle">eigenvalue of PC2 = 0</text>
+
+        <line x1="470" y1="230" x2="660" y2="110" class="sv-stroke-key" stroke-width="2.5"></line>
+        <line x1="536" y1="132" x2="594" y2="208" class="sv-stroke-good" stroke-width="2.5"></line>
+        <circle cx="500" cy="216" r="5.5" class="sv-acc"></circle>
+        <circle cx="618" cy="196" r="5.5" class="sv-acc"></circle>
+        <circle cx="612" cy="104" r="5.5" class="sv-acc"></circle>
+        <circle cx="565" cy="170" r="6" class="sv-ink"></circle>
+        <rect x="606" y="68" width="52" height="22" rx="4" class="sv-paper"></rect>
+        <text x="632" y="84" class="sv-tm" text-anchor="middle">PC1</text>
+        <rect x="596" y="204" width="52" height="22" rx="4" class="sv-paper"></rect>
+        <text x="622" y="220" class="sv-tm" text-anchor="middle">PC2</text>
+        <text x="570" y="256" class="sv-ts" text-anchor="middle">three points define a plane</text>
+        <text x="570" y="274" class="sv-tm" text-anchor="middle">no PC3 in two dimensions</text>
+      </svg>
+      <figcaption>Notice the left panel: the second line exists, but every point lands on the origin, so it carries no variation.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">Center and scale</span><div class="math">$$ x_{i}^{\ast} \;=\; \frac{x_{i}-\bar{x}}{s_{x}}, \qquad s_{x}=\sqrt{\frac{1}{n-1}\sum_{i=1}^{n}\left(x_{i}-\bar{x}\right)^{2}} $$</div><p class="explain"><b>Symbols:</b> \(x_i\) is one measurement of a variable for sample \(i\), for example one student's math score. \(\bar{x}\) is the mean of that variable across all samples. \(s_x\) is its standard deviation, the usual measure of spread. \(n\) is the number of samples. \(x_i^{\ast}\) is the centered and scaled value. <b>What it tells you:</b> subtracting the mean does tip two (centering), and dividing by the standard deviation does tip one (scaling), so every variable arrives at PCA with a mean of zero and a spread of one.</p></div>
+    <div class="formula"><span class="lbl">Eigenvalue of a principal component</span><div class="math">$$ \lambda_{k} \;=\; \sum_{i=1}^{n} d_{i,k}^{2} $$</div><p class="explain"><b>Symbols:</b> \(\lambda_k\) is the eigenvalue of principal component \(k\). \(d_{i,k}\) is the distance from the origin to the place where sample \(i\) projects onto that component. \(n\) is the number of samples. <b>What it tells you:</b> it is the sum of squared distances that Josh uses in the earlier video, and it measures how much variation the component captures. If every point projects onto the origin, every \(d_{i,k}\) is zero, so \(\lambda_k=0\) and the component is useless.</p></div>
+    <div class="formula"><span class="lbl">How many components you can expect</span><div class="math">$$ \#\{k : \lambda_{k} > 0\} \;\le\; \min\left(p,\; n-1\right) $$</div><p class="explain"><b>Symbols:</b> \(p\) is the number of variables you measure per sample, such as math and reading. \(n\) is the number of samples, such as students. \(\lambda_k\) is again the eigenvalue of component \(k\). <b>What it tells you:</b> technically there is one component per variable, so \(p\) is one ceiling. But when you have fewer samples than variables, the samples set a tighter ceiling: two points only define a line, and three points only define a plane.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh measures math and reading for a group of students. Math runs from 0 to 100 and reading runs from 0 to 10. He centers the data and runs PCA on the raw numbers. The recipe for PC1 comes out as 0.99 parts math plus 0.1 part reading, so math seems ten times more important.</p>
+      <p>He then divides each math score by 10, which puts both variables on a 0 to 10 range. He centers and runs PCA again. Now PC1 is an equal mix, about 0.77 parts math plus 0.77 parts reading. Nothing about the students changed. Only the units changed, and the whole conclusion changed with them.</p>
+      <p>He then asks how many components this data allows. Two variables per student give PC1 and PC2, and no third line can be perpendicular to both. If he had used only two students, PC2 would have an eigenvalue of zero. If he had used two students and three subjects (math, reading and gymnastics), two points still define one line, so only PC1 survives. With three students, three points define a plane, so PC1 and PC2 survive and PC3 does not.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> A large loading does not always mean an important variable. Before you scale, the loadings mostly reflect the units. Read the loadings only after every variable is divided by its standard deviation.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not assume your software centers the data. PCA done with SVD on uncentered data still fits a line through the origin, and that line points at the mean of your cloud rather than through it. Check the option, or center the data yourself.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Extra components can always be drawn, but drawing is not the same as explaining. When variables are perfectly correlated, PC1 takes 100% of the variation and the perpendicular line takes 0%. Look at the eigenvalues, not the count.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> With more variables than samples, the sample count is your limit. Two students and three test scores give one useful component, not three, however wide the data table looks.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>Why do we scale variables before PCA?</summary><div class="a">PCA finds the directions of largest variation, and variation depends on units. A variable measured in a big range dominates PC1 just because its numbers are big. Josh shows math on 0 to 100 and reading on 0 to 10 giving a PC1 of 0.99 math and 0.1 reading, which flips to an equal mix once the scales match. The standard practice is to divide each variable by its standard deviation.</div></details>
+    <details class="qa" open><summary>What happens if you run PCA without centering the data?</summary><div class="a">The method still fits a best line through the origin, but the origin is no longer the middle of your data. The components you get then describe where the cloud sits, not how it spreads. Not every program centers by default, especially SVD-based code, so I check the setting or center the data myself first.</div></details>
+    <details class="qa" open><summary>How many principal components can a dataset have?</summary><div class="a">Technically one per variable, so a table with p variables has p components. But components with an eigenvalue of zero explain nothing. If you have fewer samples than variables, the samples put the real upper bound on the useful count, because two points only define a line and three points only define a plane.</div></details>
+    <details class="qa" open><summary>What does an eigenvalue of zero mean in practice?</summary><div class="a">It means no data spreads along that direction. Every point projects onto the origin, so the sum of squared distances is zero. That happens when variables are perfectly correlated, or when you simply do not have enough samples. In practice you drop that component, because it carries no information.</div></details>
+    <details class="qa" open><summary>Should you ever skip scaling?</summary><div class="a">Yes, when all the variables are already in the same units and on a similar scale. The point of scaling is fairness between variables, not a ritual. If the scales are roughly equivalent already, dividing by the standard deviation changes very little.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>PCA is sensitive to units, so a variable with a wide range will dominate PC1 unfairly.</li>
+      <li>Divide each variable by its standard deviation to put them all on a comparable scale.</li>
+      <li>Josh's math and reading example moves from 0.99 and 0.1 to an equal mix of about 0.77 each after scaling.</li>
+      <li>Centering is the first step of PCA, and some programs, especially SVD-based ones, skip it.</li>
+      <li>Without centering, the fitted line still passes through the origin, so the components are wrong.</li>
+      <li>There is technically one component per variable, but only components with an eigenvalue above zero matter.</li>
+      <li>Two points define a line and three points define a plane, so few samples limit the useful component count.</li>
+      <li>When you have fewer samples than variables, the number of samples is the binding upper bound.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">PCA practical tips</span><span class="board-tag">scale it, center it, count the PCs</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 250" role="img" aria-label="Left: math on 0 to 100 and reading on 0 to 10 drawn on one scale, so the cloud lies flat and PC1 is 0.99 math plus 0.1 reading. An arrow labelled scale leads right: with math divided by 10 the cloud runs diagonally and PC1 is 0.77 math plus 0.77 reading.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <path d="M40 74 V214 H182" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M240 74 V214 H382" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="52" y1="203.9" x2="180" y2="191" class="sv-stroke-key" stroke-width="4" stroke-linecap="round"/>
+            <line x1="266" y1="184" x2="356" y2="94" class="sv-stroke-key" stroke-width="4" stroke-linecap="round"/>
+            <g class="sv-ink">
+              <circle cx="62" cy="204" r="4.5"/>
+              <circle cx="84" cy="198" r="4.5"/>
+              <circle cx="106" cy="201" r="4.5"/>
+              <circle cx="128" cy="195" r="4.5"/>
+              <circle cx="150" cy="196" r="4.5"/>
+              <circle cx="172" cy="190" r="4.5"/>
+              <circle cx="279.1" cy="177.9" r="4.5"/>
+              <circle cx="285.6" cy="156" r="4.5"/>
+              <circle cx="308.1" cy="150.3" r="4.5"/>
+              <circle cx="314.6" cy="128.4" r="4.5"/>
+              <circle cx="336.4" cy="122" r="4.5"/>
+              <circle cx="342.2" cy="99.4" r="4.5"/>
+            </g>
+            <line x1="194" y1="139" x2="226" y2="139" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="48" y="36" class="sv-tb">PC1: 0.99 math</text>
+            <text x="48" y="62" class="sv-tb">+ 0.1 reading</text>
+            <text x="382" y="36" text-anchor="end" class="sv-tb">PC1: 0.77 math</text>
+            <text x="382" y="62" text-anchor="end" class="sv-tb">+ 0.77 reading</text>
+            <text x="210" y="127" text-anchor="middle" class="sv-t">scale</text>
+            <text x="111" y="236" text-anchor="middle" class="sv-ts">math 0–100</text>
+            <text x="26" y="139" text-anchor="middle" transform="rotate(-90 26 139)" class="sv-ts">reading 0–10</text>
+            <text x="311" y="236" text-anchor="middle" class="sv-ts">math ÷ 10</text>
+          </svg>
+          <p>PCA follows the biggest spread, so units matter. With math on 0 to 100 and reading on 0 to 10, PC1 is almost all math. Divide math by 10 and PC1 becomes an equal mix; in practice, divide each variable by its standard deviation.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Scaling</dt><dd>Dividing each variable by its standard deviation.</dd>
+            <dt>Standard deviation</dt><dd>The usual measure of spread; a wide-ranging variable has a large one.</dd>
+            <dt>Centering</dt><dd>Subtracting each variable's mean, the first step of PCA.</dd>
+            <dt>Loading</dt><dd>How much of a variable goes into a PC's recipe.</dd>
+            <dt>Eigenvalue</dt><dd>The variation a PC captures; zero means it explains nothing.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Check scales</b>like 0–100 vs 0–10</li>
+            <li><b>Scale</b>divide each by its standard deviation</li>
+            <li><b>Center</b>subtract each variable's mean</li>
+            <li><b>Check software</b>SVD may skip centering</li>
+            <li><b>Count PCs</b>smaller of variables and samples</li>
+            <li><b>Drop zeros</b>eigenvalue 0 explains nothing</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$x_i^{\ast}=\frac{x_i-\bar{x}}{s_x}$$
+          $$\lambda_k=\sum_{i=1}^{n} d_{i,k}^{2}$$
+          $$\#\{k:\lambda_k\gt 0\}\le\min(p,\,n-1)$$
+          <ul class="keys">
+            <li>\(\bar{x}\) is the mean, \(s_x\) the standard deviation; \(n\) samples, \(p\) variables.</li>
+            <li>\(d_{i,k}\) is how far sample \(i\) projects from the origin on PC \(k\).</li>
+            <li>Only PCs with \(\lambda_k \gt 0\) explain anything.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>data</th><th>PC1 math</th><th>PC1 reading</th></tr>
+            <tr><td>0–100 vs 0–10</td><td>0.99</td><td>0.1</td></tr>
+            <tr class="final"><td>math ÷ 10</td><td>0.77</td><td>0.77</td></tr>
+          </table>
+          <p class="hand">Same students, new units, new answer. Two students give one useful PC; three give PC1 and PC2, never PC3.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">A big loading means an important variable.</span><span class="yes">Before scaling, loadings mostly reflect units. Read them after dividing by the standard deviation.</span></li>
+            <li><span class="no">Software always centers the data.</span><span class="yes">SVD on uncentered data fits a line pointing at the mean. Center it yourself.</span></li>
+            <li><span class="no">Every PC you can draw explains something.</span><span class="yes">Check eigenvalues: two students and three scores give one useful PC, not three.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="31-pca-main-ideas-in-only-5-minutes.html"><small>Previous</small>PCA main ideas in only 5 minutes</a> <a href="33-pca-in-r.html"><small>Next</small>PCA in R</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

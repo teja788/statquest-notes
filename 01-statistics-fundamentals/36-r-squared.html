@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>R-squared — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>36</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 36 · 11 min</div>
+    <h1>R-squared</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=2AQKmw14mHM" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">R-squared tells you how much of the variation in your data is explained by the relationship between two variables. It is easy to compute and easy to say out loud.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Start with the plain average of your outcome and measure how far the data sit from it. Then fit a line using the second variable and measure how far the data sit from that line. R-squared is the drop in that variation, written as a share of the original amount. An R-squared of 0.81 means the relationship explains 81% of the variation. Plain old <b>r</b> is the square root of it, so squaring <b>r</b> gives you the same number.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh starts with a complaint about plain old correlation, <b>r</b>. Values near 1 or near -1 mean two quantitative variables, such as mouse weight and mouse size, move together strongly. Values near zero mean they barely move together. The problem is that the scale is hard to read. It is not obvious that <b>r</b> = 0.7 is twice as good as <b>r</b> = 0.5.</p>
+    <p>R-squared fixes the reading problem. Because it is a percentage, 0.7 really is 1.4 times as good as 0.5. It is also easy to calculate from two numbers you can picture.</p>
+    <p>The picture is this. Plot mouse weight on the y-axis and mouse ID number on the x-axis. Draw the mean weight as a flat line across the graph. The spread of the dots around that flat line is the total variation you have to explain. Now reorder the same mice by size on the x-axis. Nothing about the mean or the spread changes, because you only changed the order.</p>
+    <p>Once the mice are ordered by size, the mean is no longer the best guess for a single mouse. Fit a line to the data instead. Tell Josh you have a large mouse, and the line gives a good guess of its weight. The dots now sit much closer to the line than they sat to the mean. R-squared measures exactly how much closer.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 330" role="img" aria-label="Left panel shows mouse weights scattered far from the flat mean line; right panel shows the same points sitting close to a fitted line.">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" class="sv-ink2"></path>
+          </marker>
+        </defs>
+
+        <text x="60" y="26" class="sv-tb">Variation around the mean</text>
+        <text x="440" y="26" class="sv-tb">Variation around the fitted line</text>
+
+        <line x1="60" y1="40" x2="60" y2="265" class="sv-line" stroke-width="1.5"></line>
+        <line x1="60" y1="265" x2="350" y2="265" class="sv-line" stroke-width="1.5"></line>
+        <text x="24" y="150" class="sv-ts" transform="rotate(-90 24 150)" text-anchor="middle">Weight</text>
+        <text x="205" y="288" class="sv-ts" text-anchor="middle">Mouse size</text>
+
+        <line x1="65" y1="154" x2="345" y2="154" class="sv-stroke-ink" stroke-width="2.5"></line>
+        <text x="345" y="147" class="sv-ts" text-anchor="end">mean weight</text>
+
+        <line x1="85" y1="235" x2="85" y2="154" class="sv-stroke-ink" stroke-width="1" stroke-dasharray="3 3"></line>
+        <line x1="125" y1="215" x2="125" y2="154" class="sv-stroke-ink" stroke-width="1" stroke-dasharray="3 3"></line>
+        <line x1="165" y1="190" x2="165" y2="154" class="sv-stroke-ink" stroke-width="1" stroke-dasharray="3 3"></line>
+        <line x1="205" y1="150" x2="205" y2="154" class="sv-stroke-ink" stroke-width="1" stroke-dasharray="3 3"></line>
+        <line x1="245" y1="120" x2="245" y2="154" class="sv-stroke-ink" stroke-width="1" stroke-dasharray="3 3"></line>
+        <line x1="285" y1="95" x2="285" y2="154" class="sv-stroke-ink" stroke-width="1" stroke-dasharray="3 3"></line>
+        <line x1="325" y1="70" x2="325" y2="154" class="sv-stroke-ink" stroke-width="1" stroke-dasharray="3 3"></line>
+
+        <circle cx="85" cy="235" r="5" class="sv-key"></circle>
+        <circle cx="125" cy="215" r="5" class="sv-key"></circle>
+        <circle cx="165" cy="190" r="5" class="sv-key"></circle>
+        <circle cx="205" cy="150" r="5" class="sv-key"></circle>
+        <circle cx="245" cy="120" r="5" class="sv-key"></circle>
+        <circle cx="285" cy="95" r="5" class="sv-key"></circle>
+        <circle cx="325" cy="70" r="5" class="sv-key"></circle>
+
+        <rect x="66" y="42" width="140" height="24" rx="4" class="sv-paper"></rect>
+        <text x="72" y="59" class="sv-tm">sum of squares = 32</text>
+
+        <line x1="368" y1="152" x2="428" y2="152" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"></line>
+        <text x="398" y="142" class="sv-ts" text-anchor="middle">fit a line</text>
+
+        <line x1="440" y1="40" x2="440" y2="265" class="sv-line" stroke-width="1.5"></line>
+        <line x1="440" y1="265" x2="730" y2="265" class="sv-line" stroke-width="1.5"></line>
+        <text x="585" y="288" class="sv-ts" text-anchor="middle">Mouse size</text>
+
+        <line x1="455" y1="245" x2="715" y2="62" class="sv-stroke-acc" stroke-width="2.5"></line>
+        <text x="725" y="147" class="sv-ts" text-anchor="end">fitted line</text>
+
+        <line x1="465" y1="235" x2="465" y2="238" class="sv-stroke-ink" stroke-width="1" stroke-dasharray="3 3"></line>
+        <line x1="505" y1="215" x2="505" y2="210" class="sv-stroke-ink" stroke-width="1" stroke-dasharray="3 3"></line>
+        <line x1="545" y1="190" x2="545" y2="182" class="sv-stroke-ink" stroke-width="1" stroke-dasharray="3 3"></line>
+        <line x1="585" y1="150" x2="585" y2="154" class="sv-stroke-ink" stroke-width="1" stroke-dasharray="3 3"></line>
+        <line x1="625" y1="120" x2="625" y2="125" class="sv-stroke-ink" stroke-width="1" stroke-dasharray="3 3"></line>
+        <line x1="665" y1="95" x2="665" y2="97" class="sv-stroke-ink" stroke-width="1" stroke-dasharray="3 3"></line>
+        <line x1="705" y1="70" x2="705" y2="69" class="sv-stroke-ink" stroke-width="1" stroke-dasharray="3 3"></line>
+
+        <circle cx="465" cy="235" r="5" class="sv-key"></circle>
+        <circle cx="505" cy="215" r="5" class="sv-key"></circle>
+        <circle cx="545" cy="190" r="5" class="sv-key"></circle>
+        <circle cx="585" cy="150" r="5" class="sv-key"></circle>
+        <circle cx="625" cy="120" r="5" class="sv-key"></circle>
+        <circle cx="665" cy="95" r="5" class="sv-key"></circle>
+        <circle cx="705" cy="70" r="5" class="sv-key"></circle>
+
+        <rect x="446" y="42" width="134" height="24" rx="4" class="sv-paper"></rect>
+        <text x="452" y="59" class="sv-tm">sum of squares = 6</text>
+
+        <text x="380" y="308" class="sv-ts" text-anchor="middle">Same seven mice, same weights. Only the reference we measure from has changed.</text>
+      </svg>
+      <figcaption>Notice that the dashed gaps shrink from a total of 32 to a total of 6 once we use the line instead of the mean.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Plot your outcome, mouse weight, on the y-axis. Put the other variable, mouse size, on the x-axis.</li>
+      <li>Compute the mean weight and draw it as a flat line across the graph.</li>
+      <li>Measure the vertical gap from each point to that mean line. Square each gap and add them up. Squaring stops the points below the mean from cancelling the points above it.</li>
+      <li>Fit a line to the data so that size is used to predict weight.</li>
+      <li>Measure the vertical gap from each point to the fitted line. Square each gap and add them up again.</li>
+      <li>Subtract the second total from the first. That difference is the variation the line removed.</li>
+      <li>Divide that difference by the variation around the mean. The result is R-squared, a value between 0 and 1 that you can read as a percentage.</li>
+    </ol>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Variation around the mean</span>
+      <div class="math">$$ \mathrm{Var(mean)} \;=\; \sum_{i=1}^{n} \left( \text{weight}_i - \overline{\text{weight}} \right)^2 $$</div>
+      <p class="explain"><b>Symbols:</b> \(i\) is one individual mouse, drawn as one dot. \(n\) is how many mice you have. \(\text{weight}_i\) is the measured weight of mouse \(i\). \(\overline{\text{weight}}\) is the mean weight of all the mice. The \(\sum\) sign means add up one term for every mouse. <b>What it tells you:</b> the total amount of spread in the data when the mean is your only prediction.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Variation around the fitted line</span>
+      <div class="math">$$ \mathrm{Var(line)} \;=\; \sum_{i=1}^{n} \left( \text{weight}_i - \text{line}_i \right)^2 $$</div>
+      <p class="explain"><b>Symbols:</b> \(\text{line}_i\) is the weight the fitted line predicts for mouse \(i\), read off the line at that mouse's size. Everything else is the same as above. <b>What it tells you:</b> the spread that is left over after the line has done its work.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">R-squared</span>
+      <div class="math">$$ R^2 \;=\; \frac{\mathrm{Var(mean)} - \mathrm{Var(line)}}{\mathrm{Var(mean)}} $$</div>
+      <p class="explain"><b>Symbols:</b> the top is how much variation the line removed. The bottom is the variation you started with. <b>What it tells you:</b> the share of the original variation that the relationship between the two variables explains. It always falls between 0 and 1, because the variation around the line is never bigger than the variation around the mean and never below zero.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Link to plain old r</span>
+      <div class="math">$$ R^2 \;=\; r \times r $$</div>
+      <p class="explain"><b>Symbols:</b> \(r\) is the ordinary correlation coefficient, which runs from -1 to 1. <b>What it tells you:</b> if someone quotes \(r\), square it in your head and you immediately have the percentage of variation explained.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <p>Josh runs the same seven mice through two different x-axes. The variation around the mean is 32 in both cases, because the weights never change. Only the fitted line changes.</p>
+
+    <div class="example"><span class="lbl">Example</span>
+      <p><b>Size against weight.</b> The variation around the mean is 32. The variation around the fitted line is only 6. So \(R^2 = (32 - 6) / 32 = 26 / 32 = 0.81\). There is 81% less variation around the line than around the mean. The size-weight relationship accounts for 81% of the total variation.</p>
+      <p><b>Time spent sniffing a rock against weight.</b> The variation around the mean is again 32. This time the variation around the fitted line is 30, which is barely an improvement. So \(R^2 = (32 - 30) / 32 = 2 / 32 = 0.06\). The sniff-weight relationship accounts for only 6% of the total variation. Almost nothing in the data is explained by it.</p>
+    </div>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 260" role="img" aria-label="Two bars of equal total length 32; the first is mostly explained variation, the second is mostly left over.">
+        <text x="20" y="26" class="sv-tb">Each bar is the total variation around the mean = 32</text>
+
+        <text x="20" y="76" class="sv-t">Size vs weight</text>
+        <rect x="180" y="60" width="60" height="40" class="sv-key-soft"></rect>
+        <rect x="180" y="60" width="60" height="40" class="sv-stroke-key" stroke-width="1.5"></rect>
+        <rect x="240" y="60" width="260" height="40" class="sv-good-soft"></rect>
+        <rect x="240" y="60" width="260" height="40" class="sv-stroke-good" stroke-width="1.5"></rect>
+        <text x="370" y="85" class="sv-t" text-anchor="middle">explained = 26</text>
+        <text x="210" y="120" class="sv-ts" text-anchor="middle">6 left</text>
+        <text x="516" y="85" class="sv-tm">R² = 26 / 32 = 0.81</text>
+
+        <text x="20" y="176" class="sv-t">Sniffing vs weight</text>
+        <rect x="180" y="160" width="300" height="40" class="sv-key-soft"></rect>
+        <rect x="180" y="160" width="300" height="40" class="sv-stroke-key" stroke-width="1.5"></rect>
+        <rect x="480" y="160" width="20" height="40" class="sv-good-soft"></rect>
+        <rect x="480" y="160" width="20" height="40" class="sv-stroke-good" stroke-width="1.5"></rect>
+        <text x="330" y="185" class="sv-t" text-anchor="middle">30 left around the line</text>
+        <text x="490" y="220" class="sv-ts" text-anchor="middle">2</text>
+        <text x="516" y="185" class="sv-tm">R² = 2 / 32 = 0.06</text>
+
+        <text x="20" y="245" class="sv-ts">Green is variation the line removed. Orange is variation still there after the fit.</text>
+      </svg>
+      <figcaption>Notice that both bars start at the same length, so R-squared is simply the green share of the bar.</figcaption>
+    </figure>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+
+    <div class="pitfall"><span class="lbl">Watch out</span> R-squared never tells you the direction of the relationship. Squared numbers are never negative, so a strong negative relationship and a strong positive one give the same value. If the direction is not obvious, say it in words: "the two variables were negatively correlated, with R-squared equal to 0.81".</div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span> Statistically significant is not the same as important. An R-squared of 0.01 can be significant and still be nearly useless. It only explains 1% of the variation, so something else explains the other 99%.</div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not compare values of plain <b>r</b> as if they were percentages. An <b>r</b> of 0.7 is not twice as good as an <b>r</b> of 0.5. Square them first: 0.49 against 0.25. Only then does the "about twice as good" comparison hold.</div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span> Reordering the points on the x-axis changes nothing about the mean or the variation around it. Only fitting a line to a meaningful x variable can reduce the variation. The x-axis has to carry real information.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>What does R-squared actually measure?</summary><div class="a">It measures the share of the variation in the outcome that the fitted line explains. You compute the sum of squared distances from the points to the mean, then the sum of squared distances from the points to the line. R-squared is the drop between those two numbers, divided by the first one. So an R-squared of 0.81 means the relationship removes 81% of the original variation.</div></details>
+
+    <details class="qa" open><summary>Why do people prefer R-squared over plain correlation?</summary><div class="a">Because it reads as a percentage, so the numbers compare sensibly. With plain <b>r</b> it is not obvious how much better 0.7 is than 0.5. Once you square them you get 49% against 25%, and you can see one is roughly twice as good as the other.</div></details>
+
+    <details class="qa" open><summary>Why is R-squared always between 0 and 1?</summary><div class="a">The variation around the fitted line is never larger than the variation around the mean. That keeps the top of the fraction from going negative. Variation can also never drop below zero, so the top can never beat the bottom.</div></details>
+
+    <details class="qa" open><summary>Someone reports a significant R-squared of 0.01. How do you react?</summary><div class="a">I would say the effect is real but tiny. The relationship explains only 1% of the variation, so 99% is driven by something else. With a large enough sample, almost anything becomes significant, so I would look at the effect size before acting on it.</div></details>
+
+    <details class="qa" open><summary>Why do we square the distances instead of just adding them?</summary><div class="a">Points below the reference line give negative differences and points above give positive ones. If you added them raw, they would cancel out and the total would be close to zero regardless of the spread. Squaring makes every contribution positive, so the total honestly reflects how far the data sit from the line.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>R-squared answers one question: how much of the variation does this relationship explain?</li>
+      <li>First measure the variation around the mean as a sum of squared distances.</li>
+      <li>Then fit a line and measure the variation around that line the same way.</li>
+      <li>R-squared is the drop between the two, divided by the variation around the mean.</li>
+      <li>In the video, 32 and 6 give R-squared of 0.81, so size explains 81% of mouse weight variation.</li>
+      <li>In the second case, 32 and 30 give 0.06, so sniffing time explains almost nothing.</li>
+      <li>R-squared is just plain <b>r</b> squared, so square any correlation you are given.</li>
+      <li>R-squared hides the direction of the relationship, so state that direction in words.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">R-squared</span><span class="board-tag">the share of variation a line explains</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 270" role="img" aria-label="Seven mice plotted as weight against size. Dashed gaps run from the dots to the flat mean line; squared and added they give 32. The dots hug the fitted line, where the squared gaps add up to only 6. R-squared is 32 minus 6, over 32, which is 0.81.">
+            <line x1="40" y1="20" x2="40" y2="206" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="40" y1="206" x2="384" y2="206" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <text x="50" y="30" class="sv-ts">weight</text>
+            <text x="384" y="230" text-anchor="end" class="sv-ts">size →</text>
+            <g class="sv-stroke-key" stroke-width="2.5" stroke-dasharray="4 5" stroke-linecap="round">
+              <line x1="70" y1="180" x2="70" y2="120"/>
+              <line x1="115" y1="149" x2="115" y2="120"/>
+              <line x1="160" y1="140" x2="160" y2="120"/>
+              <line x1="250" y1="111" x2="250" y2="120"/>
+              <line x1="295" y1="80" x2="295" y2="120"/>
+              <line x1="340" y1="66" x2="340" y2="120"/>
+            </g>
+            <line x1="50" y1="120" x2="380" y2="120" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="56" y1="187" x2="372" y2="45" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="70" cy="186" r="6" class="sv-key"/>
+              <circle cx="115" cy="155" r="6" class="sv-key"/>
+              <circle cx="160" cy="146" r="6" class="sv-key"/>
+              <circle cx="205" cy="114" r="6" class="sv-key"/>
+              <circle cx="250" cy="105" r="6" class="sv-key"/>
+              <circle cx="295" cy="74" r="6" class="sv-key"/>
+              <circle cx="340" cy="60" r="6" class="sv-key"/>
+            </g>
+            <text x="322" y="48" text-anchor="end" class="sv-t">around line = 6</text>
+            <text x="376" y="146" text-anchor="end" class="sv-t">around mean = 32</text>
+            <text x="200" y="254" text-anchor="middle" class="sv-tb">R² = (32 − 6)/32 = 0.81</text>
+          </svg>
+          <p>The squared gaps from seven mice to the flat mean add up to 32. To a line fitted on size, they add up to only 6. R-squared is the share removed: (32 − 6) / 32 = 0.81, so size explains 81% of the variation.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Variation around the mean</dt><dd>Sum of squared gaps from each point to the mean.</dd>
+            <dt>Variation around the line</dt><dd>The same sum, measured to the fitted line.</dd>
+            <dt>R-squared</dt><dd>The share of variation the relationship explains, from 0 to 1.</dd>
+            <dt>Plain old r</dt><dd>Correlation, from −1 to 1. Square it to get R-squared.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Plot</b>weight on y, size on x</li>
+            <li><b>Mean line</b>flat, at the mean weight</li>
+            <li><b>Gaps to mean</b>square each, add them up</li>
+            <li><b>Fit a line</b>size predicts weight</li>
+            <li><b>Gaps to line</b>square and add again</li>
+            <li><b>Subtract, divide</b>the drop ÷ Var(mean) = R²</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$R^2=\frac{\mathrm{Var(mean)}-\mathrm{Var(line)}}{\mathrm{Var(mean)}}$$
+          $$\mathrm{Var(mean)}=\sum_{i}\big(w_i-\bar{w}\big)^2$$
+          $$R^2=r\times r$$
+          <ul class="keys">
+            <li>\(w_i\) is mouse \(i\)'s weight, \(\bar{w}\) the mean; Var(line) swaps in the line's guess.</li>
+            <li>Always between 0 and 1; read it as a percentage.</li>
+            <li>\(r\) is plain correlation, from −1 to 1.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>x-axis</th><th>size</th><th>sniffing a rock</th></tr>
+            <tr><td>Var(mean)</td><td>32</td><td>32</td></tr>
+            <tr><td>Var(line)</td><td>6</td><td>30</td></tr>
+            <tr><td>removed</td><td>26</td><td>2</td></tr>
+            <tr class="final"><td>R²</td><td>0.81</td><td>0.06</td></tr>
+          </table>
+          <p class="hand">Same 32 both times: the weights never change. Size explains 81%; sniffing a rock only 6%.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">R-squared also shows the direction.</span><span class="yes">Squares are never negative, so state the direction in words.</span></li>
+            <li><span class="no">Significant means important.</span><span class="yes">An R-squared of 0.01 can be significant yet explains only 1%. Something else explains 99%.</span></li>
+            <li><span class="no">An r of 0.7 is twice as good as 0.5.</span><span class="yes">Square them first: 0.49 against 0.25. Only then is it about twice as good.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="35-confidence-intervals.html"><small>Previous</small>Confidence Intervals</a> <a href="37-the-essence-of-linear-regression.html"><small>Next</small>The Essence of Linear Regression</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

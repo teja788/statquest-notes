@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quantile Normalization — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>53</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 53 · 4.9 min</div>
+    <h1>Quantile Normalization</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=ecjN6Xpv6SE" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Quantile normalization forces several samples to share exactly the same distribution of values. It removes technical differences between experiments, so you can compare samples fairly.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh uses microarray data, where each measurement is the activity of one gene in one sample. A brighter light bulb in one experiment makes every value in that sample larger, which is a technical artifact and not biology. Quantile normalization sorts the values inside each sample, averages across samples at each rank, and gives every sample that same set of averages. Each gene keeps its position within its own sample, but all samples end up with identical quantiles.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>A microarray measures how active genes are by reading the intensity of different colours of light. Josh's plot shows one dot per gene, with the intensity on the y-axis. The three samples have three different mean values, which suggests the overall brightness differed between experiments.</p>
+    <p>The fix is simple. Take the highest value in every sample and replace all of them by their mean. Do the same for the second highest, then the third, and so on down to the lowest. Nothing else changes. Inside a sample, the gene that was highest is still highest.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 350" role="img" aria-label="Raw data with three samples of different heights on the left, and quantile normalized data on the right where all three samples share the same four levels">
+        <defs>
+          <marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto"><path d="M0,0 L7,3.2 L0,6.4 z" class="sv-acc"></path></marker>
+        </defs>
+        <text x="60" y="34" class="sv-tb">Raw data</text>
+        <text x="440" y="34" class="sv-tb">Quantile normalized</text>
+
+        <path d="M60,58 L60,300 L250,300" class="sv-line" stroke-width="1.5"></path>
+        <path d="M440,58 L440,300 L650,300" class="sv-line" stroke-width="1.5"></path>
+
+        <path d="M440,92 L640,92" class="sv-line" stroke-width="1" stroke-dasharray="4 4"></path>
+        <path d="M440,158 L640,158" class="sv-line" stroke-width="1" stroke-dasharray="4 4"></path>
+        <path d="M440,202 L640,202" class="sv-line" stroke-width="1" stroke-dasharray="4 4"></path>
+        <path d="M440,246 L640,246" class="sv-line" stroke-width="1" stroke-dasharray="4 4"></path>
+        <text x="656" y="96" class="sv-ts">9</text>
+        <text x="656" y="162" class="sv-ts">6</text>
+        <text x="656" y="206" class="sv-ts">4</text>
+        <text x="656" y="250" class="sv-ts">2</text>
+
+        <circle cx="90" cy="246" r="7" class="sv-key"></circle>
+        <circle cx="90" cy="202" r="7" class="sv-acc"></circle>
+        <circle cx="90" cy="180" r="7" class="sv-good"></circle>
+        <circle cx="90" cy="92" r="7" class="sv-warn"></circle>
+        <circle cx="150" cy="224" r="7" class="sv-good"></circle>
+        <circle cx="150" cy="202" r="7" class="sv-warn"></circle>
+        <circle cx="150" cy="158" r="7" class="sv-key"></circle>
+        <circle cx="150" cy="114" r="7" class="sv-acc"></circle>
+        <circle cx="210" cy="268" r="7" class="sv-key"></circle>
+        <circle cx="210" cy="202" r="7" class="sv-good"></circle>
+        <circle cx="210" cy="136" r="7" class="sv-warn"></circle>
+        <circle cx="210" cy="70" r="7" class="sv-acc"></circle>
+
+        <circle cx="490" cy="246" r="7" class="sv-key"></circle>
+        <circle cx="490" cy="202" r="7" class="sv-acc"></circle>
+        <circle cx="490" cy="158" r="7" class="sv-good"></circle>
+        <circle cx="490" cy="92" r="7" class="sv-warn"></circle>
+        <circle cx="550" cy="246" r="7" class="sv-good"></circle>
+        <circle cx="550" cy="202" r="7" class="sv-warn"></circle>
+        <circle cx="550" cy="158" r="7" class="sv-key"></circle>
+        <circle cx="550" cy="92" r="7" class="sv-acc"></circle>
+        <circle cx="610" cy="246" r="7" class="sv-key"></circle>
+        <circle cx="610" cy="202" r="7" class="sv-good"></circle>
+        <circle cx="610" cy="158" r="7" class="sv-warn"></circle>
+        <circle cx="610" cy="92" r="7" class="sv-acc"></circle>
+
+        <text x="90" y="322" class="sv-ts" text-anchor="middle">S1</text>
+        <text x="150" y="322" class="sv-ts" text-anchor="middle">S2</text>
+        <text x="210" y="322" class="sv-ts" text-anchor="middle">S3</text>
+        <text x="490" y="322" class="sv-ts" text-anchor="middle">S1</text>
+        <text x="550" y="322" class="sv-ts" text-anchor="middle">S2</text>
+        <text x="610" y="322" class="sv-ts" text-anchor="middle">S3</text>
+
+        <path d="M285,175 L420,175" class="sv-stroke-acc" stroke-width="2" marker-end="url(#ah)"></path>
+        <rect x="278" y="130" width="150" height="36" rx="4" class="sv-paper"></rect>
+        <text x="285" y="145" class="sv-ts">average the values</text>
+        <text x="285" y="160" class="sv-ts">that share a rank</text>
+      </svg>
+      <figcaption>Each colour is one gene. On the right all three samples sit on the same four levels, yet inside every sample the order of the colours is unchanged.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Keep the raw data on the left and build the normalized data on the right, so you can see what moved.</li>
+      <li>Look at the most highly expressed gene in each sample. These are different genes in different samples, and that is fine.</li>
+      <li>Calculate the mean of those highest values, then write that mean into the new plot. That mean is now the normalized value for the highest gene in every sample.</li>
+      <li>Repeat with the second highest gene in each sample, then the third, and so on, until you reach the least expressed gene.</li>
+      <li>Read off the result. Every sample now has the same set of values, and every gene keeps the position it had inside its own sample.</li>
+    </ol>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>Josh does not write algebra in the video, but the two lines below say exactly what he draws.</p>
+    <div class="formula"><span class="lbl">Reference value for rank k</span><div class="math">$$ \bar q_{(k)} \;=\; \frac{1}{n}\sum_{j=1}^{n} x_{(k),j} $$</div><p class="explain"><b>Symbols:</b> \(n\) is the number of samples; \(j\) counts the samples; \(x_{(k),j}\) is the \(k\)-th largest value inside sample \(j\); \(\bar q_{(k)}\) is the mean of those values across the samples. <b>What it tells you:</b> each rank position gets one shared number, obtained by averaging across samples at that position.</p></div>
+    <div class="formula"><span class="lbl">Normalized value of a gene</span><div class="math">$$ z_{i,j} \;=\; \bar q_{(r_{i,j})} $$</div><p class="explain"><b>Symbols:</b> \(i\) is the gene; \(j\) is the sample; \(r_{i,j}\) is the rank of gene \(i\) inside sample \(j\), counting from the highest; \(z_{i,j}\) is the normalized value. <b>What it tells you:</b> a gene's new value depends only on its rank in its own sample, so the ranks survive and the raw magnitudes do not.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh draws dots without numbers. Here are the same three samples and four genes with readable values.</p>
+      <table>
+        <tr><th>Gene</th><th>S1 raw</th><th>S2 raw</th><th>S3 raw</th></tr>
+        <tr><td>red</td><td>2</td><td>6</td><td>1</td></tr>
+        <tr><td>green</td><td>5</td><td>3</td><td>4</td></tr>
+        <tr><td>blue</td><td>4</td><td>8</td><td>10</td></tr>
+        <tr><td>orange</td><td>9</td><td>4</td><td>7</td></tr>
+        <tr><th>mean</th><td>5.00</td><td>5.25</td><td>5.50</td></tr>
+      </table>
+      <p>The three sample means differ, which is the technical artifact. Now average across samples at each rank:</p>
+      <p>Highest: \((9+8+10)/3 = 9\). Second: \((5+6+7)/3 = 6\). Third: \((4+4+4)/3 = 4\). Lowest: \((2+3+1)/3 = 2\).</p>
+      <p>Give the shared values 9, 6, 4, 2 back to each sample in its own rank order:</p>
+      <table>
+        <tr><th>Gene</th><th>S1 new</th><th>S2 new</th><th>S3 new</th></tr>
+        <tr><td>red</td><td>2</td><td>6</td><td>2</td></tr>
+        <tr><td>green</td><td>6</td><td>2</td><td>4</td></tr>
+        <tr><td>blue</td><td>4</td><td>9</td><td>9</td></tr>
+        <tr><td>orange</td><td>9</td><td>4</td><td>6</td></tr>
+        <tr><th>mean</th><td>5.25</td><td>5.25</td><td>5.25</td></tr>
+      </table>
+      <p>Every sample now has the same mean and the same quartiles. Red is still the lowest gene in sample 1, green is still the lowest in sample 2, and red is still the lowest in sample 3, exactly as Josh points out.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> The genes averaged together are usually different genes. At the top rank you may average the orange gene from one sample with the blue gene from another. You are averaging positions, not biology.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The method forces every sample to have the same distribution. That is helpful when the difference is a brighter light bulb. It is harmful when a real, global biological shift exists, because the method will erase it.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Only the ranks inside a sample survive. Two values that were far apart can end up close together, so the gaps change.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The name describes the result. Josh calls it quantile normalization because the normalized samples end up with identical quartiles.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What does quantile normalization actually do?</summary><div class="a">It makes several samples share one common distribution. You sort the values inside each sample, take the mean across samples at every rank position, and hand that mean back to whichever gene held that rank. Afterwards all samples have identical quantiles, but the ordering inside each sample is untouched.</div></details>
+    <details class="qa" open><summary>Why would you need it on microarray data?</summary><div class="a">A microarray reads gene activity as light intensity. If one experiment used a brighter light source, every measurement in that sample is inflated. That is a technical difference with no biological meaning, so we normalize it away before comparing samples.</div></details>
+    <details class="qa" open><summary>When is quantile normalization the wrong choice?</summary><div class="a">It is wrong when the samples really should have different distributions. If a treatment raises activity across the board, the method removes that real effect too. Then I would check the sample distributions first, and use a method anchored on control features instead.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Different experiments can differ for purely technical reasons, such as a brighter light bulb.</li>
+      <li>Different sample means in the raw plot are the clue that normalization is needed.</li>
+      <li>Quantile normalization works rank by rank, starting with the most highly expressed gene in each sample.</li>
+      <li>At each rank you take the mean across samples and use it as the new value for that rank.</li>
+      <li>Every sample ends up with exactly the same set of values, so the quartiles match.</li>
+      <li>The order of the genes inside each sample is preserved, so the lowest gene stays the lowest gene.</li>
+      <li>The idea is not limited to microarrays and can be applied to other data with the same problem.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Quantile normalization</span><span class="board-tag">average each rank, hand it back</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 296" role="img" aria-label="Three samples, each drawn as raw values on the left and new values on the right. Every gene moves to the mean of its rank, so all three samples end on the same levels 9, 6, 4 and 2, and no gene changes its rank.">
+            <g class="sv-stroke-good" stroke-width="2" stroke-dasharray="5 5" stroke-linecap="round">
+              <line x1="84" y1="68" x2="296" y2="68"/>
+              <line x1="84" y1="134" x2="296" y2="134"/>
+              <line x1="84" y1="178" x2="296" y2="178"/>
+              <line x1="84" y1="222" x2="296" y2="222"/>
+            </g>
+            <g class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round">
+              <line x1="44" y1="68" x2="84" y2="68"/>
+              <line x1="44" y1="156" x2="84" y2="134"/>
+              <line x1="44" y1="178" x2="84" y2="178"/>
+              <line x1="44" y1="222" x2="84" y2="222"/>
+              <line x1="144" y1="90" x2="184" y2="68"/>
+              <line x1="144" y1="134" x2="184" y2="134"/>
+              <line x1="144" y1="178" x2="184" y2="178"/>
+              <line x1="144" y1="200" x2="184" y2="222"/>
+              <line x1="244" y1="46" x2="284" y2="68"/>
+              <line x1="244" y1="112" x2="284" y2="134"/>
+              <line x1="244" y1="178" x2="284" y2="178"/>
+              <line x1="244" y1="244" x2="284" y2="222"/>
+            </g>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="44" cy="68" r="6" class="sv-warn"/>
+              <circle cx="44" cy="156" r="6" class="sv-good"/>
+              <circle cx="44" cy="178" r="6" class="sv-acc"/>
+              <circle cx="44" cy="222" r="6" class="sv-key"/>
+              <circle cx="84" cy="68" r="7" class="sv-warn"/>
+              <circle cx="84" cy="134" r="7" class="sv-good"/>
+              <circle cx="84" cy="178" r="7" class="sv-acc"/>
+              <circle cx="84" cy="222" r="7" class="sv-key"/>
+              <circle cx="144" cy="90" r="6" class="sv-acc"/>
+              <circle cx="144" cy="134" r="6" class="sv-key"/>
+              <circle cx="144" cy="178" r="6" class="sv-warn"/>
+              <circle cx="144" cy="200" r="6" class="sv-good"/>
+              <circle cx="184" cy="68" r="7" class="sv-acc"/>
+              <circle cx="184" cy="134" r="7" class="sv-key"/>
+              <circle cx="184" cy="178" r="7" class="sv-warn"/>
+              <circle cx="184" cy="222" r="7" class="sv-good"/>
+              <circle cx="244" cy="46" r="6" class="sv-acc"/>
+              <circle cx="244" cy="112" r="6" class="sv-warn"/>
+              <circle cx="244" cy="178" r="6" class="sv-good"/>
+              <circle cx="244" cy="244" r="6" class="sv-key"/>
+              <circle cx="284" cy="68" r="7" class="sv-acc"/>
+              <circle cx="284" cy="134" r="7" class="sv-warn"/>
+              <circle cx="284" cy="178" r="7" class="sv-good"/>
+              <circle cx="284" cy="222" r="7" class="sv-key"/>
+            </g>
+            <text x="30" y="24" class="sv-ts">each sample: raw → new</text>
+            <text x="300" y="46" class="sv-ts">rank means</text>
+            <text x="304" y="75" class="sv-tb">9</text>
+            <text x="304" y="141" class="sv-tb">6</text>
+            <text x="304" y="185" class="sv-tb">4</text>
+            <text x="304" y="229" class="sv-tb">2</text>
+            <text x="30" y="278" class="sv-tb">each gene keeps its rank</text>
+          </svg>
+          <p>Sort each sample, then average across samples at each rank: 9, 8 and 10 give 9. Every gene takes the mean for its rank, so all samples end with 9, 6, 4 and 2, each in its own order.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Microarray</dt><dd>Measures gene activity by reading the intensity of coloured light.</dd>
+            <dt>Technical artifact</dt><dd>A difference from the experiment, like a brighter bulb, not from biology.</dd>
+            <dt>Rank</dt><dd>A value's position inside its own sample, counting from the highest.</dd>
+            <dt>Reference value</dt><dd>The mean across samples of the values at one rank.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Keep the raw</b>build the new data beside it</li>
+            <li><b>Take the top</b>highest gene in each sample</li>
+            <li><b>Average it</b>mean becomes every sample's top</li>
+            <li><b>Next rank</b>repeat down to the lowest</li>
+            <li><b>Read off</b>same values, same gene order</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\bar q_{(k)}=\frac{1}{n}\sum_{j=1}^{n}x_{(k),j}$$
+          $$z_{i,j}=\bar q_{(r_{i,j})}$$
+          <ul class="keys">
+            <li>\(x_{(k),j}\) is the \(k\)-th largest value in sample \(j\); \(n\) is the number of samples.</li>
+            <li>\(r_{i,j}\) is gene \(i\)'s rank in sample \(j\), from the highest; \(z_{i,j}\) is its new value.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>gene</th><th>S1</th><th>S2</th><th>S3</th></tr>
+            <tr><td>red</td><td>2→2</td><td>6→6</td><td>1→2</td></tr>
+            <tr><td>green</td><td>5→6</td><td>3→2</td><td>4→4</td></tr>
+            <tr><td>blue</td><td>4→4</td><td>8→9</td><td>10→9</td></tr>
+            <tr><td>orange</td><td>9→9</td><td>4→4</td><td>7→6</td></tr>
+            <tr class="final"><td>mean</td><td>5.00→5.25</td><td>5.25→5.25</td><td>5.50→5.25</td></tr>
+          </table>
+          <p class="hand">Each cell is raw → new. Red stays the lowest gene in S1 and S3, green in S2.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Each rank averages the same gene.</span><span class="yes">You may average orange from one sample with blue from another: positions, not biology.</span></li>
+            <li><span class="no">It is always safe to apply.</span><span class="yes">Helpful for a brighter light bulb; harmful for a real global shift, which it erases.</span></li>
+            <li><span class="no">The gaps between values survive.</span><span class="yes">Only ranks survive. Values far apart can end up close together.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="52-quantile-quantile-plots-qq-plots.html"><small>Previous</small>Quantile-Quantile Plots (QQ plots)</a> <a href="54-in-statistics-probability-is-not-likelihood.html"><small>Next</small>In Statistics, Probability is not Likelihood.</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

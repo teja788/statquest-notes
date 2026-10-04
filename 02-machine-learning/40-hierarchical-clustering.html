@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hierarchical Clustering — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>40</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 40 · 11.3 min</div>
+    <h1>Hierarchical Clustering</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=7xHsRkOdVwo" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Hierarchical clustering reorders the rows and columns of a heat map so that similar things sit together. The dendrogram beside the heat map records the order in which they joined.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>A heat map shows samples in columns and genes in rows. Red means the gene is highly expressed and blue means it is lowly expressed. Hierarchical clustering repeatedly finds the two most similar rows and merges them into a cluster. It keeps going until everything sits in one big cluster. The dendrogram draws that merge history, and short branches mark the pairs that were most alike.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh starts with two versions of the same heat map. The left one has no clustering, so the colours look like noise. The right one is clustered, so blocks of red and blue appear. Nothing about the data changed. Only the order of the rows changed, and that alone makes the pattern visible.</p>
+    <p>The working example is small: three samples and four genes. We only cluster the rows, which are the genes. Genes 1 and 2 are different, because gene 1 is red in sample 1 while gene 2 is blue there. Genes 1 and 3 are similar, because both are red in sample 1 and both are blue in sample 3. Gene 1 also looks similar to gene 4, but gene 3 is the closest match of all.</p>
+    <p>So the method is simple. Find the closest pair, glue them together, and treat the glued pair as one row. Then repeat. Each merge is one branch point in the dendrogram, and the branch length tells you how similar the two things were.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 322" role="img" aria-label="Heat map of four genes across three samples, with a dendrogram on the left showing three numbered merges">
+        <text x="382" y="44" class="sv-ts" text-anchor="middle">sample 1</text>
+        <text x="522" y="44" class="sv-ts" text-anchor="middle">sample 2</text>
+        <text x="662" y="44" class="sv-ts" text-anchor="middle">sample 3</text>
+
+        <rect x="315" y="58" width="134" height="44" class="sv-key"></rect>
+        <rect x="455" y="58" width="134" height="44" class="sv-key-soft"></rect>
+        <rect x="595" y="58" width="134" height="44" class="sv-acc"></rect>
+
+        <rect x="315" y="108" width="134" height="44" class="sv-key"></rect>
+        <rect x="455" y="108" width="134" height="44" class="sv-paper2"></rect>
+        <rect x="595" y="108" width="134" height="44" class="sv-acc"></rect>
+
+        <rect x="315" y="158" width="134" height="44" class="sv-acc"></rect>
+        <rect x="455" y="158" width="134" height="44" class="sv-acc-soft"></rect>
+        <rect x="595" y="158" width="134" height="44" class="sv-key"></rect>
+
+        <rect x="315" y="208" width="134" height="44" class="sv-acc"></rect>
+        <rect x="455" y="208" width="134" height="44" class="sv-paper2"></rect>
+        <rect x="595" y="208" width="134" height="44" class="sv-key"></rect>
+
+        <text x="305" y="85" class="sv-t" text-anchor="end">gene 1</text>
+        <text x="305" y="135" class="sv-t" text-anchor="end">gene 3</text>
+        <text x="305" y="185" class="sv-t" text-anchor="end">gene 2</text>
+        <text x="305" y="235" class="sv-t" text-anchor="end">gene 4</text>
+
+        <line x1="200" y1="80" x2="245" y2="80" class="sv-stroke-ink" stroke-width="1.6"></line>
+        <line x1="200" y1="130" x2="245" y2="130" class="sv-stroke-ink" stroke-width="1.6"></line>
+        <line x1="200" y1="80" x2="200" y2="130" class="sv-stroke-ink" stroke-width="1.6"></line>
+        <line x1="95" y1="105" x2="200" y2="105" class="sv-stroke-ink" stroke-width="1.6"></line>
+
+        <line x1="175" y1="180" x2="245" y2="180" class="sv-stroke-ink" stroke-width="1.6"></line>
+        <line x1="175" y1="230" x2="245" y2="230" class="sv-stroke-ink" stroke-width="1.6"></line>
+        <line x1="175" y1="180" x2="175" y2="230" class="sv-stroke-ink" stroke-width="1.6"></line>
+        <line x1="95" y1="205" x2="175" y2="205" class="sv-stroke-ink" stroke-width="1.6"></line>
+
+        <line x1="95" y1="105" x2="95" y2="205" class="sv-stroke-ink" stroke-width="1.6"></line>
+        <line x1="40" y1="155" x2="95" y2="155" class="sv-stroke-ink" stroke-width="1.6"></line>
+
+        <circle cx="200" cy="105" r="11" class="sv-acc-soft"></circle>
+        <text x="200" y="110" class="sv-tm" text-anchor="middle">1</text>
+        <circle cx="175" cy="205" r="11" class="sv-acc-soft"></circle>
+        <text x="175" y="210" class="sv-tm" text-anchor="middle">2</text>
+        <circle cx="95" cy="155" r="11" class="sv-acc-soft"></circle>
+        <text x="95" y="160" class="sv-tm" text-anchor="middle">3</text>
+
+        <text x="40" y="292" class="sv-ts">Warm cells are high expression. Cool cells are low expression.</text>
+      </svg>
+      <figcaption>The numbered dots are the merges, in order. Merge 1 has the shortest branch, so genes 1 and 3 are the most similar pair.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Take gene 1 and compare it with every other gene. Gene 3 turns out to be its closest match.</li>
+      <li>Do the same for gene 2, then gene 3, then gene 4. Now every row knows its own best match.</li>
+      <li>Look across all those pairs and pick the single most similar pair. Genes 1 and 3 win, so they merge into cluster 1.</li>
+      <li>Go back to step 1, but treat cluster 1 as if it were one gene. This time gene 2 and gene 4 are the closest pair, so they merge into cluster 2.</li>
+      <li>Repeat once more. Only two clusters are left, so they merge into cluster 3 and the work is finished.</li>
+      <li>Draw the dendrogram. Cluster 1 was formed first and gets the shortest branch. Cluster 3 was formed last and gets the longest.</li>
+    </ol>
+    <p>Two choices sit inside this loop, and both are yours to make. The first is how you measure the distance between two rows. The second is how you measure the distance between a row and a cluster that already holds several rows. The figure below shows the three common answers to that second question.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 290" role="img" aria-label="Three panels showing centroid, single and complete linkage between a new point and two clusters">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" class="sv-key"></path>
+          </marker>
+        </defs>
+
+        <rect x="20" y="20" width="232" height="250" rx="6" class="sv-paper2"></rect>
+        <rect x="264" y="20" width="232" height="250" rx="6" class="sv-paper2"></rect>
+        <rect x="508" y="20" width="232" height="250" rx="6" class="sv-paper2"></rect>
+
+        <text x="136" y="44" class="sv-tb" text-anchor="middle">Centroid</text>
+        <text x="136" y="62" class="sv-ts" text-anchor="middle">use the average point</text>
+        <text x="380" y="44" class="sv-tb" text-anchor="middle">Single linkage</text>
+        <text x="380" y="62" class="sv-ts" text-anchor="middle">use the closest point</text>
+        <text x="624" y="44" class="sv-tb" text-anchor="middle">Complete linkage</text>
+        <text x="624" y="62" class="sv-ts" text-anchor="middle">use the furthest point</text>
+
+        <circle cx="65" cy="95" r="5" class="sv-acc"></circle>
+        <circle cx="86" cy="110" r="5" class="sv-acc"></circle>
+        <circle cx="72" cy="126" r="5" class="sv-acc"></circle>
+        <circle cx="94" cy="131" r="5" class="sv-acc"></circle>
+        <circle cx="178" cy="190" r="5" class="sv-good"></circle>
+        <circle cx="198" cy="200" r="5" class="sv-good"></circle>
+        <circle cx="183" cy="216" r="5" class="sv-good"></circle>
+        <circle cx="205" cy="219" r="5" class="sv-good"></circle>
+        <rect x="74.5" y="111.5" width="9" height="9" class="sv-key"></rect>
+        <rect x="186.5" y="201.5" width="9" height="9" class="sv-key"></rect>
+        <line x1="132" y1="160" x2="83" y2="120" class="sv-stroke-key" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ah)"></line>
+        <line x1="132" y1="160" x2="191" y2="202" class="sv-stroke-key" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ah)"></line>
+        <circle cx="132" cy="160" r="6" class="sv-warn"></circle>
+        <text x="65" y="82" class="sv-ts" text-anchor="middle">cluster A</text>
+        <text x="191" y="243" class="sv-ts" text-anchor="middle">cluster B</text>
+        <rect x="98" y="136" width="68" height="17" rx="3" class="sv-paper"></rect>
+        <text x="132" y="149" class="sv-ts" text-anchor="middle">new point</text>
+
+        <circle cx="309" cy="95" r="5" class="sv-acc"></circle>
+        <circle cx="330" cy="110" r="5" class="sv-acc"></circle>
+        <circle cx="316" cy="126" r="5" class="sv-acc"></circle>
+        <circle cx="338" cy="131" r="5" class="sv-acc"></circle>
+        <circle cx="422" cy="190" r="5" class="sv-good"></circle>
+        <circle cx="442" cy="200" r="5" class="sv-good"></circle>
+        <circle cx="427" cy="216" r="5" class="sv-good"></circle>
+        <circle cx="449" cy="219" r="5" class="sv-good"></circle>
+        <circle cx="338" cy="131" r="9" class="sv-stroke-key" stroke-width="2"></circle>
+        <circle cx="422" cy="190" r="9" class="sv-stroke-key" stroke-width="2"></circle>
+        <line x1="376" y1="160" x2="343" y2="136" class="sv-stroke-key" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ah)"></line>
+        <line x1="376" y1="160" x2="416" y2="187" class="sv-stroke-key" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ah)"></line>
+        <circle cx="376" cy="160" r="6" class="sv-warn"></circle>
+
+        <circle cx="553" cy="95" r="5" class="sv-acc"></circle>
+        <circle cx="574" cy="110" r="5" class="sv-acc"></circle>
+        <circle cx="560" cy="126" r="5" class="sv-acc"></circle>
+        <circle cx="582" cy="131" r="5" class="sv-acc"></circle>
+        <circle cx="666" cy="190" r="5" class="sv-good"></circle>
+        <circle cx="686" cy="200" r="5" class="sv-good"></circle>
+        <circle cx="671" cy="216" r="5" class="sv-good"></circle>
+        <circle cx="693" cy="219" r="5" class="sv-good"></circle>
+        <circle cx="553" cy="95" r="9" class="sv-stroke-key" stroke-width="2"></circle>
+        <circle cx="693" cy="219" r="9" class="sv-stroke-key" stroke-width="2"></circle>
+        <line x1="620" y1="160" x2="559" y2="101" class="sv-stroke-key" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ah)"></line>
+        <line x1="620" y1="160" x2="687" y2="214" class="sv-stroke-key" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ah)"></line>
+        <circle cx="620" cy="160" r="6" class="sv-warn"></circle>
+      </svg>
+      <figcaption>Same data in all three panels. Only the target of the dashed arrows changes, and that is enough to send the new point to a different cluster.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>The method never says what "most similar" means. You supply that. Euclidean distance is the most common choice, so start there.</p>
+    <div class="formula"><span class="lbl">Euclidean distance, two samples</span>
+      <div class="math">$$ d(a,b)=\sqrt{(a_1-b_1)^2+(a_2-b_2)^2} $$</div>
+      <p class="explain"><b>Symbols:</b> \(a\) and \(b\) are two genes, that is two rows of the heat map. \(a_1\) is the value of gene \(a\) in sample 1 and \(a_2\) is its value in sample 2. \(b_1\) and \(b_2\) are the same two readings for gene \(b\). <b>What it tells you:</b> it is the straight-line gap between the two genes. Small distance means the two genes behave alike across the samples.</p>
+    </div>
+    <div class="formula"><span class="lbl">Euclidean distance, any number of samples</span>
+      <div class="math">$$ d(a,b)=\sqrt{\sum_{i=1}^{n}(a_i-b_i)^2} $$</div>
+      <p class="explain"><b>Symbols:</b> \(n\) is how many samples, that is how many columns the heat map has. \(i\) counts the samples from 1 to \(n\). \(a_i\) and \(b_i\) are the two genes' values in sample \(i\). <b>What it tells you:</b> extra samples just add more squared differences under the root. Nothing else about the method changes.</p>
+    </div>
+    <div class="formula"><span class="lbl">Manhattan distance</span>
+      <div class="math">$$ d(a,b)=\sum_{i=1}^{n}\lvert a_i-b_i\rvert $$</div>
+      <p class="explain"><b>Symbols:</b> the symbols mean the same as above, and \(\lvert\;\rvert\) means absolute value, so a negative difference is counted as positive. <b>What it tells you:</b> instead of squaring the differences and taking a root, you simply add up their sizes. Picture the differences as line segments laid end to end, and the total length is the Manhattan distance.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh shrinks the heat map to two samples and two genes, and shows the numbers behind the colours. Gene 1 reads 1.6 in sample 1 and 0.5 in sample 2. Gene 2 reads -0.5 in sample 1 and -1.9 in sample 2.</p>
+      <div class="math">$$ d=\sqrt{\bigl(1.6-(-0.5)\bigr)^2+\bigl(0.5-(-1.9)\bigr)^2} $$</div>
+      <p>Do the two subtractions first. The gap in sample 1 is 2.1 and the gap in sample 2 is 2.4.</p>
+      <div class="math">$$ d=\sqrt{2.1^2+2.4^2}=\sqrt{10.17}=3.2 $$</div>
+      <p>Those two gaps are the sides of a right triangle. The sample 1 gap is the horizontal side and the sample 2 gap is the vertical side. The Pythagorean theorem, \(h=\sqrt{x^2+y^2}\), says the hypotenuse is the distance between the genes. So Euclidean distance is just Pythagoras with one term per sample.</p>
+      <p>Apply the Manhattan rule to the same two gaps and you add them instead: 2.1 plus 2.4 gives 4.5. The number differs, but the idea of "these two genes are far apart" is the same.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> The distance metric is chosen, not discovered. Josh is blunt about this: there is no biological or physical reason to prefer Euclidean over Manhattan. A heat map drawn with each one looks very similar but not identical. Pick the one that gives you more insight, and say which one you used.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Linkage is a second, separate choice. Once genes 1 and 3 are one cluster, you still have to decide how to measure its distance to gene 4. Centroid uses the cluster average, single linkage uses its closest point, and complete linkage uses its furthest point. In R, the <code>hclust</code> function uses complete linkage by default.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Read the dendrogram by branch height, not by neighbours. Two rows can end up side by side in the picture and still only join at a tall branch. Height records how similar the two groups were when they merged, and that is the part that carries meaning.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Clustering changes the presentation, not the data. Every cell keeps its value. Only the order of rows or columns moves. A striking block of colour is a sign that the ordering worked, not proof of a new biological finding.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What does hierarchical clustering do to a heat map?</summary><div class="a">It reorders the rows, or the columns, or both, so that similar ones sit next to each other. It works bottom up: find the two most similar items, merge them into a cluster, then repeat with that cluster treated as a single item. It stops when everything is in one cluster. The values in the heat map never change, only their order.</div></details>
+    <details class="qa" open><summary>How do you measure similarity between two rows?</summary><div class="a">You choose a distance metric. Euclidean distance is the usual default: square the difference in each sample, add them, take the square root. Manhattan distance instead adds the absolute differences. Both are reasonable, and the choice is a judgement call rather than a rule.</div></details>
+    <details class="qa" open><summary>What is linkage, and which one would you use?</summary><div class="a">Linkage is the rule for measuring distance to a cluster that already contains several members. Centroid compares to the cluster average, single linkage to its nearest member, and complete linkage to its furthest member. I would start with the software default, which is complete linkage in R's hclust, then check whether the picture holds up under another rule.</div></details>
+    <details class="qa" open><summary>How do you read a dendrogram?</summary><div class="a">The branch height shows when each merge happened and how similar the two groups were. Short branches mean the merge happened early between very similar items. The tallest branch is the final merge that joins everything. So I read from the short branches outward when I look for real structure.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Hierarchical clustering reorders heat map rows and columns so that similar ones sit together.</li>
+      <li>It repeatedly merges the two most similar items, then treats the new cluster as a single item.</li>
+      <li>The dendrogram records that merge history, and short branches mark the most similar pairs.</li>
+      <li>Similarity needs a distance metric, and Euclidean distance is Pythagoras with one squared term per sample.</li>
+      <li>Manhattan distance adds absolute differences instead, and it gives a similar but not identical picture.</li>
+      <li>Comparing to a cluster needs a linkage rule: centroid, single or complete.</li>
+      <li>Both choices are arbitrary, though most software ships with sensible defaults.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Hierarchical Clustering</span><span class="board-tag">merge the closest pair, then repeat</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 240" role="img" aria-label="Four genes as heat map rows in the clustered order 1, 3, 2, 4, with a dendrogram on the right: genes 1 and 3 merge first on the shortest branch, genes 2 and 4 merge second, and the two clusters merge last on the longest branch.">
+            <text x="20" y="32" class="sv-ts">red = high, blue = low</text>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <rect x="82" y="48" width="36" height="40" rx="3" class="sv-key"/>
+              <rect x="122" y="48" width="36" height="40" rx="3" class="sv-key-soft"/>
+              <rect x="162" y="48" width="36" height="40" rx="3" class="sv-acc"/>
+              <rect x="82" y="94" width="36" height="40" rx="3" class="sv-key"/>
+              <rect x="122" y="94" width="36" height="40" rx="3" class="sv-paper2"/>
+              <rect x="162" y="94" width="36" height="40" rx="3" class="sv-acc"/>
+              <rect x="82" y="140" width="36" height="40" rx="3" class="sv-acc"/>
+              <rect x="122" y="140" width="36" height="40" rx="3" class="sv-acc-soft"/>
+              <rect x="162" y="140" width="36" height="40" rx="3" class="sv-key"/>
+              <rect x="82" y="186" width="36" height="40" rx="3" class="sv-acc"/>
+              <rect x="122" y="186" width="36" height="40" rx="3" class="sv-paper2"/>
+              <rect x="162" y="186" width="36" height="40" rx="3" class="sv-key"/>
+            </g>
+            <text x="74" y="74" text-anchor="end" class="sv-t">gene 1</text>
+            <text x="74" y="120" text-anchor="end" class="sv-t">gene 3</text>
+            <text x="74" y="166" text-anchor="end" class="sv-t">gene 2</text>
+            <text x="74" y="212" text-anchor="end" class="sv-t">gene 4</text>
+            <path d="M208 68 H236 V114 H208 M208 160 H266 V206 H208 M236 91 H352 V183 H266 M352 137 H378" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="236" cy="91" r="6" class="sv-key"/>
+              <circle cx="266" cy="183" r="6" class="sv-key"/>
+              <circle cx="352" cy="137" r="6" class="sv-key"/>
+            </g>
+            <text x="250" y="56" class="sv-t">1st merge,</text>
+            <text x="250" y="80" class="sv-t">most alike</text>
+            <text x="336" y="142" text-anchor="end" class="sv-t">last merge</text>
+            <text x="280" y="214" class="sv-t">2nd merge</text>
+          </svg>
+          <p>Merge the two most similar rows, treat the pair as one row, and repeat until one cluster is left. The dendrogram records the merges; short branches mark the most alike pairs. Only the row order changes, never the data.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Heat map</dt><dd>Genes in rows, samples in columns; red high, blue low.</dd>
+            <dt>Dendrogram</dt><dd>The tree of merges; short branches mean very alike.</dd>
+            <dt>Distance metric</dt><dd>Your rule for row similarity: Euclidean or Manhattan.</dd>
+            <dt>Linkage</dt><dd>Your rule for distance to a cluster: centroid, single or complete.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Compare rows</b>each gene with every other gene</li>
+            <li><b>Merge closest</b>genes 1 and 3 → cluster 1</li>
+            <li><b>Treat as one</b>cluster 1 acts like a gene</li>
+            <li><b>Merge again</b>genes 2 and 4 → cluster 2</li>
+            <li><b>Last merge</b>two clusters → cluster 3</li>
+            <li><b>Draw dendrogram</b>first merge shortest, last longest</li>
+          </ol>
+          <p class="loop">↺ repeat compare and merge until one big cluster is left</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$d_E=\sqrt{\sum_{i=1}^{n}(a_i-b_i)^2}$$
+          $$d_M=\sum_{i=1}^{n}\lvert a_i-b_i\rvert$$
+          <ul class="keys">
+            <li>\(d_E\) is Euclidean, the usual default; \(d_M\) is Manhattan.</li>
+            <li>\(a_i\) and \(b_i\) are two genes' values in sample \(i\), of \(n\) samples.</li>
+            <li>Euclidean is Pythagoras with one squared term per sample.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th></th><th>sample 1</th><th>sample 2</th></tr>
+            <tr><td>gene 1</td><td>1.6</td><td>0.5</td></tr>
+            <tr><td>gene 2</td><td>−0.5</td><td>−1.9</td></tr>
+            <tr><td>gap</td><td>2.1</td><td>2.4</td></tr>
+            <tr><td>Manhattan</td><td colspan="2">2.1 + 2.4 = 4.5</td></tr>
+            <tr class="final"><td>Euclidean</td><td colspan="2">√10.17 = 3.2</td></tr>
+          </table>
+          <p class="hand">Euclidean is Pythagoras on the two gaps. Manhattan just adds them: a different number, the same verdict of far apart.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">There is one right distance metric.</span><span class="yes">It is a choice; Euclidean and Manhattan give similar, not identical, heat maps.</span></li>
+            <li><span class="no">The metric is the only choice.</span><span class="yes">Linkage is a second one: centroid, single or complete. R's hclust defaults to complete.</span></li>
+            <li><span class="no">Rows side by side are the most alike.</span><span class="yes">Read branch height: neighbours can still join only at a tall branch.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="39-t-sne.html"><small>Previous</small>t-SNE</a> <a href="41-k-means-clustering.html"><small>Next</small>K-means clustering</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

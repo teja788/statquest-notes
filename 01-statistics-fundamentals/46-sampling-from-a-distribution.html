@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sampling from a Distribution — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>46</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 46 · 3.8 min</div>
+    <h1>Sampling from a Distribution</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=XLCWeSVzHUU" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Taking a sample from a distribution means asking a computer for a random number that follows that distribution's shape.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>A histogram of heights shows where measurements are likely and where they are rare. A smooth curve can stand in for that histogram. When we sample, the computer picks from the tall parts most of the time, and from the short parts once in a while. We do this to study statistics: we generate many samples, run tests on them, and see what happens.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh starts with a histogram of height measurements. Each dot is one person that we measured. The tall part marks where measurements are most likely. Most people here were between 5 ft 7 in and 6 ft tall.</p>
+    <p>The low parts show where measurements are unlikely. Very few people were shorter than 4½ ft or taller than 6½ ft. We can lay a smooth curve over the bars and use that instead. Tall means likely, short means unlikely.</p>
+    <p>Sampling adds one step. We ask a computer for a random number, and it respects those probabilities. So one sample will probably land near the middle. Now and then it comes from an edge, because edges are rare but possible.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 330" role="img" aria-label="Histogram of heights with a smooth curve, showing that most random draws land near the tall middle and few land at the short edges">
+        <defs>
+          <marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink"></path></marker>
+        </defs>
+        <line x1="70" y1="250" x2="600" y2="250" class="sv-line" stroke-width="1.5"></line>
+        <line x1="74" y1="250" x2="74" y2="70" class="sv-line" stroke-width="1.5"></line>
+        <text x="46" y="160" class="sv-ts" text-anchor="middle" transform="rotate(-90 46 160)">How common</text>
+
+        <rect x="90" y="242" width="38" height="8" class="sv-acc-soft"></rect>
+        <rect x="130" y="232" width="38" height="18" class="sv-acc-soft"></rect>
+        <rect x="170" y="216" width="38" height="34" class="sv-acc-soft"></rect>
+        <rect x="210" y="192" width="38" height="58" class="sv-acc-soft"></rect>
+        <rect x="250" y="160" width="38" height="90" class="sv-acc-soft"></rect>
+        <rect x="290" y="128" width="38" height="122" class="sv-acc-soft"></rect>
+        <rect x="330" y="112" width="38" height="138" class="sv-acc-soft"></rect>
+        <rect x="370" y="120" width="38" height="130" class="sv-acc-soft"></rect>
+        <rect x="410" y="150" width="38" height="100" class="sv-acc-soft"></rect>
+        <rect x="450" y="186" width="38" height="64" class="sv-acc-soft"></rect>
+        <rect x="490" y="220" width="38" height="30" class="sv-acc-soft"></rect>
+        <rect x="530" y="238" width="38" height="12" class="sv-acc-soft"></rect>
+
+        <circle cx="109" cy="246" r="3.2" class="sv-key"></circle>
+        <circle cx="149" cy="240" r="3.2" class="sv-key"></circle>
+        <circle cx="189" cy="238" r="3.2" class="sv-key"></circle>
+        <circle cx="189" cy="224" r="3.2" class="sv-key"></circle>
+        <circle cx="229" cy="238" r="3.2" class="sv-key"></circle>
+        <circle cx="229" cy="206" r="3.2" class="sv-key"></circle>
+        <circle cx="269" cy="240" r="3.2" class="sv-key"></circle>
+        <circle cx="269" cy="212" r="3.2" class="sv-key"></circle>
+        <circle cx="269" cy="180" r="3.2" class="sv-key"></circle>
+        <circle cx="309" cy="242" r="3.2" class="sv-key"></circle>
+        <circle cx="309" cy="216" r="3.2" class="sv-key"></circle>
+        <circle cx="309" cy="188" r="3.2" class="sv-key"></circle>
+        <circle cx="309" cy="150" r="3.2" class="sv-key"></circle>
+        <circle cx="349" cy="242" r="3.2" class="sv-key"></circle>
+        <circle cx="349" cy="216" r="3.2" class="sv-key"></circle>
+        <circle cx="349" cy="188" r="3.2" class="sv-key"></circle>
+        <circle cx="349" cy="134" r="3.2" class="sv-key"></circle>
+        <circle cx="389" cy="240" r="3.2" class="sv-key"></circle>
+        <circle cx="389" cy="204" r="3.2" class="sv-key"></circle>
+        <circle cx="389" cy="152" r="3.2" class="sv-key"></circle>
+        <circle cx="429" cy="236" r="3.2" class="sv-key"></circle>
+        <circle cx="429" cy="200" r="3.2" class="sv-key"></circle>
+        <circle cx="429" cy="172" r="3.2" class="sv-key"></circle>
+        <circle cx="469" cy="238" r="3.2" class="sv-key"></circle>
+        <circle cx="469" cy="206" r="3.2" class="sv-key"></circle>
+        <circle cx="509" cy="236" r="3.2" class="sv-key"></circle>
+        <circle cx="549" cy="244" r="3.2" class="sv-key"></circle>
+
+        <polyline points="80,247 110,240 150,229 190,212 230,188 270,156 310,124 350,108 390,116 430,146 470,182 510,216 550,236 580,246" class="sv-stroke-acc" stroke-width="2.5"></polyline>
+        <line x1="474" y1="176" x2="612" y2="146" class="sv-line" stroke-width="1.2"></line>
+        <text x="616" y="144" class="sv-ts">Smooth curve</text>
+
+        <rect x="262" y="30" width="176" height="20" class="sv-paper"></rect>
+        <text x="350" y="45" class="sv-t" text-anchor="middle">Most picks land here</text>
+        <line x1="350" y1="56" x2="350" y2="100" class="sv-stroke-ink" stroke-width="1.8" marker-end="url(#ar1)"></line>
+
+        <rect x="452" y="62" width="196" height="20" class="sv-paper"></rect>
+        <text x="550" y="77" class="sv-t" text-anchor="middle">A few picks land here</text>
+        <line x1="550" y1="88" x2="550" y2="228" class="sv-stroke-ink" stroke-width="1.8" marker-end="url(#ar1)"></line>
+
+        <text x="149" y="270" class="sv-ts" text-anchor="middle">4½ ft</text>
+        <text x="309" y="270" class="sv-ts" text-anchor="middle">5 ft 7 in</text>
+        <text x="389" y="270" class="sv-ts" text-anchor="middle">6 ft</text>
+        <text x="509" y="270" class="sv-ts" text-anchor="middle">6½ ft</text>
+        <text x="612" y="270" class="sv-ts">Height</text>
+
+        <circle cx="92" cy="296" r="3.2" class="sv-key"></circle>
+        <text x="104" y="300" class="sv-ts">Each dot is one person we measured</text>
+      </svg>
+      <figcaption>Notice that the arrows are not equal: the tall middle wins most draws, and the short edges win only a few.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Start with a histogram of real measurements. Its height at each place shows how likely that measurement is.</li>
+      <li>Approximate the histogram with a smooth curve. The curve says the same thing.</li>
+      <li>Ask the computer for a random number that follows those probabilities. That number is one draw.</li>
+      <li>Group the draws into samples of a chosen size, for example \(n = 3\) per sample.</li>
+      <li>Feed the samples into a test, such as a t-test. Repeat many times and count how often the test gives the expected answer.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Two experiments: samples from one distribution should give a large p-value, samples from two different distributions should give a small p-value">
+        <defs>
+          <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink"></path></marker>
+        </defs>
+        <path d="M35,95 Q95,25 155,95 Z" class="sv-acc-soft" stroke="none"></path>
+        <path d="M35,95 Q95,25 155,95" class="sv-stroke-acc" stroke-width="2"></path>
+        <text x="95" y="114" class="sv-ts" text-anchor="middle">Same distribution twice</text>
+        <line x1="162" y1="70" x2="196" y2="70" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ar2)"></line>
+        <rect x="200" y="45" width="140" height="52" rx="4" class="sv-paper2"></rect>
+        <text x="212" y="66" class="sv-tm">Sample A: n = 3</text>
+        <text x="212" y="86" class="sv-tm">Sample B: n = 3</text>
+        <line x1="346" y1="70" x2="376" y2="70" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ar2)"></line>
+        <rect x="380" y="48" width="92" height="46" rx="4" class="sv-acc-soft"></rect>
+        <text x="426" y="77" class="sv-tb" text-anchor="middle">t-test</text>
+        <line x1="478" y1="70" x2="508" y2="70" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ar2)"></line>
+        <circle cx="520" cy="66" r="5" class="sv-good"></circle>
+        <text x="534" y="71" class="sv-t">Expect a large p-value</text>
+
+        <path d="M30,205 Q60,152 90,205 Z" class="sv-key-soft" stroke="none"></path>
+        <path d="M30,205 Q60,152 90,205" class="sv-stroke-key" stroke-width="2"></path>
+        <path d="M100,205 Q130,152 160,205 Z" class="sv-acc-soft" stroke="none"></path>
+        <path d="M100,205 Q130,152 160,205" class="sv-stroke-acc" stroke-width="2"></path>
+        <text x="95" y="224" class="sv-ts" text-anchor="middle">Two different distributions</text>
+        <line x1="166" y1="180" x2="196" y2="180" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ar2)"></line>
+        <rect x="200" y="155" width="140" height="52" rx="4" class="sv-paper2"></rect>
+        <text x="212" y="176" class="sv-tm">Sample A: n = 3</text>
+        <text x="212" y="196" class="sv-tm">Sample B: n = 3</text>
+        <line x1="346" y1="180" x2="376" y2="180" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ar2)"></line>
+        <rect x="380" y="158" width="92" height="46" rx="4" class="sv-acc-soft"></rect>
+        <text x="426" y="187" class="sv-tb" text-anchor="middle">t-test</text>
+        <line x1="478" y1="180" x2="508" y2="180" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ar2)"></line>
+        <circle cx="520" cy="176" r="5" class="sv-key"></circle>
+        <text x="534" y="181" class="sv-t">Expect a small p-value</text>
+
+        <rect x="90" y="248" width="580" height="26" rx="4" class="sv-paper2"></rect>
+        <text x="380" y="266" class="sv-t" text-anchor="middle">Repeat many times, then count how often the test gave the expected answer</text>
+      </svg>
+      <figcaption>Notice that we already know the truth on the left, so the count on the right measures the test itself.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>Josh shows no formula in this video. The two rules below say in symbols what the pictures say in words.</p>
+    <div class="formula"><span class="lbl">Height means probability</span><div class="math">$$ P(a \le X \le b) = \int_a^b f(x)\,dx, \qquad \int_{-\infty}^{\infty} f(x)\,dx = 1 $$</div><p class="explain"><b>Symbols:</b> \(X\) is the value the computer picks. \(f(x)\) is the height of the curve at \(x\). \(a\) and \(b\) are the ends of a range. <b>What it tells you:</b> the chance of landing in a range is the area under the curve there, and all the area is 1.</p></div>
+    <div class="formula"><span class="lbl">How the computer draws a value</span><div class="math">$$ U \sim \text{Uniform}(0,1), \qquad X = F^{-1}(U) $$</div><p class="explain"><b>Symbols:</b> \(U\) is a plain random number between 0 and 1. \(F\) is the running total of area up to a value. \(F^{-1}\) undoes \(F\). <b>What it tells you:</b> one simple random number is enough, because \(F^{-1}\) bends it into your distribution's shape.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh takes two samples of size \(n = 3\) from a single distribution. Here \(n\) is the number of measurements inside each sample. He then runs a t-test comparing sample A with sample B.</p>
+      <p>Both samples came from the same distribution, so the t-test should report a large p-value. Josh repeats the draw-and-test cycle many times. Counting the large p-values shows how often the test behaves as it should.</p>
+      <p>He then repeats this with two separate distributions. Now the t-test should report a small p-value. If small p-values appear only rarely, increase the sample size.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> A sample from the edge is not an error. Rare values are part of the distribution, so the computer must return them sometimes. Judge the sampler by many draws, never by one.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Keep two meanings of "sample" apart. One draw is a single number, while a sample of \(n = 3\) is a small group of draws that you test together. Josh uses \(n\) for the size of that group.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The point of this exercise is that you know the truth in advance. If you sample from one distribution, any small p-value is a false alarm.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What does it mean to sample from a distribution?</summary><div class="a">It means asking a computer for a random value that follows the probabilities the distribution describes. Values where the curve is tall come up often, and values where it is low come up rarely.</div></details>
+    <details class="qa" open><summary>Why would you simulate data when you already have real data?</summary><div class="a">Because with simulated data you know the true answer before you start. You can send many simulated samples through a test and count how often the test agrees with the truth. That tells you what the test can do, without any new experiments.</div></details>
+    <details class="qa" open><summary>How does this help you choose a sample size?</summary><div class="a">You sample from two distributions that really do differ, then run the t-test many times at a chosen size. If the test finds the difference only rarely, the sample size is too small. You raise the size and repeat.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>A histogram of heights shows where measurements are common and where they are rare.</li>
+      <li>A smooth curve approximates that histogram and carries the same information.</li>
+      <li>Sampling means the computer picks a random value that respects those probabilities.</li>
+      <li>Most samples come from the tall middle, and a few come from the short edges.</li>
+      <li>Two samples of size three from one distribution should give a large p-value.</li>
+      <li>Two samples from different distributions should give a small p-value.</li>
+      <li>Simulation lets you measure what a test can do without doing real work.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Sampling from a distribution</span><span class="board-tag">tall means likely, short means unlikely</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 250" role="img" aria-label="A smooth curve of heights with each random draw marked as a tick below it: most ticks crowd under the tall middle, between 5 ft 7 in and 6 ft, and only a few land near the short edges at 4½ ft and 6½ ft.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <path d="M24 150 L24 148 C100 146 140 44 205 44 C270 44 310 146 386 148 L386 150 Z" class="sv-paper"/>
+            <path d="M24 148 C100 146 140 44 205 44 C270 44 310 146 386 148" class="sv-stroke-acc" stroke-width="3" stroke-linecap="round"/>
+            <line x1="20" y1="150" x2="388" y2="150" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <path d="M92 158 L92 172 M150 158 L150 172 M163 158 L163 172 M178 158 L178 172 M186 158 L186 172 M191 158 L191 172 M196 158 L196 172 M201 158 L201 172 M206 158 L206 172 M211 158 L211 172 M216 158 L216 172 M222 158 L222 172 M228 158 L228 172 M236 158 L236 172 M248 158 L248 172 M262 158 L262 172 M318 158 L318 172" class="sv-stroke-key" stroke-width="3" stroke-linecap="round"/>
+            <path d="M168 178 L168 183 L246 183 L246 178" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="205" y="32" text-anchor="middle" class="sv-tb">tall = likely</text>
+            <text x="24" y="70" class="sv-t">short = rare</text>
+            <line x1="60" y1="78" x2="60" y2="126" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="84" y="170" text-anchor="end" class="sv-ts">4½ ft</text>
+            <text x="326" y="170" class="sv-ts">6½ ft</text>
+            <text x="168" y="202" text-anchor="middle" class="sv-ts">5 ft 7 in</text>
+            <text x="246" y="202" text-anchor="middle" class="sv-ts">6 ft</text>
+            <text x="200" y="236" text-anchor="middle" class="sv-t">each tick = one draw</text>
+          </svg>
+          <p>A smooth curve stands in for the histogram of heights. The computer draws from the tall middle most of the time, and from the short edges once in a while.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Histogram</dt><dd>Bars of real measurements; taller bars mean more likely values.</dd>
+            <dt>Smooth curve</dt><dd>Stands in for the histogram and says the same thing.</dd>
+            <dt>Draw</dt><dd>One random number that follows the curve's probabilities.</dd>
+            <dt>Sample of size \(n\)</dt><dd>A small group of draws you test together, here \(n = 3\).</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Histogram</b>real height measurements</li>
+            <li><b>Smooth curve</b>says the same thing</li>
+            <li><b>Draw</b>random, following those probabilities</li>
+            <li><b>Group draws</b>samples of n = 3</li>
+            <li><b>Run a test</b>such as a t-test</li>
+          </ol>
+          <p class="loop">↺ repeat steps 3 to 5 many times and count the expected answers</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$P(a\le X\le b)=\int_a^b f(x)\,dx$$
+          $$U\sim\text{Uniform}(0,1),\quad X=F^{-1}(U)$$
+          <ul class="keys">
+            <li>\(f(x)\) is the curve's height; area is chance, all of it 1.</li>
+            <li>\(U\) is a plain random number between 0 and 1.</li>
+            <li>\(F\) is the running total of area; \(F^{-1}\) bends \(U\) into shape.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>samples from</th><th>size</th><th>expect p</th></tr>
+            <tr><td>1 distribution</td><td>n = 3</td><td>large</td></tr>
+            <tr><td>2 distributions</td><td>n = 3</td><td>small</td></tr>
+            <tr><td>repeat, count</td><td>many</td><td>how often</td></tr>
+            <tr class="final"><td>small p rare?</td><td>→</td><td>increase n</td></tr>
+          </table>
+          <p class="hand">We know the truth before we start, so the count measures the test itself.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">A draw from the edge is an error.</span><span class="yes">Rare values belong to the distribution. Judge the sampler by many draws, never one.</span></li>
+            <li><span class="no">A draw and a sample are the same thing.</span><span class="yes">A draw is one number; a sample of \(n = 3\) is a group of draws.</span></li>
+            <li><span class="no">A small p-value here is a real finding.</span><span class="yes">From one distribution you know the truth, so any small p-value is a false alarm.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="45-design-matrices-for-linear-models.html"><small>Previous</small>Design Matrices For Linear Models</a> <a href="48-statquickie-thresholds-for-significance.html"><small>Next</small>StatQuickie: Thresholds for Significance</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bayes' Theorem — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>21</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 21 · 14 min</div>
+    <h1>Bayes' Theorem</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=9wCnvr7Xw4E" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Bayes' theorem lets you turn one conditional probability into the other one. Josh derives it with a little algebra from the same candy and soda survey used for conditional probability, then shows why it only becomes useful when you do not have all the data.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>In StatLand, 14 people said whether they love candy and soda, and the answers fill a small table. With that table, a conditional probability is just one cell divided by one total. Stat Squatch then bets that you cannot find those conditional probabilities without the shared number on top of both. Rearranging the two equations cancels that number and leaves Bayes' theorem. It pays off when you only have a few probabilities, some of them guesses.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>This video builds directly on the previous one. Josh asked 14 people in StatLand whether they love candy and whether they love soda. Two people loved both. Four loved candy only. Five loved soda only. Three loved neither. Dividing each count by 14 turns the table of counts into a table of probabilities.</p>
+
+    <div class="key"><span class="lbl">Notation</span><p>Write \(S\) for "loves soda" and \(\overline{C}\) for "does not love candy". So \(\overline{C}\cap S\) is the event that we meet someone who does not love candy but does love soda. That event is the single highlighted cell in the table below.</p></div>
+
+    <p>Now ask a conditional question. Given that a person loves soda, what is the chance they do not love candy but love soda? Five of the seven soda lovers fit, so the answer is \(5/7 = 0.71\). Josh then divides the top and the bottom by 14. The answer does not change, but now the top is the probability of the event and the bottom is the probability of what we already know.</p>
+
+    <p>That gives a useful way to read every conditional probability. It is the probability of an event, scaled by the knowledge we already have about that event. Change the knowledge and the scaling changes with it. If instead we already know the person does not love candy, we divide the same five people by the eight people who do not love candy, and we get \(0.63\).</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 310" role="img" aria-label="Contingency table for 14 people in StatLand, with the five people who do not love candy but love soda highlighted, and arrows to the column total of seven and the row total of eight">
+        <defs>
+          <marker id="bt-ar-acc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-acc"/></marker>
+          <marker id="bt-ar-good" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-good"/></marker>
+        </defs>
+        <text x="40" y="32" class="sv-tb">StatLand: 14 people, counted two ways</text>
+
+        <rect x="40" y="50" width="680" height="176" class="sv-paper"/>
+        <rect x="40" y="50" width="680" height="42" class="sv-paper2"/>
+        <rect x="40" y="92" width="200" height="134" class="sv-paper2"/>
+        <rect x="570" y="92" width="150" height="92" class="sv-paper2"/>
+        <rect x="240" y="184" width="480" height="42" class="sv-paper2"/>
+        <rect x="240" y="138" width="160" height="46" class="sv-key-soft"/>
+
+        <line x1="40" y1="50" x2="720" y2="50" class="sv-line" stroke-width="1"/>
+        <line x1="40" y1="92" x2="720" y2="92" class="sv-line" stroke-width="1"/>
+        <line x1="40" y1="138" x2="720" y2="138" class="sv-line" stroke-width="1"/>
+        <line x1="40" y1="184" x2="720" y2="184" class="sv-line" stroke-width="1"/>
+        <line x1="40" y1="226" x2="720" y2="226" class="sv-line" stroke-width="1"/>
+        <line x1="40" y1="50" x2="40" y2="226" class="sv-line" stroke-width="1"/>
+        <line x1="240" y1="50" x2="240" y2="226" class="sv-line" stroke-width="1"/>
+        <line x1="400" y1="50" x2="400" y2="226" class="sv-line" stroke-width="1"/>
+        <line x1="570" y1="50" x2="570" y2="226" class="sv-line" stroke-width="1"/>
+        <line x1="720" y1="50" x2="720" y2="226" class="sv-line" stroke-width="1"/>
+
+        <text x="320" y="77" class="sv-ts" text-anchor="middle">Loves soda</text>
+        <text x="485" y="77" class="sv-ts" text-anchor="middle">Does not love soda</text>
+        <text x="645" y="77" class="sv-ts" text-anchor="middle">Total</text>
+        <text x="52" y="120" class="sv-ts">Loves candy</text>
+        <text x="52" y="166" class="sv-ts">Does not love candy</text>
+        <text x="52" y="212" class="sv-ts">Total</text>
+
+        <text x="320" y="120" class="sv-tm" text-anchor="middle">2</text>
+        <text x="485" y="120" class="sv-tm" text-anchor="middle">4</text>
+        <text x="645" y="120" class="sv-tm" text-anchor="middle">6</text>
+        <text x="320" y="166" class="sv-tb" text-anchor="middle">5</text>
+        <text x="485" y="166" class="sv-tm" text-anchor="middle">3</text>
+        <text x="645" y="166" class="sv-tb" text-anchor="middle">8</text>
+        <text x="320" y="212" class="sv-tb" text-anchor="middle">7</text>
+        <text x="485" y="212" class="sv-tm" text-anchor="middle">7</text>
+        <text x="645" y="212" class="sv-tm" text-anchor="middle">14</text>
+
+        <line x1="290" y1="176" x2="290" y2="196" class="sv-stroke-acc" stroke-width="2" marker-end="url(#bt-ar-acc)"/>
+        <line x1="412" y1="179" x2="558" y2="179" class="sv-stroke-good" stroke-width="2" marker-end="url(#bt-ar-good)"/>
+
+        <line x1="40" y1="252" x2="56" y2="252" class="sv-stroke-acc" stroke-width="3"/>
+        <text x="66" y="257" class="sv-tm">given loves soda: 5 ÷ 7 = 0.71</text>
+        <line x1="40" y1="278" x2="56" y2="278" class="sv-stroke-good" stroke-width="3"/>
+        <text x="66" y="283" class="sv-tm">given does not love candy: 5 ÷ 8 = 0.63</text>
+      </svg>
+      <figcaption>Notice that both conditional probabilities start from the same highlighted cell of 5 people, and differ only in which total they are divided by.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Write the two conditional probabilities side by side. Both have the probability of the highlighted cell on top. One divides by the probability of loving soda, the other by the probability of not loving candy.</li>
+      <li>Stat Squatch bets a dollar that we cannot find either conditional probability without knowing that shared number on top. So the goal is to remove it.</li>
+      <li>Take the first equation and multiply both sides by the probability of loving soda. That probability cancels on the right, leaving the shared top number alone on one side.</li>
+      <li>Do the same to the second equation, multiplying both sides by the probability of not loving candy. Again the shared top number ends up alone on one side.</li>
+      <li>Both results now equal the same thing, so they equal each other. Setting them equal removes the number Stat Squatch bet we needed, and the bet is won.</li>
+      <li>Divide that single equation by the probability of loving soda to solve for the first conditional probability. Divide it by the probability of not loving candy instead to solve for the second one.</li>
+      <li>Finally, let \(A\) stand for "does not love candy" and \(B\) for "loves soda". Rewriting the equation with those letters gives the standard form of Bayes' theorem.</li>
+    </ol>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 330" role="img" aria-label="Derivation flow: two equations for the same joint probability are set equal, then divided to give Bayes theorem">
+        <defs>
+          <marker id="bt-ar-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink"/></marker>
+          <marker id="bt-ar-key" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-key"/></marker>
+        </defs>
+        <text x="40" y="28" class="sv-ts">A = does not love candy    B = loves soda</text>
+
+        <rect x="40" y="46" width="320" height="60" rx="6" class="sv-paper2" stroke="none"/>
+        <rect x="40" y="46" width="320" height="60" rx="6" class="sv-line" stroke-width="1"/>
+        <text x="200" y="72" class="sv-tm" text-anchor="middle">P(A and B | B) × P(B)</text>
+        <text x="200" y="93" class="sv-tm" text-anchor="middle">= P(A and B)</text>
+
+        <rect x="400" y="46" width="320" height="60" rx="6" class="sv-paper2" stroke="none"/>
+        <rect x="400" y="46" width="320" height="60" rx="6" class="sv-line" stroke-width="1"/>
+        <text x="560" y="72" class="sv-tm" text-anchor="middle">P(A and B | A) × P(A)</text>
+        <text x="560" y="93" class="sv-tm" text-anchor="middle">= P(A and B)</text>
+
+        <line x1="200" y1="110" x2="285" y2="146" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#bt-ar-ink)"/>
+        <line x1="560" y1="110" x2="475" y2="146" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#bt-ar-ink)"/>
+
+        <rect x="150" y="152" width="460" height="46" rx="6" class="sv-acc-soft" stroke="none"/>
+        <rect x="150" y="152" width="460" height="46" rx="6" class="sv-stroke-acc" stroke-width="1.5"/>
+        <text x="380" y="181" class="sv-tm" text-anchor="middle">P(A and B | B) × P(B) = P(A and B | A) × P(A)</text>
+
+        <line x1="380" y1="202" x2="380" y2="230" class="sv-stroke-key" stroke-width="2" marker-end="url(#bt-ar-key)"/>
+        <text x="396" y="222" class="sv-ts">divide both sides by P(B)</text>
+
+        <rect x="180" y="236" width="400" height="70" rx="6" class="sv-key-soft" stroke="none"/>
+        <rect x="180" y="236" width="400" height="70" rx="6" class="sv-stroke-key" stroke-width="1.5"/>
+        <text x="380" y="259" class="sv-tm" text-anchor="middle">P(A and B | B) = P(A and B | A) × P(A) / P(B)</text>
+        <text x="380" y="278" class="sv-ts" text-anchor="middle">written the short way:</text>
+        <text x="380" y="298" class="sv-tm" text-anchor="middle">P(A | B) = P(B | A) × P(A) / P(B)</text>
+      </svg>
+      <figcaption>Notice that the shared quantity P(A and B) never appears in the final line, which is exactly why the bet was won.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Conditional probability as a ratio</span>
+      <div class="math">$$P(\overline{C}\cap S \mid S)=\frac{P(\overline{C}\cap S)}{P(S)}=\frac{5/14}{7/14}=\frac{5}{7}=0.71$$</div>
+      <p class="explain"><b>Symbols:</b> \(S\) is the event "loves soda". \(\overline{C}\) is the event "does not love candy". \(\cap\) means both events happen together. The vertical bar means "given that we already know". <b>What it tells you:</b> a conditional probability is the probability of the event on top, scaled down by the probability of the knowledge we already have.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">The same joint probability, written two ways</span>
+      <div class="math">$$P(\overline{C}\cap S)=P(\overline{C}\cap S \mid S)\,P(S)=P(\overline{C}\cap S \mid \overline{C})\,P(\overline{C})$$</div>
+      <p class="explain"><b>Symbols:</b> \(P(\overline{C}\cap S)\) is the probability of the highlighted cell, meeting someone who does not love candy but loves soda. \(P(S)\) is the probability that a person loves soda. \(P(\overline{C})\) is the probability that a person does not love candy. <b>What it tells you:</b> the same cell can be rebuilt from either conditional probability, so the two expressions on the right must be equal to each other.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Bayes' theorem</span>
+      <div class="math">$$P(A \mid B)=\frac{P(B \mid A)\,P(A)}{P(B)}$$</div>
+      <p class="explain"><b>Symbols:</b> \(A\) is one thing we can know about a person, here "does not love candy". \(B\) is the other thing, here "loves soda". \(P(A \mid B)\) is the chance of \(A\) once we know \(B\), and \(P(B \mid A)\) is the chance of \(B\) once we know \(A\). \(P(A)\) and \(P(B)\) are the plain probabilities of each on its own. <b>What it tells you:</b> if you have one direction of a conditional probability, plus the two plain probabilities, you can get the other direction without ever seeing the joint probability.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Now suppose we never saw the table. Stat Squatch tells us only three numbers. The probability that someone does not love candy, given that they love soda, is \(0.71\). The probability that someone loves soda is about \(0.6\), and he admits this one is a guess. The probability that someone does not love candy is \(0.57\).</p>
+      <p>Put those three numbers into Bayes' theorem to get the other direction:</p>
+      <div class="math">$$P(S \mid \overline{C})=\frac{0.71 \times 0.6}{0.57}\approx 0.75$$</div>
+      <p>So the probability that someone loves soda, given that they do not love candy, is about \(0.75\). With the full table it came out as \(0.63\). The gap comes from the guess. The table says 7 of the 14 people love soda, so \(P(S)\) is really \(0.5\), not \(0.6\).</p>
+      <p>Josh's point is that guessing is often the only choice. You could never ask every person in India whether they love soda. Bayesian statistics is the study of what such a guess means and what it implies.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Bayes' theorem is no help when you already have the whole table. Then you just divide the cell by the total and you are done. The theorem earns its place only when part of the picture is missing.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>The short notation hides what is going on. People write \(P(A \mid B)\) and \(P(B \mid A)\), which look like two different events. Both in fact point at the same cell of the table. Only the given knowledge changes, so do not swap the two directions: here \(P(\overline{C} \mid S) = 0.71\) but \(P(S \mid \overline{C}) = 0.63\). Josh prefers the longer, slightly repetitive form for this reason.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Your answer is only as trustworthy as the numbers you feed in. Guessing \(0.6\) instead of the true \(0.5\) for the probability of loving soda moved the result from \(0.63\) to \(0.75\). Always ask which of your inputs is measured and which is estimated.</p>
+    </div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>What is Bayes' theorem, and where does it come from?</summary>
+      <div class="a">It says that one conditional probability can be written in terms of the reverse one: \(P(A \mid B) = P(B \mid A)P(A)/P(B)\). It comes straight out of the definition of conditional probability. Both \(P(A \mid B)P(B)\) and \(P(B \mid A)P(A)\) equal the same joint probability, so you set them equal and divide. There is no deep magic in the derivation, just algebra.</div>
+    </details>
+
+    <details class="qa" open><summary>If it is only algebra, why does it matter?</summary>
+      <div class="a">Because in practice you almost never have the full joint distribution. You usually have one direction of a conditional probability and a couple of marginal probabilities, often from different sources. Bayes' theorem is what lets you get the direction you actually want out of the direction you happen to have. That is also why it is the foundation of Bayesian statistics.</div>
+    </details>
+
+    <details class="qa" open><summary>What is the difference between \(P(A \mid B)\) and \(P(B \mid A)\)?</summary>
+      <div class="a">They describe the same joint event, but they scale it by different knowledge, so they are usually different numbers. In the candy and soda example the same group of five people gives 0.71 when we divide by the seven soda lovers, and 0.63 when we divide by the eight people who do not love candy. Confusing the two is one of the most common probability errors I see.</div>
+    </details>
+
+    <details class="qa" open><summary>What happens if one of the inputs to Bayes' theorem is a guess?</summary>
+      <div class="a">The output inherits that uncertainty directly. In the example, guessing the probability of loving soda as 0.6 rather than the true 0.5 changed the answer from 0.63 to 0.75. That is not a flaw, because for large populations a guess is often the only option. It just means you should be explicit about which inputs are estimated and how sensitive the answer is to them.</div>
+    </details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap">
+      <ul>
+        <li>A conditional probability is the probability of an event, scaled by the knowledge you already have about it.</li>
+        <li>In StatLand, five of the fourteen people do not love candy but love soda, and that cell sits on top of both conditional probabilities.</li>
+        <li>Dividing that cell by the seven soda lovers gives 0.71; dividing it by the eight people who do not love candy gives 0.63.</li>
+        <li>Multiplying each conditional probability by its denominator rebuilds the same joint probability, so the two products are equal.</li>
+        <li>Setting them equal and dividing removes the joint probability and leaves Bayes' theorem, \(P(A \mid B) = P(B \mid A)P(A)/P(B)\).</li>
+        <li>With the whole table in front of you the theorem adds nothing, so it earns its place only when data is missing and some probabilities are guesses.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Bayes' theorem</span><span class="board-tag">turn one conditional into the other</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 230" role="img" aria-label="Two overlapping circles: the 7 people who love soda and the 8 who do not love candy share the same 5 people. Five over 7 gives 0.71, five over 8 gives 0.63, and Bayes' theorem links the two.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <circle cx="161" cy="110" r="65" class="sv-paper"/>
+            <circle cx="239" cy="110" r="65" class="sv-paper"/>
+            <path d="M200 58 A65 65 0 0 1 200 162 A65 65 0 0 1 200 58 Z" class="sv-key-soft"/>
+            <circle cx="161" cy="110" r="65" class="sv-stroke-acc" stroke-width="3"/>
+            <circle cx="239" cy="110" r="65" class="sv-stroke-good" stroke-width="3"/>
+            <text x="20" y="30" class="sv-tb">loves soda: 7</text>
+            <text x="380" y="30" text-anchor="end" class="sv-tb">no candy: 8</text>
+            <text x="132" y="117" text-anchor="middle" class="sv-tb">2</text>
+            <text x="200" y="117" text-anchor="middle" class="sv-tb">5</text>
+            <text x="268" y="117" text-anchor="middle" class="sv-tb">3</text>
+            <line x1="108" y1="153" x2="108" y2="194" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="292" y1="153" x2="292" y2="194" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="108" y="216" text-anchor="middle" class="sv-tb">5 ÷ 7 = 0.71</text>
+            <text x="292" y="216" text-anchor="middle" class="sv-tb">5 ÷ 8 = 0.63</text>
+            <text x="200" y="196" text-anchor="middle" class="sv-tb">Bayes</text>
+            <line x1="171" y1="210" x2="229" y2="210" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" marker-start="url(#board-arr)" marker-end="url(#board-arr)"/>
+          </svg>
+          <p>The same 5 people sit on top of both conditional probabilities. Divided by the 7 soda lovers they give 0.71; divided by the 8 who do not love candy, 0.63. Bayes' theorem turns one direction into the other without that shared number.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Conditional probability</dt><dd>An event's probability, scaled by what we already know.</dd>
+            <dt>Joint probability</dt><dd>Both events at once: the cell of 5 people, 5/14.</dd>
+            <dt>\(S\) and \(\overline{C}\)</dt><dd>Loves soda; does not love candy.</dd>
+            <dt>Bayes' theorem</dt><dd>Gets one direction of a conditional probability from the other.</dd>
+            <dt>Bayesian statistics</dt><dd>The study of what a guessed probability means and implies.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Two ratios</b>same cell on top of both</li>
+            <li><b>The bet</b>remove that shared top number</li>
+            <li><b>Multiply out</b>each times its own bottom</li>
+            <li><b>Set equal</b>the shared number drops out</li>
+            <li><b>Divide</b>by \(P(S)\) or \(P(\overline{C})\)</li>
+            <li><b>Rename</b>\(A\): no candy, \(B\): loves soda</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$P(A\mid B)\,P(B)=P(B\mid A)\,P(A)$$
+          $$P(A\mid B)=\frac{P(B\mid A)\,P(A)}{P(B)}$$
+          <ul class="keys">
+            <li>\(A\) is "does not love candy", \(B\) is "loves soda"; \(\mid\) reads "given that".</li>
+            <li>Each side of the first line is the same joint probability; divide by \(P(B)\) to get Bayes.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>piece</th><th>value</th><th>source</th></tr>
+            <tr><td>\(P(\overline{C}\mid S)\)</td><td>0.71</td><td>told</td></tr>
+            <tr><td>\(P(S)\)</td><td>0.6</td><td>a guess</td></tr>
+            <tr><td>\(P(\overline{C})\)</td><td>0.57</td><td>told</td></tr>
+            <tr class="final"><td>\(P(S\mid\overline{C})\)</td><td>≈ 0.75</td><td>0.71 × 0.6 ÷ 0.57</td></tr>
+          </table>
+          <p class="hand">The full table says 0.63. The gap comes from the guess: P(S) is really 0.5, not 0.6.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Bayes' theorem helps even with the whole table.</span><span class="yes">With the table, just divide the cell by the total. Bayes earns its place when data is missing.</span></li>
+            <li><span class="no">\(P(A\mid B)\) and \(P(B\mid A)\) are interchangeable.</span><span class="yes">Same cell, different knowledge: \(P(\overline{C}\mid S)=0.71\) but \(P(S\mid\overline{C})=0.63\).</span></li>
+            <li><span class="no">The answer is right whatever you feed in.</span><span class="yes">Guessing 0.6 instead of the true 0.5 for \(P(S)\) moved 0.63 to 0.75.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="20-conditional-probabilities.html"><small>Previous</small>Conditional Probabilities</a> <a href="22-expected-values-main-ideas.html"><small>Next</small>Expected Values, Main Ideas</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

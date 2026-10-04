@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Linear Regression — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>40</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 40 · 27.4 min</div>
+    <h1>Linear Regression</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=7ArmBVF2dCs" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: Machine Learning (video 10)</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Linear regression fits a line to your data, then answers two questions about it. How much of the variation does the line explain, and could that result be luck?</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Linear regression has three main steps. First, use least squares to fit a line to the data. Second, calculate R², which is the share of the variation the line explains. Third, calculate a p-value for R², using a quantity called F. You want a large R² and a small p-value. One without the other is not an interesting result.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh uses one data set through the whole video. He takes a group of mice, and he measures the weight and the size of each one. The goal is to use mouse weight to predict mouse size. There are nine mice, so the sample size is nine.</p>
+    <p>The first step is least squares. Draw a line through the data. Measure the vertical distance from the line to each data point. That distance is called a <strong>residual</strong>. Square each residual, then add the squares together. Now rotate the line a little and do it again. Keep rotating and keep summing. If you plot the sum of squared residuals against the rotation, you get a curve. The rotation at the bottom of that curve is the fitted line. That is why the method is called least squares.</p>
+    <p>Least squares gives you two numbers for the line: a y-axis intercept and a slope. The slope is the interesting one. If the slope is not zero, then knowing a mouse's weight helps you guess its size. R² is how you measure how much it helps.</p>
+    <p>R² compares two pictures of the same data. In the first picture you ignore weight completely and use only the average size. In the second picture you use the fitted line. Both times you measure residuals, square them, and add them up.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 344" role="img" aria-label="Two scatter plots of the same mouse data. The left plot shows large residuals to the horizontal mean line. The right plot shows small residuals to the least squares line.">
+        <!-- panel A axes -->
+        <line x1="50" y1="55" x2="50" y2="255" class="sv-line" stroke-width="1.5"/>
+        <line x1="50" y1="255" x2="350" y2="255" class="sv-line" stroke-width="1.5"/>
+        <!-- panel A residuals to the mean -->
+        <line x1="70" y1="222" x2="70" y2="170" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <line x1="100" y1="224" x2="100" y2="170" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <line x1="130" y1="193" x2="130" y2="170" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <line x1="160" y1="195" x2="160" y2="170" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <line x1="190" y1="162" x2="190" y2="170" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <line x1="220" y1="163" x2="220" y2="170" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <line x1="250" y1="131" x2="250" y2="170" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <line x1="280" y1="134" x2="280" y2="170" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <line x1="310" y1="102" x2="310" y2="170" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <line x1="55" y1="170" x2="345" y2="170" class="sv-stroke-ink" stroke-width="2.5"/>
+        <circle cx="70" cy="222" r="4.5" class="sv-acc"/>
+        <circle cx="100" cy="224" r="4.5" class="sv-acc"/>
+        <circle cx="130" cy="193" r="4.5" class="sv-acc"/>
+        <circle cx="160" cy="195" r="4.5" class="sv-acc"/>
+        <circle cx="190" cy="162" r="4.5" class="sv-acc"/>
+        <circle cx="220" cy="163" r="4.5" class="sv-acc"/>
+        <circle cx="250" cy="131" r="4.5" class="sv-acc"/>
+        <circle cx="280" cy="134" r="4.5" class="sv-acc"/>
+        <circle cx="310" cy="102" r="4.5" class="sv-acc"/>
+        <text x="200" y="42" text-anchor="middle" class="sv-tb">Around the mean</text>
+        <text x="340" y="163" text-anchor="end" class="sv-ts">average size</text>
+        <text x="200" y="272" text-anchor="middle" class="sv-ts">mouse weight</text>
+        <text x="200" y="294" text-anchor="middle" class="sv-tm">SS(mean) = 100</text>
+
+        <!-- panel B axes -->
+        <line x1="420" y1="55" x2="420" y2="255" class="sv-line" stroke-width="1.5"/>
+        <line x1="420" y1="255" x2="720" y2="255" class="sv-line" stroke-width="1.5"/>
+        <!-- panel B residuals to the fitted line -->
+        <line x1="440" y1="222" x2="440" y2="230" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <line x1="470" y1="224" x2="470" y2="215" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <line x1="500" y1="193" x2="500" y2="200" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <line x1="530" y1="195" x2="530" y2="185" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <line x1="560" y1="162" x2="560" y2="170" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <line x1="590" y1="163" x2="590" y2="155" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <line x1="620" y1="131" x2="620" y2="140" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <line x1="650" y1="134" x2="650" y2="125" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <line x1="680" y1="102" x2="680" y2="110" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <line x1="425" y1="237" x2="715" y2="92" class="sv-stroke-acc" stroke-width="2.5"/>
+        <circle cx="440" cy="222" r="4.5" class="sv-acc"/>
+        <circle cx="470" cy="224" r="4.5" class="sv-acc"/>
+        <circle cx="500" cy="193" r="4.5" class="sv-acc"/>
+        <circle cx="530" cy="195" r="4.5" class="sv-acc"/>
+        <circle cx="560" cy="162" r="4.5" class="sv-acc"/>
+        <circle cx="590" cy="163" r="4.5" class="sv-acc"/>
+        <circle cx="620" cy="131" r="4.5" class="sv-acc"/>
+        <circle cx="650" cy="134" r="4.5" class="sv-acc"/>
+        <circle cx="680" cy="102" r="4.5" class="sv-acc"/>
+        <text x="570" y="42" text-anchor="middle" class="sv-tb">Around the fitted line</text>
+        <text x="710" y="82" text-anchor="end" class="sv-ts">least squares fit</text>
+        <text x="570" y="272" text-anchor="middle" class="sv-ts">mouse weight</text>
+        <text x="570" y="294" text-anchor="middle" class="sv-tm">SS(fit) = 40</text>
+
+        <text x="380" y="322" text-anchor="middle" class="sv-tm">R² = (100 &minus; 40) / 100 = 0.6</text>
+      </svg>
+      <figcaption>Notice that the dashed residuals shrink when the line uses weight. R² is that shrinkage, written as a fraction.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Fit a line by least squares. Rotate the line until the sum of the squared residuals is as small as it can be.</li>
+      <li>Collapse the data onto the size axis and draw a horizontal line at the average size. Sum the squared distances from that line to the data. Josh calls this <strong>SS(mean)</strong>, the sum of squares around the mean.</li>
+      <li>Divide SS(mean) by n, the sample size. That gives the variation around the mean. A variance is just an average sum of squares per mouse.</li>
+      <li>Go back to the fitted line and sum the squared residuals there. Josh calls this <strong>SS(fit)</strong>. Divide it by n to get the variation around the fit.</li>
+      <li>Put the two variations into the R² formula. Because both are divided by the same n, the raw sums of squares give the identical answer.</li>
+      <li>Calculate F. It is the variation explained by the extra parameters, divided by the variation the fit still leaves behind.</li>
+      <li>Turn F into a p-value. The p-value is the fraction of random data sets that would give an F this large or larger.</li>
+    </ol>
+    <p>Step seven deserves a picture. Imagine generating a random data set, fitting a line to it, and calculating F. Plot that F on a histogram. Do it again, hundreds or millions of times. Then calculate F for your real data and see where it lands. In practice nobody simulates. A smooth F distribution replaces the histogram, and its shape is set by the degrees of freedom.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Left, F written as explained variation over unexplained variation. Right, an F distribution with the observed value of six marked and the tail beyond it shaded.">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" class="sv-ink"/>
+          </marker>
+        </defs>
+        <text x="185" y="40" text-anchor="middle" class="sv-tb">What F measures</text>
+        <rect x="30" y="60" width="310" height="60" rx="5" class="sv-acc-soft"/>
+        <rect x="30" y="60" width="310" height="60" rx="5" class="sv-line" stroke-width="1"/>
+        <text x="185" y="84" text-anchor="middle" class="sv-t">Variation explained by weight</text>
+        <text x="185" y="106" text-anchor="middle" class="sv-tm">( SS(mean) &minus; SS(fit) ) / ( p_fit &minus; p_mean )</text>
+        <line x1="30" y1="136" x2="340" y2="136" class="sv-stroke-ink" stroke-width="2.5"/>
+        <rect x="30" y="152" width="310" height="60" rx="5" class="sv-key-soft"/>
+        <rect x="30" y="152" width="310" height="60" rx="5" class="sv-line" stroke-width="1"/>
+        <text x="185" y="176" text-anchor="middle" class="sv-t">Variation still not explained</text>
+        <text x="185" y="198" text-anchor="middle" class="sv-tm">SS(fit) / ( n &minus; p_fit )</text>
+        <text x="185" y="242" text-anchor="middle" class="sv-ts">A large F means the fit really helps</text>
+        <line x1="352" y1="136" x2="398" y2="136" class="sv-stroke-ink" stroke-width="2" marker-end="url(#ah)"/>
+
+        <text x="570" y="40" text-anchor="middle" class="sv-tb">F values from random data</text>
+        <path d="M640,244 C670,248 700,249 730,250 L730,252 L640,252 Z" class="sv-key-soft"/>
+        <path d="M412,252 C428,252 436,112 452,110 C470,108 482,162 502,192 C522,218 546,234 582,242 C622,248 682,251 730,252" class="sv-stroke-acc" stroke-width="2.5"/>
+        <line x1="405" y1="252" x2="738" y2="252" class="sv-line" stroke-width="1.5"/>
+        <line x1="640" y1="252" x2="640" y2="196" class="sv-stroke-key" stroke-width="2"/>
+        <text x="640" y="188" text-anchor="middle" class="sv-tm">our F = 6</text>
+        <text x="738" y="140" text-anchor="end" class="sv-ts">p-value = the shaded</text>
+        <text x="738" y="158" text-anchor="end" class="sv-ts">tail area on the right</text>
+        <line x1="700" y1="168" x2="686" y2="240" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"/>
+        <text x="734" y="274" text-anchor="end" class="sv-ts">F</text>
+      </svg>
+      <figcaption>Notice that the p-value is not a new idea. It is the share of random F values that beat the F from your real data.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Sum of squares and variation</span>
+      <div class="math">$$ SS(\text{mean}) = \sum (\text{data} - \text{mean})^2 \qquad Var(\text{mean}) = \frac{SS(\text{mean})}{n} $$</div>
+      <p class="explain"><b>Symbols:</b> <em>data</em> is one mouse size. <em>mean</em> is the average mouse size. <em>n</em> is the sample size, here 9. The same two formulas work around the fitted line, with the line's predicted value in place of the mean. <b>What it tells you:</b> a variance is simply the average sum of squares per mouse.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">R squared</span>
+      <div class="math">$$ R^2 = \frac{Var(\text{mean}) - Var(\text{fit})}{Var(\text{mean})} = \frac{SS(\text{mean}) - SS(\text{fit})}{SS(\text{mean})} $$</div>
+      <p class="explain"><b>Symbols:</b> <em>Var(mean)</em> is the variation in size when you ignore weight. <em>Var(fit)</em> is the variation left after the line uses weight. The second form works because both variations are divided by the same n, so n cancels. <b>What it tells you:</b> the share of the variation in mouse size that mouse weight explains.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">The fitted line and the fitted plane</span>
+      <div class="math">$$ y = 0.1 + 0.78x \qquad\qquad y = b + 0.7\,w + 0.5\,t $$</div>
+      <p class="explain"><b>Symbols:</b> <em>y</em> is the predicted size or body length. <em>x</em> and <em>w</em> are mouse weight. <em>t</em> is tail length. <em>b</em> is the y-axis intercept, and the other numbers are slopes. <b>What it tells you:</b> one predictor gives a line with two parameters. Two predictors give a plane with three. R² is calculated the same way for both.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">F, the test statistic behind the p-value</span>
+      <div class="math">$$ F = \frac{\big(SS(\text{mean}) - SS(\text{fit})\big) \big/ (p_{fit} - p_{mean})}{SS(\text{fit}) \big/ (n - p_{fit})} $$</div>
+      <p class="explain"><b>Symbols:</b> <em>p<sub>fit</sub></em> is the number of parameters in the fitted equation, so 2 for a line. <em>p<sub>mean</sub></em> is the number of parameters in the mean line, which is 1. <em>n</em> is the sample size. The two divisions are the degrees of freedom, and they turn sums of squares into variances. <b>What it tells you:</b> the numerator is the variation explained by the extra parameters, the denominator is the variation the fit leaves behind, so a good fit makes F large.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>For the nine mice, least squares gives the line \( y = 0.1 + 0.78x \). The variation around the mean is 11.1 and the variation around the fit is 4.4.</p>
+      <div class="math">$$ R^2 = \frac{11.1 - 4.4}{11.1} = 0.6 = 60\% $$</div>
+      <p>So mouse weight explains 60% of the variation in mouse size. The same data has SS(mean) = 100 and SS(fit) = 40, and those raw sums of squares give the identical answer: \( (100 - 40)/100 = 0.6 \).</p>
+      <p>Josh then shows the two extremes. When weight predicts size perfectly, there are no residuals, so the variation around the fit is 0 and \( R^2 = (11.1 - 0)/11.1 = 1 \), which is 100%. When weight tells you nothing, a heavy mouse is just as likely to be small as large. The variation around the fit stays at 11.1, so \( R^2 = (11.1 - 11.1)/11.1 = 0 \).</p>
+      <p>For the p-value, this data gives F = 6. Here \( p_{fit} = 2 \) and \( p_{mean} = 1 \), so the numerator has one degree of freedom: the single extra parameter is mouse weight. If tail length joins the equation, \( p_{fit} = 3 \) and the numerator gets two degrees of freedom instead.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>A perfect R² can mean nothing at all. With only two data points, SS(mean) might be 10 and SS(fit) is always 0, because a straight line joins any two points exactly. R² comes out as 100% every time. That is exactly why R² needs a p-value beside it.</p>
+    </div>
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Adding parameters can never make SS(fit) worse. If a term is useless, least squares just multiplies it by zero. So an equation with a coin flip, a favourite colour and a star sign in it will never fit worse than the plain one. By random chance those silly terms sometimes shrink SS(fit) a little and inflate R². The usual fix is adjusted R², which scales R² by the number of parameters.</p>
+    </div>
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>R² and the p-value answer different questions. R² says how strong the relationship is, and you want it large. The p-value says how reliable that relationship is, and you want it small. A strong but unreliable result and a reliable but tiny result are both weak conclusions.</p>
+    </div>
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Sample size changes the shape of the F distribution. Josh compares two curves and points out that when \( n - p_{fit} \) is larger, the distribution tapers off faster. The tail beyond your F is then thinner, so the p-value is smaller. More data relative to the number of parameters gives you more confidence.</p>
+    </div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What does R² actually mean?</summary><div class="a">It is the reduction in variation you get by using the fitted line instead of the plain average. You measure the squared residuals around the mean, then around the line, and R² is the drop divided by the starting value. An R² of 0.6 means the predictor explains 60% of the variation in the outcome.</div></details>
+    <details class="qa"><summary>Why is a high R² not enough on its own?</summary><div class="a">Because R² has no sense of sample size. Two random points always give an R² of 100%, since a line joins them exactly. You need the p-value, which asks how often random data would produce a fit this good. Only a large R² together with a small p-value is worth reporting.</div></details>
+    <details class="qa"><summary>Why does adding more variables always raise R²?</summary><div class="a">Least squares can set any unhelpful coefficient to zero, so extra terms can never make the sum of squares around the fit worse. That means R² only ever goes up or stays flat. Random noise in the extra terms sometimes pushes it up a little for no real reason. Adjusted R² handles this by scaling the value by the number of parameters.</div></details>
+    <details class="qa"><summary>How do you get a p-value for a regression?</summary><div class="a">You calculate F, which is the variation explained by the extra parameters divided by the variation still unexplained, with each part scaled by its degrees of freedom. Then you compare that F against the F distribution for those degrees of freedom. The p-value is the area in the tail beyond your F, that is, the share of random data sets that would look at least this good.</div></details>
+    <details class="qa"><summary>What changes when you use two predictors instead of one?</summary><div class="a">Geometrically you fit a plane instead of a line, and least squares estimates three parameters rather than two. R² is calculated exactly the same way from the two sums of squares. In the F statistic the numerator now has two degrees of freedom, because the fit has two extra parameters compared with the mean.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Least squares rotates a line until the sum of the squared residuals is as small as possible.</li>
+      <li>A residual is the distance from the fitted line to a data point.</li>
+      <li>SS(mean) measures the variation when you use only the average, and SS(fit) measures what is left after the line.</li>
+      <li>Dividing a sum of squares by n turns it into a variance, which is the average sum of squares per observation.</li>
+      <li>R² is the drop from SS(mean) to SS(fit), as a fraction of SS(mean), and in the mouse example it is 0.6.</li>
+      <li>F divides the explained variation by the unexplained variation, after scaling each by its degrees of freedom.</li>
+      <li>The p-value is the tail area of the F distribution beyond your own F value.</li>
+      <li>You need a large R² and a small p-value together before the relationship is worth believing.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Linear regression</span><span class="board-tag">fit, measure the drop, test with F</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 296" role="img" aria-label="Nine mice, size against weight, with a dashed line at the mean size and a sloped least squares line. Below, the squared residuals add up to 100 around the mean but only 40 around the line, so R squared is (100 minus 40) over 100, which is 0.6.">
+            <line x1="30" y1="160" x2="384" y2="160" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="30" y1="16" x2="30" y2="160" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="40" y1="92" x2="350" y2="92" class="sv-stroke-key" stroke-width="2.5" stroke-dasharray="8 6"/>
+            <line x1="44" y1="140" x2="346" y2="44" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round"/>
+            <circle cx="56" cy="120" r="5" class="sv-ink"/>
+            <circle cx="91" cy="144" r="5" class="sv-ink"/>
+            <circle cx="126" cy="132" r="5" class="sv-ink"/>
+            <circle cx="161" cy="80" r="5" class="sv-ink"/>
+            <circle cx="196" cy="110" r="5" class="sv-ink"/>
+            <circle cx="231" cy="60" r="5" class="sv-ink"/>
+            <circle cx="266" cy="50" r="5" class="sv-ink"/>
+            <circle cx="301" cy="76" r="5" class="sv-ink"/>
+            <circle cx="336" cy="60" r="5" class="sv-ink"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <rect x="164" y="194" width="220" height="20" rx="4" class="sv-key"/>
+              <rect x="164" y="224" width="88" height="20" rx="4" class="sv-acc"/>
+            </g>
+            <text x="40" y="84" class="sv-t">mean size</text>
+            <text x="384" y="30" text-anchor="end" class="sv-t">least squares fit</text>
+            <text x="384" y="180" text-anchor="end" class="sv-ts">mouse weight</text>
+            <text x="20" y="209" class="sv-tm">SS(mean) = 100</text>
+            <text x="20" y="239" class="sv-tm">SS(fit) = 40</text>
+            <text x="200" y="278" text-anchor="middle" class="sv-tb">R² = (100 − 40) / 100 = 0.6</text>
+          </svg>
+          <p>Ignore weight and the squared residuals around the mean add up to 100. Use the least squares line and only 40 remain. R² is that drop as a share: 0.6.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Residual</dt><dd>The vertical distance from the line to a data point.</dd>
+            <dt>Least squares</dt><dd>Rotate the line until the sum of squared residuals is smallest.</dd>
+            <dt>SS(mean), SS(fit)</dt><dd>Squared residuals added up around the mean, and around the line.</dd>
+            <dt>R²</dt><dd>The share of the variation that the line explains.</dd>
+            <dt>p-value</dt><dd>The share of random data sets giving an F this large or larger.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Fit a line</b>least squares: smallest squared residuals</li>
+            <li><b>SS(mean)</b>squared gaps to the average size</li>
+            <li><b>SS(fit)</b>squared residuals around the line</li>
+            <li><b>R²</b>the drop, over SS(mean)</li>
+            <li><b>F</b>explained over unexplained variation</li>
+            <li><b>p-value</b>tail area beyond your F</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$R^2=\frac{SS_m-SS_f}{SS_m}$$
+          $$F=\frac{(SS_m-SS_f)\,/\,(p_f-p_m)}{SS_f\,/\,(n-p_f)}$$
+          <ul class="keys">
+            <li>\(SS_m\), \(SS_f\): SS(mean) and SS(fit). Dividing by \(n\) gives variances; \(n\) cancels in \(R^2\).</li>
+            <li>\(p_f\), \(p_m\): parameters in the fit (2 for a line) and in the mean (1).</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>around</th><th>mean</th><th>fit</th></tr>
+            <tr><td>variation</td><td>11.1</td><td>4.4</td></tr>
+            <tr><td>SS</td><td>100</td><td>40</td></tr>
+            <tr><td>parameters</td><td>1</td><td>2</td></tr>
+            <tr class="final"><td>R²</td><td colspan="2">(11.1 − 4.4) / 11.1 = 0.6</td></tr>
+          </table>
+          <p class="hand">Weight explains 60% of the variation in size. The line is y = 0.1 + 0.78x, and F = 6.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">A perfect R² proves a real link.</span><span class="yes">Two points always give 100%, since a line joins them exactly. Check the p-value.</span></li>
+            <li><span class="no">A higher R² after adding terms means they help.</span><span class="yes">Useless terms get multiplied by zero, yet chance can inflate R². Use adjusted R².</span></li>
+            <li><span class="no">R² and the p-value say the same thing.</span><span class="yes">R² is strength, so want it large; the p-value is reliability, so want it small.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="39-lowess-and-loess.html"><small>Previous</small>Lowess and Loess</a> <a href="41-linear-regression-in-r-step-by-step.html"><small>Next</small>Linear Regression in R, Step-by-Step</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

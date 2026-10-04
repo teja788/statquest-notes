@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pearson's Correlation — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>19</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 19 · 19.2 min</div>
+    <h1>Pearson's Correlation</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=xZ_z8KWkhXE" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Part two of the covariance and correlation pair</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Correlation puts a single number on the strength of a straight-line relationship between two measurements. Josh shows what that number means, how to get it from covariance, and why it is not the same thing as confidence.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>We measure two things on the same objects and plot them against each other. If a straight line describes the trend well, one measurement tells us a lot about the other. Correlation scores that from −1 to 1, where the sign is the slope direction and the size is how close the points sit to the line. We compute it by dividing the covariance by the two standard deviations, which squeezes the value into the −1 to 1 range. How much we trust the trend is a separate question, and the p-value answers it.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh starts with mRNA counts from gene X and gene Y, measured in five different cells. If genes mean nothing to you, use his second picture instead: five grocery stores, green apples on the x-axis and red apples on the y-axis. Each store gives one pair of numbers, so each store is one blue dot.</p>
+    <p>In this data, low values of gene X sit with low values of gene Y, and high values sit with high values. That trend can be drawn as a straight line with a positive slope. The line is useful because it lets us guess. If a new cell has gene X equal to 20, the line says gene Y should be around 27.</p>
+    <p>Now the important part. How good is that guess? If the dots hug the line, we can name a narrow range for gene Y, so the relationship is strong. If the dots scatter far from the line, we can only name a wide range, so the relationship is weak. Correlation is simply a number that measures this tightness.</p>
+    <p>Josh adds a careful warning. We only observed that low goes with low and high goes with high. We are not saying gene X causes gene Y. Something else may be driving both.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Three scatter plots side by side showing a weak, a moderate and a perfect straight-line relationship">
+        <text x="30" y="24" class="sv-tb">Weak relationship</text>
+        <text x="280" y="24" class="sv-tb">Moderate relationship</text>
+        <text x="530" y="24" class="sv-tb">Strongest relationship</text>
+
+        <path class="sv-line" stroke-width="1.5" d="M30 55 L30 225 L235 225"></path>
+        <line x1="40" y1="170" x2="225" y2="120" class="sv-stroke-key" stroke-width="2"></line>
+        <circle cx="50" cy="180" r="4" class="sv-acc"></circle>
+        <circle cx="80" cy="110" r="4" class="sv-acc"></circle>
+        <circle cx="110" cy="185" r="4" class="sv-acc"></circle>
+        <circle cx="140" cy="130" r="4" class="sv-acc"></circle>
+        <circle cx="170" cy="80" r="4" class="sv-acc"></circle>
+        <circle cx="200" cy="155" r="4" class="sv-acc"></circle>
+        <circle cx="220" cy="100" r="4" class="sv-acc"></circle>
+
+        <path class="sv-line" stroke-width="1.5" d="M280 55 L280 225 L485 225"></path>
+        <line x1="290" y1="195" x2="475" y2="75" class="sv-stroke-key" stroke-width="2"></line>
+        <circle cx="300" cy="190" r="4" class="sv-acc"></circle>
+        <circle cx="330" cy="170" r="4" class="sv-acc"></circle>
+        <circle cx="360" cy="135" r="4" class="sv-acc"></circle>
+        <circle cx="390" cy="145" r="4" class="sv-acc"></circle>
+        <circle cx="420" cy="105" r="4" class="sv-acc"></circle>
+        <circle cx="450" cy="110" r="4" class="sv-acc"></circle>
+        <circle cx="470" cy="75" r="4" class="sv-acc"></circle>
+
+        <path class="sv-line" stroke-width="1.5" d="M530 55 L530 225 L735 225"></path>
+        <line x1="540" y1="196" x2="728" y2="80" class="sv-stroke-key" stroke-width="2"></line>
+        <circle cx="550" cy="190" r="4" class="sv-acc"></circle>
+        <circle cx="578" cy="173" r="4" class="sv-acc"></circle>
+        <circle cx="606" cy="155" r="4" class="sv-acc"></circle>
+        <circle cx="634" cy="138" r="4" class="sv-acc"></circle>
+        <circle cx="662" cy="121" r="4" class="sv-acc"></circle>
+        <circle cx="690" cy="104" r="4" class="sv-acc"></circle>
+        <circle cx="718" cy="86" r="4" class="sv-acc"></circle>
+
+        <text x="30" y="252" class="sv-tm">correlation near 0</text>
+        <text x="280" y="252" class="sv-tm">correlation in between</text>
+        <text x="530" y="252" class="sv-tm">correlation = 1</text>
+        <text x="30" y="272" class="sv-ts">x-axis = gene X, y-axis = gene Y. The scale of the axes never changes the correlation.</text>
+      </svg>
+      <figcaption>Notice that only the distance from the dots to the line changes. When every dot sits on a line with a positive slope, correlation reaches its maximum of 1.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Take two measurements from each object. Plot one on the x-axis and the other on the y-axis, so each object becomes one dot.</li>
+      <li>Look for a straight-line trend. Correlation only describes straight lines, so a squiggly line that connects every dot does not count.</li>
+      <li>Ask how tightly the dots hug that line. Tight means one variable tells you a lot about the other. Loose means it tells you little.</li>
+      <li>Turn that into a number. Correlation is 1 when a positive-slope line passes through every dot, and −1 when a negative-slope line does. Any worse fit moves the number toward 0, and 0 means no straight-line relationship at all.</li>
+      <li>Remember that the slope size does not matter. A steep perfect line and a gentle perfect line both give correlation 1. Only the fit and the sign matter.</li>
+      <li>Judge your confidence separately, using the amount of data and the p-value. Two random dots always fall on a straight line, so correlation 1 from two dots means very little.</li>
+    </ol>
+    <p>That last step is the one people skip. Three random dots almost never line up, so a perfect fit with three dots is real evidence. The p-value states this formally. It is the probability that random dots would give a relationship this strong or stronger. In Josh's tightest example the p-value is \(2.2 \times 10^{-16}\), which is tiny.</p>
+    <p>Strength and confidence also move independently. Josh shows three graphs that all have correlation 0.3 but different amounts of data. The p-values fall from 0.8 to 0.08 to 0.008. More data made us surer, but the guesses stayed just as bad.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 320" role="img" aria-label="Three scatter plots with the same weak correlation of 0.3 but increasing sample sizes and shrinking p-values">
+        <defs>
+          <marker id="arA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" class="sv-ink2"></path>
+          </marker>
+        </defs>
+        <text x="30" y="24" class="sv-tb">very little data</text>
+        <text x="280" y="24" class="sv-tb">more data</text>
+        <text x="530" y="24" class="sv-tb">even more data</text>
+
+        <path class="sv-line" stroke-width="1.5" d="M30 55 L30 225 L235 225"></path>
+        <line x1="40" y1="175" x2="225" y2="125" class="sv-stroke-key" stroke-width="2"></line>
+        <circle cx="60" cy="180" r="4" class="sv-acc"></circle>
+        <circle cx="110" cy="120" r="4" class="sv-acc"></circle>
+        <circle cx="160" cy="165" r="4" class="sv-acc"></circle>
+        <circle cx="210" cy="105" r="4" class="sv-acc"></circle>
+
+        <path class="sv-line" stroke-width="1.5" d="M280 55 L280 225 L485 225"></path>
+        <line x1="290" y1="180" x2="478" y2="130" class="sv-stroke-key" stroke-width="2"></line>
+        <circle cx="300" cy="195" r="4" class="sv-acc"></circle>
+        <circle cx="315" cy="150" r="4" class="sv-acc"></circle>
+        <circle cx="335" cy="180" r="4" class="sv-acc"></circle>
+        <circle cx="355" cy="125" r="4" class="sv-acc"></circle>
+        <circle cx="375" cy="170" r="4" class="sv-acc"></circle>
+        <circle cx="395" cy="140" r="4" class="sv-acc"></circle>
+        <circle cx="415" cy="185" r="4" class="sv-acc"></circle>
+        <circle cx="435" cy="110" r="4" class="sv-acc"></circle>
+        <circle cx="455" cy="155" r="4" class="sv-acc"></circle>
+        <circle cx="470" cy="130" r="4" class="sv-acc"></circle>
+
+        <path class="sv-line" stroke-width="1.5" d="M530 55 L530 225 L735 225"></path>
+        <line x1="540" y1="180" x2="732" y2="125" class="sv-stroke-key" stroke-width="2"></line>
+        <circle cx="548" cy="196" r="4" class="sv-acc"></circle>
+        <circle cx="558" cy="150" r="4" class="sv-acc"></circle>
+        <circle cx="568" cy="180" r="4" class="sv-acc"></circle>
+        <circle cx="578" cy="205" r="4" class="sv-acc"></circle>
+        <circle cx="588" cy="140" r="4" class="sv-acc"></circle>
+        <circle cx="598" cy="168" r="4" class="sv-acc"></circle>
+        <circle cx="608" cy="195" r="4" class="sv-acc"></circle>
+        <circle cx="618" cy="125" r="4" class="sv-acc"></circle>
+        <circle cx="628" cy="160" r="4" class="sv-acc"></circle>
+        <circle cx="638" cy="185" r="4" class="sv-acc"></circle>
+        <circle cx="648" cy="130" r="4" class="sv-acc"></circle>
+        <circle cx="658" cy="170" r="4" class="sv-acc"></circle>
+        <circle cx="668" cy="145" r="4" class="sv-acc"></circle>
+        <circle cx="678" cy="190" r="4" class="sv-acc"></circle>
+        <circle cx="688" cy="120" r="4" class="sv-acc"></circle>
+        <circle cx="698" cy="155" r="4" class="sv-acc"></circle>
+        <circle cx="708" cy="175" r="4" class="sv-acc"></circle>
+        <circle cx="718" cy="110" r="4" class="sv-acc"></circle>
+        <circle cx="728" cy="140" r="4" class="sv-acc"></circle>
+
+        <text x="30" y="252" class="sv-tm">p = 0.8</text>
+        <text x="280" y="252" class="sv-tm">p = 0.08</text>
+        <text x="530" y="252" class="sv-tm">p = 0.008</text>
+        <text x="30" y="276" class="sv-t">correlation = 0.3 in all three graphs</text>
+        <line x1="330" y1="292" x2="520" y2="292" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#arA)"></line>
+        <rect x="524" y="281" width="150" height="18" class="sv-paper"></rect>
+        <text x="530" y="295" class="sv-ts">confidence increases</text>
+      </svg>
+      <figcaption>Notice that the correlation never moves. Extra data only shrinks the p-value, so we become confident about a guess that is still weak.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Pearson's correlation</span>
+      <div class="math">$$ \text{Correlation}(X,Y) \;=\; \frac{\text{Covariance}(X,Y)}{\sqrt{\text{Variance}(X)}\;\times\;\sqrt{\text{Variance}(Y)}} $$</div>
+      <p class="explain"><b>Symbols:</b> \(X\) and \(Y\) are the two measurements, here gene X and gene Y. \(\text{Covariance}(X,Y)\) measures how the two move together, and it can be any value from \(-\infty\) to \(+\infty\). \(\text{Variance}(X)\) measures how spread out the gene X values are on their own, and its square root is the standard deviation of gene X. The same holds for \(Y\). <b>What it tells you:</b> The top carries the direction and the strength of the trend, but its size also depends on the scale of the data. The bottom divides that scale back out, so the answer is always squeezed between −1 and 1.</p>
+    </div>
+
+    <p>Josh explains the squeeze in two cases. When every dot sits on a straight line, the covariance and the product of the two square roots are equal, so the division gives exactly 1 or −1 depending on the slope. When the dots miss the line, the covariance accounts for less of the spread, so the ratio falls toward 0.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 240" role="img" aria-label="An unbounded covariance scale divided by the two standard deviations, landing on a correlation scale from minus one to one">
+        <defs>
+          <marker id="arB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" class="sv-ink2"></path>
+          </marker>
+        </defs>
+        <text x="30" y="24" class="sv-tb">Covariance: unbounded, and it grows with the scale of the data</text>
+        <line x1="60" y1="70" x2="700" y2="70" class="sv-stroke-ink" stroke-width="2"></line>
+        <text x="52" y="75" class="sv-t" text-anchor="end">−∞</text>
+        <text x="708" y="75" class="sv-t">+∞</text>
+        <circle cx="470" cy="70" r="6" class="sv-key"></circle>
+        <text x="470" y="54" class="sv-tm" text-anchor="middle">covariance = 116</text>
+
+        <line x1="380" y1="92" x2="380" y2="140" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#arB)"></line>
+        <rect x="392" y="100" width="330" height="24" class="sv-paper"></rect>
+        <text x="396" y="118" class="sv-tm">divide by √101.8 × √160.3 = 127.7</text>
+
+        <text x="30" y="170" class="sv-tb">Correlation: always between −1 and 1</text>
+        <line x1="180" y1="188" x2="580" y2="188" class="sv-stroke-ink" stroke-width="2"></line>
+        <line x1="180" y1="181" x2="180" y2="195" class="sv-stroke-ink" stroke-width="2"></line>
+        <line x1="380" y1="181" x2="380" y2="195" class="sv-stroke-ink" stroke-width="2"></line>
+        <line x1="580" y1="181" x2="580" y2="195" class="sv-stroke-ink" stroke-width="2"></line>
+        <circle cx="560" cy="188" r="6" class="sv-good"></circle>
+        <text x="180" y="212" class="sv-ts" text-anchor="middle">−1</text>
+        <text x="380" y="212" class="sv-ts" text-anchor="middle">0</text>
+        <text x="580" y="212" class="sv-ts" text-anchor="middle">1</text>
+        <text x="620" y="172" class="sv-tm">0.90</text>
+      </svg>
+      <figcaption>Notice that the denominator does the whole job of the squeeze. It removes the scale of the data so the result is comparable across different datasets.</figcaption>
+    </figure>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh reuses the gene X and gene Y data from the covariance video. The three ingredients are already known: the covariance is 116, the variance of gene X is 101.8, and the variance of gene Y is 160.3.</p>
+      <div class="math">$$ \text{Correlation} \;=\; \frac{116}{\sqrt{101.8}\;\times\;\sqrt{160.3}} $$</div>
+      <p>The square roots are the standard deviations, about 10.1 for gene X and about 12.7 for gene Y.</p>
+      <div class="math">$$ =\; \frac{116}{10.1 \times 12.7} \;=\; \frac{116}{127.7} \;\approx\; 0.9 $$</div>
+      <p>So the correlation is about 0.9, a strong positive relationship. Josh also reports the p-value for this data as 0.03. That means there is a 3 percent chance that random data would produce a relationship this strong or stronger.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Correlation is not causation. Josh is explicit about this. Seeing low with low and high with high only tells us about a trend we can use for predictions. Something else entirely may be causing both patterns.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A big correlation does not mean a lot of data. Any two random dots can be joined by a straight line, so two points give correlation 1 for free. Confidence comes from the sample size and the p-value, not from the correlation value.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> More data does not improve a weak relationship. In Josh's three graphs the correlation stays at 0.3 while the p-value drops to 0.008. The guesses stay bad, we just become sure that they are the best bad guesses available.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Correlation only sees straight lines. A curved pattern can be strong and still score near 0. Correlation values are also hard to read. It is not obvious that 0.9 predicts twice as well as 0.64. Josh points to R squared, which fixes both problems.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>What does Pearson's correlation actually measure?</summary>
+      <div class="a">It measures how well a straight line describes the relationship between two variables. The sign tells you the direction of the slope, and the size tells you how tightly the points hug that line. It runs from −1 to 1, with 0 meaning no straight-line relationship at all.</div>
+    </details>
+
+    <details class="qa" open><summary>Why divide the covariance by the two standard deviations?</summary>
+      <div class="a">Covariance already carries the direction and strength of the trend, but its size also depends on the units and spread of the data, so it can be anything from minus infinity to plus infinity. Dividing by the two standard deviations removes that scale. The result is bounded between −1 and 1, which makes it comparable across different datasets.</div>
+    </details>
+
+    <details class="qa" open><summary>Does a correlation of 1 mean you should trust the prediction?</summary>
+      <div class="a">Not on its own. Two random points always fall on a straight line, so a perfect correlation from a tiny sample is meaningless. You need the p-value, which is the probability that random data would produce a relationship this strong or stronger. Correlation measures the strength of the fit, and the p-value measures your confidence in it.</div>
+    </details>
+
+    <details class="qa" open><summary>If you collect more data, will your correlation go up?</summary>
+      <div class="a">Usually not. If the true relationship is weak, adding data keeps the correlation around the same weak value and only shrinks the p-value. Josh shows three samples that all give 0.3 while the p-value falls from 0.8 to 0.008. You end up confident in a prediction that is still poor.</div>
+    </details>
+
+    <details class="qa" open><summary>When would you prefer R squared over correlation?</summary>
+      <div class="a">When you want the number to be easy to interpret. Correlation values are not intuitive to compare, since it is not obvious that 0.9 is roughly twice as good for prediction as 0.64. R squared makes that comparison direct, and it can also describe relationships that are more complicated than a simple straight line.</div>
+    </details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap">
+      <ul>
+        <li>Correlation quantifies the strength of a straight-line relationship between two measurements taken on the same objects.</li>
+        <li>It runs from −1, the strongest relationship with a negative slope, to 1, the strongest with a positive slope.</li>
+        <li>The worse the fit, the closer the value gets to 0, and 0 means x tells you nothing about y.</li>
+        <li>Neither the slope size nor the scale of the axes changes the correlation.</li>
+        <li>You compute it by dividing the covariance by the square root of each variance, which squeezes the value into the −1 to 1 range.</li>
+        <li>For Josh's gene data, 116 divided by 127.7 gives about 0.9, with a p-value of 0.03.</li>
+        <li>Confidence is separate: more data shrinks the p-value but does not make a weak relationship strong.</li>
+        <li>Correlation does not prove causation, and R squared is the easier number to interpret.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Pearson's correlation</span><span class="board-tag">how tightly the dots hug a line</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 260" role="img" aria-label="Two scatter plots with the same line. Loose dots score a weak 0.3 and dots hugging the line score a strong 0.9, on a scale from −1 to 1.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <text x="20" y="28" class="sv-tb">loose → weak</text>
+            <text x="216" y="28" class="sv-tb">tight → strong</text>
+            <path d="M22 44 L22 160 L180 160" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M218 44 L218 160 L380 160" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <polygon points="34,98 170,48 170,104 34,154" class="sv-key-soft"/>
+            <polygon points="234,116 370,66 370,86 234,136" class="sv-key-soft"/>
+            <line x1="34" y1="126" x2="170" y2="76" class="sv-stroke-key" stroke-width="3" stroke-linecap="round"/>
+            <line x1="234" y1="126" x2="370" y2="76" class="sv-stroke-key" stroke-width="3" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="46" cy="142" r="5" class="sv-acc"/>
+              <circle cx="66" cy="96" r="5" class="sv-acc"/>
+              <circle cx="86" cy="126" r="5" class="sv-acc"/>
+              <circle cx="106" cy="80" r="5" class="sv-acc"/>
+              <circle cx="126" cy="112" r="5" class="sv-acc"/>
+              <circle cx="146" cy="66" r="5" class="sv-acc"/>
+              <circle cx="164" cy="98" r="5" class="sv-acc"/>
+              <circle cx="246" cy="125" r="5" class="sv-acc"/>
+              <circle cx="266" cy="110" r="5" class="sv-acc"/>
+              <circle cx="286" cy="111" r="5" class="sv-acc"/>
+              <circle cx="306" cy="96" r="5" class="sv-acc"/>
+              <circle cx="326" cy="95" r="5" class="sv-acc"/>
+              <circle cx="346" cy="81" r="5" class="sv-acc"/>
+              <circle cx="364" cy="80" r="5" class="sv-acc"/>
+            </g>
+            <path d="M100 170 Q 247 170 247 199" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="5 4" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <path d="M300 170 Q 340 170 340 199" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="5 4" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="44" y1="212" x2="356" y2="212" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round"/>
+            <path d="M44 204 L44 220 M200 204 L200 220 M356 204 L356 220" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="247" cy="212" r="7" class="sv-key"/>
+              <circle cx="340" cy="212" r="7" class="sv-good"/>
+            </g>
+            <text x="34" y="218" text-anchor="end" class="sv-ts">−1</text>
+            <text x="200" y="244" text-anchor="middle" class="sv-ts">0</text>
+            <text x="366" y="218" class="sv-ts">1</text>
+            <text x="247" y="246" text-anchor="middle" class="sv-tb">0.3</text>
+            <text x="340" y="246" text-anchor="middle" class="sv-tb">0.9</text>
+          </svg>
+          <p>Correlation scores how tightly the dots hug a straight line. Tight dots let you guess one measurement from the other within a narrow range, so the value nears 1 (or −1 if the slope is negative). Loose dots pull it toward 0.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Correlation</dt><dd>From −1 to 1: how well a straight line fits the dots.</dd>
+            <dt>Covariance</dt><dd>How two measurements move together; any size from −∞ to +∞.</dd>
+            <dt>Standard deviation</dt><dd>Square root of a variance. Dividing by it removes the scale.</dd>
+            <dt>p-value</dt><dd>Chance random dots give a relationship this strong or stronger.</dd>
+            <dt>R squared</dt><dd>Easier to interpret, and not limited to straight lines.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Plot pairs</b>one dot per object</li>
+            <li><b>Find the line</b>straight-line trends only</li>
+            <li><b>Check the hug</b>tight or loose around it</li>
+            <li><b>Score it</b>±1 if perfect, else toward 0</li>
+            <li><b>Ignore steepness</b>slope size never changes it</li>
+            <li><b>Judge confidence</b>amount of data and p-value</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{Corr}(X,Y)=\frac{\text{Cov}(X,Y)}{\sqrt{\text{Var}(X)}\times\sqrt{\text{Var}(Y)}}$$
+          $$-1\le\text{Corr}(X,Y)\le 1$$
+          <ul class="keys">
+            <li>\(\text{Cov}\) is the covariance, any value from \(-\infty\) to \(+\infty\); \(\text{Var}\) is a variance.</li>
+            <li>Each \(\sqrt{\text{Var}}\) is a standard deviation. Dividing removes the scale, so dots on a perfect line give exactly 1 or −1.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>piece</th><th>work</th><th>value</th></tr>
+            <tr><td>top</td><td>covariance</td><td>116</td></tr>
+            <tr><td>gene X</td><td>√101.8</td><td>≈ 10.1</td></tr>
+            <tr><td>gene Y</td><td>√160.3</td><td>≈ 12.7</td></tr>
+            <tr><td>bottom</td><td>10.1 × 12.7</td><td>127.7</td></tr>
+            <tr class="final"><td>answer</td><td>116 ÷ 127.7</td><td>≈ 0.9</td></tr>
+          </table>
+          <p class="hand">About 0.9, strong and positive. Confidence is separate: p = 0.03, a 3 percent chance random data is this strong.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Correlation means one causes the other.</span><span class="yes">It only says low goes with low, high with high. Something else may drive both.</span></li>
+            <li><span class="no">Correlation 1 means you can trust it.</span><span class="yes">Two random dots always fall on a line. Trust comes from the amount of data and the p-value.</span></li>
+            <li><span class="no">More data makes a weak correlation stronger.</span><span class="yes">It stayed 0.3 while p fell from 0.8 to 0.008. Guesses stayed just as bad.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="18-covariance.html"><small>Previous</small>Covariance</a> <a href="20-conditional-probabilities.html"><small>Next</small>Conditional Probabilities</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

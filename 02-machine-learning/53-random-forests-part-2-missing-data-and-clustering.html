@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Random Forests Part 2: Missing data and clustering — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>53</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 53 · 10.8 min</div>
+    <h1>Random Forests Part 2: Missing data and clustering</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=mIlw5j3WyVk" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">A random forest can fill in missing values on its own. The same machinery also measures how similar any two samples are, so a forest can cluster data.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh handles two kinds of missing data: gaps in the data you train on, and gaps in a new sample you want to classify. For the first kind you make a rough first guess, then improve it. The improvement uses a proximity matrix, which counts how often two samples land in the same leaf. Higher proximity means more similar, so one minus proximity is a distance. That distance lets you draw a heat map or an MDS plot from any kind of data.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>The data set has four patients. Patient four is missing two values: blocked arteries and weight. Random forests treat this differently from a gap in a brand new sample, so Josh separates the two cases.</p>
+    <p>For a gap in the training data the plan is simple. Make an initial guess that may be bad. Then refine the guess again and again until it stops changing. The refinement needs to know which other patients look like patient four.</p>
+    <p>Similarity in a random forest has an unusual definition. Two samples are similar if they fall into the same leaf node when you run them down a tree. Do that for every tree and count the hits. The counts live in a proximity matrix, one row and one column per sample.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 310" role="img" aria-label="A tree sends samples three and four to the same leaf, which adds one to the proximity matrix">
+        <defs>
+          <marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" class="sv-acc"></path>
+          </marker>
+        </defs>
+        <text x="30" y="28" class="sv-tb">One tree in the forest</text>
+        <text x="400" y="28" class="sv-tb">Proximity matrix (counts ÷ 10 trees)</text>
+
+        <line x1="150" y1="56" x2="95" y2="112" class="sv-stroke-acc" stroke-width="1.6"></line>
+        <line x1="150" y1="56" x2="239" y2="150" class="sv-stroke-acc" stroke-width="1.6"></line>
+        <line x1="95" y1="112" x2="60" y2="150" class="sv-stroke-acc" stroke-width="1.6"></line>
+        <line x1="95" y1="112" x2="140" y2="150" class="sv-stroke-acc" stroke-width="1.6"></line>
+        <circle cx="150" cy="56" r="15" class="sv-acc"></circle>
+        <circle cx="95" cy="112" r="13" class="sv-acc"></circle>
+
+        <rect x="28" y="150" width="64" height="52" rx="5" class="sv-paper2"></rect>
+        <rect x="28" y="150" width="64" height="52" rx="5" class="sv-line" stroke-width="1"></rect>
+        <text x="60" y="182" text-anchor="middle" class="sv-tm">S1</text>
+
+        <rect x="108" y="150" width="64" height="52" rx="5" class="sv-paper2"></rect>
+        <rect x="108" y="150" width="64" height="52" rx="5" class="sv-line" stroke-width="1"></rect>
+        <text x="140" y="182" text-anchor="middle" class="sv-tm">S2</text>
+
+        <rect x="196" y="150" width="86" height="52" rx="5" class="sv-key-soft"></rect>
+        <rect x="196" y="150" width="86" height="52" rx="5" class="sv-stroke-key" stroke-width="1.4"></rect>
+        <text x="239" y="182" text-anchor="middle" class="sv-tm">S3  S4</text>
+        <text x="239" y="224" text-anchor="middle" class="sv-ts">same leaf = similar</text>
+
+        <line x1="300" y1="176" x2="368" y2="176" class="sv-stroke-acc" stroke-width="2" marker-end="url(#ar1)"></line>
+        <text x="334" y="164" text-anchor="middle" class="sv-ts">+1</text>
+
+        <rect x="400" y="92" width="232" height="168" class="sv-paper"></rect>
+        <rect x="400" y="218" width="232" height="42" class="sv-acc-soft"></rect>
+        <rect x="574" y="92" width="58" height="168" class="sv-acc-soft"></rect>
+        <rect x="516" y="218" width="58" height="42" class="sv-key-soft"></rect>
+        <rect x="574" y="176" width="58" height="42" class="sv-key-soft"></rect>
+        <rect x="400" y="92" width="58" height="42" class="sv-paper2"></rect>
+        <rect x="458" y="134" width="58" height="42" class="sv-paper2"></rect>
+        <rect x="516" y="176" width="58" height="42" class="sv-paper2"></rect>
+        <rect x="574" y="218" width="58" height="42" class="sv-paper2"></rect>
+
+        <rect x="400" y="92" width="232" height="168" class="sv-line" stroke-width="1"></rect>
+        <line x1="458" y1="92" x2="458" y2="260" class="sv-line" stroke-width="1"></line>
+        <line x1="516" y1="92" x2="516" y2="260" class="sv-line" stroke-width="1"></line>
+        <line x1="574" y1="92" x2="574" y2="260" class="sv-line" stroke-width="1"></line>
+        <line x1="400" y1="134" x2="632" y2="134" class="sv-line" stroke-width="1"></line>
+        <line x1="400" y1="176" x2="632" y2="176" class="sv-line" stroke-width="1"></line>
+        <line x1="400" y1="218" x2="632" y2="218" class="sv-line" stroke-width="1"></line>
+
+        <text x="429" y="84" text-anchor="middle" class="sv-ts">S1</text>
+        <text x="487" y="84" text-anchor="middle" class="sv-ts">S2</text>
+        <text x="545" y="84" text-anchor="middle" class="sv-ts">S3</text>
+        <text x="603" y="84" text-anchor="middle" class="sv-ts">S4</text>
+        <text x="392" y="119" text-anchor="end" class="sv-ts">S1</text>
+        <text x="392" y="161" text-anchor="end" class="sv-ts">S2</text>
+        <text x="392" y="203" text-anchor="end" class="sv-ts">S3</text>
+        <text x="392" y="245" text-anchor="end" class="sv-ts">S4</text>
+
+        <text x="429" y="119" text-anchor="middle" class="sv-ink3" font-size="12.5">—</text>
+        <text x="487" y="119" text-anchor="middle" class="sv-ink3" font-size="12.5">·</text>
+        <text x="545" y="119" text-anchor="middle" class="sv-ink3" font-size="12.5">·</text>
+        <text x="603" y="119" text-anchor="middle" class="sv-tm">0.1</text>
+
+        <text x="429" y="161" text-anchor="middle" class="sv-ink3" font-size="12.5">·</text>
+        <text x="487" y="161" text-anchor="middle" class="sv-ink3" font-size="12.5">—</text>
+        <text x="545" y="161" text-anchor="middle" class="sv-tm">0.1</text>
+        <text x="603" y="161" text-anchor="middle" class="sv-tm">0.1</text>
+
+        <text x="429" y="203" text-anchor="middle" class="sv-ink3" font-size="12.5">·</text>
+        <text x="487" y="203" text-anchor="middle" class="sv-tm">0.1</text>
+        <text x="545" y="203" text-anchor="middle" class="sv-ink3" font-size="12.5">—</text>
+        <text x="603" y="203" text-anchor="middle" class="sv-tm">0.8</text>
+
+        <text x="429" y="245" text-anchor="middle" class="sv-tm">0.1</text>
+        <text x="487" y="245" text-anchor="middle" class="sv-tm">0.1</text>
+        <text x="545" y="245" text-anchor="middle" class="sv-tm">0.8</text>
+        <text x="603" y="245" text-anchor="middle" class="sv-ink3" font-size="12.5">—</text>
+
+        <text x="516" y="286" text-anchor="middle" class="sv-ts">Sample 4 is close to sample 3, far from samples 1 and 2</text>
+      </svg>
+      <figcaption>Notice the 0.8 next to sample 4. Samples 3 and 4 shared a leaf in 8 of the 10 trees, so sample 3 drives the refined guess. Dots mark pairs the video does not show.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Look at the outcome label of the sample with the gap. Patient four does not have heart disease, so only the other patients without heart disease are used for the first guess.</li>
+      <li>For the categorical value, take the most common value among those patients. Two out of two say "no" for blocked arteries, so the first guess is "no".</li>
+      <li>For the numeric value, take the median of those patients. Here the median weight is 167.5, so that becomes the first guess.</li>
+      <li>Build a random forest on the data set with the guesses filled in.</li>
+      <li>Run every sample down every tree. Two samples that stop at the same leaf node are treated as similar.</li>
+      <li>Add 1 to the proximity matrix for each pair that shared a leaf, once per tree. In the video, samples 3 and 4 shared a leaf in trees one, two and three, and sample 2 joined them in tree two.</li>
+      <li>Divide every entry by the number of trees. With 10 trees the entries become proportions between 0 and 1.</li>
+      <li>Revise the guesses with those proportions, then repeat the whole loop. Josh runs it six or seven times, until the filled-in values stop changing.</li>
+    </ol>
+
+    <h3>Proximity is also a distance</h3>
+    <p>Imagine samples 3 and 4 shared a leaf in all 10 trees. Their proximity would be 1, the largest value possible. So proximity 1 means no distance at all, and proximity 0 means far apart. Subtract each proximity from 1 and you have a distance matrix. From that you can draw a heat map or an MDS plot. An MDS plot places similar samples close together on a flat map. This works whatever the data are: ranks, multiple choice, or numbers. If you can build a tree from it, you can cluster it.</p>
+
+    <h3>A gap in a new sample</h3>
+    <p>Now the forest already exists and a new patient arrives with blocked arteries missing. You cannot run the patient down the trees without that value. So you make two copies of the patient, one labelled as having heart disease and one labelled as not having it. Fill each copy with the iterative method above, then run both down all the trees. The copy that the forest labels correctly more often wins.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 250" role="img" aria-label="Two labelled copies of a new patient are run down three trees and the copy classified correctly more often wins">
+        <text x="20" y="26" class="sv-tb">New patient, blocked arteries missing: try both labels</text>
+
+        <text x="330" y="54" text-anchor="middle" class="sv-ts">Tree 1</text>
+        <text x="440" y="54" text-anchor="middle" class="sv-ts">Tree 2</text>
+        <text x="550" y="54" text-anchor="middle" class="sv-ts">Tree 3</text>
+
+        <rect x="20" y="66" width="250" height="48" rx="5" class="sv-acc-soft"></rect>
+        <rect x="20" y="66" width="250" height="48" rx="5" class="sv-line" stroke-width="1"></rect>
+        <text x="32" y="88" class="sv-t">Copy 1: heart disease</text>
+        <text x="32" y="106" class="sv-ts">with its own filled-in guess</text>
+
+        <rect x="290" y="66" width="80" height="48" rx="5" class="sv-good-soft"></rect>
+        <rect x="290" y="66" width="80" height="48" rx="5" class="sv-line" stroke-width="1"></rect>
+        <text x="330" y="96" text-anchor="middle" class="sv-good" font-size="12.5">correct</text>
+        <rect x="400" y="66" width="80" height="48" rx="5" class="sv-good-soft"></rect>
+        <rect x="400" y="66" width="80" height="48" rx="5" class="sv-line" stroke-width="1"></rect>
+        <text x="440" y="96" text-anchor="middle" class="sv-good" font-size="12.5">correct</text>
+        <rect x="510" y="66" width="80" height="48" rx="5" class="sv-good-soft"></rect>
+        <rect x="510" y="66" width="80" height="48" rx="5" class="sv-line" stroke-width="1"></rect>
+        <text x="550" y="96" text-anchor="middle" class="sv-good" font-size="12.5">correct</text>
+
+        <text x="606" y="90" class="sv-tb">3 of 3</text>
+        <text x="606" y="108" class="sv-key" font-size="12.5">keep this copy</text>
+
+        <rect x="20" y="142" width="250" height="48" rx="5" class="sv-paper2"></rect>
+        <rect x="20" y="142" width="250" height="48" rx="5" class="sv-line" stroke-width="1"></rect>
+        <text x="32" y="164" class="sv-t">Copy 2: no heart disease</text>
+        <text x="32" y="182" class="sv-ts">with its own filled-in guess</text>
+
+        <rect x="290" y="142" width="80" height="48" rx="5" class="sv-good-soft"></rect>
+        <rect x="290" y="142" width="80" height="48" rx="5" class="sv-line" stroke-width="1"></rect>
+        <text x="330" y="172" text-anchor="middle" class="sv-good" font-size="12.5">correct</text>
+        <rect x="400" y="142" width="80" height="48" rx="5" class="sv-paper2"></rect>
+        <rect x="400" y="142" width="80" height="48" rx="5" class="sv-line" stroke-width="1"></rect>
+        <text x="440" y="172" text-anchor="middle" class="sv-ink3" font-size="12.5">wrong</text>
+        <rect x="510" y="142" width="80" height="48" rx="5" class="sv-paper2"></rect>
+        <rect x="510" y="142" width="80" height="48" rx="5" class="sv-line" stroke-width="1"></rect>
+        <text x="550" y="172" text-anchor="middle" class="sv-ink3" font-size="12.5">wrong</text>
+
+        <text x="606" y="172" class="sv-tb">1 of 3</text>
+
+        <text x="20" y="226" class="sv-ts">The winning copy gives both the filled-in value and the final classification.</text>
+      </svg>
+      <figcaption>Both copies are complete samples. The forest votes, and the label it reproduces more often is the answer.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Initial guess</span>
+      <div class="math">$$ \hat{x}_{\text{cat}} = \text{mode}\{x_i : y_i = y_m\} \qquad \hat{x}_{\text{num}} = \text{median}\{x_i : y_i = y_m\} $$</div>
+      <p class="explain"><b>Symbols:</b> \(x_i\) is the value of that column for sample \(i\); \(y_i\) is that sample's outcome label; \(y_m\) is the outcome label of the sample with the gap; mode is the most common value. <b>What it tells you:</b> the first guess ignores everything except the outcome label, so it is quick and often wrong.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Proximity</span>
+      <div class="math">$$ p_{ij} = \frac{1}{T}\sum_{t=1}^{T} \mathbf{1}\big[L_t(i) = L_t(j)\big] $$</div>
+      <p class="explain"><b>Symbols:</b> \(T\) is the number of trees; \(L_t(i)\) is the leaf node that sample \(i\) reaches in tree \(t\); \(\mathbf{1}[\cdot]\) is 1 when the statement is true and 0 when it is false. <b>What it tells you:</b> the share of trees in which two samples end up together, so \(p_{ij}\) runs from 0 to 1.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Refined guess</span>
+      <div class="math">$$ \hat{x}_{\text{cat}} = \arg\max_{c} \ \frac{1}{|S_c|}\sum_{i \in S_c} p_{im} \qquad \hat{x}_{\text{num}} = \sum_{i} w_i x_i,\quad w_i = \frac{p_{im}}{\sum_{j} p_{jm}} $$</div>
+      <p class="explain"><b>Symbols:</b> \(m\) is the sample with the gap; \(c\) is one candidate category, such as "yes" or "no"; \(S_c\) is the set of samples that carry category \(c\); \(|S_c|\) is how many there are; \(w_i\) is the share of the total proximity that sample \(i\) holds. <b>What it tells you:</b> similar samples get more say, so the guess moves toward the neighbours the forest trusts.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Distance from proximity</span>
+      <div class="math">$$ d_{ij} = 1 - p_{ij} $$</div>
+      <p class="explain"><b>Symbols:</b> \(d_{ij}\) is the distance between samples \(i\) and \(j\); \(p_{ij}\) is their proximity. <b>What it tells you:</b> a proximity of 1 gives distance 0, so the matrix can feed a heat map or an MDS plot.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>After 10 trees, sample 4 has proximity 0.1 with sample 1, 0.1 with sample 2, and 0.8 with sample 3.</p>
+      <p><b>Blocked arteries.</b> Only sample 2 says "yes", so the average proximity for yes is 0.1. Samples 1 and 3 say "no", so the average for no is \((0.1 + 0.8) / 2 = 0.45\). No is much larger, so the refined guess stays "no".</p>
+      <p><b>Weight.</b> The proximities add up to \(0.1 + 0.1 + 0.8 = 1.0\), so the weights are 0.1, 0.1 and 0.8. Sample 1 weighs 125, sample 2 weighs 180, sample 3 weighs 210. The first-guess median, 167.5, came from samples 1 and 3: \((125 + 210)/2\).</p>
+      <div class="math">$$ 0.1 \times 125 \;+\; 0.1 \times 180 \;+\; 0.8 \times 210 \;=\; 12.5 + 18 + 168 \;=\; 198.5 $$</div>
+      <p>The guess moves from the median of 167.5 to 198.5, pulled up by sample 3. Rebuild the forest with these values and run the loop again.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> The first guess uses only the samples that share the outcome label. If you take the mode or median over the whole column, you throw away the strongest clue you have.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Proximity is not a distance between feature values. It is produced by the trees, so it depends on the forest you built. A different forest gives slightly different proximities.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> One pass is not enough. The forest behind the proximities was itself built on guessed values. So you rebuild and recompute six or seven times, until the values stop changing.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> For a new sample you do not guess the outcome label. You create one copy per possible label, fill each one in, and let the forest decide which copy it reproduces best.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>How does a random forest fill in missing values in the training data?</summary><div class="a">It starts with a rough guess from samples with the same outcome label. A category gets their most common value, and a number gets their median. Then it builds a forest and measures how close each sample is to the one with the gap. It replaces the guess with a proximity-weighted answer and repeats six or seven times.</div></details>
+    <details class="qa" open><summary>What is a proximity matrix?</summary><div class="a">It has one row and one column per sample. You run every sample down every tree. You add one whenever two samples land in the same leaf. Then you divide by the number of trees, so each entry is a share between 0 and 1.</div></details>
+    <details class="qa" open><summary>How can a random forest cluster data?</summary><div class="a">One minus each proximity gives a distance matrix. Proximity 1 means the samples always shared a leaf, so their distance is zero. You can feed that matrix into a heat map or an MDS plot. It works for any data you can build a tree from, such as ranks or multiple choice.</div></details>
+    <details class="qa" open><summary>A new sample arrives with a missing value. What do you do?</summary><div class="a">I make one copy of the sample for each possible outcome label. I fill in the gap in each copy with the iterative proximity method. Then I run both copies down the forest. The copy that the trees label correctly more often gives both the missing value and the prediction.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Random forests handle two kinds of missing data: gaps in the training data and gaps in a new sample.</li>
+      <li>For training data you make a rough guess first, using the mode or the median of samples with the same outcome label.</li>
+      <li>You then measure similarity by running all samples down all trees and counting shared leaf nodes.</li>
+      <li>Those counts, divided by the number of trees, form the proximity matrix.</li>
+      <li>You refine a category by comparing average proximities, and a number by taking a proximity-weighted average.</li>
+      <li>In the video the weight guess moves from 167.5 to 198.5 in one pass, and the loop repeats until it converges.</li>
+      <li>One minus proximity is a distance, so any tree-friendly data set can be drawn as a heat map or an MDS plot.</li>
+      <li>For a new sample you test one copy per label and keep the copy the forest classifies correctly most often.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Random forest proximity</span><span class="board-tag">shared leaves fill gaps and cluster samples</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 250" role="img" aria-label="Patient 4's missing weight is filled from three other patients weighing 125, 180 and 210, whose proximities to patient 4 are 0.1, 0.1 and 0.8; the proximity-weighted guess moves from the first guess of 167.5 to 198.5.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <line x1="87" y1="58" x2="282" y2="119" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="5 5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="88" y1="130" x2="280" y2="130" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="5 5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="87" y1="202" x2="280" y2="142" class="sv-stroke-key" stroke-width="4" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2.5">
+              <circle cx="62" cy="50" r="24" class="sv-paper"/>
+              <circle cx="62" cy="130" r="24" class="sv-paper"/>
+              <circle cx="62" cy="210" r="24" class="sv-key-soft"/>
+              <circle cx="318" cy="130" r="34" class="sv-good-soft"/>
+            </g>
+            <text x="200" y="30" text-anchor="middle" class="sv-ts">proximity to patient 4</text>
+            <text x="62" y="56" text-anchor="middle" class="sv-tm">125</text>
+            <text x="62" y="136" text-anchor="middle" class="sv-tm">180</text>
+            <text x="62" y="216" text-anchor="middle" class="sv-tm">210</text>
+            <text x="160" y="66" text-anchor="middle" class="sv-tm">0.1</text>
+            <text x="160" y="120" text-anchor="middle" class="sv-tm">0.1</text>
+            <text x="190" y="202" text-anchor="middle" class="sv-tb">0.8</text>
+            <text x="318" y="137" text-anchor="middle" class="sv-tb">198.5</text>
+            <text x="316" y="192" text-anchor="middle" class="sv-ts">first guess 167.5</text>
+          </svg>
+          <p>Patient 4's missing weight starts at the median, 167.5. Sample 3 shares a leaf with it in 8 of 10 trees, so its 210 gets 0.8 of the say: 198.5. Repeat until the guesses stop changing.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Proximity matrix</dt><dd>For each pair of samples, the share of trees where they share a leaf.</dd>
+            <dt>Initial guess</dt><dd>Mode or median among samples with the same outcome label.</dd>
+            <dt>Distance</dt><dd>One minus proximity, so proximity 1 means distance 0.</dd>
+            <dt>MDS plot</dt><dd>A flat map that places similar samples close together.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>First guess</b>mode or median, same outcome</li>
+            <li><b>Build forest</b>with the guesses filled in</li>
+            <li><b>Shared leaves</b>add 1 per pair, per tree</li>
+            <li><b>Proximity</b>divide counts by number of trees</li>
+            <li><b>Refine</b>proximity-weighted guesses</li>
+            <li><b>Cluster</b>distance 1 − proximity; MDS plot</li>
+          </ol>
+          <p class="loop">↺ repeat steps 2 to 5 six or seven times</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$p_{ij}=\frac{1}{T}\sum_{t=1}^{T}\mathbf{1}\big[L_t(i)=L_t(j)\big]$$
+          $$\hat{x}=\sum_i w_i x_i,\quad w_i=\frac{p_{im}}{\sum_j p_{jm}}$$
+          $$d_{ij}=1-p_{ij}$$
+          <ul class="keys">
+            <li>\(L_t(i)\): sample \(i\)'s leaf in tree \(t\); \(T\) trees.</li>
+            <li>\(m\): the sample with the gap. A category takes the highest average proximity instead.</li>
+            <li>\(d_{ij}\): the distance behind a heat map or MDS plot.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>sample</th><th>weight</th><th>proximity</th><th>product</th></tr>
+            <tr><td>1</td><td>125</td><td>0.1</td><td>12.5</td></tr>
+            <tr><td>2</td><td>180</td><td>0.1</td><td>18</td></tr>
+            <tr><td>3</td><td>210</td><td>0.8</td><td>168</td></tr>
+            <tr class="final"><td>sum</td><td>–</td><td>1.0</td><td>198.5</td></tr>
+          </table>
+          <p class="hand">The median 167.5 moves to 198.5. Blocked arteries stays "no": average proximity 0.45 beats 0.1.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">First guess: mode or median of the whole column.</span><span class="yes">Use only samples with the same outcome label; it is the strongest clue.</span></li>
+            <li><span class="no">One pass of refinement is enough.</span><span class="yes">The forest was built on guesses; rebuild six or seven times, until values stop changing.</span></li>
+            <li><span class="no">Guess a new sample's label first.</span><span class="yes">Make one copy per label, fill each in, and keep the copy the forest labels correctly most.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="52-random-forests-part-1-building-using-and-evaluating.html"><small>Previous</small>Random Forests Part 1 - Building, Using and Evaluating</a> <a href="54-random-forests-in-r.html"><small>Next</small>Random Forests in R</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

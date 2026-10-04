@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Neural Networks Part 5: ArgMax and SoftMax — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>82</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 82 · 14.1 min</div>
+    <h1>Neural Networks Part 5: ArgMax and SoftMax</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=KpKog-L9veg" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: Neural Networks / Deep Learning (video 10)</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">When a neural network has several outputs, its raw output values can be any size, so they are hard to read. This video shows two layers that fix this, ArgMax and SoftMax, and explains why we classify with one and train with the other.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Raw output values can be above 1 or below 0. ArgMax sets the largest value to 1 and all others to 0, which is very easy to read. But its derivative is zero or undefined, so we cannot use it for backpropagation. SoftMax turns the raw values into numbers between 0 and 1 that keep the same order and add up to 1, and it has a useful derivative. So networks often train with SoftMax and classify new data with ArgMax.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh reuses the iris network from the previous video. It takes petal width and sepal width and gives one raw output value for each species: Setosa, Versicolor and Virginica. With petal width 0 and sepal width 1, the raw outputs are 1.43, -0.4 and 0.23.</p>
+    <p>These numbers are not between 0 and 1. Setosa is above 1, and Versicolor is below 0. This wide range makes the output harder to interpret than it needs to be. So, when there is more than one output, the raw values usually go through an ArgMax layer or a SoftMax layer before the final decision.</p>
+    <p>The figure shows the same three raw values going both ways. ArgMax keeps only the winner. SoftMax keeps information about every class.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 280" role="img" aria-label="Raw outputs 1.43, -0.4 and 0.23 go left through ArgMax to 1, 0, 0 and right through SoftMax to 0.69, 0.10, 0.21">
+        <defs>
+          <marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker>
+        </defs>
+        <text x="110" y="45" text-anchor="middle" class="sv-tb">ArgMax</text>
+        <text x="380" y="45" text-anchor="middle" class="sv-tb">Raw output</text>
+        <text x="630" y="45" text-anchor="middle" class="sv-tb">SoftMax</text>
+
+        <rect x="290" y="70" width="180" height="46" rx="8" class="sv-key-soft"/>
+        <rect x="290" y="140" width="180" height="46" rx="8" class="sv-key-soft"/>
+        <rect x="290" y="210" width="180" height="46" rx="8" class="sv-key-soft"/>
+        <text x="380" y="98" text-anchor="middle" class="sv-t">Setosa   1.43</text>
+        <text x="380" y="168" text-anchor="middle" class="sv-t">Versicolor   -0.40</text>
+        <text x="380" y="238" text-anchor="middle" class="sv-t">Virginica   0.23</text>
+
+        <line x1="286" y1="93" x2="168" y2="93" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah1)"/>
+        <line x1="286" y1="163" x2="168" y2="163" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah1)"/>
+        <line x1="286" y1="233" x2="168" y2="233" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah1)"/>
+        <line x1="474" y1="93" x2="522" y2="93" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah1)"/>
+        <line x1="474" y1="163" x2="522" y2="163" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah1)"/>
+        <line x1="474" y1="233" x2="522" y2="233" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah1)"/>
+
+        <rect x="60" y="70" width="100" height="46" rx="8" class="sv-acc-soft"/>
+        <rect x="60" y="140" width="100" height="46" rx="8" class="sv-paper2"/>
+        <rect x="60" y="210" width="100" height="46" rx="8" class="sv-paper2"/>
+        <text x="110" y="99" text-anchor="middle" class="sv-tb">1</text>
+        <text x="110" y="169" text-anchor="middle" class="sv-tb">0</text>
+        <text x="110" y="239" text-anchor="middle" class="sv-tb">0</text>
+
+        <rect x="530" y="70" width="200" height="46" rx="4" class="sv-paper2"/>
+        <rect x="530" y="140" width="200" height="46" rx="4" class="sv-paper2"/>
+        <rect x="530" y="210" width="200" height="46" rx="4" class="sv-paper2"/>
+        <rect x="530" y="70" width="138" height="46" rx="4" class="sv-good"/>
+        <rect x="530" y="140" width="20" height="46" rx="4" class="sv-good"/>
+        <rect x="530" y="210" width="42" height="46" rx="4" class="sv-good"/>
+        <text x="676" y="98" class="sv-t">0.69</text>
+        <text x="558" y="168" class="sv-t">0.10</text>
+        <text x="580" y="238" class="sv-t">0.21</text>
+      </svg>
+      <figcaption>ArgMax gives 1 to the largest raw value and 0 to the rest; SoftMax keeps the same order, stays between 0 and 1, and its bars add up to 1.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Run the input through the network and get one raw output value per class. Here they are 1.43, -0.4 and 0.23.</li>
+      <li>ArgMax sets the largest value to 1 and every other value to 0. Setosa has the largest value, so the prediction is Setosa. The prediction is simply the output that holds the 1.</li>
+      <li>ArgMax has one problem: we cannot use it to optimize the weights and biases. Its outputs are the constants 0 and 1, so its slope is zero, as the figure below shows.</li>
+      <li>A zero derivative goes into the chain rule and makes the whole derivative zero. With a zero gradient, gradient descent takes no step toward better parameter values. So ArgMax cannot be used for backpropagation.</li>
+      <li>SoftMax fixes this. For each class, raise \(e\) to that class's raw value and divide by the sum of \(e\) raised to every raw value. Only the numerator changes from class to class.</li>
+      <li>Look at the results: they keep the ranking of the raw values, they are all between 0 and 1, and they add up to 1. If the classes are mutually exclusive, we can read them as predicted "probabilities".</li>
+      <li>SoftMax has a derivative that is not always zero, so gradient descent can use it. Networks with several outputs often train with SoftMax and classify new observations with ArgMax.</li>
+      <li>With SoftMax outputs, we often measure fit with cross entropy instead of the sum of squared residuals. The next video in the series covers cross entropy.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 270" role="img" aria-label="ArgMax output as a step function around the value 0.23, flat at 0 and flat at 1">
+        <line x1="80" y1="210" x2="710" y2="210" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="80" y1="210" x2="80" y2="40" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="390" y1="60" x2="390" y2="210" class="sv-line" stroke-width="1.2" stroke-dasharray="5 4"/>
+        <line x1="80" y1="190" x2="384" y2="190" class="sv-stroke-key" stroke-width="3"/>
+        <line x1="390" y1="70" x2="700" y2="70" class="sv-stroke-acc" stroke-width="3"/>
+        <circle cx="390" cy="190" r="5" class="sv-paper"/>
+        <circle cx="390" cy="190" r="5" class="sv-stroke-key" stroke-width="2"/>
+        <circle cx="390" cy="70" r="5" class="sv-acc"/>
+        <text x="68" y="194" text-anchor="end" class="sv-ts">0</text>
+        <text x="68" y="74" text-anchor="end" class="sv-ts">1</text>
+        <text x="390" y="230" text-anchor="middle" class="sv-tm">0.23</text>
+        <text x="235" y="178" text-anchor="middle" class="sv-t">slope = 0</text>
+        <text x="545" y="58" text-anchor="middle" class="sv-t">slope = 0</text>
+        <text x="560" y="245" text-anchor="middle" class="sv-ts">another raw output value</text>
+        <text x="90" y="32" class="sv-ts">ArgMax output</text>
+      </svg>
+      <figcaption>Against the second largest value, 0.23, ArgMax outputs 0 below it and 1 above it, so both pieces are flat and give a derivative of zero.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">ArgMax</span><div class="math">$$ \text{ArgMax}_i = \begin{cases} 1 & \text{if } \text{raw}_i \text{ is the largest raw value} \\ 0 & \text{otherwise} \end{cases} $$</div><p class="explain"><b>Symbols:</b> \(i\) is one output class; \(\text{raw}_i\) is the raw output value for that class. <b>What it tells you:</b> only the winning class gets a 1, so the output is very easy to read but is made of constants.</p></div>
+    <div class="formula"><span class="lbl">SoftMax</span><div class="math">$$ p_i = \frac{e^{\text{raw}_i}}{\sum_{j} e^{\text{raw}_j}} $$</div><p class="explain"><b>Symbols:</b> \(p_i\) is the SoftMax output (predicted probability) for class \(i\); \(e\) is Euler's number, about 2.718; \(\text{raw}_i\) is the raw output for class \(i\); the sum in the denominator runs over every class \(j\). <b>What it tells you:</b> each class gets its share of the total, so the outputs are between 0 and 1, keep the original order, and add up to 1.</p></div>
+    <div class="formula"><span class="lbl">SoftMax derivative, same class</span><div class="math">$$ \frac{\partial p_{\text{setosa}}}{\partial\, \text{raw}_{\text{setosa}}} = p_{\text{setosa}}\,(1 - p_{\text{setosa}}) $$</div><p class="explain"><b>Symbols:</b> \(\partial\) means "the rate of change of"; \(p_{\text{setosa}}\) is the SoftMax output for Setosa; \(\text{raw}_{\text{setosa}}\) is the raw output for Setosa. <b>What it tells you:</b> how much Setosa's predicted probability moves when its own raw value changes.</p></div>
+    <div class="formula"><span class="lbl">SoftMax derivative, other class</span><div class="math">$$ \frac{\partial p_{\text{setosa}}}{\partial\, \text{raw}_{\text{versicolor}}} = -\,p_{\text{setosa}}\; p_{\text{versicolor}} $$</div><p class="explain"><b>Symbols:</b> \(p_{\text{versicolor}}\) is the SoftMax output for Versicolor; \(\text{raw}_{\text{versicolor}}\) is its raw output. The same form holds for Virginica. <b>What it tells you:</b> the other classes' raw values also change Setosa's probability, so backpropagation needs these derivatives too.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>The raw outputs are 1.43 for Setosa, -0.4 for Versicolor and 0.23 for Virginica. ArgMax gives 1 to Setosa and 0 to the other two, so the network predicts Setosa.</p>
+      <p>For SoftMax, the shared denominator is \(e^{1.43} + e^{-0.4} + e^{0.23} \approx 4.18 + 0.67 + 1.26 = 6.11\). Then:</p>
+      <p>Josh gets 0.69 for Setosa, 0.10 for Versicolor and 0.21 for Virginica. Dividing each numerator by 6.11 by hand gives about 0.68, 0.11 and 0.21. The small gaps come only from rounding. Either way, the values add up to 1, and Setosa still ranks first.</p>
+      <p>Now the derivatives for Setosa's probability. With respect to its own raw value: \(0.69 \times (1 - 0.69) \approx 0.21\). With respect to Versicolor: \(-0.69 \times 0.10 \approx -0.07\). With respect to Virginica: \(-0.69 \times 0.21 \approx -0.14\), which Josh shows as -0.15 after rounding. None of these is zero, so gradient descent can use them.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not put much trust in SoftMax "probabilities". They depend on the weights and biases, which depend on random initial values. A different start can give a network that classifies just as well but gives different probabilities.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> SoftMax outputs can be read as probabilities only when the output classes are mutually exclusive. The sum of 1 is what allows this reading.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> ArgMax is fine for making the final call on new data, but not for training. Its derivative is zero or undefined, so the chain rule gives zero and gradient descent does not move.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> When the derivative of Setosa's probability is needed, do not forget the other classes. Their raw values are in the denominator, so each one has its own derivative.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>Why not train a classifier with ArgMax on the output?</summary><div class="a">ArgMax outputs only the constants 0 and 1, so its slope is zero everywhere, or undefined at the jump. That zero enters the chain rule and makes the whole gradient zero. Gradient descent then cannot update the weights and biases.</div></details>
+    <details class="qa" open><summary>What three properties does SoftMax guarantee?</summary><div class="a">It keeps the ranking of the raw output values. Every output is between 0 and 1, no matter how many classes there are. And the outputs add up to 1, so for mutually exclusive classes we can read them as predicted probabilities.</div></details>
+    <details class="qa" open><summary>Can you trust SoftMax outputs as real probabilities?</summary><div class="a">Only loosely. They depend on the weights and biases, and those depend on the random initial values. Two networks can classify equally well and still give different probabilities for the same input.</div></details>
+    <details class="qa" open><summary>What is the derivative of a SoftMax output?</summary><div class="a">With respect to its own raw value it is \(p_i(1 - p_i)\). With respect to another class's raw value it is \(-p_i p_j\). For example, with Setosa at 0.69 the first gives about 0.21, and with Versicolor at 0.10 the second gives about -0.07.</div></details>
+    <details class="qa" open><summary>How do SoftMax and ArgMax work together in practice?</summary><div class="a">We often use SoftMax during training because it has a useful derivative. Then we use ArgMax to classify new observations because its output is very easy to read. With SoftMax, the loss is often cross entropy rather than the sum of squared residuals.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Raw output values of a multi-output network can be above 1 or below 0, which makes them hard to read.</li>
+      <li>ArgMax sets the largest value to 1 and all others to 0, so the prediction is the output with the 1.</li>
+      <li>ArgMax has a derivative of zero or undefined, so we cannot use it for backpropagation.</li>
+      <li>SoftMax divides \(e\) raised to each raw value by the sum of \(e\) raised to all raw values.</li>
+      <li>SoftMax outputs keep the ranking, stay between 0 and 1, and add up to 1.</li>
+      <li>Treat SoftMax "probabilities" with care, because they depend on random initial weights and biases.</li>
+      <li>SoftMax has a non-zero derivative, so networks often train with SoftMax and classify with ArgMax.</li>
+      <li>With SoftMax, fit is often measured with cross entropy, which is the topic of the next video.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">ArgMax and SoftMax</span><span class="board-tag">train with SoftMax, classify with ArgMax</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 270" role="img" aria-label="The raw outputs 1.43, −0.4 and 0.23 poke above 1 and below 0; ArgMax turns them into 1, 0, 0 with slope 0, while SoftMax turns them into bars between 0 and 1 that add up to 1.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <rect x="32" y="105" width="356" height="90" class="sv-paper"/>
+            <line x1="32" y1="105" x2="388" y2="105" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="6 5"/>
+            <line x1="32" y1="195" x2="388" y2="195" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <rect x="51" y="105" width="22" height="90" rx="3" class="sv-key"/>
+              <rect x="169" y="66.3" width="22" height="128.7" rx="3" class="sv-key"/>
+              <rect x="199" y="195" width="22" height="36" rx="3" class="sv-acc"/>
+              <rect x="229" y="174.3" width="22" height="20.7" rx="3" class="sv-good"/>
+              <rect x="287" y="132.9" width="22" height="62.1" rx="3" class="sv-key"/>
+              <rect x="317" y="186" width="22" height="9" rx="3" class="sv-acc"/>
+              <rect x="347" y="176.1" width="22" height="18.9" rx="3" class="sv-good"/>
+            </g>
+            <line x1="84" y1="195" x2="100" y2="195" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round"/>
+            <line x1="114" y1="195" x2="130" y2="195" class="sv-stroke-good" stroke-width="4" stroke-linecap="round"/>
+            <path d="M161 150 H141" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <path d="M257 150 H277" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="24" y="111" text-anchor="end" class="sv-ts">1</text>
+            <text x="24" y="201" text-anchor="end" class="sv-ts">0</text>
+            <text x="92" y="30" text-anchor="middle" class="sv-tb">ArgMax</text>
+            <text x="210" y="30" text-anchor="middle" class="sv-tb">raw output</text>
+            <text x="328" y="30" text-anchor="middle" class="sv-tb">SoftMax</text>
+            <text x="180" y="57" text-anchor="middle" class="sv-ts">1.43</text>
+            <text x="210" y="251" text-anchor="middle" class="sv-ts">−0.4</text>
+            <text x="92" y="251" text-anchor="middle" class="sv-t">slope 0</text>
+            <text x="328" y="251" text-anchor="middle" class="sv-t">adds up to 1</text>
+          </svg>
+          <p>Raw outputs for Setosa, Versicolor and Virginica can sit above 1 or below 0. ArgMax keeps only the winner, but its slope is 0, so backpropagation cannot use it. SoftMax stays between 0 and 1, keeps the order, adds up to 1 and has a useful derivative.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Raw output value</dt><dd>One number per class. It can be above 1 or below 0.</dd>
+            <dt>ArgMax</dt><dd>The largest raw value becomes 1, all others 0.</dd>
+            <dt>SoftMax</dt><dd>Turns raw values into numbers between 0 and 1 that add up to 1.</dd>
+            <dt>Predicted probability</dt><dd>A SoftMax output, read this way only if the classes are mutually exclusive.</dd>
+            <dt>Cross entropy</dt><dd>Often measures fit with SoftMax, instead of the sum of squared residuals.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Raw outputs</b>1.43, −0.4, 0.23</li>
+            <li><b>ArgMax</b>largest to 1, the rest to 0</li>
+            <li><b>Slope is 0</b>no backpropagation with ArgMax</li>
+            <li><b>SoftMax</b>\(e^{\text{raw}}\) over their sum</li>
+            <li><b>Probabilities</b>0.69, 0.10, 0.21; sum 1</li>
+            <li><b>Use both</b>train: SoftMax; new data: ArgMax</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$p_i=\frac{e^{\text{raw}_i}}{\sum_j e^{\text{raw}_j}}$$
+          $$\frac{\partial p_i}{\partial\,\text{raw}_i}=p_i(1-p_i)$$
+          $$\frac{\partial p_i}{\partial\,\text{raw}_j}=-p_i\,p_j$$
+          <ul class="keys">
+            <li>\(p_i\) is the SoftMax output for class \(i\); the sum runs over every class.</li>
+            <li>In the last line, \(j\) is another class.</li>
+            <li>For Setosa: \(0.69(1-0.69)\approx 0.21\); against Versicolor, \(-0.69\times 0.10\approx -0.07\).</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>class</th><th>raw</th><th>\(e^{\text{raw}}\)</th><th>SoftMax</th></tr>
+            <tr><td>Setosa</td><td>1.43</td><td>4.18</td><td>0.69</td></tr>
+            <tr><td>Versicolor</td><td>−0.4</td><td>0.67</td><td>0.10</td></tr>
+            <tr><td>Virginica</td><td>0.23</td><td>1.26</td><td>0.21</td></tr>
+            <tr class="final"><td>sum</td><td></td><td>6.11</td><td>1</td></tr>
+          </table>
+          <p class="hand">ArgMax gives 1, 0, 0, so it predicts Setosa. By hand, dividing by 6.11 gives 0.68, 0.11, 0.21; the gaps are rounding.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">SoftMax outputs are trustworthy probabilities.</span><span class="yes">They depend on random initial weights and biases, so an equally good network can give different ones.</span></li>
+            <li><span class="no">ArgMax works for training too.</span><span class="yes">Its derivative is zero or undefined, so the chain rule gives zero and gradient descent does not move.</span></li>
+            <li><span class="no">Setosa's probability depends only on Setosa's raw value.</span><span class="yes">Every raw value is in the denominator, so each one has its own derivative.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="81-neural-networks-pt-4-multiple-inputs-and-outputs.html"><small>Previous</small>Neural Networks Pt. 4: Multiple Inputs and Outputs</a> <a href="83-the-softmax-derivative-step-by-step.html"><small>Next</small>The SoftMax Derivative, Step-by-Step</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

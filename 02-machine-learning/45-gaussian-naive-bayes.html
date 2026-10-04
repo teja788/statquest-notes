@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gaussian Naive Bayes — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>45</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 45 · 9.4 min</div>
+    <h1>Gaussian Naive Bayes</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=H3EjCKtlVog" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Gaussian Naive Bayes classifies things when the measurements are continuous numbers, such as grams of popcorn per day. It fits a normal curve to each measurement in each class, and uses the height of that curve as the likelihood.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh predicts who loves the 1990 movie Troll 2, using three daily habits: popcorn, soda pop and candy. For each class he fits a Gaussian curve to each measurement, using its mean and standard deviation. To score a new person, he starts with an initial guess, then multiplies it by the height of each curve at that person's values. The numbers get very small, so he takes logs and adds them instead. The class with the larger log score wins.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>This quest builds on Multinomial Naive Bayes. There we counted discrete things, such as words in a message. Here the measurements are continuous numbers, such as grams of popcorn. So we use smooth curves instead of counts.</p>
+    <p>The fix is simple. For each class, and for each measurement, we take the mean and the standard deviation from the training data. Then we draw the Gaussian, or normal, curve with that mean and that standard deviation. For popcorn, the people who love Troll 2 have mean 24 and standard deviation 4. The people who do not love it have mean 4 and standard deviation 2. The method is named after these curves.</p>
+    <p>Now a new person arrives with a value for each measurement. The likelihood of that value is the height of the curve above it. In other words, you find the value on the x axis, go up to the curve, and read the y axis. We then multiply the three likelihoods together, as if the three habits were unrelated. That last part is the "naive" part of the name.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 320" role="img" aria-label="Two Gaussian curves for popcorn, one for each class, with the new person's value of 20 grams marked and its likelihood of 0.06 read off the curve">
+        <defs>
+          <marker id="ar1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,1 L9,5 L0,9 z" class="sv-acc"/>
+          </marker>
+        </defs>
+        <line x1="70" y1="240" x2="716" y2="240" class="sv-line" stroke-width="2"/>
+        <line x1="70" y1="70" x2="70" y2="240" class="sv-line" stroke-width="2"/>
+        <text transform="translate(50,160) rotate(-90)" text-anchor="middle" class="sv-ts">likelihood = curve height</text>
+
+        <line x1="136" y1="240" x2="136" y2="246" class="sv-line" stroke-width="2"/>
+        <line x1="277" y1="240" x2="277" y2="246" class="sv-line" stroke-width="2"/>
+        <line x1="418" y1="240" x2="418" y2="246" class="sv-line" stroke-width="2"/>
+        <line x1="560" y1="240" x2="560" y2="246" class="sv-line" stroke-width="2"/>
+        <line x1="700" y1="240" x2="700" y2="246" class="sv-line" stroke-width="2"/>
+        <text x="136" y="260" text-anchor="middle" class="sv-ts">0</text>
+        <text x="277" y="260" text-anchor="middle" class="sv-ts">10</text>
+        <text x="418" y="260" text-anchor="middle" class="sv-ts">20</text>
+        <text x="560" y="260" text-anchor="middle" class="sv-ts">30</text>
+        <text x="700" y="260" text-anchor="middle" class="sv-ts">40</text>
+        <text x="400" y="300" text-anchor="middle" class="sv-ts">Popcorn eaten per day (grams)</text>
+
+        <polyline points="80,240 94,240 108,238 122,233 136,220 150,191 164,149 178,108 192,90 206,108 220,149 235,191 249,220 263,233 277,238 291,240 305,240" class="sv-stroke-key" stroke-width="2.5"/>
+        <text x="192" y="76" text-anchor="middle" class="sv-t">Does not love · mean 4, sd 2</text>
+
+        <polyline points="249,240 277,240 305,239 333,237 362,230 390,216 418,194 446,174 475,165 503,174 531,194 560,216 588,230 616,237 644,239 672,240 700,240" class="sv-stroke-acc" stroke-width="2.5"/>
+        <text x="475" y="152" text-anchor="middle" class="sv-t">Loves Troll 2 · mean 24, sd 4</text>
+
+        <line x1="418" y1="240" x2="418" y2="194" class="sv-stroke-acc" stroke-width="2" stroke-dasharray="5 4"/>
+        <circle cx="418" cy="194" r="5" class="sv-acc"/>
+        <text x="418" y="282" text-anchor="middle" class="sv-tm">new person: 20 g</text>
+
+        <rect x="248" y="158" width="152" height="28" rx="5" class="sv-paper"/>
+        <rect x="248" y="158" width="152" height="28" rx="5" class="sv-line" stroke-width="1"/>
+        <text x="324" y="177" text-anchor="middle" class="sv-tm">likelihood = 0.06</text>
+        <line x1="402" y1="176" x2="412" y2="190" class="sv-stroke-acc" stroke-width="1.5" marker-end="url(#ar1)"/>
+      </svg>
+      <figcaption>Notice how the likelihood is read: go up from 20 grams to the "loves Troll 2" curve, then read its height, 0.06.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Collect the training data. Josh measured popcorn, soda pop and candy for 16 people, 8 who love Troll 2 and 8 who do not.</li>
+      <li>For every class and every measurement, compute the mean and the standard deviation. Draw the matching Gaussian curve. That gives six curves in this example.</li>
+      <li>Take the new person: 20 g of popcorn, 500 ml of soda pop and 25 g of candy each day.</li>
+      <li>Make an initial guess for each class. Any probability is allowed, but a common choice comes from the training data. Here 8 of the 16 people love Troll 2, so both guesses are 0.5.</li>
+      <li>Score one class. Multiply its initial guess by the three likelihoods, read as curve heights for that class.</li>
+      <li>Take the natural log of everything. The multiplication becomes a sum of logs, which protects you from underflow.</li>
+      <li>Repeat for the other class, then pick the class with the larger log score.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 270" role="img" aria-label="The four log terms for the loves class add up to minus 124, and a number line compares that score with minus 48 for the does not love class">
+        <defs>
+          <marker id="ar2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,1 L9,5 L0,9 z" class="sv-ink2"/>
+          </marker>
+        </defs>
+        <text x="30" y="30" class="sv-tb">Loves Troll 2: add the four logs</text>
+
+        <rect x="30" y="48" width="120" height="52" rx="6" class="sv-paper2"/>
+        <text x="90" y="70" text-anchor="middle" class="sv-ts">initial guess</text>
+        <text x="90" y="90" text-anchor="middle" class="sv-tm">−0.69</text>
+        <text x="163" y="80" text-anchor="middle" class="sv-t">+</text>
+
+        <rect x="176" y="48" width="120" height="52" rx="6" class="sv-paper2"/>
+        <text x="236" y="70" text-anchor="middle" class="sv-ts">popcorn</text>
+        <text x="236" y="90" text-anchor="middle" class="sv-tm">−2.8</text>
+        <text x="309" y="80" text-anchor="middle" class="sv-t">+</text>
+
+        <rect x="322" y="48" width="120" height="52" rx="6" class="sv-paper2"/>
+        <text x="382" y="70" text-anchor="middle" class="sv-ts">soda pop</text>
+        <text x="382" y="90" text-anchor="middle" class="sv-tm">−5.5</text>
+        <text x="455" y="80" text-anchor="middle" class="sv-t">+</text>
+
+        <rect x="468" y="48" width="120" height="52" rx="6" class="sv-key-soft"/>
+        <text x="528" y="70" text-anchor="middle" class="sv-ts">candy</text>
+        <text x="528" y="90" text-anchor="middle" class="sv-tm">−115</text>
+        <text x="606" y="80" text-anchor="middle" class="sv-t">=</text>
+
+        <rect x="624" y="48" width="112" height="52" rx="6" class="sv-acc-soft"/>
+        <text x="680" y="82" text-anchor="middle" class="sv-tb">−124</text>
+
+        <line x1="60" y1="180" x2="716" y2="180" class="sv-line" stroke-width="2" marker-end="url(#ar2)"/>
+        <line x1="90" y1="172" x2="90" y2="188" class="sv-stroke-acc" stroke-width="2.5"/>
+        <line x1="463" y1="172" x2="463" y2="188" class="sv-stroke-key" stroke-width="2.5"/>
+        <text x="90" y="162" text-anchor="middle" class="sv-tm">loves: −124</text>
+        <text x="463" y="162" text-anchor="middle" class="sv-tm">does not love: −48</text>
+        <text x="716" y="200" text-anchor="end" class="sv-ts">higher score is better</text>
+
+        <rect x="30" y="212" width="706" height="34" rx="6" class="sv-good-soft"/>
+        <text x="48" y="234" class="sv-t">The higher score wins, so we classify this person as: does not love Troll 2.</text>
+      </svg>
+      <figcaption>Notice that the candy term, −115, is far larger than the others, so it decides the whole comparison.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Score for one class</span>
+      <div class="math">$$ \text{score}(C) \;=\; P(C)\times L(x_1 \mid C)\times L(x_2 \mid C)\times L(x_3 \mid C) $$</div>
+      <p class="explain"><b>Symbols:</b> \(C\) is one class, here "loves Troll 2" or "does not love Troll 2". \(P(C)\) is the initial guess for that class, called the prior probability. \(x_1, x_2, x_3\) are the new person's popcorn, soda pop and candy values. \(L(x \mid C)\) is the likelihood of that value under the class \(C\), which is the height of that class's curve. <b>What it tells you:</b> the score of a class is its initial guess, adjusted by how well each new measurement fits that class.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">The Gaussian curve height</span>
+      <div class="math">$$ L(x \mid C) \;=\; \frac{1}{\sigma_C\sqrt{2\pi}}\;e^{-\frac{(x-\mu_C)^2}{2\sigma_C^2}} $$</div>
+      <p class="explain"><b>Symbols:</b> \(x\) is the new measured value. \(\mu_C\) is the mean of that measurement in class \(C\), for example 24 grams of popcorn for the people who love Troll 2. \(\sigma_C\) is the standard deviation of that measurement in the same class, for example 4. \(e\) is Euler's number, about 2.72, and \(\pi\) is about 3.14. <b>What it tells you:</b> this is the curve Josh draws, so it gives the exact number he reads off the y axis.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Log score</span>
+      <div class="math">$$ \log\big(\text{score}(C)\big) \;=\; \log P(C) + \log L(x_1 \mid C) + \log L(x_2 \mid C) + \log L(x_3 \mid C) $$</div>
+      <p class="explain"><b>Symbols:</b> \(\log\) is the natural log, log base \(e\), the usual choice in statistics and machine learning. The other symbols are the same as above. <b>What it tells you:</b> the log turns the product into a sum, so tiny numbers become moderate negative numbers instead of underflowing to zero.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>A new person eats 20 g of popcorn, drinks 500 ml of soda pop and eats 25 g of candy each day. Both initial guesses are 0.5, because 8 of the 16 training people love Troll 2.</p>
+      <p>For the class "loves Troll 2", the likelihood for popcorn is 0.06, the likelihood for soda pop is 0.004, and the likelihood for candy is a very, very small number. Multiplying them would risk underflow, so we take logs and add:</p>
+      <div class="math">$$ \log\big(\text{score}(\text{Loves})\big) = -0.69 + (-2.8) + (-5.5) + (-115) = -124 $$</div>
+      <p>Now we do exactly the same for the class "does not love Troll 2": the same initial guess of 0.5, the three likelihoods read from that class's curves, and the same sum of logs. That score comes out at −48.</p>
+      <div class="math">$$ -48 \;>\; -124 \quad\Rightarrow\quad \text{classify as: does not love Troll 2} $$</div>
+      <p>The raw data almost suggests the opposite. This person eats far more popcorn than the average person who does not love Troll 2, and drinks as much soda pop as the average person who does love it. But they eat far more candy than the people who love Troll 2, so the candy log likelihood, −115, pulls the score down hard. Candy alone decides the answer here.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> A likelihood is not a probability. It is the height of the curve at one point, so it can be larger than 1. Probability is the area under a region of the curve, which is a different quantity.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not multiply the raw likelihoods in code. Every computer has a limit to how close a number can get to zero. Below that limit you hit underflow and the result becomes meaningless. Take logs and add them.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Compare the signed values carefully. Both log scores are negative, and −48 is larger than −124. The class with the score closest to zero is the winner.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> One measurement can dominate the sum, as candy does here. That may be fine, or it may mean the other measurements add nothing. Use cross validation to decide which measurements to keep.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>How does Gaussian Naive Bayes differ from Multinomial Naive Bayes?</summary><div class="a">Multinomial Naive Bayes works with counts of discrete things, such as words in a message. Gaussian Naive Bayes works with continuous measurements, such as grams of candy per day. Instead of counting, we fit a normal curve to each measurement in each class, using its mean and standard deviation. The likelihood is then the height of that curve at the new value.</div></details>
+
+    <details class="qa" open><summary>Why do we take logs of the scores?</summary><div class="a">The score is a product of a prior and several likelihoods, and those likelihoods can be extremely small. Multiplying them can push the result below the smallest number the computer can represent, which is underflow. The log turns the product into a sum of moderate negative numbers. The log is an increasing function, so the ranking of the classes does not change.</div></details>
+
+    <details class="qa" open><summary>Where do the prior probabilities come from?</summary><div class="a">The prior is just an initial guess about each class before we look at the new measurements. It can be any probability you want. A common choice is the proportion of each class in the training data. In this example 8 of 16 people love Troll 2, so both priors are 0.5.</div></details>
+
+    <details class="qa" open><summary>How would you decide which measurements to use?</summary><div class="a">I would test the subsets with cross validation and compare the classification results. In this example candy carries most of the signal, so a model with candy alone might do as well as the full model.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Gaussian Naive Bayes is for continuous measurements, not counts.</li>
+      <li>For each class and each measurement, fit a normal curve with the training mean and standard deviation.</li>
+      <li>The likelihood of a new value is the height of that curve above the value.</li>
+      <li>Start each class with an initial guess, the prior, often the class proportion in the training data.</li>
+      <li>The score is the prior times the likelihoods, one per measurement.</li>
+      <li>Take natural logs and add them, so tiny numbers do not underflow.</li>
+      <li>The class with the larger log score wins; here −48 beat −124.</li>
+      <li>One strong measurement can decide everything, so use cross validation to choose your measurements.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Gaussian Naive Bayes</span><span class="board-tag">read the curve heights, add the logs</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 290" role="img" aria-label="The popcorn curve for people who love Troll 2 has mean 24 and sd 4; above the new person's 20 grams its height, the likelihood, is 0.06. Below, the log scores as bars: loves Troll 2 is −124, almost all of it candy at −115, and does not love is −48, which is closer to zero and wins.">
+            <line x1="60" y1="134" x2="364" y2="134" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <polyline points="100,133.8 116,133 124,132 132,130.1 140,127 148,122.1 156,115 164,105.4 172,93.7 180,80.6 188,67.6 196,56.3 204,48.7 212,46 220,48.7 228,56.3 236,67.6 244,80.6 252,93.7 260,105.4 268,115 276,122.1 284,127 292,130.1 300,132 308,133 324,133.8" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="180" y1="134" x2="180" y2="88" class="sv-stroke-acc" stroke-width="2.5" stroke-dasharray="5 4" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <circle cx="180" cy="80.6" r="6" class="sv-acc"/>
+              <rect x="124" y="192" width="230" height="20" class="sv-acc"/>
+              <rect x="354" y="192" width="18" height="20" class="sv-paper"/>
+              <rect x="276" y="228" width="96" height="20" class="sv-key"/>
+            </g>
+            <line x1="372" y1="184" x2="372" y2="256" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round"/>
+            <text x="212" y="28" text-anchor="middle" class="sv-tb">popcorn, loves Troll 2</text>
+            <text x="258" y="72" class="sv-ts">mean 24, sd 4</text>
+            <text x="168" y="86" text-anchor="end" class="sv-t">likelihood 0.06</text>
+            <text x="180" y="154" text-anchor="middle" class="sv-tm">new 20 g</text>
+            <text x="239" y="182" text-anchor="middle" class="sv-ts">candy −115</text>
+            <text x="116" y="207" text-anchor="end" class="sv-tm">loves −124</text>
+            <text x="268" y="243" text-anchor="end" class="sv-tm">does not love −48</text>
+            <text x="380" y="276" text-anchor="end" class="sv-t">closer to zero wins</text>
+          </svg>
+          <p>For each class, fit a normal curve to each measurement; the likelihood of a new value is the curve's height there. Add the logs of the prior and the likelihoods, and the class closer to zero wins: here −48 beats −124, mostly because of candy.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Gaussian curve</dt><dd>The normal bell curve, set by a class's mean and standard deviation.</dd>
+            <dt>Likelihood</dt><dd>The curve's height at the new value. Not a probability; it can exceed 1.</dd>
+            <dt>Prior</dt><dd>The initial guess for a class; here 0.5, since 8 of 16 love Troll 2.</dd>
+            <dt>Naive</dt><dd>Treat the measurements as unrelated, so their likelihoods just multiply.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Training data</b>16 people, 8 love Troll 2</li>
+            <li><b>Fit curves</b>mean and sd: six curves</li>
+            <li><b>New person</b>20 g, 500 ml, 25 g</li>
+            <li><b>Prior</b>0.5 for each class</li>
+            <li><b>Score a class</b>add log prior and log heights</li>
+            <li><b>Compare</b>larger log score wins</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\log\text{score}(C)=\log P(C)+\sum_{j}\log L(x_j\mid C)$$
+          $$L(x\mid C)=\frac{1}{\sigma_C\sqrt{2\pi}}\,e^{-\frac{(x-\mu_C)^2}{2\sigma_C^2}}$$
+          <ul class="keys">
+            <li>\(P(C)\): the prior; \(L\): the curve height for class \(C\).</li>
+            <li>\(\mu_C, \sigma_C\): that class's mean and sd, e.g. 24 and 4 for popcorn in "loves".</li>
+            <li>\(\log\) is the natural log; the sum runs over the three habits.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>loves Troll 2</th><th>value</th><th>log</th></tr>
+            <tr><td>prior</td><td>0.5</td><td>−0.69</td></tr>
+            <tr><td>popcorn 20 g</td><td>0.06</td><td>−2.8</td></tr>
+            <tr><td>soda 500 ml</td><td>0.004</td><td>−5.5</td></tr>
+            <tr><td>candy 25 g</td><td>tiny</td><td>−115</td></tr>
+            <tr class="final"><td>log score</td><td>…</td><td>−124</td></tr>
+          </table>
+          <p class="hand">Does not love scores −48, closer to zero, so this person does not love Troll 2. Candy decides it.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">A likelihood is a probability.</span><span class="yes">It is a curve height, so it can exceed 1. Probability is area under the curve.</span></li>
+            <li><span class="no">Just multiply the raw likelihoods.</span><span class="yes">The product can underflow to a meaningless result. Take logs and add them.</span></li>
+            <li><span class="no">Every measurement pulls equal weight.</span><span class="yes">Candy alone decides here. Use cross validation to pick which measurements to keep.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="44-naive-bayes.html"><small>Previous</small>Naive Bayes</a> <a href="46-decision-and-classification-trees.html"><small>Next</small>Decision and Classification Trees</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

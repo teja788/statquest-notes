@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Naive Bayes — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>44</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 44 · 15.2 min</div>
+    <h1>Naive Bayes</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=O2L2Uv9pdDA" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: —</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video builds a spam filter by counting words. It is the multinomial Naive Bayes classifier, the version most people mean when they say Naive Bayes.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh takes a small pile of messages and splits them into normal messages and spam. For each group he counts the words and turns those counts into probabilities. To classify a new message, he starts with an initial guess for each group and multiplies it by the probability of every word in the message. The group with the bigger result wins. Two fixes make it work in practice: add a small count to every word so nothing is zero, and accept that word order is ignored.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Imagine you receive normal messages from friends and family, and you also receive spam. Spam is unwanted mail, usually a scam or an advertisement. You want to sort new messages into the right pile automatically.</p>
+    <p>The first step is a histogram of every word in the normal messages. A histogram here is just a bar chart of word counts. From the counts you get the probability of each word, given that the message is normal. The word <em>dear</em> occurred 8 times, and there are 17 words in all the normal messages, so the probability is 8/17 = 0.47. The same counting on the spam gives the probability of <em>dear</em> in spam: 2 out of 7 words, which is 0.29.</p>
+    <p>These numbers are probabilities of discrete words, not of something continuous like height or weight. Because of that, many people call them likelihoods instead. Here the two words mean the same thing, so do not worry about the label.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 320" role="img" aria-label="Grouped bar chart of word probabilities in normal messages and in spam for the words dear, friend, lunch and money">
+        <rect x="560" y="24" width="14" height="14" class="sv-acc"/>
+        <text x="582" y="36" class="sv-ts">Normal messages</text>
+        <rect x="672" y="24" width="14" height="14" class="sv-key"/>
+        <text x="694" y="36" class="sv-ts">Spam</text>
+        <line x1="50" y1="250" x2="730" y2="250" class="sv-line" stroke-width="1.5"/>
+
+        <rect x="70" y="101" width="62" height="149" class="sv-acc"/>
+        <text x="101" y="93" class="sv-tm" text-anchor="middle">0.47</text>
+        <rect x="140" y="158" width="62" height="92" class="sv-key"/>
+        <text x="171" y="150" class="sv-tm" text-anchor="middle">0.29</text>
+        <text x="136" y="272" class="sv-t" text-anchor="middle">dear</text>
+
+        <rect x="238" y="158" width="62" height="92" class="sv-acc"/>
+        <text x="269" y="150" class="sv-tm" text-anchor="middle">0.29</text>
+        <rect x="308" y="206" width="62" height="44" class="sv-key"/>
+        <text x="339" y="198" class="sv-tm" text-anchor="middle">0.14</text>
+        <text x="304" y="272" class="sv-t" text-anchor="middle">friend</text>
+
+        <rect x="406" y="193" width="62" height="57" class="sv-acc"/>
+        <text x="437" y="185" class="sv-tm" text-anchor="middle">0.18</text>
+        <rect x="476" y="247" width="62" height="3" class="sv-key"/>
+        <text x="507" y="239" class="sv-tm" text-anchor="middle">0.00</text>
+        <text x="472" y="272" class="sv-t" text-anchor="middle">lunch</text>
+
+        <rect x="574" y="231" width="62" height="19" class="sv-acc"/>
+        <text x="605" y="223" class="sv-tm" text-anchor="middle">0.06</text>
+        <rect x="644" y="70" width="62" height="180" class="sv-key"/>
+        <text x="675" y="62" class="sv-tm" text-anchor="middle">0.57</text>
+        <text x="640" y="272" class="sv-t" text-anchor="middle">money</text>
+
+        <text x="380" y="296" class="sv-ts" text-anchor="middle">Probability of the word, given the type of message</text>
+      </svg>
+      <figcaption>Notice two things: <em>money</em> is far more likely in spam, and <em>lunch</em> never appeared in the spam, so its probability is exactly zero.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Count every word in the normal messages, and count every word in the spam. Keep the two counts separate.</li>
+      <li>Turn each count into a probability. Divide the count of the word by the total number of words in that group.</li>
+      <li>Make an initial guess that a message is normal. Josh uses the training data: 8 of the 12 messages are normal, so the guess is 0.67. This initial guess is called the prior probability.</li>
+      <li>Make the same guess for spam. Four of the 12 messages are spam, so that prior is 0.33.</li>
+      <li>For a new message, multiply the prior for normal by the probability of each word in the message, given a normal message. Repeat the multiplication with the spam numbers.</li>
+      <li>Compare the two results. The bigger one wins, and that is the predicted class.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Two rows of multiplication showing the score for the message Dear Friend as a normal message and as spam">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink3"/></marker>
+        </defs>
+        <text x="24" y="38" class="sv-tb">New message: &#8220;Dear Friend&#8221;</text>
+
+        <text x="24" y="92" class="sv-acc sv-tb">Normal</text>
+        <rect x="100" y="66" width="118" height="46" class="sv-acc-soft"/>
+        <text x="159" y="94" class="sv-tm" text-anchor="middle">prior 0.67</text>
+        <text x="230" y="95" class="sv-ink2 sv-t">&#215;</text>
+        <rect x="248" y="66" width="118" height="46" class="sv-acc-soft"/>
+        <text x="307" y="94" class="sv-tm" text-anchor="middle">dear 0.47</text>
+        <text x="378" y="95" class="sv-ink2 sv-t">&#215;</text>
+        <rect x="396" y="66" width="118" height="46" class="sv-acc-soft"/>
+        <text x="455" y="94" class="sv-tm" text-anchor="middle">friend 0.29</text>
+        <line x1="522" y1="89" x2="552" y2="89" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"/>
+        <rect x="560" y="66" width="150" height="46" class="sv-good-soft"/>
+        <text x="635" y="94" class="sv-tm" text-anchor="middle">score 0.09</text>
+
+        <text x="24" y="192" class="sv-key sv-tb">Spam</text>
+        <rect x="100" y="166" width="118" height="46" class="sv-key-soft"/>
+        <text x="159" y="194" class="sv-tm" text-anchor="middle">prior 0.33</text>
+        <text x="230" y="195" class="sv-ink2 sv-t">&#215;</text>
+        <rect x="248" y="166" width="118" height="46" class="sv-key-soft"/>
+        <text x="307" y="194" class="sv-tm" text-anchor="middle">dear 0.29</text>
+        <text x="378" y="195" class="sv-ink2 sv-t">&#215;</text>
+        <rect x="396" y="166" width="118" height="46" class="sv-key-soft"/>
+        <text x="455" y="194" class="sv-tm" text-anchor="middle">friend 0.14</text>
+        <line x1="522" y1="189" x2="552" y2="189" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"/>
+        <rect x="560" y="166" width="150" height="46" class="sv-paper2"/>
+        <text x="635" y="194" class="sv-tm" text-anchor="middle">score 0.01</text>
+
+        <rect x="100" y="240" width="610" height="40" class="sv-good-soft"/>
+        <text x="405" y="265" class="sv-t" text-anchor="middle">0.09 is greater than 0.01, so &#8220;Dear Friend&#8221; is a normal message</text>
+      </svg>
+      <figcaption>The same chain of multiplication runs once per class, and only the final comparison decides the answer.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Word probability</span>
+      <div class="math">$$ P(w \mid C) = \frac{\text{count}(w, C)}{N_C} $$</div>
+      <p class="explain"><b>Symbols:</b> \(w\) is one word, such as <em>dear</em>. \(C\) is the class, either normal or spam. \(\text{count}(w, C)\) is how many times that word appears in that class. \(N_C\) is the total number of words in that class. <b>What it tells you:</b> how common a word is inside one class, which is the only thing the model learns from the text.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Score for a class</span>
+      <div class="math">$$ \text{score}(C) = P(C) \times \prod_{i=1}^{n} P(w_i \mid C) $$</div>
+      <p class="explain"><b>Symbols:</b> \(P(C)\) is the prior, the initial guess that a message belongs to class \(C\). \(w_1 \dots w_n\) are the words of the new message, in any order. The symbol \(\prod\) means multiply all of these together. <b>What it tells you:</b> how well the class explains the message. The value is proportional to \(P(C \mid \text{message})\), so it is a score, not a real probability.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Decision rule</span>
+      <div class="math">$$ \hat{C} = \arg\max_{C} \; \text{score}(C) $$</div>
+      <p class="explain"><b>Symbols:</b> \(\hat{C}\) is the predicted class. \(\arg\max\) means "the class that gives the largest value". <b>What it tells you:</b> only the ranking of the scores matters, not their size.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Adding counts (alpha)</span>
+      <div class="math">$$ P(w \mid C) = \frac{\text{count}(w, C) + \alpha}{N_C + \alpha V} $$</div>
+      <p class="explain"><b>Symbols:</b> \(\alpha\) is the number of extra counts added to every word, usually 1. \(V\) is the number of different words in the histogram, which is 4 here. <b>What it tells you:</b> no word can have probability zero any more. For <em>lunch</em> in spam this gives \(\frac{0+1}{7+4} = 0.09\) instead of 0.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+
+    <div class="example"><span class="lbl">Example</span>
+      <p><b>Message 1: "Dear Friend".</b> The word probabilities come from the two histograms. In normal messages, <em>dear</em> is 8/17 = 0.47 and <em>friend</em> is 5/17 = 0.29. In spam, <em>dear</em> is 2/7 = 0.29 and <em>friend</em> is 1/7 = 0.14. The priors are 8/12 = 0.67 for normal and 4/12 = 0.33 for spam.</p>
+      <div class="math">$$ \text{score}(\text{normal}) = 0.67 \times 0.47 \times 0.29 = 0.09 $$</div>
+      <div class="math">$$ \text{score}(\text{spam}) = 0.33 \times 0.29 \times 0.14 = 0.01 $$</div>
+      <p>0.09 is larger than 0.01, so the message is classified as normal.</p>
+    </div>
+
+    <div class="example"><span class="lbl">Example</span>
+      <p><b>Message 2: "Lunch Money Money Money Money".</b> The word <em>money</em> is much more likely in spam, so spam looks like the sensible answer. The normal score is the prior times the probability of <em>lunch</em>, times the probability of <em>money</em> four times over. That gives a tiny number, but a positive one.</p>
+      <div class="math">$$ \text{score}(\text{normal}) = 0.67 \times 0.18 \times 0.06^4 $$</div>
+      <p>The spam score collapses to zero. The word <em>lunch</em> never appeared in the spam, so its probability is 0, and anything multiplied by zero is zero. The number of times <em>money</em> appears makes no difference, and the prior makes no difference either.</p>
+      <div class="math">$$ \text{score}(\text{spam}) = 0.33 \times 0 \times 0.57^4 = 0 $$</div>
+      <p>So any message containing <em>lunch</em> would always be called normal. To fix this, add one count to every word in both histograms. The probability of <em>lunch</em> in spam becomes 1/(7+4) = 0.09. Now the spam score is above zero, it beats the normal score, and the message is correctly classified as spam.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>A single unseen word can veto a whole class. One zero in the chain of multiplication sets the score to zero, whatever the other words say. Always add \(\alpha\) counts, and remember that \(\alpha\) is a choice you make, not a value learned from data.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Adding counts to the words does not touch the priors. The extra counts change word histograms only. The number of normal messages and spam messages in the training data stays the same, so 0.67 and 0.33 do not move.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>The values 0.09 and 0.01 are not probabilities. They are proportional to the probability of the class given the message. Do not report them as "a 9% chance of being normal". Use them only to compare classes.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>This is why the method is called naive. It treats all word orders as the same. So "Dear Friend" and "Friend Dear" get the same score. Every language has grammar and common phrases, and the model throws all of that away. It treats a message as a bag of words, picked at random.</p>
+    </div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>What exactly is naive about Naive Bayes?</summary><div class="a">It assumes the words are independent of each other, given the class. In practice that means word order and phrases are ignored completely, so "dear friend" and "friend dear" score the same. Tracking every reasonable phrase in a language would be impossible, so the model drops the whole idea. It is a strong, clearly wrong assumption that still works well.</div></details>
+
+    <details class="qa" open><summary>Why do you add one count to every word?</summary><div class="a">Because a word that never appeared in a class gets probability zero, and zero wipes out the entire product. Then that class can never win, no matter how strong the other evidence is. Adding \(\alpha\) counts to every word, usually one, keeps every probability above zero. It changes only the word probabilities, never the priors.</div></details>
+
+    <details class="qa" open><summary>Where do the priors come from?</summary><div class="a">They are the initial guess that a message belongs to a class, before you read a single word. You can pick any value between zero and one. The common choice is the proportion in the training data, which here was 8 of 12 messages normal and 4 of 12 spam.</div></details>
+
+    <details class="qa" open><summary>How does Naive Bayes sit on the bias-variance trade-off?</summary><div class="a">It has high bias, because it ignores the relationships between words. But it works well in practice, so Josh says it has low variance. That is why it separates normal messages from spam surprisingly well.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Count the words separately for each class, then divide by the total words in that class to get probabilities.</li>
+      <li>Pick a prior for each class, usually the share of that class in the training data.</li>
+      <li>To classify a message, multiply the prior by the probability of each word in the message.</li>
+      <li>Do this once per class and predict the class with the larger result.</li>
+      <li>Those results are scores, proportional to probabilities, not probabilities themselves.</li>
+      <li>A word never seen in a class makes its score zero, which breaks the comparison.</li>
+      <li>Add \(\alpha\) counts, usually one, to every word so that no probability is ever zero.</li>
+      <li>Word order is ignored, which is high bias, but the low variance makes it work well in practice.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Naive Bayes</span><span class="board-tag">count words, multiply, the bigger score wins</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 300" role="img" aria-label="The message Dear Friend is scored once per class. Normal: 0.67 times 0.47 times 0.29 gives 0.09. Spam: 0.33 times 0.29 times 0.14 gives 0.01. The normal bar is far taller, so the message is called normal.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <rect x="120" y="12" width="160" height="40" rx="10" class="sv-paper"/>
+              <rect x="20" y="82" width="160" height="180" rx="12" class="sv-paper"/>
+              <rect x="220" y="82" width="160" height="180" rx="12" class="sv-paper"/>
+            </g>
+            <text x="200" y="38" text-anchor="middle" class="sv-tb">“Dear Friend”</text>
+            <line x1="165" y1="55" x2="118" y2="77" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="235" y1="55" x2="282" y2="77" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="100" y="108" text-anchor="middle" class="sv-tb">normal</text>
+            <text x="300" y="108" text-anchor="middle" class="sv-tb">spam</text>
+            <text x="100" y="136" text-anchor="middle" class="sv-tm">0.67×0.47×0.29</text>
+            <text x="300" y="136" text-anchor="middle" class="sv-tm">0.33×0.29×0.14</text>
+            <text x="100" y="166" text-anchor="middle" class="sv-tb">= 0.09</text>
+            <text x="300" y="166" text-anchor="middle" class="sv-tb">= 0.01</text>
+            <line x1="40" y1="248" x2="160" y2="248" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="240" y1="248" x2="360" y2="248" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <rect x="76" y="176" width="48" height="72" class="sv-acc"/>
+              <rect x="276" y="240" width="48" height="8" class="sv-key"/>
+            </g>
+            <text x="200" y="288" text-anchor="middle" class="sv-tb">0.09 &gt; 0.01: normal</text>
+          </svg>
+          <p>Count the words in each class and turn the counts into probabilities. To classify a message, multiply each class's prior by the probability of every word in it. The bigger score wins.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Prior</dt><dd>The initial guess for a class, here its share of the 12 messages.</dd>
+            <dt>Likelihood</dt><dd>Another name for a word's probability given the class.</dd>
+            <dt>Score</dt><dd>Prior times the word probabilities; proportional to a probability, not one.</dd>
+            <dt>Alpha (α)</dt><dd>Extra counts added to every word, usually 1, so none is zero.</dd>
+            <dt>Naive</dt><dd>Word order is ignored: a message is just a bag of words.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Count words</b>each class kept separate</li>
+            <li><b>Probabilities</b>count ÷ words in that class</li>
+            <li><b>Priors</b>normal 0.67, spam 0.33</li>
+            <li><b>Multiply</b>prior × each word's probability</li>
+            <li><b>Compare</b>the bigger score wins</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{score}(C)=P(C)\times\prod_{i=1}^{n}P(w_i\mid C)$$
+          $$P(w\mid C)=\frac{\text{count}(w,C)+\alpha}{N_C+\alpha V}$$
+          <ul class="keys">
+            <li>\(P(C)\) is the prior; \(N_C\) is the number of words in class \(C\).</li>
+            <li>\(\alpha\) is usually 1; \(V=4\) different words here.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>Dear Friend</th><th>normal</th><th>spam</th></tr>
+            <tr><td>prior</td><td>0.67</td><td>0.33</td></tr>
+            <tr><td>× dear</td><td>0.47</td><td>0.29</td></tr>
+            <tr><td>× friend</td><td>0.29</td><td>0.14</td></tr>
+            <tr class="final"><td>score</td><td>0.09 ✓</td><td>0.01</td></tr>
+          </table>
+          <p class="hand">“Lunch Money…”: lunch is 0 in spam, so spam scores 0. Add one count per word: lunch becomes 0.09 and spam wins.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">A word never seen in a class is harmless.</span><span class="yes">Its zero vetoes the whole class. Always add α counts; α is your choice, not learned.</span></li>
+            <li><span class="no">Adding counts changes the priors too.</span><span class="yes">Only the word histograms change. The priors stay 0.67 and 0.33.</span></li>
+            <li><span class="no">0.09 means a 9% chance of normal.</span><span class="yes">Scores are only proportional to probabilities. Use them to compare classes.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="43-k-nearest-neighbors.html"><small>Previous</small>K-nearest neighbors</a> <a href="45-gaussian-naive-bayes.html"><small>Next</small>Gaussian Naive Bayes</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

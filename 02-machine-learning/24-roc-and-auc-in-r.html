@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ROC and AUC in R — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>24</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 24 · 15.2 min</div>
+    <h1>ROC and AUC in R</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=qcvAqAH60Yw" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Josh draws ROC graphs in R with the pROC package. He makes the graph readable, pulls out the thresholds behind one part of the curve, shades a partial area, and compares two models on one plot.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>This lesson is the hands-on twin of the earlier ROC and AUC video. Josh builds 100 fake samples of weight and obesity, fits a logistic regression, and feeds the true labels and the predicted probabilities into the <code>roc</code> function. A few arguments turn the default plot into a clean graph. Saving the <code>roc</code> output gives a table of true positive rate, false positive rate and threshold. He then shades a partial AUC, and adds a random forest curve on top for comparison.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>An ROC graph summarises a classifier at every threshold. A threshold is the cut-off probability above which you call a sample positive. Each threshold gives one true positive rate and one false positive rate, and that pair is one dot on the graph.</p>
+    <p>In R you do not build this by hand. The <code>roc</code> function in the pROC package takes the known classes and the predicted probabilities. It walks through every threshold, records both rates, draws the curve, and prints the area under it. That area, the AUC, is one number between 0 and 1, so it lets you compare two models quickly.</p>
+    <p>The figure below shows what the <code>roc</code> function returns. Notice the two ends of the curve, because they explain the first and last rows of the table you get back.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 340" role="img" aria-label="An ROC curve with the diagonal chance line, the shaded partial area for the first ten percent of false positives, and the two corner thresholds">
+        <rect x="90" y="40" width="570" height="230" class="sv-paper2"></rect>
+
+        <polygon points="90,270 101,201 119,155 147,114 147,270" class="sv-acc-soft"></polygon>
+
+        <line x1="90" y1="270" x2="660" y2="40" class="sv-line" stroke-width="1.5" stroke-dasharray="5 5"></line>
+        <polyline points="90,270 101,201 119,155 147,114 204,86 290,65 375,54 489,45 660,40" class="sv-stroke-acc" stroke-width="3.5"></polyline>
+
+        <line x1="147" y1="40" x2="147" y2="270" class="sv-line" stroke-width="1.2" stroke-dasharray="3 3"></line>
+
+        <line x1="90" y1="270" x2="660" y2="270" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <line x1="90" y1="40" x2="90" y2="270" class="sv-stroke-ink" stroke-width="1.5"></line>
+
+        <text x="76" y="275" class="sv-ts" text-anchor="end">0</text>
+        <text x="76" y="160" class="sv-ts" text-anchor="end">50</text>
+        <text x="76" y="45" class="sv-ts" text-anchor="end">100</text>
+        <text x="90" y="292" class="sv-ts" text-anchor="middle">0</text>
+        <text x="375" y="292" class="sv-ts" text-anchor="middle">50</text>
+        <text x="660" y="292" class="sv-ts" text-anchor="middle">100</text>
+        <text x="375" y="314" class="sv-t" text-anchor="middle">False positive percentage</text>
+        <text x="20" y="30" class="sv-tb">True positive percentage</text>
+
+        <rect x="168" y="130" width="220" height="24" rx="4" class="sv-paper"></rect>
+        <text x="176" y="147" class="sv-ts">partial AUC: specificity 100 to 90</text>
+
+        <rect x="336" y="194" width="170" height="24" rx="4" class="sv-paper"></rect>
+        <text x="344" y="211" class="sv-ts">diagonal: TPR equals FPR</text>
+
+        <circle cx="660" cy="40" r="5" class="sv-key"></circle>
+        <rect x="392" y="52" width="264" height="24" rx="4" class="sv-paper"></rect>
+        <text x="400" y="69" class="sv-ts">first row: threshold -Inf, all called obese</text>
+
+        <circle cx="90" cy="270" r="5" class="sv-key"></circle>
+        <rect x="100" y="236" width="230" height="24" rx="4" class="sv-paper"></rect>
+        <text x="108" y="253" class="sv-ts">last row: threshold +Inf, none called obese</text>
+      </svg>
+      <figcaption>Notice that the curve is a walk from the top right corner to the bottom left corner as the threshold rises from minus infinity to plus infinity.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Load <code>pROC</code> for the graphs and <code>randomForest</code> for the second model.</li>
+      <li>Set the seed to 420, then build 100 weights and their obese labels.</li>
+      <li>Fit a logistic regression with <code>glm</code> and draw the fitted curve.</li>
+      <li>Call <code>roc</code> with the labels and the fitted probabilities, then fix the cosmetics.</li>
+      <li>Save the <code>roc</code> output to read the thresholds behind any part of the curve.</li>
+      <li>Shade a partial AUC, then add a random forest curve for comparison.</li>
+    </ol>
+
+    <h3>Build the example data and fit the model</h3>
+    <p>The weights come from a normal distribution and are sorted. The label is random, but heavier samples are much more likely to be obese, because the rank sets the probability.</p>
+<pre><code>library(pROC)
+library(randomForest)
+
+set.seed(420)
+num.samples &lt;- 100
+weight &lt;- sort(rnorm(n = num.samples, mean = 172, sd = 29))
+
+# heavier samples get a higher chance of being called obese
+obese &lt;- ifelse(test = runif(n = num.samples) &lt; (rank(weight) / num.samples),
+                yes = 1, no = 0)
+
+plot(x = weight, y = obese)
+
+glm.fit &lt;- glm(obese ~ weight, family = binomial)
+lines(weight, glm.fit$fitted.values)</code></pre>
+    <p><b>The same thing in Python</b>, with numpy and scikit-learn.</p>
+<pre><code>import numpy as np
+import matplotlib.pyplot as plt
+from scipy.stats import rankdata
+from sklearn.linear_model import LogisticRegression
+
+rng = np.random.default_rng(420)
+weight = np.sort(rng.normal(172, 29, size=100))
+obese = (rng.random(100) &lt; rankdata(weight) / 100).astype(int)
+
+model = LogisticRegression(penalty=None).fit(weight.reshape(-1, 1), obese)
+probs = model.predict_proba(weight.reshape(-1, 1))[:, 1]   # like glm.fit$fitted.values</code></pre>
+
+    <h3>Draw the ROC graph and make it readable</h3>
+    <p>The <code>roc</code> function needs the true labels and the estimated probabilities. Everything after that is presentation.</p>
+<pre><code>par(pty = "s")            # square plot region, no ugly side padding
+
+roc(obese, glm.fit$fitted.values, plot = TRUE,
+    legacy.axes = TRUE,   # x axis is 1 - specificity, left to right
+    percent = TRUE,       # axes in percentages, not 0 to 1
+    xlab = "False Positive Percentage",
+    ylab = "True Positive Percentage",
+    col = "#377eb8", lwd = 4,
+    print.auc = TRUE)</code></pre>
+    <p><b>In Python</b> you compute the points with <code>roc_curve</code>, get the area with <code>roc_auc_score</code>, and draw the graph yourself.</p>
+<pre><code>from sklearn.metrics import roc_curve, roc_auc_score
+
+fpr, tpr, thresholds = roc_curve(obese, probs)
+auc = roc_auc_score(obese, probs)
+
+plt.figure(figsize=(5, 5))
+plt.plot(fpr * 100, tpr * 100, color="#377eb8", lw=4)
+plt.plot([0, 100], [0, 100], "k--", lw=1)
+plt.xlabel("False Positive Percentage")
+plt.ylabel("True Positive Percentage")
+plt.title(f"AUC = {auc:.3f}")</code></pre>
+
+    <h3>Read the thresholds behind a piece of the curve</h3>
+    <p>Store the result instead of only plotting it. It holds the sensitivities, the specificities and the thresholds, which you can put in a data frame.</p>
+<pre><code>roc.info &lt;- roc(obese, glm.fit$fitted.values, legacy.axes = TRUE)
+
+roc.df &lt;- data.frame(
+  tpp = roc.info$sensitivities * 100,           # true positive percentage
+  fpp = (1 - roc.info$specificities) * 100,     # false positive percentage
+  thresholds = roc.info$thresholds)
+
+head(roc.df)   # threshold -Inf: tpp 100, fpp 100  (top right corner)
+tail(roc.df)   # threshold  Inf: tpp   0, fpp   0  (bottom left corner)
+
+# the thresholds behind the part of the curve with tpp between 60 and 80
+roc.df[roc.df$tpp &gt; 60 &amp; roc.df$tpp &lt; 80, ]</code></pre>
+    <p><b>In Python</b>, <code>roc_curve</code> already returns the same three vectors.</p>
+<pre><code>import pandas as pd
+
+roc_df = pd.DataFrame({"tpp": tpr * 100, "fpp": fpr * 100, "thresholds": thresholds})
+roc_df.head()
+roc_df.tail()
+roc_df[(roc_df.tpp &gt; 60) &amp; (roc_df.tpp &lt; 80)]</code></pre>
+
+    <h3>Shade a partial AUC</h3>
+    <p>A partial AUC looks only at the part of the curve where false positives are rare. The range is in specificity, so 100 to 90 means the first ten percent of the x axis.</p>
+<pre><code>roc(obese, glm.fit$fitted.values, plot = TRUE, legacy.axes = TRUE, percent = TRUE,
+    xlab = "False Positive Percentage", ylab = "True Positive Percentage",
+    col = "#377eb8", lwd = 4,
+    print.auc = TRUE, print.auc.x = 45,
+    partial.auc = c(100, 90),      # specificity range, not 1 - specificity
+    auc.polygon = TRUE,
+    auc.polygon.col = "#377eb822") # the last two digits make it transparent</code></pre>
+    <p><b>In Python</b>, <code>roc_auc_score</code> takes <code>max_fpr</code>, and <code>fill_between</code> shades the region.</p>
+<pre><code>partial = roc_auc_score(obese, probs, max_fpr=0.1)   # McClish-standardised
+plt.fill_between(fpr[fpr &lt;= 0.1] * 100, tpr[fpr &lt;= 0.1] * 100,
+                 color="#377eb8", alpha=0.2)</code></pre>
+
+    <h3>Compare two models on one graph</h3>
+    <p>Draw the first curve, then add the second one with <code>plot.roc</code> and <code>add = TRUE</code>. Move the second AUC text down so the two numbers do not overlap.</p>
+<pre><code>rf.model &lt;- randomForest(factor(obese) ~ weight)
+
+roc(obese, glm.fit$fitted.values, plot = TRUE, legacy.axes = TRUE, percent = TRUE,
+    xlab = "False Positive Percentage", ylab = "True Positive Percentage",
+    col = "#377eb8", lwd = 4, print.auc = TRUE)
+
+plot.roc(obese, rf.model$votes[, 1], percent = TRUE, add = TRUE,
+         col = "#4daf4a", lwd = 4, print.auc = TRUE, print.auc.y = 40)
+
+legend("bottomright", legend = c("Logistic Regression", "Random Forest"),
+       col = c("#377eb8", "#4daf4a"), lwd = 4)
+
+par(pty = "m")   # back to the default, maximum plot area</code></pre>
+    <p><b>In Python</b>, plot both curves on the same axes.</p>
+<pre><code>from sklearn.ensemble import RandomForestClassifier
+
+rf = RandomForestClassifier(random_state=420).fit(weight.reshape(-1, 1), obese)
+rf_probs = rf.predict_proba(weight.reshape(-1, 1))[:, 1]
+rf_fpr, rf_tpr, _ = roc_curve(obese, rf_probs)
+
+plt.plot(fpr * 100, tpr * 100, color="#377eb8", lw=4,
+         label=f"Logistic Regression, AUC = {roc_auc_score(obese, probs):.3f}")
+plt.plot(rf_fpr * 100, rf_tpr * 100, color="#4daf4a", lw=4,
+         label=f"Random Forest, AUC = {roc_auc_score(obese, rf_probs):.3f}")
+plt.legend(loc="lower right")</code></pre>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 320" role="img" aria-label="Two ROC curves drawn on the same axes, one for logistic regression and one for a random forest">
+        <rect x="90" y="50" width="570" height="220" class="sv-paper2"></rect>
+        <line x1="90" y1="270" x2="660" y2="50" class="sv-line" stroke-width="1.5" stroke-dasharray="5 5"></line>
+
+        <polyline points="90,270 107,193 136,142 193,105 290,76 404,63 518,54 660,50" class="sv-stroke-acc" stroke-width="3.5"></polyline>
+        <polyline points="90,270 101,182 130,129 181,94 272,72 386,61 512,52 660,50" class="sv-stroke-good" stroke-width="3.5"></polyline>
+
+        <line x1="90" y1="270" x2="660" y2="270" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <line x1="90" y1="50" x2="90" y2="270" class="sv-stroke-ink" stroke-width="1.5"></line>
+
+        <text x="76" y="275" class="sv-ts" text-anchor="end">0</text>
+        <text x="76" y="165" class="sv-ts" text-anchor="end">50</text>
+        <text x="76" y="55" class="sv-ts" text-anchor="end">100</text>
+        <text x="375" y="296" class="sv-ts" text-anchor="middle">False positive percentage, 0 to 100</text>
+        <text x="20" y="32" class="sv-tb">True positive percentage</text>
+
+        <rect x="420" y="212" width="220" height="46" rx="4" class="sv-paper"></rect>
+        <line x1="432" y1="228" x2="466" y2="228" class="sv-stroke-acc" stroke-width="4"></line>
+        <text x="476" y="233" class="sv-ts">Logistic Regression</text>
+        <line x1="432" y1="248" x2="466" y2="248" class="sv-stroke-good" stroke-width="4"></line>
+        <text x="476" y="253" class="sv-ts">Random Forest</text>
+      </svg>
+      <figcaption>Notice that the higher curve is the better model at every threshold, and its AUC is the larger of the two.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">The two axes</span>
+      <div class="math">$$ \text{TPR} = \frac{TP}{TP + FN}, \qquad \text{FPR} = \frac{FP}{FP + TN} = 1 - \text{specificity} $$</div>
+      <p class="explain"><b>Symbols:</b> \(TP\) is true positives, \(FN\) false negatives, \(FP\) false positives, \(TN\) true negatives. TPR is also called sensitivity. <b>What it tells you:</b> the y axis is the share of real positives you caught, and the x axis is the share of real negatives you wrongly flagged.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">The two columns of roc.df</span>
+      <div class="math">$$ \text{tpp} = 100 \times \text{sensitivities}, \qquad \text{fpp} = 100 \times (1 - \text{specificities}) $$</div>
+      <p class="explain"><b>Symbols:</b> <code>sensitivities</code> and <code>specificities</code> are vectors inside the object that <code>roc</code> returns, one entry per threshold. <b>What it tells you:</b> this is what <code>percent = TRUE</code> and <code>legacy.axes = TRUE</code> do, written out by hand.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Area under the curve</span>
+      <div class="math">$$ \text{AUC} = \int_{0}^{1} \text{TPR}\,d(\text{FPR}) $$</div>
+      <p class="explain"><b>Symbols:</b> the integral runs over the whole x axis. <b>What it tells you:</b> one number for the whole curve. A perfect model gives 1, the diagonal chance line gives 0.5.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Partial area under the curve</span>
+      <div class="math">$$ \text{pAUC} = \int_{0}^{0.1} \text{TPR}\,d(\text{FPR}) \quad\text{for}\quad \text{specificity} \in [90\%, 100\%] $$</div>
+      <p class="explain"><b>Symbols:</b> the upper limit 0.1 is the largest false positive rate you accept. <b>What it tells you:</b> how good the model is when false positives are expensive. In R you set <code>partial.auc = c(100, 90)</code>, in specificity units.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>The data set has 100 samples instead of the eight used in the earlier ROC video. The weights use mean 172 and standard deviation 29, the real figures for men's weight in pounds.</p>
+      <p>The label comes from the rank. The lightest sample has rank 1, so its scaled rank is \(1/100 = 0.01\). The heaviest has rank 100, so its scaled rank is 1. Each sample is called obese when a random number between 0 and 1 is smaller than its scaled rank. So light samples are mostly zeros and heavy samples are mostly ones.</p>
+      <p>When you call <code>roc</code>, R prints three things. It echoes your call, counts how many samples are not obese and how many are obese, and prints the AUC.</p>
+      <p>In <code>roc.df</code>, the first row has a threshold of \(-\infty\). Every sample is then called obese, so both percentages are 100. That row is the top right corner. The last row has a threshold of \(+\infty\), every sample is called not obese, both percentages are 0, and that row is the bottom left corner.</p>
+      <p>Filtering to rows with a true positive percentage between 60 and 80 gives the thresholds behind that piece of the curve. From those you pick the one with the best balance for your problem.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> By default <code>roc</code> puts specificity on the x axis, so it runs from 1 on the left to 0 on the right. That backwards axis is easy to misread. Set <code>legacy.axes = TRUE</code>.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The <code>partial.auc</code> argument is given in specificity, not in 1 minus specificity. So <code>c(100, 90)</code> means the leftmost ten percent of the graph.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> For the random forest, Josh passes <code>rf.model$votes[, 1]</code>, the share of trees that voted for a class. An ROC curve always needs a continuous score, never a hard 0 or 1 prediction.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> <code>par(pty = "s")</code> is a global setting. Every later plot stays square until you set it back with <code>par(pty = "m")</code>.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>How do you draw an ROC curve and get the AUC in R?</summary><div class="a">I use the pROC package. I pass the known labels and the predicted probabilities to <code>roc</code> with <code>plot = TRUE</code>, and it draws the curve and prints the AUC. I add <code>legacy.axes = TRUE</code> so the x axis is 1 minus specificity. In Python I use <code>roc_curve</code> and <code>roc_auc_score</code> from scikit-learn, then plot with matplotlib.</div></details>
+    <details class="qa" open><summary>Someone gives you an ROC curve and asks for a threshold. How do you find it?</summary><div class="a">The curve alone does not show thresholds, so I save the object <code>roc</code> returns. It holds the sensitivities, the specificities and the matching thresholds. I put them into a data frame and filter to the region I want, for example a true positive rate between 60 and 80 percent. Then I pick the threshold with the best balance for the cost of each error.</div></details>
+    <details class="qa" open><summary>What is a partial AUC and when would you use it?</summary><div class="a">A partial AUC is the area under only part of the curve, usually the part with very few false positives. I use it when a false positive is expensive. Two models can have the same full AUC but behave very differently in that corner. In pROC I set <code>partial.auc</code> with a specificity range, and in scikit-learn I use <code>max_fpr</code>.</div></details>
+    <details class="qa" open><summary>How do you compare two classifiers with ROC curves?</summary><div class="a">I draw both curves on the same axes. In R I plot the first with <code>roc</code>, then add the second with <code>plot.roc</code> and <code>add = TRUE</code>, and I move the second AUC label with <code>print.auc.y</code>. Then I check whether one curve is above the other everywhere, or whether they cross. If they cross, I compare partial AUCs over the threshold range I care about.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>The pROC package draws ROC graphs from two vectors: the true labels and the predicted probabilities.</li>
+      <li>Use <code>par(pty = "s")</code> for a square plot, and reset it with <code>par(pty = "m")</code> afterwards.</li>
+      <li>Set <code>legacy.axes = TRUE</code> so the x axis is 1 minus specificity, and <code>percent = TRUE</code> for percentage scales.</li>
+      <li>Save the <code>roc</code> output to get the sensitivities, specificities and thresholds behind every point.</li>
+      <li>The first row of that table is the top right corner and the last row is the bottom left corner.</li>
+      <li>A partial AUC focuses on the low false positive corner, and its range is given in specificity.</li>
+      <li>Add a second curve with <code>plot.roc</code> and <code>add = TRUE</code> to compare two models on one graph.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">ROC and AUC</span><span class="board-tag">labels and probabilities in, curve and AUC out</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 280" role="img" aria-label="The call roc(obese, glm.fit$fitted.values) draws an ROC curve, true positive percentage up and false positive percentage across, with the area under it, the AUC, shaded. The first row of the saved table, threshold minus infinity, is the top right corner at 100, 100. The last row, threshold plus infinity, is the bottom left corner at 0, 0.">
+            <text x="20" y="30" class="sv-tm">roc(obese, glm.fit$fitted.values)</text>
+            <polygon points="60,240 65.4,186 78,141 96,114 123,92.4 159,76.2 195,67.2 240,60 240,240" class="sv-paper"/>
+            <line x1="60" y1="240" x2="246" y2="240" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="60" y1="240" x2="60" y2="54" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="60" y1="240" x2="240" y2="60" class="sv-stroke-good" stroke-width="2.5" stroke-dasharray="7 6" stroke-linecap="round"/>
+            <polyline points="60,240 65.4,186 78,141 96,114 123,92.4 159,76.2 195,67.2 240,60" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="240" cy="60" r="6" class="sv-key"/>
+              <circle cx="60" cy="240" r="6" class="sv-key"/>
+            </g>
+            <text x="50" y="66" text-anchor="end" class="sv-ts">tpp</text>
+            <text x="252" y="245" class="sv-ts">fpp</text>
+            <text x="190" y="196" text-anchor="middle" class="sv-tb">AUC</text>
+            <text x="252" y="66" class="sv-tb">first row</text>
+            <text x="252" y="92" class="sv-ts">−Inf: 100, 100</text>
+            <text x="60" y="266" class="sv-tb">last row</text>
+            <text x="152" y="266" class="sv-ts">+Inf: 0, 0</text>
+          </svg>
+          <p>Give <code>roc</code> the true labels and the fitted probabilities. It walks every threshold, draws the curve and prints the AUC. In the saved table, row one (−Inf) is the top right corner and the last row (+Inf) the bottom left.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>pROC</dt><dd>R package whose roc draws the curve and prints the AUC.</dd>
+            <dt>legacy.axes</dt><dd>TRUE puts 1 − specificity on the x axis.</dd>
+            <dt>roc.df</dt><dd>Saved output: tpp, fpp and threshold for every dot.</dd>
+            <dt>Partial AUC</dt><dd>Area under only the low false positive end.</dd>
+            <dt>par(pty = "s")</dt><dd>Square plot; reset with par(pty = "m").</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Load packages</b>pROC and randomForest</li>
+            <li><b>Make data</b>seed 420, 100 weights, obese labels</li>
+            <li><b>Fit glm</b>logistic regression, draw the curve</li>
+            <li><b>Call roc()</b>labels plus probabilities, tidy axes</li>
+            <li><b>Save output</b>read thresholds behind any part</li>
+            <li><b>Shade, compare</b>partial AUC, add random forest</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{tpp}=100\times\text{sensitivity}$$
+          $$\text{fpp}=100\times(1-\text{specificity})$$
+          $$\text{pAUC}=\int_{0}^{0.1}\text{TPR}\,d(\text{FPR})$$
+          <ul class="keys">
+            <li>Sensitivity and specificity come from the saved roc output.</li>
+            <li><code>partial.auc = c(100, 90)</code> is in specificity: the first 10% of the x axis.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>row</th><th>threshold</th><th>tpp</th><th>fpp</th></tr>
+            <tr><td>first</td><td>−Inf</td><td>100</td><td>100</td></tr>
+            <tr><td>last</td><td>+Inf</td><td>0</td><td>0</td></tr>
+            <tr class="final"><td>filtered</td><td>best balance</td><td>60 to 80</td><td>…</td></tr>
+          </table>
+          <p class="hand">100 samples: weights with mean 172, sd 29. Filter tpp 60 to 80, then pick the best balance.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">By default the x axis is 1 − specificity.</span><span class="yes">It is specificity, 1 down to 0. Set legacy.axes = TRUE.</span></li>
+            <li><span class="no">partial.auc = c(100, 90) is in false positive percent.</span><span class="yes">It is in specificity, so it means the leftmost 10% of the graph.</span></li>
+            <li><span class="no">Hard 0 or 1 predictions work for ROC.</span><span class="yes">ROC needs a continuous score: rf.model$votes[, 1], the share of trees voting.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="23-roc-and-auc.html"><small>Previous</small>ROC and AUC</a><a href="25-regularization-part-1-ridge-l2-regression.html"><small>Next</small>Regularization Part 1: Ridge (L2) Regression</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

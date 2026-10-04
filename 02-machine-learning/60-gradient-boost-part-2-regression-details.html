@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gradient Boost Part 2 (of 4): Regression Details — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>60</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 60 · 26.8 min</div>
+    <h1>Gradient Boost Part 2 (of 4): Regression Details</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=2xudPOBz-vs" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video walks through the original gradient boost algorithm for regression, line by line. Part 1 gave the intuition. This part shows the exact maths behind every symbol, on a data set of three people.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Gradient boost starts with one leaf that predicts the average weight. It then repeats four parts: compute residuals, fit a tree, find each leaf's output, and update the predictions. The loss is half the squared residual, because its derivative is simply the negative residual. With that loss, each leaf's output is the average of the residuals in it. After M trees, the last model is the final answer.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh uses a data set with three people. For each person we know height, favourite colour, and gender, and we want to predict weight. The three weights are 88, 76, and 56. That is small enough to do every calculation by hand.</p>
+    <p>The algorithm needs two inputs. The first is the data: each row of measurements is \(x_i\) and each measured weight is \(y_i\), with \(i\) running from 1 to \(n\). The second is a differentiable loss function, which is just a rule that scores how badly we predict weight. A function is differentiable when we can take its derivative, and gradient boost takes derivatives constantly.</p>
+    <p>The chosen loss is half of the squared residual. A residual is the observed value minus the predicted value. The one half looks odd, but it does no harm. It shrinks every score by the same factor, so the best fit stays the best. In the video, one line has a sum of squared residuals of 0.26 and another has 6.43. Halving both keeps 0.26 as the better fit.</p>
+    <p>The real reason for the one half is convenience. When you differentiate the loss, the 2 from the power cancels the 1/2. What remains is the negative residual. So the gradient in gradient boost is just a residual with a minus sign.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 340" role="img" aria-label="Flow chart of the gradient boost algorithm: an initial leaf, then a repeated loop of four parts, then the final model">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" class="sv-ink2"></path>
+          </marker>
+        </defs>
+        <rect x="150" y="45" width="590" height="200" rx="10" class="sv-line" stroke-width="1.5" stroke-dasharray="6 5"></rect>
+        <text x="164" y="68" class="sv-tb">Step 2 — repeat for m = 1 to M</text>
+
+        <rect x="20" y="95" width="110" height="88" rx="6" class="sv-acc-soft"></rect>
+        <text x="75" y="128" text-anchor="middle" class="sv-tb">Step 1</text>
+        <text x="75" y="148" text-anchor="middle" class="sv-ts">one leaf</text>
+        <text x="75" y="166" text-anchor="middle" class="sv-tm">73.3</text>
+
+        <rect x="165" y="95" width="130" height="88" rx="6" class="sv-paper2"></rect>
+        <text x="230" y="122" text-anchor="middle" class="sv-tb">A. Residuals</text>
+        <text x="230" y="142" text-anchor="middle" class="sv-ts">observed minus</text>
+        <text x="230" y="160" text-anchor="middle" class="sv-ts">last prediction</text>
+
+        <rect x="310" y="95" width="130" height="88" rx="6" class="sv-paper2"></rect>
+        <text x="375" y="122" text-anchor="middle" class="sv-tb">B. Fit a tree</text>
+        <text x="375" y="142" text-anchor="middle" class="sv-ts">to the residuals,</text>
+        <text x="375" y="160" text-anchor="middle" class="sv-ts">label the leaves</text>
+
+        <rect x="455" y="95" width="130" height="88" rx="6" class="sv-paper2"></rect>
+        <text x="520" y="122" text-anchor="middle" class="sv-tb">C. Leaf output</text>
+        <text x="520" y="142" text-anchor="middle" class="sv-ts">average of the</text>
+        <text x="520" y="160" text-anchor="middle" class="sv-ts">leaf residuals</text>
+
+        <rect x="600" y="95" width="130" height="88" rx="6" class="sv-paper2"></rect>
+        <text x="665" y="122" text-anchor="middle" class="sv-tb">D. Update</text>
+        <text x="665" y="142" text-anchor="middle" class="sv-ts">add learning rate</text>
+        <text x="665" y="160" text-anchor="middle" class="sv-ts">times the output</text>
+
+        <path d="M 132 139 L 161 139" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ah)"></path>
+        <path d="M 297 139 L 306 139" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ah)"></path>
+        <path d="M 442 139 L 451 139" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ah)"></path>
+        <path d="M 587 139 L 596 139" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ah)"></path>
+        <path d="M 665 185 L 665 215 L 230 215 L 230 187" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ah)"></path>
+
+        <path d="M 390 247 L 390 272" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ah)"></path>
+        <rect x="255" y="274" width="270" height="38" rx="6" class="sv-good-soft"></rect>
+        <text x="390" y="298" text-anchor="middle" class="sv-tb">Step 3: the last model is the answer</text>
+      </svg>
+      <figcaption>Notice that the loop never touches the weights directly after Step 1: every tree is fitted to residuals.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li><b>Initialise with a constant.</b> Find the single number that minimises the total loss over all samples. With this loss that number is the average weight, so \(F_0(x)=73.3\). The model is one leaf that predicts 73.3 for everybody.</li>
+      <li><b>Part A: compute pseudo residuals.</b> For every sample, take the negative derivative of the loss at the current prediction. That equals observed minus predicted. For the first tree the three values are 14.7, 2.7, and -17.3.</li>
+      <li><b>Part B: fit a regression tree.</b> Use height, favourite colour, and gender to predict those residuals, not the weights. Then label the leaves as terminal regions \(R_{j,m}\), where \(m\) is the tree number and \(j\) is the leaf number.</li>
+      <li><b>Part C: compute one output value per leaf.</b> For each leaf, find the \(\gamma\) that minimises the loss of the samples in that leaf, measured on top of the previous prediction. Here that gives -17.3 for one leaf and 8.7 for the other.</li>
+      <li><b>Part D: update every prediction.</b> Take the previous prediction and add the learning rate times the output value of the leaf the sample falls into. With a learning rate of 0.1 the three predictions move to 74.2, 74.2, and 71.6.</li>
+      <li><b>Repeat, then stop.</b> Set \(m=2\) and run A to D again on the new residuals. After \(M\) trees, \(F_M(x)\) is the final model that you use on new data.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 310" role="img" aria-label="Residuals from the first leaf feed a stump, whose two leaves get output values minus 17.3 and 8.7">
+        <rect x="20" y="42" width="250" height="128" rx="6" class="sv-paper2"></rect>
+        <text x="36" y="66" class="sv-tb">Residuals after 73.3</text>
+        <text x="36" y="94" class="sv-tm">x1: weight 88, r = 14.7</text>
+        <text x="36" y="122" class="sv-tm">x2: weight 76, r = 2.7</text>
+        <text x="36" y="150" class="sv-tm">x3: weight 56, r = -17.3</text>
+
+        <text x="317" y="94" text-anchor="middle" class="sv-ts">fit a tree</text>
+        <path d="M 282 106 L 352 106" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ah)"></path>
+
+        <rect x="440" y="42" width="180" height="40" rx="6" class="sv-acc-soft"></rect>
+        <text x="530" y="68" text-anchor="middle" class="sv-tb">Height &lt; 1.55</text>
+        <path d="M 490 82 L 442 118" class="sv-stroke-ink" stroke-width="1.6"></path>
+        <path d="M 570 82 L 658 118" class="sv-stroke-ink" stroke-width="1.6"></path>
+        <text x="452" y="104" class="sv-ts">yes</text>
+        <text x="600" y="104" class="sv-ts">no</text>
+
+        <rect x="367" y="120" width="150" height="80" rx="6" class="sv-paper2"></rect>
+        <text x="442" y="144" text-anchor="middle" class="sv-tb">Leaf R 1,1</text>
+        <text x="442" y="164" text-anchor="middle" class="sv-ts">residual -17.3</text>
+        <text x="442" y="186" text-anchor="middle" class="sv-tm">output -17.3</text>
+
+        <rect x="585" y="120" width="150" height="80" rx="6" class="sv-paper2"></rect>
+        <text x="660" y="144" text-anchor="middle" class="sv-tb">Leaf R 2,1</text>
+        <text x="660" y="164" text-anchor="middle" class="sv-ts">residuals 14.7, 2.7</text>
+        <text x="660" y="186" text-anchor="middle" class="sv-tm">output 8.7</text>
+
+        <rect x="20" y="228" width="715" height="56" rx="6" class="sv-good-soft"></rect>
+        <text x="38" y="252" class="sv-tb">New predictions with learning rate 0.1</text>
+        <text x="38" y="274" class="sv-tm">x1: 74.2      x2: 74.2      x3: 71.6</text>
+      </svg>
+      <figcaption>Notice that the leaf holding two residuals gets their average, 8.7, as its single output value.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Loss function</span><div class="math">$$ L\big(y_i, F(x_i)\big) = \tfrac{1}{2}\big(y_i - F(x_i)\big)^2 $$</div>
+    <p class="explain"><b>Symbols:</b> \(y_i\) is the observed weight of person \(i\); \(F(x_i)\) is the predicted weight for that person's row of measurements; the bracket is the residual. <b>What it tells you:</b> the score for one sample is half its squared residual, so large misses cost much more than small ones.</p></div>
+
+    <div class="formula"><span class="lbl">Derivative of the loss</span><div class="math">$$ \frac{\partial L}{\partial F(x_i)} = 2 \cdot \tfrac{1}{2}\big(y_i - F(x_i)\big) \cdot (-1) $$</div>
+    <p class="explain">Bring the square down to the front by the chain rule, then multiply by the derivative of the inside, which is -1.</p>
+    <div class="math">$$ \frac{\partial L}{\partial F(x_i)} = -\big(y_i - F(x_i)\big) $$</div>
+    <p class="explain">The 2 and the 1/2 cancel, so the derivative is exactly the negative residual. <b>What it tells you:</b> this is why the 1/2 is in the loss, and why the gradient in gradient boost is a residual in disguise.</p></div>
+
+    <div class="formula"><span class="lbl">Step 1 — the initial constant</span><div class="math">$$ F_0(x) = \arg\min_{\gamma} \sum_{i=1}^{n} L\big(y_i, \gamma\big) $$</div>
+    <p class="explain"><b>Symbols:</b> \(\gamma\) (gamma) is a single predicted value used for everyone; \(\arg\min_\gamma\) means "the value of \(\gamma\) that makes the sum smallest"; \(n\) is the number of samples.</p>
+    <div class="math">$$ \sum_{i=1}^{n} -\big(y_i - \gamma\big) = 0 $$</div>
+    <p class="explain">Plug in the derivative of each term and set the sum to zero, because the minimum is where the slope is flat. Josh solves it directly, since the maths is easy enough to skip gradient descent.</p>
+    <div class="math">$$ \gamma = \frac{1}{n}\sum_{i=1}^{n} y_i $$</div>
+    <p class="explain">Solve for \(\gamma\) and the answer is the average of the observed weights. <b>What it tells you:</b> with this loss, the best constant first guess is always the mean.</p></div>
+
+    <div class="formula"><span class="lbl">Step 2A — pseudo residuals</span><div class="math">$$ r_{i,m} = -\left[\frac{\partial L\big(y_i, F(x_i)\big)}{\partial F(x_i)}\right]_{F = F_{m-1}} = y_i - F_{m-1}(x_i) $$</div>
+    <p class="explain"><b>Symbols:</b> \(r_{i,m}\) is the pseudo residual for sample \(i\) in tree \(m\); \(F_{m-1}\) is the model built so far; the minus sign in front flips the derivative. <b>What it tells you:</b> with this loss the pseudo residual is an ordinary residual, but with another loss it would only resemble one, which is why the word "pseudo" is used.</p></div>
+
+    <div class="formula"><span class="lbl">Step 2C — output value of a leaf</span><div class="math">$$ \gamma_{j,m} = \arg\min_{\gamma} \sum_{x_i \in R_{j,m}} L\big(y_i,\; F_{m-1}(x_i) + \gamma\big) $$</div>
+    <p class="explain"><b>Symbols:</b> \(R_{j,m}\) is leaf \(j\) of tree \(m\); \(x_i \in R_{j,m}\) means only the samples that land in that leaf are summed; \(\gamma_{j,m}\) is the number the leaf will output.</p>
+    <div class="math">$$ \sum_{x_i \in R_{j,m}} -\big(y_i - F_{m-1}(x_i) - \gamma\big) = 0 $$</div>
+    <p class="explain">Differentiate with respect to \(\gamma\) and set the result to zero, exactly as in Step 1.</p>
+    <div class="math">$$ \gamma_{j,m} = \frac{1}{|R_{j,m}|}\sum_{x_i \in R_{j,m}} r_{i,m} $$</div>
+    <p class="explain">Solving gives the average of the residuals in that leaf. <b>What it tells you:</b> two differences from Step 1 matter here. The previous prediction is now inside the loss, and only the samples in the leaf are counted.</p></div>
+
+    <div class="formula"><span class="lbl">Step 2D — update the model</span><div class="math">$$ F_m(x) = F_{m-1}(x) + \nu \sum_{j=1}^{J_m} \gamma_{j,m}\, \mathbf{1}\big(x \in R_{j,m}\big) $$</div>
+    <p class="explain"><b>Symbols:</b> \(\nu\) (nu) is the learning rate, a number between 0 and 1; \(J_m\) is the number of leaves in tree \(m\); the indicator \(\mathbf{1}(\cdot)\) equals 1 when the sample falls in that leaf and 0 otherwise. <b>What it tells you:</b> the new model is the old model plus a small, scaled step. The sum exists only in case a sample can be found in more than one leaf.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>The three observed weights are 88, 76, and 56. Step 1 gives \(F_0(x) = (88+76+56)/3 = 73.3\), so one leaf predicts 73.3 for everyone.</p>
+      <p>Part A subtracts 73.3 from each weight. That gives residuals of 14.7, 2.7, and -17.3.</p>
+      <p>Part B fits a stump that splits on height at 1.55. Sample \(x_3\) goes to the left leaf, \(R_{1,1}\). Samples \(x_1\) and \(x_2\) go to the right leaf, \(R_{2,1}\).</p>
+      <p>Part C solves each leaf. For the left leaf only \(x_3\) counts, so \(\tfrac{1}{2}(56 - 73.3 - \gamma)^2\) is minimised at \(\gamma_{1,1} = -17.3\). For the right leaf the derivative gives \(-(14.7-\gamma)-(2.7-\gamma)=0\), so \(2\gamma = 17.4\) and \(\gamma_{2,1} = 8.7\), the average of the two residuals.</p>
+      <p>Part D uses a learning rate of 0.1. For \(x_1\): \(73.3 + 0.1 \times 8.7 = 74.2\), which is closer to the observed 88 than 73.3 was. Sample \(x_2\) also becomes 74.2, and \(x_3\) becomes \(73.3 + 0.1 \times (-17.3) = 71.6\).</p>
+      <p>Josh then stops at \(M = 2\) to save time. For a new person whose two leaf outputs are -17.3 and -15.6, the final prediction is \(73.3 + 0.1 \times (-17.3) + 0.1 \times (-15.6) = 70\) kg.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> The stumps here are only a teaching device. Gradient boost normally uses trees that are larger than stumps. Josh uses stumps because three samples cannot fill more than two leaves, and he needs one leaf with two samples in it.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> "The output value is the average of the residuals" is true only for this loss function. Change the loss and Step 2C must be solved again, and the answer is usually not an average.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Step 2C is not the same minimisation as Step 1. It adds \(\gamma\) on top of the previous prediction \(F_{m-1}(x_i)\), and it sums over the samples in one leaf only.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The learning rate applies to every tree, including the first one. It never applies to the initial leaf \(F_0(x)\), which enters the prediction at full strength.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>Why is the loss function half the squared residual, and not just the squared residual?</summary><div class="a">Both rank fits the same way, so the one half changes nothing about which model wins. It is there purely for convenience. When you differentiate it, the 2 from the power cancels the 1/2, and the derivative becomes exactly the negative residual. Gradient boost takes that derivative constantly, so the cleaner form saves a lot of clutter.</div></details>
+    <details class="qa" open><summary>What exactly is the "gradient" in gradient boost?</summary><div class="a">It is the derivative of the loss with respect to the current prediction, evaluated at the model built so far. For squared error loss that derivative is minus the residual, so the negative gradient is just the residual. Each new tree is fitted to those negative gradients, which is why the method generalises to any differentiable loss.</div></details>
+    <details class="qa" open><summary>Why are they called pseudo residuals rather than residuals?</summary><div class="a">Because they are defined as negative gradients, not as observed minus predicted. With the half squared error loss the two definitions happen to coincide, so you get ordinary residuals. With a different loss you get something that behaves like a residual but is not one, and the name pseudo residual covers both cases.</div></details>
+    <details class="qa" open><summary>How is a leaf's output value computed when several samples land in it?</summary><div class="a">You solve a small minimisation for that leaf alone. You look for the constant \(\gamma\) that minimises the total loss of those samples when \(\gamma\) is added to their current predictions. With squared error loss the solution is the average of the residuals in the leaf. In the video, 14.7 and 2.7 give an output of 8.7.</div></details>
+    <details class="qa" open><summary>What does the learning rate do, and why use a small one?</summary><div class="a">The learning rate scales the contribution of every tree before it is added to the model. A small value means each tree moves the prediction only a little. The model then takes many small steps in the right direction. As Josh says, this improves accuracy in the long run, at the cost of needing more trees.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>The inputs are the data \((x_i, y_i)\) and a differentiable loss, here half the squared residual.</li>
+      <li>Step 1 initialises the model with the constant that minimises the total loss, which is the average weight, 73.3.</li>
+      <li>Step 2A computes pseudo residuals as the negative gradient, which for this loss equals observed minus predicted.</li>
+      <li>Step 2B fits a regression tree to those residuals and labels its leaves as terminal regions.</li>
+      <li>Step 2C gives each leaf one output value, which for this loss is the average of the residuals inside it.</li>
+      <li>Step 2D updates every prediction by adding the learning rate times the leaf output value.</li>
+      <li>The loop runs M times, usually 100 or more, and Step 3 returns the final model \(F_M(x)\).</li>
+      <li>Real applications use trees larger than the stumps used here for teaching.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Gradient Boost Regression Details</span><span class="board-tag">the gradient is a residual in disguise</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 270" role="img" aria-label="Three observed weights sit around the average line 73.3 with residuals 14.7, 2.7 and −17.3; the split height under 1.55 leaves −17.3 alone in one leaf, and the other leaf outputs 8.7, the average of 14.7 and 2.7.">
+            <line x1="150" y1="46" x2="150" y2="236" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="3 7" stroke-linecap="round"/>
+            <line x1="20" y1="131.5" x2="385" y2="131.5" class="sv-stroke-acc" stroke-width="3" stroke-linecap="round"/>
+            <g class="sv-stroke-key" stroke-width="3" stroke-linecap="round">
+              <line x1="95" y1="131.5" x2="95" y2="210"/>
+              <line x1="215" y1="131.5" x2="215" y2="66"/>
+              <line x1="335" y1="131.5" x2="335" y2="126"/>
+            </g>
+            <g class="sv-stroke-good" stroke-width="5" stroke-linecap="round">
+              <line x1="229" y1="88" x2="321" y2="88"/>
+              <line x1="75" y1="218" x2="115" y2="218"/>
+            </g>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="95" cy="218" r="7" class="sv-key"/>
+              <circle cx="215" cy="58" r="7" class="sv-key"/>
+              <circle cx="335" cy="118" r="7" class="sv-key"/>
+            </g>
+            <text x="150" y="32" text-anchor="middle" class="sv-tb">height &lt; 1.55</text>
+            <text x="231" y="76" class="sv-t">leaf output 8.7</text>
+            <text x="205" y="104" text-anchor="end" class="sv-tb">14.7</text>
+            <text x="20" y="120" class="sv-t">average 73.3</text>
+            <text x="349" y="122" class="sv-tb">2.7</text>
+            <text x="85" y="180" text-anchor="end" class="sv-tb">−17.3</text>
+            <text x="385" y="252" text-anchor="end" class="sv-ts">dots = observed weights</text>
+          </svg>
+          <p>The loss is half the squared residual, so its negative gradient is the residual itself. Each leaf outputs its average residual, scaled by 0.1 when it is added.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Differentiable loss</dt><dd>A rule scoring how badly we predict, with a derivative we can take.</dd>
+            <dt>Pseudo residual</dt><dd>The negative gradient; here, observed minus predicted.</dd>
+            <dt>Terminal region</dt><dd>A leaf: \(R_{j,m}\) is leaf \(j\) of tree \(m\).</dd>
+            <dt>Output value</dt><dd>The number \(\gamma\) a leaf gives; here its average residual.</dd>
+            <dt>Learning rate</dt><dd>\(\nu\), between 0 and 1, here 0.1; it scales every tree.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Start</b>one leaf: the average, 73.3</li>
+            <li><b>Residuals</b>observed − predicted: 14.7, 2.7, −17.3</li>
+            <li><b>Fit a tree</b>a stump on height &lt; 1.55</li>
+            <li><b>Leaf outputs</b>average residual: −17.3 and 8.7</li>
+            <li><b>Update</b>+ 0.1 × output: 74.2, 74.2, 71.6</li>
+            <li><b>Finish</b>after M trees, use \(F_M(x)\)</li>
+          </ol>
+          <p class="loop">↺ repeat steps 2 to 5 for m = 1 to M, usually 100 or more</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$L=\tfrac{1}{2}\big(y_i-F(x_i)\big)^2$$
+          $$\frac{\partial L}{\partial F(x_i)}=-\big(y_i-F(x_i)\big)$$
+          $$\gamma_{j,m}=\frac{1}{|R_{j,m}|}\sum_{x_i\in R_{j,m}} r_{i,m}$$
+          <ul class="keys">
+            <li>\(y_i-F(x_i)\) is the residual; the 2 and the 1/2 cancel.</li>
+            <li>\(\gamma_{j,m}\) is the output of leaf \(R_{j,m}\): its average residual.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>weight</th><th>residual</th><th>leaf output</th><th>prediction</th></tr>
+            <tr><td>88</td><td>14.7</td><td>8.7</td><td>74.2</td></tr>
+            <tr><td>76</td><td>2.7</td><td>8.7</td><td>74.2</td></tr>
+            <tr><td>56</td><td>−17.3</td><td>−17.3</td><td>71.6</td></tr>
+            <tr class="final"><td>new person</td><td>—</td><td>−17.3, −15.6</td><td>70</td></tr>
+          </table>
+          <p class="hand">All three start from 73.3. With M = 2, the new person gets 73.3 plus 0.1 times each output.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Gradient boost uses stumps.</span><span class="yes">Stumps are a teaching device for three samples; real trees are larger.</span></li>
+            <li><span class="no">A leaf's output is always the average residual.</span><span class="yes">Only for this loss. Change the loss and Step 2C must be solved again.</span></li>
+            <li><span class="no">The learning rate also shrinks \(F_0(x)\).</span><span class="yes">It scales every tree; the initial leaf enters at full strength.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="59-gradient-boost-part-1-regression-main-ideas.html"><small>Previous</small>Gradient Boost Part 1 (of 4): Regression Main Ideas</a> <a href="61-gradient-boost-part-3-classification.html"><small>Next</small>Gradient Boost Part 3 (of 4): Classification</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

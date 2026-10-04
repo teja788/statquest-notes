@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fisher's Exact Test and the Hypergeometric Distribution — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>12</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 12 · 5.2 min</div>
+    <h1>Fisher's Exact Test and the Hypergeometric Distribution</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=udyAvvaMjfM" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video shows how to get a p-value from a small sample when you keep what you draw. Josh does it with one handful of M&amp;Ms.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh takes one handful from a bag of 40 M&amp;Ms and gets 7 blue and 1 red. The bag should hold only 8 blue, so the handful looks very blue. He gets its probability by multiplying fractions that shrink after every draw. He then adds every result that is equally rare or rarer. That sum is the p-value, 0.01.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh assumes the bag holds two servings of 20, so 40 M&amp;Ms in total. He looked up the published colour proportions to build an ideal bag. That ideal bag has 8 blue and 5 red. His handful of 8 holds 7 blue, so a rare colour fills almost the whole hand.</p>
+    <p>The key point is that M&amp;Ms are not put back. Every draw shrinks the bag and changes the counts. So each probability depends on what you already took. Counting this way is called sampling without replacement, and the hypergeometric distribution describes it.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Bar chart of the ideal bag of forty M and Ms beside the handful of seven blue and one red">
+        <defs>
+          <marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" class="sv-ink2"></path>
+          </marker>
+        </defs>
+        <rect x="0" y="0" width="760" height="300" class="sv-paper"></rect>
+        <text x="40" y="32" class="sv-tb">Ideal bag: 40 M&amp;Ms</text>
+        <line x1="40" y1="248" x2="300" y2="248" class="sv-line" stroke-width="1.5"></line>
+        <rect x="60" y="198" width="52" height="50" class="sv-acc"></rect>
+        <rect x="132" y="217" width="52" height="31" class="sv-key"></rect>
+        <rect x="204" y="78" width="52" height="170" class="sv-ink3"></rect>
+        <text x="86" y="190" text-anchor="middle" class="sv-t">8</text>
+        <text x="158" y="209" text-anchor="middle" class="sv-t">5</text>
+        <text x="230" y="70" text-anchor="middle" class="sv-t">27</text>
+        <text x="86" y="268" text-anchor="middle" class="sv-ts">Blue</text>
+        <text x="158" y="268" text-anchor="middle" class="sv-ts">Red</text>
+        <text x="230" y="268" text-anchor="middle" class="sv-ts">Other</text>
+        <line x1="318" y1="150" x2="392" y2="150" class="sv-line" stroke-width="2" marker-end="url(#ah1)"></line>
+        <text x="355" y="140" text-anchor="middle" class="sv-ts">one handful</text>
+        <text x="424" y="32" class="sv-tb">My handful: 8 M&amp;Ms</text>
+        <circle cx="454" cy="108" r="19" class="sv-acc"></circle>
+        <circle cx="504" cy="108" r="19" class="sv-acc"></circle>
+        <circle cx="554" cy="108" r="19" class="sv-acc"></circle>
+        <circle cx="604" cy="108" r="19" class="sv-acc"></circle>
+        <circle cx="454" cy="158" r="19" class="sv-acc"></circle>
+        <circle cx="504" cy="158" r="19" class="sv-acc"></circle>
+        <circle cx="554" cy="158" r="19" class="sv-acc"></circle>
+        <circle cx="604" cy="158" r="19" class="sv-key"></circle>
+        <text x="424" y="206" class="sv-ts">7 blue and 1 red</text>
+        <text x="424" y="240" class="sv-t">Blue in the bag: 8 of 40 = 20%</text>
+        <text x="424" y="264" class="sv-t">Blue in the hand: 7 of 8 = 88%</text>
+      </svg>
+      <figcaption>Blue should be one fifth of the bag, but it fills almost the whole handful.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Fix the population. The bag has 40 M&amp;Ms, of which 8 are blue and 5 are red.</li>
+      <li>Pick one exact order, say seven blues then the red. The first draw is blue with probability 8/40.</li>
+      <li>Take that blue out. Only 7 blues remain among 39 M&amp;Ms, so the next probability is 7/39, then 6/38, and so on.</li>
+      <li>After seven blues, 33 M&amp;Ms are left and 5 are red. The last draw is red with probability 5/33.</li>
+      <li>Multiply the eight fractions. That is the probability of this one exact order.</li>
+      <li>Order does not matter, so add all 8 orderings of 7 blue and 1 red.</li>
+      <li>Add the probability of every result that is equally rare or rarer, such as 8 blues, or 7 oranges and 1 blue.</li>
+      <li>That final sum is 0.01. The whole procedure is Fisher's exact test.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 350" role="img" aria-label="Chain of eight shrinking fractions, then the sum over orderings, then the sum over rarer outcomes giving a p-value of zero point zero one">
+        <defs>
+          <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" class="sv-ink2"></path>
+          </marker>
+        </defs>
+        <rect x="0" y="0" width="760" height="350" class="sv-paper"></rect>
+        <text x="31" y="34" class="sv-tb">Every draw shrinks the bag</text>
+        <rect x="31" y="50" width="82" height="46" rx="5" class="sv-acc-soft"></rect>
+        <rect x="119" y="50" width="82" height="46" rx="5" class="sv-acc-soft"></rect>
+        <rect x="207" y="50" width="82" height="46" rx="5" class="sv-acc-soft"></rect>
+        <rect x="295" y="50" width="82" height="46" rx="5" class="sv-acc-soft"></rect>
+        <rect x="383" y="50" width="82" height="46" rx="5" class="sv-acc-soft"></rect>
+        <rect x="471" y="50" width="82" height="46" rx="5" class="sv-acc-soft"></rect>
+        <rect x="559" y="50" width="82" height="46" rx="5" class="sv-acc-soft"></rect>
+        <rect x="647" y="50" width="82" height="46" rx="5" class="sv-key-soft"></rect>
+        <text x="72" y="79" text-anchor="middle" class="sv-tm">8/40</text>
+        <text x="160" y="79" text-anchor="middle" class="sv-tm">7/39</text>
+        <text x="248" y="79" text-anchor="middle" class="sv-tm">6/38</text>
+        <text x="336" y="79" text-anchor="middle" class="sv-tm">5/37</text>
+        <text x="424" y="79" text-anchor="middle" class="sv-tm">4/36</text>
+        <text x="512" y="79" text-anchor="middle" class="sv-tm">3/35</text>
+        <text x="600" y="79" text-anchor="middle" class="sv-tm">2/34</text>
+        <text x="688" y="79" text-anchor="middle" class="sv-tm">5/33</text>
+        <text x="336" y="112" text-anchor="middle" class="sv-ts">seven blue draws</text>
+        <text x="688" y="112" text-anchor="middle" class="sv-ts">one red draw</text>
+        <line x1="380" y1="122" x2="380" y2="146" class="sv-line" stroke-width="2" marker-end="url(#ah2)"></line>
+        <rect x="120" y="150" width="520" height="44" rx="6" class="sv-paper2"></rect>
+        <text x="380" y="177" text-anchor="middle" class="sv-t">Multiply them: one exact order ≈ 0.000000065</text>
+        <line x1="380" y1="200" x2="380" y2="224" class="sv-line" stroke-width="2" marker-end="url(#ah2)"></line>
+        <rect x="120" y="228" width="520" height="44" rx="6" class="sv-paper2"></rect>
+        <text x="380" y="255" text-anchor="middle" class="sv-t">Order does not matter: × 8 orderings ≈ 0.00000052</text>
+        <line x1="380" y1="278" x2="380" y2="298" class="sv-line" stroke-width="2" marker-end="url(#ah2)"></line>
+        <rect x="80" y="302" width="600" height="44" rx="6" class="sv-good-soft"></rect>
+        <text x="380" y="329" text-anchor="middle" class="sv-t">Add everything equally rare or rarer → p-value = 0.01</text>
+      </svg>
+      <figcaption>A tiny probability is not the p-value. The p-value appears only after the last sum.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">One exact order</span><div class="math">$$ \frac{8}{40}\cdot\frac{7}{39}\cdot\frac{6}{38}\cdot\frac{5}{37}\cdot\frac{4}{36}\cdot\frac{3}{35}\cdot\frac{2}{34}\cdot\frac{5}{33} \approx 6.5\times10^{-8} $$</div><p class="explain"><b>Symbols:</b> each top number is how many M&amp;Ms of the wanted colour are left. Each bottom number is how many M&amp;Ms are left in total. <b>What it tells you:</b> the chance of seven blues and then one red, in that exact order.</p></div>
+    <div class="formula"><span class="lbl">Hypergeometric probability</span><div class="math">$$ P(X=k)=\frac{\binom{K}{k}\binom{N-K}{n-k}}{\binom{N}{n}} $$</div><p class="explain"><b>Symbols:</b> \(N\) is the bag size, \(K\) is how many in the bag are your colour, \(n\) is how many you draw, \(k\) is how many of that colour you got. \(\binom{a}{b}\) counts the ways to choose \(b\) things from \(a\). <b>What it tells you:</b> the same answer as the chain of fractions, with the orderings already counted.</p></div>
+    <div class="formula"><span class="lbl">The p-value</span><div class="math">$$ p=\sum_{\text{outcomes as rare or rarer}} P(\text{outcome}) = 0.01 $$</div><p class="explain"><b>Symbols:</b> the sum runs over every handful whose probability is at most the probability of the handful we saw. <b>What it tells you:</b> how often a normal bag looks this surprising, so 0.01 means about one bag in a hundred.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>The bag holds 40 M&amp;Ms: 8 blue and 5 red. Josh draws 8 and gets 7 blue and 1 red.</p>
+      <p>For one exact order he multiplies 8/40, 7/39, 6/38, 5/37, 4/36, 3/35 and 2/34 for the blues, then 5/33 for the red. That gives about \(6.5\times10^{-8}\). The 8 orderings together give about \(5.2\times10^{-7}\).</p>
+      <p>That is still one outcome. The p-value also needs 8 blues, 7 oranges with 1 blue, and everything equally rare or rarer. A computer adds them all and returns 0.01, so the bag is special.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> A very small probability is not a p-value. This handful had probability \(5\times10^{-7}\), but the p-value was 0.01. The p-value is a sum over many outcomes, so it is always larger.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> "Equally rare or rarer" is not the same as "more blue". It includes odd outcomes such as 7 oranges and 1 blue, because those are just as surprising.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The answer depends on the assumed bag. Josh assumed 40 M&amp;Ms and used published colour proportions. Change either one and the p-value moves.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is the hypergeometric distribution?</summary><div class="a">It is the distribution of how many "successes" you get when you draw a fixed number of items from a finite group without replacement. In the M&amp;M example it gives the chance of 7 blue in a handful of 8, from a bag of 40 with 8 blue.</div></details>
+    <details class="qa" open><summary>How do you get from a probability to a p-value here?</summary><div class="a">I compute the probability of the result I saw. Then I add every other outcome that is equally likely or less likely. That sum is the p-value. It says how often a normal bag looks at least this strange.</div></details>
+    <details class="qa" open><summary>Where does this show up in real data science work?</summary><div class="a">Enrichment analysis is the case Josh names. I ask whether my gene list has more metabolism genes than normal. The arithmetic is the M&amp;M calculation, with genes instead of colours.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Josh assumes a bag of 40 M&amp;Ms with 8 blue and 5 red, then draws a handful of 8.</li>
+      <li>His handful has 7 blue and 1 red, far more blue than the bag should give.</li>
+      <li>Because he keeps each M&amp;M, the probabilities shrink from 8/40 down to 5/33.</li>
+      <li>The p-value adds every outcome that is equally rare or rarer, and it comes to 0.01.</li>
+      <li>That procedure is Fisher's exact test, and it rests on the hypergeometric distribution.</li>
+      <li>The same calculation answers enrichment questions about gene lists.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Fisher's exact test</span><span class="board-tag">shrinking fractions, then add the rarer ones</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 288" role="img" aria-label="A bag of 40 M&amp;Ms holds 8 blue and 5 red. Eight are drawn and never put back, 7 blue then 1 red, with chances 8/40, 7/39 and so on down to 5/33. They multiply to about 6.5 times 10 to the minus 8 for one order, times 8 orders gives about 5.2 times 10 to the minus 7, and adding every outcome as rare or rarer gives p = 0.01.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <text x="16" y="25" class="sv-t">bag of 40</text>
+            <g class="sv-stroke-ink" stroke-width="2"><rect x="16" y="34" width="368" height="48" rx="12" class="sv-paper"/></g>
+            <g class="sv-acc">
+              <circle cx="32" cy="49" r="6"/><circle cx="49.6" cy="49" r="6"/><circle cx="67.2" cy="49" r="6"/><circle cx="84.8" cy="49" r="6"/>
+              <circle cx="102.4" cy="49" r="6"/><circle cx="120" cy="49" r="6"/><circle cx="137.6" cy="49" r="6"/><circle cx="155.2" cy="49" r="6"/>
+            </g>
+            <g class="sv-key">
+              <circle cx="172.8" cy="49" r="6"/><circle cx="190.4" cy="49" r="6"/><circle cx="208" cy="49" r="6"/><circle cx="225.6" cy="49" r="6"/><circle cx="243.2" cy="49" r="6"/>
+            </g>
+            <g class="sv-ink3">
+              <circle cx="260.8" cy="49" r="6"/><circle cx="278.4" cy="49" r="6"/><circle cx="296" cy="49" r="6"/><circle cx="313.6" cy="49" r="6"/><circle cx="331.2" cy="49" r="6"/><circle cx="348.8" cy="49" r="6"/><circle cx="366.4" cy="49" r="6"/>
+              <circle cx="32" cy="67" r="6"/><circle cx="49.6" cy="67" r="6"/><circle cx="67.2" cy="67" r="6"/><circle cx="84.8" cy="67" r="6"/><circle cx="102.4" cy="67" r="6"/>
+              <circle cx="120" cy="67" r="6"/><circle cx="137.6" cy="67" r="6"/><circle cx="155.2" cy="67" r="6"/><circle cx="172.8" cy="67" r="6"/><circle cx="190.4" cy="67" r="6"/>
+              <circle cx="208" cy="67" r="6"/><circle cx="225.6" cy="67" r="6"/><circle cx="243.2" cy="67" r="6"/><circle cx="260.8" cy="67" r="6"/><circle cx="278.4" cy="67" r="6"/>
+              <circle cx="296" cy="67" r="6"/><circle cx="313.6" cy="67" r="6"/><circle cx="331.2" cy="67" r="6"/><circle cx="348.8" cy="67" r="6"/><circle cx="366.4" cy="67" r="6"/>
+            </g>
+            <line x1="200" y1="88" x2="200" y2="106" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="212" y="102" class="sv-ts">never put back</text>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="39" cy="126" r="11" class="sv-acc"/><circle cx="85" cy="126" r="11" class="sv-acc"/><circle cx="131" cy="126" r="11" class="sv-acc"/><circle cx="177" cy="126" r="11" class="sv-acc"/>
+              <circle cx="223" cy="126" r="11" class="sv-acc"/><circle cx="269" cy="126" r="11" class="sv-acc"/><circle cx="315" cy="126" r="11" class="sv-acc"/><circle cx="361" cy="126" r="11" class="sv-key"/>
+            </g>
+            <text x="39" y="158" text-anchor="middle" class="sv-tm">8/40</text>
+            <text x="85" y="158" text-anchor="middle" class="sv-tm">7/39</text>
+            <g class="sv-ink2"><circle cx="211" cy="153" r="2.2"/><circle cx="223" cy="153" r="2.2"/><circle cx="235" cy="153" r="2.2"/></g>
+            <text x="361" y="158" text-anchor="middle" class="sv-tm">5/33</text>
+            <path d="M24 166 Q24 176 36 176 H188 Q200 176 200 186 Q200 176 212 176 H364 Q376 176 376 166" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="200" y="206" text-anchor="middle" class="sv-t">one order ≈ 6.5×10⁻⁸</text>
+            <text x="200" y="232" text-anchor="middle" class="sv-t">× 8 orders ≈ 5.2×10⁻⁷</text>
+            <g class="sv-stroke-ink" stroke-width="2"><rect x="60" y="244" width="280" height="32" rx="8" class="sv-good-soft"/></g>
+            <text x="200" y="266" text-anchor="middle" class="sv-tb">+ rarer ones: p = 0.01</text>
+          </svg>
+          <p>Each M&amp;M you keep shrinks the bag, so every draw has a new fraction. Multiply them, count the 8 orders, then add every outcome as rare or rarer. That sum, 0.01, is the p-value.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Sampling without replacement</dt><dd>Keeping each item you draw, so every draw changes the counts.</dd>
+            <dt>Hypergeometric distribution</dt><dd>Counts of a colour drawn from a finite group without replacement.</dd>
+            <dt>Fisher's exact test</dt><dd>The whole procedure: exact chances, then the as-rare-or-rarer sum.</dd>
+            <dt>p-value</dt><dd>The summed chance of every outcome as rare or rarer.</dd>
+            <dt>Enrichment analysis</dt><dd>The same sum for gene lists, with genes instead of colours.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Fix the bag</b>40 M&amp;Ms: 8 blue, 5 red</li>
+            <li><b>One order</b>seven blues, then the red</li>
+            <li><b>Draw and keep</b>8/40, 7/39, 6/38 … 2/34</li>
+            <li><b>Red last</b>5 red among 33 left: 5/33</li>
+            <li><b>Multiply, add orders</b>8 fractions, then all 8 orders</li>
+            <li><b>Add rarer ones</b>as rare or rarer: p = 0.01</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\tfrac{8}{40}\cdot\tfrac{7}{39}\cdots\tfrac{5}{33}\approx6.5\times10^{-8}$$
+          $$P(X=k)=\frac{\binom{K}{k}\binom{N-K}{n-k}}{\binom{N}{n}}$$
+          $$p=\sum_{\text{as rare or rarer}}P(\text{outcome})=0.01$$
+          <ul class="keys">
+            <li>Each top number is the wanted colour left; each bottom, all M&amp;Ms left.</li>
+            <li>\(N=40\) in the bag, \(K=8\) blue, \(n=8\) drawn, \(k=7\) blue drawn.</li>
+            <li>\(\binom{a}{b}\) counts the ways to choose \(b\) things from \(a\).</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>step</th><th>result</th></tr>
+            <tr><td>bag</td><td>40: 8 blue, 5 red</td></tr>
+            <tr><td>handful of 8</td><td>7 blue, 1 red</td></tr>
+            <tr><td>one exact order</td><td>≈ \(6.5\times10^{-8}\)</td></tr>
+            <tr><td>× 8 orderings</td><td>≈ \(5.2\times10^{-7}\)</td></tr>
+            <tr class="final"><td>+ as rare or rarer</td><td>p = 0.01</td></tr>
+          </table>
+          <p class="hand">Only about one normal bag in a hundred looks this surprising, so this bag is special.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">A tiny probability is the p-value.</span><span class="yes">This handful had \(5.2\times10^{-7}\), but p was 0.01. The p-value sums many outcomes, so it is larger.</span></li>
+            <li><span class="no">Rarer just means more blue.</span><span class="yes">Any outcome just as surprising counts, such as 7 oranges and 1 blue.</span></li>
+            <li><span class="no">The handful alone fixes the p-value.</span><span class="yes">It rests on the assumed bag: 40 M&amp;Ms and published colour proportions. Change either and p moves.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="11-p-values-what-they-are-and-how-to-interpret-them.html"><small>Previous</small>p-values: What they are and how to interpret them</a> <a href="13-how-to-calculate-p-values.html"><small>Next</small>How to calculate p-values</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

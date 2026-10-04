@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Introduction to Coding Neural Networks with PyTorch and Lightning — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>99</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 99 · 20.7 min</div>
+    <h1>Introduction to Coding Neural Networks with PyTorch and Lightning</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=khMzi6xPbuM" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: Neural Networks / Deep Learning (video 30)</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Josh rebuilds the small drug dosage neural network from the PyTorch introduction, this time with Lightning. Lightning finds a good learning rate and writes the training loop for you. It also lets the same code run on a laptop or on GPUs.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>The network class now inherits from <code>LightningModule</code> instead of <code>nn.Module</code>. All the code about the network lives in one class: <code>__init__</code>, <code>forward</code>, <code>configure_optimizers</code> and <code>training_step</code>. The training data is wrapped in a <code>DataLoader</code>. A Lightning <code>Trainer</code> finds a learning rate with <code>lr_find</code> and then trains the model with <code>fit</code>. The final bias goes from 0 to about −16.0098, and the network fits the three data points again.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>With plain PyTorch, Josh wrote a class for the weights, biases and forward pass. Then, completely separate from that class, he wrote a long loop to train it. He also had to pick the learning rate, the step size for gradient descent, by hand. Picking a good learning rate is not always easy.</p>
+    <p>Moving the code to GPUs or TPUs would also mean many code changes. Lightning fixes all three problems. You put everything about the network into one class. You hand that class to a <code>Trainer</code>, which runs the training loop for you. The only part of the loop you still write is the loss.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 340" role="img" aria-label="A LightningModule with four methods is handed to a Trainer, which runs the training loop">
+        <defs><marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker></defs>
+        <rect x="20" y="30" width="300" height="290" rx="10" class="sv-key-soft"/>
+        <text x="170" y="58" text-anchor="middle" class="sv-tb">LightningModule (you write)</text>
+        <rect x="36" y="80" width="268" height="44" rx="6" class="sv-paper"/>
+        <text x="50" y="107" class="sv-tm">__init__: weights, biases, lr</text>
+        <rect x="36" y="136" width="268" height="44" rx="6" class="sv-paper"/>
+        <text x="50" y="163" class="sv-tm">forward: dose → effectiveness</text>
+        <rect x="36" y="192" width="268" height="44" rx="6" class="sv-paper"/>
+        <text x="50" y="219" class="sv-tm">configure_optimizers: SGD</text>
+        <rect x="36" y="248" width="268" height="44" rx="6" class="sv-paper"/>
+        <text x="50" y="275" class="sv-tm">training_step: return loss</text>
+        <line x1="322" y1="175" x2="356" y2="175" class="sv-stroke-ink" stroke-width="2" marker-end="url(#ar1)"/>
+        <rect x="360" y="30" width="380" height="290" rx="10" class="sv-acc-soft"/>
+        <text x="550" y="58" text-anchor="middle" class="sv-tb">trainer.fit(model, dataloader)</text>
+        <rect x="400" y="76" width="290" height="34" rx="6" class="sv-paper2"/>
+        <text x="545" y="98" text-anchor="middle" class="sv-tm">configure_optimizers() once</text>
+        <rect x="400" y="130" width="290" height="34" rx="6" class="sv-paper"/>
+        <text x="545" y="152" text-anchor="middle" class="sv-tm">training_step() → loss</text>
+        <rect x="400" y="176" width="290" height="34" rx="6" class="sv-paper"/>
+        <text x="545" y="198" text-anchor="middle" class="sv-tm">optimizer.zero_grad()</text>
+        <rect x="400" y="222" width="290" height="34" rx="6" class="sv-paper"/>
+        <text x="545" y="244" text-anchor="middle" class="sv-tm">loss.backward()</text>
+        <rect x="400" y="268" width="290" height="34" rx="6" class="sv-paper"/>
+        <text x="545" y="290" text-anchor="middle" class="sv-tm">optimizer.step()</text>
+        <line x1="545" y1="110" x2="545" y2="128" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <line x1="545" y1="164" x2="545" y2="174" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <line x1="545" y1="210" x2="545" y2="220" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <line x1="545" y1="256" x2="545" y2="266" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <path d="M690,285 L716,285 L716,147 L694,147" fill="none" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+      </svg>
+      <figcaption>You write the four methods on the left; the Trainer calls them and runs zero_grad, backward and step for you, repeating every epoch.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <p>First come the imports. Everything is as before, plus Lightning and the data helpers.</p>
+<pre><code>import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torch.optim import SGD
+import lightning as L
+from torch.utils.data import TensorDataset, DataLoader</code></pre>
+    <ol class="steps">
+      <li><b>Build the pre-trained network.</b> The class is called <code>BasicLightning</code> and inherits from <code>LightningModule</code>. The <code>__init__</code> method calls the parent's <code>__init__</code>, then makes each weight and bias an <code>nn.Parameter</code> holding a tensor.</li>
+      <li><b>Write <code>forward</code>.</b> The input goes through a top and a bottom ReLU, and each ReLU output is scaled by a weight. The two scaled values are added to the final bias, and the sum goes through a final ReLU.</li>
+      <li><b>Test it.</b> Josh makes doses between 0 and 1 with <code>torch.linspace</code> and passes them to <code>model = BasicLightning()</code>. Calling the model runs <code>forward</code> by default. A Seaborn line plot shows the expected bent shape.</li>
+      <li><b>Make a version to train.</b> He copies the class as <code>BasicLightningTrain</code> and sets the final bias to 0.0 with <code>requires_grad=True</code>. He also adds <code>self.learning_rate = 0.01</code>, which is only a placeholder.</li>
+      <li><b>Wrap the data.</b> The inputs and labels go into a <code>TensorDataset</code>, and that goes into a <code>DataLoader</code>.</li>
+      <li><b>Add two methods.</b> <code>configure_optimizers</code> returns SGD, short for stochastic gradient descent, using the learning rate variable. <code>training_step</code> takes a batch and its index and returns the loss.</li>
+      <li><b>Find a learning rate, then train.</b> A <code>Trainer</code> runs <code>lr_find</code>, the model gets the suggested rate, and then <code>trainer.fit</code> trains it.</li>
+      <li><b>Check and plot.</b> Josh prints the new final bias and graphs the trained model. This time he reuses the trained model instead of making a new one.</li>
+    </ol>
+    <p>Here is the trainable class. Only <code>final_bias</code> is trained; the other weights and biases keep <code>requires_grad=False</code>.</p>
+<pre><code>class BasicLightningTrain(L.LightningModule):
+    def __init__(self):
+        super().__init__()
+        self.w00 = nn.Parameter(torch.tensor(1.7), requires_grad=False)
+        self.b00 = nn.Parameter(torch.tensor(-0.85), requires_grad=False)
+        self.w01 = nn.Parameter(torch.tensor(-40.8), requires_grad=False)
+        self.w10 = nn.Parameter(torch.tensor(12.6), requires_grad=False)
+        self.b10 = nn.Parameter(torch.tensor(0.0), requires_grad=False)
+        self.w11 = nn.Parameter(torch.tensor(2.7), requires_grad=False)
+        self.final_bias = nn.Parameter(torch.tensor(0.0), requires_grad=True)
+        self.learning_rate = 0.01  # placeholder
+
+    def forward(self, input):
+        input_to_top_relu = input * self.w00 + self.b00
+        scaled_top_relu_output = F.relu(input_to_top_relu) * self.w01
+        input_to_bottom_relu = input * self.w10 + self.b10
+        scaled_bottom_relu_output = F.relu(input_to_bottom_relu) * self.w11
+        input_to_final_relu = scaled_top_relu_output + scaled_bottom_relu_output + self.final_bias
+        return F.relu(input_to_final_relu)
+
+    def configure_optimizers(self):
+        return SGD(self.parameters(), lr=self.learning_rate)
+
+    def training_step(self, batch, batch_idx):
+        input_i, label_i = batch
+        output_i = self.forward(input_i)
+        loss = (output_i - label_i)**2
+        return loss</code></pre>
+    <p>The training data goes into a <code>DataLoader</code>.</p>
+<pre><code>inputs = torch.tensor([0., 0.5, 1.])
+labels = torch.tensor([0., 1., 0.])
+dataset = TensorDataset(inputs, labels)
+dataloader = DataLoader(dataset)</code></pre>
+    <p>Then the Trainer finds a learning rate and fits the model.</p>
+<pre><code>model = BasicLightningTrain()
+trainer = L.Trainer(max_epochs=34)
+tuner = L.pytorch.tuner.Tuner(trainer)
+lr_find_results = tuner.lr_find(model, train_dataloaders=dataloader,
+                                min_lr=0.001, max_lr=1.0,
+                                early_stop_threshold=None)
+new_lr = lr_find_results.suggestion()
+model.learning_rate = new_lr
+
+trainer.fit(model, train_dataloaders=dataloader)
+print(model.final_bias.data)</code></pre>
+    <p>The figure below puts the two ways of training side by side.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Training code you write in plain PyTorch compared with PyTorch plus Lightning">
+        <rect x="20" y="20" width="350" height="260" rx="10" class="sv-paper2"/>
+        <text x="195" y="48" text-anchor="middle" class="sv-tb">PyTorch only: you write the loop</text>
+        <text x="40" y="84" class="sv-tm">optimizer = SGD(..., lr=chosen by you)</text>
+        <text x="40" y="112" class="sv-tm">for epoch in range(100):</text>
+        <text x="60" y="140" class="sv-tm">for each data point:</text>
+        <text x="80" y="168" class="sv-tm">loss = (pred - label)**2</text>
+        <text x="80" y="196" class="sv-tm">loss.backward()</text>
+        <text x="60" y="224" class="sv-tm">optimizer.step()</text>
+        <text x="60" y="252" class="sv-tm">optimizer.zero_grad()</text>
+        <rect x="390" y="20" width="350" height="260" rx="10" class="sv-good-soft"/>
+        <text x="565" y="48" text-anchor="middle" class="sv-tb">With Lightning: you write the loss</text>
+        <rect x="410" y="70" width="310" height="56" rx="6" class="sv-paper"/>
+        <text x="565" y="104" text-anchor="middle" class="sv-tm">training_step: loss = (pred - label)**2</text>
+        <rect x="410" y="140" width="310" height="56" rx="6" class="sv-paper"/>
+        <text x="565" y="174" text-anchor="middle" class="sv-tm">trainer.fit(model, dataloader)</text>
+        <rect x="410" y="210" width="310" height="56" rx="6" class="sv-paper"/>
+        <text x="565" y="244" text-anchor="middle" class="sv-tm">accelerator="auto", devices="auto"</text>
+      </svg>
+      <figcaption>The whole loop on the left shrinks to the loss line on the right; lr_find picks the learning rate, and the same code runs on a CPU or on GPUs.</figcaption>
+    </figure>
+    <p><b>Why a DataLoader?</b> Josh gives three reasons. It makes it easy to access the data in batches, which helps when the data is bigger than memory. It makes it easy to shuffle the data each epoch. And it makes it easy to use a small fraction of the data for a quick training run while debugging.</p>
+    <p><b>GPUs.</b> A laptop may have one CPU, the central processing unit, with only a few computing cores. With one CPU, the weight tensors and the data tensors all sit in the same place. A GPU, or graphics processing unit, can have 10 or even 100 times more cores, so training is much faster. In plain PyTorch you must move tensors to the GPUs yourself, and keeping track of them gets complicated. With Lightning you set <code>accelerator="auto"</code> and <code>devices="auto"</code> when you create the Trainer. Lightning then detects whether GPUs are available and how many there are. The same code runs on your laptop and on a machine with many GPUs.</p>
+<pre><code>trainer = L.Trainer(max_epochs=34, accelerator="auto", devices="auto")</code></pre>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">Forward pass</span><div class="math">$$ \text{output} = \text{ReLU}\Big( w_{01}\,\text{ReLU}(w_{00}x + b_{00}) + w_{11}\,\text{ReLU}(w_{10}x + b_{10}) + b_{\text{final}} \Big) $$</div><p class="explain"><b>Symbols:</b> \(x\) is the drug dose. \(w_{00}, b_{00}\) are the weight and bias into the top ReLU, and \(w_{01}\) scales its output. \(w_{10}, b_{10}\) and \(w_{11}\) do the same for the bottom ReLU. \(b_{\text{final}}\) is the final bias, the only value being trained. \(\text{ReLU}(z)\) means \(\max(0, z)\). <b>What it tells you:</b> this is exactly what the <code>forward</code> method computes.</p></div>
+    <div class="formula"><span class="lbl">Loss (sum of squared residuals)</span><div class="math">$$ \text{SSR} = \sum_{i=1}^{3} \big(\text{output}_i - \text{label}_i\big)^2 $$</div><p class="explain"><b>Symbols:</b> \(i\) indexes the three training points. \(\text{output}_i\) is the network's prediction for dose \(i\). \(\text{label}_i\) is the known effectiveness. <b>What it tells you:</b> Josh calls this loss the sum of the squared residuals. Here each batch holds one point, so <code>training_step</code> returns one squared residual at a time.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p><b>Data.</b> The doses are 0, 0.5 and 1. The known effectiveness values are 0, 1 and 0.</p>
+      <p><b>Before training.</b> With the final bias set to 0, the graph shows effectiveness of 17 at dose 0.5. At that dose the top ReLU gets \(1.7 \times 0.5 - 0.85 = 0\), so it adds nothing. The bottom path gives \(\text{ReLU}(12.6 \times 0.5) \times 2.7 = 6.3 \times 2.7 \approx 17\). That is far above the target of 1, so the final bias must be optimized.</p>
+      <p><b>Learning rate.</b> <code>lr_find</code> tries 100 candidate learning rates between 0.001 and 1. With <code>early_stop_threshold=None</code> it tests all of them. The suggested rate is 0.00214.</p>
+      <p><b>Training.</b> An epoch is one pass through all three training points. With <code>max_epochs=34</code>, <code>trainer.fit</code> moves the final bias to −16.0098. At dose 0.5 the output is now about \(17 - 16.0098 \approx 1\), which matches the label. The final graph shows the network fits the data again.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Once the final bias has a gradient, the output tensor carries gradient information too. Josh calls <code>.detach()</code> on the output values before plotting, to get a new tensor that holds only the values.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> After you add new methods to the class, make a new model from it. For the final graph, do the opposite: reuse the trained model, or you lose the optimized bias.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The 0.01 learning rate in <code>__init__</code> is only a placeholder. <code>configure_optimizers</code> must read <code>self.learning_rate</code>, so the rate found by <code>lr_find</code> is the one SGD actually uses.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> 34 epochs is enough here because it worked before. If it were not, you would not start over. Lightning lets you add more epochs right where training left off.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What does Lightning add on top of plain PyTorch?</summary><div class="a">It puts all the code about the network in one class and writes the training loop for you. The Trainer calls zero_grad, backward and step, so you only write the loss. It can also suggest a learning rate, and it runs the same code on CPUs or GPUs.</div></details>
+    <details class="qa" open><summary>Which methods does a LightningModule need for training, and what does each do?</summary><div class="a"><code>__init__</code> creates the weights, biases and the learning rate. <code>forward</code> runs data through the network. <code>configure_optimizers</code> returns the optimizer, here SGD with the learning rate variable. <code>training_step</code> takes a batch and its index and returns the loss.</div></details>
+    <details class="qa" open><summary>What happens when you call trainer.fit?</summary><div class="a">The Trainer first calls configure_optimizers to set up the optimizer. Then it calls training_step to get the loss. After that it calls zero_grad, backward and step, and it repeats this for each epoch you asked for.</div></details>
+    <details class="qa" open><summary>How does Lightning help you choose a learning rate?</summary><div class="a">You call lr_find on a tuner with the model, the data and a minimum and maximum rate. By default it builds 100 candidate rates in that range. Calling suggestion on the results gives an improved rate, which you then set on the model before training.</div></details>
+    <details class="qa" open><summary>Why use a DataLoader, even for tiny data?</summary><div class="a">Lightning expects the training data wrapped in a DataLoader. It also pays off with big data. It gives easy batches when data does not fit in memory, easy shuffling each epoch, and easy use of a small slice for quick debugging.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Inherit from <code>LightningModule</code> instead of <code>nn.Module</code>; running a pre-trained network works the same as before.</li>
+      <li>Put <code>__init__</code>, <code>forward</code>, <code>configure_optimizers</code> and <code>training_step</code> together in one class.</li>
+      <li>Wrap the training data in a <code>TensorDataset</code> and then a <code>DataLoader</code>.</li>
+      <li>Use the Trainer's tuner and <code>lr_find</code> to get a learning rate; here it suggested 0.00214.</li>
+      <li>Call <code>trainer.fit(model, dataloader)</code>, and the Trainer runs the full training loop for you.</li>
+      <li>In the example, the final bias moved from 0 to −16.0098, and the network fits the three doses again.</li>
+      <li>Setting <code>accelerator="auto"</code> and <code>devices="auto"</code> lets the same code run on a laptop CPU or on many GPUs.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">PyTorch and Lightning</span><span class="board-tag">write the loss, the Trainer runs the loop</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 300" role="img" aria-label="Your LightningModule class and a DataLoader of doses and labels go into a Trainer, which runs lr_find (0.00214) and then fit for 34 epochs, moving the final bias from 0 to −16.0098.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <g class="sv-stroke-ink" stroke-width="2.5" stroke-linejoin="round">
+              <rect x="12" y="12" width="212" height="70" rx="10" class="sv-key-soft"/>
+              <rect x="244" y="12" width="144" height="70" rx="10" class="sv-paper2"/>
+            </g>
+            <text x="26" y="40" class="sv-tm">LightningModule</text>
+            <text x="26" y="66" class="sv-ts">you write this</text>
+            <text x="258" y="40" class="sv-tm">DataLoader</text>
+            <text x="258" y="66" class="sv-ts">doses + labels</text>
+            <line x1="118" y1="86" x2="118" y2="105" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="316" y1="86" x2="316" y2="105" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="3" stroke-linejoin="round"><rect x="12" y="112" width="376" height="116" rx="12" class="sv-paper"/></g>
+            <text x="26" y="177" class="sv-tb">Trainer</text>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <rect x="116" y="122" width="188" height="36" rx="8" class="sv-acc-soft"/>
+              <rect x="116" y="180" width="188" height="36" rx="8" class="sv-acc-soft"/>
+            </g>
+            <text x="128" y="146" class="sv-t">lr_find → 0.00214</text>
+            <line x1="210" y1="161" x2="210" y2="174" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="128" y="204" class="sv-t">fit: 34 epochs</text>
+            <path d="M306 188 C 366 176, 366 220, 308 210" class="sv-stroke-key" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="200" y1="232" x2="200" y2="250" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-good" stroke-width="3"><rect x="60" y="256" width="280" height="32" rx="16" class="sv-good-soft"/></g>
+            <text x="200" y="279" text-anchor="middle" class="sv-tb">final bias 0 → −16.0098</text>
+          </svg>
+          <p>Plain PyTorch makes you write the training loop and pick the learning rate by hand. A Lightning Trainer does both; you keep the network and its loss in one class. The same code runs on a laptop or GPUs.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>LightningModule</dt><dd>The class your network inherits from, instead of nn.Module.</dd>
+            <dt>DataLoader</dt><dd>Wraps the data: easy batches, shuffling, quick debug runs.</dd>
+            <dt>Trainer</dt><dd>Runs the training loop for you: zero_grad, backward, step.</dd>
+            <dt>lr_find</dt><dd>Tries 100 learning rates in a range, then suggests one.</dd>
+            <dt>Epoch</dt><dd>One pass through all three training points.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Build the class</b>weights, forward, test plot</li>
+            <li><b>Make it trainable</b>final bias set to 0.0</li>
+            <li><b>Wrap the data</b>into a DataLoader</li>
+            <li><b>Add two methods</b>return SGD; return the loss</li>
+            <li><b>Find the rate</b>lr_find suggests 0.00214</li>
+            <li><b>Train and check</b>34 epochs: bias −16.0098</li>
+          </ol>
+          <p class="loop">↺ every epoch, fit calls training_step, zero_grad, backward and step</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{top}=w_{01}\,\text{ReLU}(w_{00}x+b_{00})$$
+          $$\text{output}=\text{ReLU}(\text{top}+\text{bottom}+b_f)$$
+          $$\text{SSR}=\sum_{i=1}^{3}(\text{output}_i-\text{label}_i)^2$$
+          <ul class="keys">
+            <li>\(x\) is the dose; bottom uses \(w_{10}, b_{10}, w_{11}\) the same way.</li>
+            <li>\(b_f\) is the final bias, the only value trained.</li>
+            <li>Each batch is one point, so <code>training_step</code> returns one squared residual.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>what</th><th>value</th></tr>
+            <tr><td>top ReLU at 0.5</td><td>1.7 × 0.5 − 0.85 = 0</td></tr>
+            <tr><td>bottom path</td><td>6.3 × 2.7 ≈ 17</td></tr>
+            <tr><td>lr_find rate</td><td>0.00214</td></tr>
+            <tr><td>34 epochs</td><td>bias 0 → −16.0098</td></tr>
+            <tr class="final"><td>output at 0.5</td><td>17 − 16.0098 ≈ 1 ✓</td></tr>
+          </table>
+          <p class="hand">Bias 0 gives 17 at dose 0.5, far above the target 1. After training, all three points fit.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">The 0.01 in <code>__init__</code> is the rate SGD uses.</span><span class="yes">Only a placeholder. <code>configure_optimizers</code> must read <code>self.learning_rate</code>, so SGD uses the lr_find rate.</span></li>
+            <li><span class="no">Make a new model for the final graph.</span><span class="yes">Reuse the trained model, or you lose the optimized bias.</span></li>
+            <li><span class="no">Too few epochs means starting over.</span><span class="yes">Lightning lets you add more epochs right where training left off.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="98-the-introduction-to-pytorch.html"><small>Previous</small>The Introduction to PyTorch</a> <a href="100-long-short-term-memory-with-pytorch-lightning.html"><small>Next</small>Long Short-Term Memory with PyTorch + Lightning</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

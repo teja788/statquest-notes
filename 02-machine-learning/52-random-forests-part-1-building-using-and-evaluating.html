@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Random Forests Part 1 - Building, Using and Evaluating — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>52</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 52 · 9.9 min</div>
+    <h1>Random Forests Part 1 - Building, Using and Evaluating</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=J4Wdy0Wc_xQ" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">A single decision tree fits its own data very well, but it is not flexible with new samples. This video shows how many varied trees, built and combined in a simple way, fix that problem.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>You build each tree from a bootstrap sample, which is a random draw of rows with repeats allowed. At every split you let only a random subset of the columns compete. You repeat this hundreds of times, so the trees end up different from each other. To label a new sample you run it down every tree and take the label with the most votes. Rows left out of a bootstrap sample give you a free accuracy check, called the out-of-bag error.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Decision trees are easy to build, easy to use and easy to read. Josh quotes <i>The Elements of Statistical Learning</i> on their weak point: trees are not accurate enough to be the ideal tool. They work great on the data used to create them. They are not flexible when they meet new samples.</p>
+    <p>A random forest keeps the simplicity of a tree but adds flexibility, and accuracy improves a lot. The trick is variety. Each tree sees a different set of rows and a different set of candidate columns. So each tree makes different mistakes. One tree alone may be wrong, but many varied trees, voting together, are usually right.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 230" role="img" aria-label="Rows are drawn with replacement into a bootstrap sample, many trees are grown, and a new patient gets the label with the most votes">
+        <defs>
+          <marker id="arrA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" class="sv-ink3"></path>
+          </marker>
+        </defs>
+
+        <text x="60" y="40" text-anchor="middle" class="sv-ts">original</text>
+        <rect x="40" y="52" width="40" height="26" rx="4" class="sv-paper2"></rect>
+        <rect x="40" y="52" width="40" height="26" rx="4" class="sv-line" stroke-width="1"></rect>
+        <text x="60" y="70" text-anchor="middle" class="sv-tm">1</text>
+        <rect x="40" y="82" width="40" height="26" rx="4" class="sv-paper2"></rect>
+        <rect x="40" y="82" width="40" height="26" rx="4" class="sv-line" stroke-width="1"></rect>
+        <text x="60" y="100" text-anchor="middle" class="sv-tm">2</text>
+        <rect x="40" y="112" width="40" height="26" rx="4" class="sv-paper2"></rect>
+        <rect x="40" y="112" width="40" height="26" rx="4" class="sv-line" stroke-width="1"></rect>
+        <text x="60" y="130" text-anchor="middle" class="sv-tm">3</text>
+        <rect x="40" y="142" width="40" height="26" rx="4" class="sv-paper2"></rect>
+        <rect x="40" y="142" width="40" height="26" rx="4" class="sv-line" stroke-width="1"></rect>
+        <text x="60" y="160" text-anchor="middle" class="sv-tm">4</text>
+
+        <line x1="90" y1="110" x2="122" y2="110" class="sv-line" stroke-width="1.5" marker-end="url(#arrA)"></line>
+
+        <text x="160" y="40" text-anchor="middle" class="sv-ts">bootstrap</text>
+        <rect x="140" y="52" width="40" height="26" rx="4" class="sv-acc-soft"></rect>
+        <rect x="140" y="52" width="40" height="26" rx="4" class="sv-stroke-acc" stroke-width="1.5"></rect>
+        <text x="160" y="70" text-anchor="middle" class="sv-tm">1</text>
+        <rect x="140" y="82" width="40" height="26" rx="4" class="sv-acc-soft"></rect>
+        <rect x="140" y="82" width="40" height="26" rx="4" class="sv-stroke-acc" stroke-width="1.5"></rect>
+        <text x="160" y="100" text-anchor="middle" class="sv-tm">2</text>
+        <rect x="140" y="112" width="40" height="26" rx="4" class="sv-key-soft"></rect>
+        <rect x="140" y="112" width="40" height="26" rx="4" class="sv-stroke-key" stroke-width="1.5"></rect>
+        <text x="160" y="130" text-anchor="middle" class="sv-tm">3</text>
+        <rect x="140" y="142" width="40" height="26" rx="4" class="sv-key-soft"></rect>
+        <rect x="140" y="142" width="40" height="26" rx="4" class="sv-stroke-key" stroke-width="1.5"></rect>
+        <text x="160" y="160" text-anchor="middle" class="sv-tm">3</text>
+
+        <line x1="190" y1="110" x2="222" y2="110" class="sv-line" stroke-width="1.5" marker-end="url(#arrA)"></line>
+
+        <text x="330" y="40" text-anchor="middle" class="sv-ts">many trees</text>
+        <circle cx="260" cy="64" r="5" class="sv-acc"></circle>
+        <line x1="260" y1="69" x2="242" y2="88" class="sv-line" stroke-width="1.5"></line>
+        <line x1="260" y1="69" x2="278" y2="88" class="sv-line" stroke-width="1.5"></line>
+        <circle cx="242" cy="92" r="4" class="sv-ink3"></circle>
+        <circle cx="278" cy="92" r="4" class="sv-ink3"></circle>
+        <circle cx="330" cy="64" r="5" class="sv-acc"></circle>
+        <line x1="330" y1="69" x2="312" y2="88" class="sv-line" stroke-width="1.5"></line>
+        <line x1="330" y1="69" x2="348" y2="88" class="sv-line" stroke-width="1.5"></line>
+        <circle cx="312" cy="92" r="4" class="sv-ink3"></circle>
+        <circle cx="348" cy="92" r="4" class="sv-ink3"></circle>
+        <circle cx="400" cy="64" r="5" class="sv-acc"></circle>
+        <line x1="400" y1="69" x2="382" y2="88" class="sv-line" stroke-width="1.5"></line>
+        <line x1="400" y1="69" x2="418" y2="88" class="sv-line" stroke-width="1.5"></line>
+        <circle cx="382" cy="92" r="4" class="sv-ink3"></circle>
+        <circle cx="418" cy="92" r="4" class="sv-ink3"></circle>
+        <circle cx="260" cy="124" r="5" class="sv-acc"></circle>
+        <line x1="260" y1="129" x2="242" y2="148" class="sv-line" stroke-width="1.5"></line>
+        <line x1="260" y1="129" x2="278" y2="148" class="sv-line" stroke-width="1.5"></line>
+        <circle cx="242" cy="152" r="4" class="sv-ink3"></circle>
+        <circle cx="278" cy="152" r="4" class="sv-ink3"></circle>
+        <circle cx="330" cy="124" r="5" class="sv-acc"></circle>
+        <line x1="330" y1="129" x2="312" y2="148" class="sv-line" stroke-width="1.5"></line>
+        <line x1="330" y1="129" x2="348" y2="148" class="sv-line" stroke-width="1.5"></line>
+        <circle cx="312" cy="152" r="4" class="sv-ink3"></circle>
+        <circle cx="348" cy="152" r="4" class="sv-ink3"></circle>
+        <circle cx="400" cy="124" r="5" class="sv-acc"></circle>
+        <line x1="400" y1="129" x2="382" y2="148" class="sv-line" stroke-width="1.5"></line>
+        <line x1="400" y1="129" x2="418" y2="148" class="sv-line" stroke-width="1.5"></line>
+        <circle cx="382" cy="152" r="4" class="sv-ink3"></circle>
+        <circle cx="418" cy="152" r="4" class="sv-ink3"></circle>
+        <text x="300" y="196" text-anchor="middle" class="sv-ts">each tree: its own bootstrap sample, random columns</text>
+
+        <line x1="440" y1="110" x2="472" y2="110" class="sv-line" stroke-width="1.5" marker-end="url(#arrA)"></line>
+
+        <text x="600" y="40" text-anchor="middle" class="sv-ts">votes for a new patient</text>
+        <text x="512" y="70" text-anchor="end" class="sv-tm">yes</text>
+        <rect x="520" y="56" width="150" height="18" rx="3" class="sv-good-soft"></rect>
+        <rect x="520" y="56" width="150" height="18" rx="3" class="sv-stroke-good" stroke-width="1.5"></rect>
+        <text x="680" y="70" class="sv-tm">5</text>
+        <text x="512" y="104" text-anchor="end" class="sv-tm">no</text>
+        <rect x="520" y="90" width="30" height="18" rx="3" class="sv-paper2"></rect>
+        <rect x="520" y="90" width="30" height="18" rx="3" class="sv-line" stroke-width="1.5"></rect>
+        <text x="560" y="104" class="sv-tm">1</text>
+        <rect x="470" y="124" width="270" height="48" rx="6" class="sv-acc-soft"></rect>
+        <rect x="470" y="124" width="270" height="48" rx="6" class="sv-stroke-acc" stroke-width="1.5"></rect>
+        <text x="605" y="145" text-anchor="middle" class="sv-t">majority vote: yes</text>
+        <text x="605" y="163" text-anchor="middle" class="sv-ts">the patient has heart disease</text>
+      </svg>
+      <figcaption>Notice that row 3 is drawn twice and row 4 is never drawn. That random draw, repeated for every tree, is what makes the forest varied.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li><b>Make a bootstrap data set.</b> Randomly pick rows from the original data until you have a new set of the same size. You are allowed to pick the same row more than once, so repeats are normal.</li>
+      <li><b>Grow a tree from it, but hide most columns at each split.</b> At the root, pick a random subset of the columns and let only those compete. Use the winner to split, then repeat the random pick at the next node.</li>
+      <li><b>Repeat hundreds of times.</b> Each round makes a fresh bootstrap sample and a fresh tree. The video shows six trees only because of space.</li>
+      <li><b>Use the forest by voting.</b> Run the new sample down every tree and keep the label with the most votes. Bootstrapping the data plus using the aggregate to decide is called <b>bagging</b>.</li>
+      <li><b>Score the forest with the left-out rows.</b> About one third of the rows never enter a given bootstrap sample. Those rows are the <b>out-of-bag data set</b> for that tree.</li>
+      <li><b>Tune the number of columns per split.</b> Build forests with different settings, compare their out-of-bag errors, and keep the most accurate one.</li>
+    </ol>
+    <p>The out-of-bag check costs nothing extra. Each left-out row goes through the trees built without it, and they vote. If the winning label matches the truth, the row counts as correct.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 290" role="img" aria-label="Row 4 is missing from the bootstrap sample, so it is run through the trees built without it and their votes are checked against the truth">
+        <defs>
+          <marker id="arrB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" class="sv-ink3"></path>
+          </marker>
+        </defs>
+
+        <text x="60" y="40" text-anchor="middle" class="sv-ts">original</text>
+        <rect x="40" y="52" width="40" height="26" rx="4" class="sv-paper2"></rect>
+        <rect x="40" y="52" width="40" height="26" rx="4" class="sv-line" stroke-width="1"></rect>
+        <text x="60" y="70" text-anchor="middle" class="sv-tm">1</text>
+        <rect x="40" y="82" width="40" height="26" rx="4" class="sv-paper2"></rect>
+        <rect x="40" y="82" width="40" height="26" rx="4" class="sv-line" stroke-width="1"></rect>
+        <text x="60" y="100" text-anchor="middle" class="sv-tm">2</text>
+        <rect x="40" y="112" width="40" height="26" rx="4" class="sv-paper2"></rect>
+        <rect x="40" y="112" width="40" height="26" rx="4" class="sv-line" stroke-width="1"></rect>
+        <text x="60" y="130" text-anchor="middle" class="sv-tm">3</text>
+        <rect x="40" y="142" width="40" height="26" rx="4" class="sv-key-soft"></rect>
+        <rect x="40" y="142" width="40" height="26" rx="4" class="sv-stroke-key" stroke-width="1"></rect>
+        <text x="60" y="160" text-anchor="middle" class="sv-tm">4</text>
+
+        <line x1="88" y1="95" x2="126" y2="92" class="sv-line" stroke-width="1.5" marker-end="url(#arrB)"></line>
+        <line x1="88" y1="157" x2="126" y2="180" class="sv-line" stroke-width="1.5" marker-end="url(#arrB)"></line>
+
+        <rect x="132" y="64" width="120" height="56" rx="6" class="sv-acc-soft"></rect>
+        <rect x="132" y="64" width="120" height="56" rx="6" class="sv-stroke-acc" stroke-width="1.5"></rect>
+        <text x="192" y="88" text-anchor="middle" class="sv-ts">bootstrap</text>
+        <text x="192" y="107" text-anchor="middle" class="sv-tm">1, 2, 3, 3</text>
+
+        <rect x="132" y="160" width="120" height="56" rx="6" class="sv-key-soft"></rect>
+        <rect x="132" y="160" width="120" height="56" rx="6" class="sv-stroke-key" stroke-width="1.5"></rect>
+        <text x="192" y="184" text-anchor="middle" class="sv-ts">out-of-bag</text>
+        <text x="192" y="203" text-anchor="middle" class="sv-tm">row 4</text>
+
+        <line x1="258" y1="92" x2="296" y2="92" class="sv-line" stroke-width="1.5" marker-end="url(#arrB)"></line>
+        <line x1="258" y1="178" x2="322" y2="112" class="sv-line" stroke-width="1.5" marker-end="url(#arrB)"></line>
+
+        <text x="410" y="40" text-anchor="middle" class="sv-ts">trees grown without row 4</text>
+        <circle cx="340" cy="64" r="5" class="sv-acc"></circle>
+        <line x1="340" y1="69" x2="322" y2="88" class="sv-line" stroke-width="1.5"></line>
+        <line x1="340" y1="69" x2="358" y2="88" class="sv-line" stroke-width="1.5"></line>
+        <circle cx="322" cy="92" r="4" class="sv-ink3"></circle>
+        <circle cx="358" cy="92" r="4" class="sv-ink3"></circle>
+        <circle cx="410" cy="64" r="5" class="sv-acc"></circle>
+        <line x1="410" y1="69" x2="392" y2="88" class="sv-line" stroke-width="1.5"></line>
+        <line x1="410" y1="69" x2="428" y2="88" class="sv-line" stroke-width="1.5"></line>
+        <circle cx="392" cy="92" r="4" class="sv-ink3"></circle>
+        <circle cx="428" cy="92" r="4" class="sv-ink3"></circle>
+        <circle cx="480" cy="64" r="5" class="sv-acc"></circle>
+        <line x1="480" y1="69" x2="462" y2="88" class="sv-line" stroke-width="1.5"></line>
+        <line x1="480" y1="69" x2="498" y2="88" class="sv-line" stroke-width="1.5"></line>
+        <circle cx="462" cy="92" r="4" class="sv-ink3"></circle>
+        <circle cx="498" cy="92" r="4" class="sv-ink3"></circle>
+
+        <line x1="512" y1="78" x2="546" y2="78" class="sv-line" stroke-width="1.5" marker-end="url(#arrB)"></line>
+        <text x="558" y="62" class="sv-good" font-size="12.5">tree 1 says no</text>
+        <text x="558" y="82" class="sv-warn" font-size="12.5">tree 2 says yes</text>
+        <text x="558" y="102" class="sv-good" font-size="12.5">tree 3 says no</text>
+        <rect x="552" y="118" width="188" height="48" rx="6" class="sv-good-soft"></rect>
+        <rect x="552" y="118" width="188" height="48" rx="6" class="sv-stroke-good" stroke-width="1.5"></rect>
+        <text x="646" y="139" text-anchor="middle" class="sv-t">majority: no</text>
+        <text x="646" y="157" text-anchor="middle" class="sv-ts">correct for row 4</text>
+
+        <line x1="20" y1="232" x2="740" y2="232" class="sv-line" stroke-width="1"></line>
+        <text x="20" y="262" class="sv-ts">do this for every out-of-bag sample:</text>
+        <rect x="266" y="246" width="28" height="24" rx="4" class="sv-good-soft"></rect>
+        <rect x="266" y="246" width="28" height="24" rx="4" class="sv-stroke-good" stroke-width="1.5"></rect>
+        <rect x="302" y="246" width="28" height="24" rx="4" class="sv-good-soft"></rect>
+        <rect x="302" y="246" width="28" height="24" rx="4" class="sv-stroke-good" stroke-width="1.5"></rect>
+        <rect x="338" y="246" width="28" height="24" rx="4" class="sv-good-soft"></rect>
+        <rect x="338" y="246" width="28" height="24" rx="4" class="sv-stroke-good" stroke-width="1.5"></rect>
+        <rect x="374" y="246" width="28" height="24" rx="4" class="sv-good-soft"></rect>
+        <rect x="374" y="246" width="28" height="24" rx="4" class="sv-stroke-good" stroke-width="1.5"></rect>
+        <rect x="410" y="246" width="28" height="24" rx="4" class="sv-paper2"></rect>
+        <rect x="410" y="246" width="28" height="24" rx="4" class="sv-stroke-ink" stroke-width="1.5"></rect>
+        <text x="424" y="263" text-anchor="middle" class="sv-warn" font-size="13">x</text>
+        <rect x="446" y="246" width="28" height="24" rx="4" class="sv-good-soft"></rect>
+        <rect x="446" y="246" width="28" height="24" rx="4" class="sv-stroke-good" stroke-width="1.5"></rect>
+        <line x1="494" y1="258" x2="526" y2="258" class="sv-line" stroke-width="1.5" marker-end="url(#arrB)"></line>
+        <text x="540" y="254" class="sv-t">share labelled wrong</text>
+        <text x="540" y="272" class="sv-ts">= out-of-bag error</text>
+      </svg>
+      <figcaption>Notice that only the trees built without row 4 are allowed to vote on row 4, so the check stays honest.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Majority vote</span>
+      <div class="math">$$ \hat{y}(x) \;=\; \operatorname*{arg\,max}_{c} \sum_{b=1}^{B} \mathbf{1}\{\,T_b(x) = c\,\} $$</div>
+      <p class="explain"><b>Symbols:</b> \(x\) is the new sample's measurements. \(T_b(x)\) is the label that tree number \(b\) gives it. \(B\) is how many trees are in the forest. \(c\) is one possible label, such as yes or no. \(\mathbf{1}\{\cdot\}\) is 1 when the statement inside is true and 0 when it is false. \(\operatorname{arg\,max}_c\) means "the label \(c\) with the largest count". <b>What it tells you:</b> the forest simply counts how many trees chose each label and keeps the winner.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Why about one third is left out</span>
+      <div class="math">$$ P(\text{a row never gets picked}) = \left(1 - \frac{1}{n}\right)^{n} \;\longrightarrow\; \frac{1}{e} \approx 0.37 $$</div>
+      <p class="explain"><b>Symbols:</b> \(n\) is the number of rows in the original data. \(1/n\) is the chance that one draw picks a chosen row, so \(1-1/n\) is the chance it misses. The exponent \(n\) is there because we draw \(n\) times. \(e \approx 2.718\) is Euler's number. <b>What it tells you:</b> as the data grows, roughly 37 percent of rows sit outside each bootstrap sample. That is the "about one third" that Josh mentions.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Out-of-bag error</span>
+      <div class="math">$$ \text{OOB error} = \frac{\text{out-of-bag samples labelled wrong}}{\text{all out-of-bag samples}}, \qquad \text{accuracy} = 1 - \text{OOB error} $$</div>
+      <p class="explain"><b>Symbols:</b> the top counts left-out rows whose majority vote disagrees with the true label. The bottom counts every left-out row that was tested. <b>What it tells you:</b> it estimates how well the forest handles data it has not seen, without holding back a separate test set.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Columns to try at each split</span>
+      <div class="math">$$ m \approx \sqrt{p} $$</div>
+      <p class="explain"><b>Symbols:</b> \(m\) is how many columns compete at one split. \(p\) is the total number of columns in the data. <b>What it tells you:</b> the square root is only a starting point. Josh advises trying a few values above and below it, and keeping the one with the lowest out-of-bag error.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh uses a tiny heart disease data set of four patients and four columns. Two of the columns he names are good blood circulation and blocked arteries. He admits the size is crazy small, but it makes every step visible.</p>
+      <p><b>Bootstrap.</b> He draws four rows at random with repeats allowed. The fourth draw happens to be the same row as the third, so one row appears twice and one row never appears at all.</p>
+      <p><b>Split the root.</b> Josh lets only two of the four columns compete at each step. The random pick gives good blood circulation and blocked arteries. He assumes good blood circulation separates the patients best, so it becomes the root. He greys it out to focus on the three remaining columns.</p>
+      <p><b>Split the next node.</b> Again only two of the three remaining columns are drawn as candidates. The rest of the tree is built as usual, with a fresh random pick at each step.</p>
+      <p><b>Vote.</b> A new patient arrives with all measurements. Tree one says yes, and tree two also says yes. After every tree votes, yes has the most votes. So the forest concludes that this patient has heart disease.</p>
+      <p><b>Check.</b> The left-out row goes through the trees built without it. One tree wrongly says yes, but most say no, which is correct. So the forest labels this out-of-bag sample correctly.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> The random subset of columns is drawn again at <b>every</b> split, not once per tree. If you pick the columns only at the root, the trees stay far too similar and you lose the variety that makes the forest work.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The bootstrap sample must be the same size as the original and must allow repeats. Sampling without replacement would just return the same data every time, so every tree would look alike.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A left-out row is judged only by the trees that never saw it. Letting every tree vote on it would reuse training data. That would make your accuracy look better than it is.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>Why is a random forest more accurate than a single decision tree?</summary>
+      <div class="a">A single tree fits its training data closely but is not flexible with new samples. A forest builds many trees from different bootstrap samples. Each split also sees only a random subset of columns. So the trees differ, and the majority vote is more accurate than any one tree.</div></details>
+
+    <details class="qa" open><summary>What is out-of-bag error, and why is it useful?</summary>
+      <div class="a">About a third of the rows never enter a given bootstrap sample. Each such row goes through only the trees built without it, and they vote. The share of these rows labelled wrong is the out-of-bag error. It estimates accuracy on new data without a separate test set.</div></details>
+
+    <details class="qa" open><summary>How do you choose how many columns to consider at each split?</summary>
+      <div class="a">I treat it as a setting to tune. I start at the square root of the number of columns. Then I try a few values above and below it. I keep the setting with the lowest out-of-bag error.</div></details>
+
+    <details class="qa" open><summary>What is bagging, and is it the same as a random forest?</summary>
+      <div class="a">Bagging means bootstrapping the data and then using the aggregate to make a decision. A random forest adds one more step. At each split, only a random subset of columns may compete. That extra randomness makes the trees more varied.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Decision trees are simple, but they are not flexible with new samples.</li>
+      <li>A bootstrap sample draws rows at random, with repeats, until it matches the original size.</li>
+      <li>Each tree uses its own bootstrap sample and a random subset of columns at each split.</li>
+      <li>Hundreds of such trees give a wide variety, and variety brings the accuracy gain.</li>
+      <li>A new sample gets the label with the most votes across all trees.</li>
+      <li>Bootstrapping plus aggregating the votes is called bagging.</li>
+      <li>The rows left out of each bootstrap sample give a free accuracy estimate, the out-of-bag error.</li>
+      <li>Start with the square root of the number of columns per split, then tune it.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Random forests</span><span class="board-tag">many varied trees, one majority vote</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 290" role="img" aria-label="A bootstrap sample draws rows 1, 2, 3 and 3, so row 3 repeats and row 4 is left out as out-of-bag. Three differently shaped trees, with random columns at each split, vote yes, yes and no, and the label with the most votes, yes, wins.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <text x="20" y="28" class="sv-ts">bootstrap, with repeats</text>
+            <text x="317" y="28" text-anchor="middle" class="sv-ts">out-of-bag</text>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <rect x="20" y="40" width="34" height="30" rx="5" class="sv-paper"/>
+              <rect x="58" y="40" width="34" height="30" rx="5" class="sv-paper"/>
+              <rect x="96" y="40" width="34" height="30" rx="5" class="sv-key-soft"/>
+              <rect x="134" y="40" width="34" height="30" rx="5" class="sv-key-soft"/>
+            </g>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-dasharray="5 4"><rect x="300" y="40" width="34" height="30" rx="5" class="sv-paper"/></g>
+            <text x="37 75 113 151" y="61" text-anchor="middle" class="sv-tm">1233</text>
+            <text x="317" y="61" text-anchor="middle" class="sv-tm">4</text>
+            <line x1="70" y1="76" x2="70" y2="98" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="200" y="92" text-anchor="middle" class="sv-ts">each split: random columns</text>
+            <path d="M70 112 L46 142 M70 112 L94 142 M46 142 L34 172 M46 142 L58 172 M200 112 L176 142 M200 112 L224 142 M224 142 L212 172 M224 142 L236 172 M330 112 L306 142 M330 112 L354 142 M306 142 L294 172 M306 142 L318 172 M354 142 L342 172 M354 142 L366 172" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="70" cy="112" r="8" class="sv-key"/>
+              <circle cx="46" cy="142" r="7" class="sv-paper"/>
+              <circle cx="94" cy="142" r="7" class="sv-paper"/>
+              <circle cx="34" cy="172" r="6" class="sv-paper"/>
+              <circle cx="58" cy="172" r="6" class="sv-paper"/>
+              <circle cx="200" cy="112" r="8" class="sv-key"/>
+              <circle cx="176" cy="142" r="7" class="sv-paper"/>
+              <circle cx="224" cy="142" r="7" class="sv-paper"/>
+              <circle cx="212" cy="172" r="6" class="sv-paper"/>
+              <circle cx="236" cy="172" r="6" class="sv-paper"/>
+              <circle cx="330" cy="112" r="8" class="sv-key"/>
+              <circle cx="306" cy="142" r="7" class="sv-paper"/>
+              <circle cx="354" cy="142" r="7" class="sv-paper"/>
+              <circle cx="294" cy="172" r="6" class="sv-paper"/>
+              <circle cx="318" cy="172" r="6" class="sv-paper"/>
+              <circle cx="342" cy="172" r="6" class="sv-paper"/>
+              <circle cx="366" cy="172" r="6" class="sv-paper"/>
+            </g>
+            <text x="70" y="206" text-anchor="middle" class="sv-tb">yes</text>
+            <text x="200" y="206" text-anchor="middle" class="sv-tb">yes</text>
+            <text x="330" y="206" text-anchor="middle" class="sv-tb">no</text>
+            <line x1="86" y1="214" x2="124" y2="231" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="200" y1="215" x2="200" y2="229" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="318" y1="214" x2="278" y2="231" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2.5"><rect x="104" y="234" width="192" height="36" rx="10" class="sv-good-soft"/></g>
+            <text x="200" y="258" text-anchor="middle" class="sv-tb">most votes: yes</text>
+          </svg>
+          <p>Hundreds of trees, each grown from its own bootstrap sample with random columns at each split, all differ. A new sample gets the label with the most votes; left-out rows, like row 4, give the out-of-bag error.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Bootstrap sample</dt><dd>Random rows, repeats allowed, same size as the original.</dd>
+            <dt>Bagging</dt><dd>Bootstrapping the data, then deciding by the aggregate vote.</dd>
+            <dt>Out-of-bag rows</dt><dd>Rows a bootstrap sample left out, about one third.</dd>
+            <dt>Out-of-bag error</dt><dd>The share of those rows the forest labels wrong.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Bootstrap</b>random rows, repeats allowed</li>
+            <li><b>Grow a tree</b>random columns at every split</li>
+            <li><b>Vote</b>label with the most votes wins</li>
+            <li><b>Out-of-bag</b>left-out rows score the forest</li>
+            <li><b>Tune</b>columns per split, by OOB error</li>
+          </ol>
+          <p class="loop">↺ repeat steps 1 and 2 hundreds of times</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\hat{y}(x)=\operatorname*{arg\,max}_c\sum_{b=1}^{B}\mathbf{1}\{T_b(x)=c\}$$
+          $$P(\text{never picked})=\Big(1-\frac{1}{n}\Big)^{n}\to\frac{1}{e}$$
+          $$m\approx\sqrt{p}$$
+          <ul class="keys">
+            <li>\(T_b(x)\): tree \(b\)'s label for \(x\); \(B\): number of trees.</li>
+            <li>\(1/e\approx0.37\): about one third of the \(n\) rows sit out of each sample.</li>
+            <li>\(m\) of \(p\) columns compete per split; tune it by OOB error.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>step</th><th>example</th></tr>
+            <tr><td>bootstrap</td><td>rows 1, 2, 3, 3</td></tr>
+            <tr><td>root</td><td>2 of 4 columns compete</td></tr>
+            <tr><td>next node</td><td>2 of 3 compete</td></tr>
+            <tr><td>vote</td><td>tree 1 yes, tree 2 yes …</td></tr>
+            <tr class="final"><td>forest</td><td>yes: heart disease</td></tr>
+          </table>
+          <p class="hand">Row 4, left out, goes through the trees built without it: one says yes, most say no, which is correct.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Pick the random columns once per tree.</span><span class="yes">Draw them again at every split, or the trees stay too similar.</span></li>
+            <li><span class="no">Bootstrap without replacement is fine.</span><span class="yes">Keep the same size and allow repeats; otherwise every sample is the same data.</span></li>
+            <li><span class="no">Every tree votes on out-of-bag rows.</span><span class="yes">Only trees that never saw a row may judge it; else accuracy looks too good.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="51-classification-trees-in-python-from-start-to-finish.html"><small>Previous</small>Classification Trees in Python from Start to Finish</a> <a href="53-random-forests-part-2-missing-data-and-clustering.html"><small>Next</small>Random Forests Part 2: Missing data and clustering</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

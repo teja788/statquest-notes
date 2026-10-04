@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Support Vector Machines in Python from Start to Finish. — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>75</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 75 · 44.8 min</div>
+    <h1>Support Vector Machines in Python from Start to Finish.</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=8A7L0GsBiLQ" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: —</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Josh builds a support vector classifier in Python, step by step, to predict whether a person will default on a credit card. The video shows the full path from a raw file to a tuned model and a picture of its decision surface.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>The data is the UCI credit card default data set, with 30,000 customers. Josh removes 68 rows with missing values and downsamples to 1,000 people who defaulted and 1,000 who did not. He one-hot encodes the categorical columns, splits the data into training and testing sets, and scales it. A default scikit-learn SVC (support vector classifier) does all right, but not great. GridSearchCV then finds C = 100 and gamma = 0.001, which helps only a little. Finally, PCA squeezes the data into two dimensions so he can draw an approximate decision surface.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh says support vector machines are one of the best choices when a correct answer matters more than knowing why the answer is correct. They work well with relatively small data sets. They also tend to work well out of the box, so they need little optimization.</p>
+    <p>Most of the work in this video is data preparation, not modelling. The SVM in scikit-learn cannot handle missing values or raw categorical codes. Josh uses the radial basis function (RBF), a kernel that scores how close two points are. The RBF assumes each column is centered and scaled, which means mean 0 and standard deviation 1. So the pipeline has to clean, shrink, encode, and scale the data before any fitting happens. After that, fitting and tuning take only a few lines of code.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 280" role="img" aria-label="Six-stage SVM pipeline from 30,000 rows to a PCA picture">
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" class="sv-acc"/>
+          </marker>
+        </defs>
+        <rect x="30" y="30" width="200" height="80" rx="8" class="sv-acc-soft"/>
+        <rect x="280" y="30" width="200" height="80" rx="8" class="sv-acc-soft"/>
+        <rect x="530" y="30" width="200" height="80" rx="8" class="sv-acc-soft"/>
+        <rect x="30" y="170" width="200" height="80" rx="8" class="sv-paper2"/>
+        <rect x="280" y="170" width="200" height="80" rx="8" class="sv-key-soft"/>
+        <rect x="530" y="170" width="200" height="80" rx="8" class="sv-good-soft"/>
+        <text x="130" y="64" text-anchor="middle" class="sv-tb">Load data</text>
+        <text x="130" y="88" text-anchor="middle" class="sv-tm">30,000 rows</text>
+        <text x="380" y="64" text-anchor="middle" class="sv-tb">Remove missing</text>
+        <text x="380" y="88" text-anchor="middle" class="sv-tm">68 rows → 29,932 left</text>
+        <text x="630" y="64" text-anchor="middle" class="sv-tb">Downsample</text>
+        <text x="630" y="88" text-anchor="middle" class="sv-tm">1,000 + 1,000 = 2,000</text>
+        <text x="130" y="204" text-anchor="middle" class="sv-tb">One-hot + scale</text>
+        <text x="130" y="228" text-anchor="middle" class="sv-tm">mean 0, sd 1</text>
+        <text x="380" y="204" text-anchor="middle" class="sv-tb">SVC + GridSearchCV</text>
+        <text x="380" y="228" text-anchor="middle" class="sv-tm">C = 100, γ = 0.001</text>
+        <text x="630" y="204" text-anchor="middle" class="sv-tb">PCA picture</text>
+        <text x="630" y="228" text-anchor="middle" class="sv-tm">24 columns → 2</text>
+        <line x1="232" y1="70" x2="276" y2="70" class="sv-stroke-acc" stroke-width="2" marker-end="url(#arr)"/>
+        <line x1="482" y1="70" x2="526" y2="70" class="sv-stroke-acc" stroke-width="2" marker-end="url(#arr)"/>
+        <path d="M630 112 V140 H130 V166" class="sv-stroke-acc" stroke-width="2" marker-end="url(#arr)"/>
+        <line x1="232" y1="210" x2="276" y2="210" class="sv-stroke-acc" stroke-width="2" marker-end="url(#arr)"/>
+        <line x1="482" y1="210" x2="526" y2="210" class="sv-stroke-acc" stroke-width="2" marker-end="url(#arr)"/>
+      </svg>
+      <figcaption>Notice that four of the six stages prepare the data; the model itself appears only in the fifth box.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li><strong>Import the modules.</strong> Pandas loads the data and does one-hot encoding, NumPy handles arrays, and Matplotlib draws graphs. Scikit-learn provides the SVM, the data splitting, the scaling, and the confusion matrix.
+<pre><code>import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.utils import resample
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.preprocessing import scale
+from sklearn.svm import SVC
+from sklearn.metrics import plot_confusion_matrix
+from sklearn.decomposition import PCA</code></pre></li>
+      <li><strong>Load and tidy the data.</strong> The file is tab-delimited, and the header is on the second row. Josh renames the long target column to <code>DEFAULT</code> and drops <code>ID</code>, because random ID numbers carry no information.
+<pre><code>df = pd.read_csv('default_of_credit_card_clients.tsv', header=1, sep='\t')
+df.rename({'default payment next month': 'DEFAULT'}, axis='columns', inplace=True)
+df.drop('ID', axis=1, inplace=True)</code></pre></li>
+      <li><strong>Find and remove missing data.</strong> Every column is <code>int64</code>, but the allowed values tell a different story. <code>EDUCATION</code> should hold 1 to 4 but also has 0, 5 and 6, and <code>MARRIAGE</code> should hold 1 to 3 but also has 0. Josh treats 0 as missing, counts 68 such rows, and keeps the rest.
+<pre><code>len(df.loc[(df['EDUCATION'] == 0) | (df['MARRIAGE'] == 0)])   # 68
+df_no_missing = df.loc[(df['EDUCATION'] != 0) &amp; (df['MARRIAGE'] != 0)]
+len(df_no_missing)                                               # 29932</code></pre></li>
+      <li><strong>Downsample.</strong> SVMs can take a long time on large data sets, and 29,932 rows is relatively large. Josh splits the data by class and samples 1,000 rows from each class without replacement, then joins them back together.
+<pre><code>df_no_default = df_no_missing[df_no_missing['DEFAULT'] == 0]
+df_default    = df_no_missing[df_no_missing['DEFAULT'] == 1]
+df_no_default_downsampled = resample(df_no_default, replace=False, n_samples=1000, random_state=42)
+df_default_downsampled    = resample(df_default,    replace=False, n_samples=1000, random_state=42)
+df_downsample = pd.concat([df_no_default_downsampled, df_default_downsampled])   # 2000 rows</code></pre></li>
+      <li><strong>Split into X and y.</strong> By convention, capital <code>X</code> holds the columns used to make classifications. Lowercase <code>y</code> holds the thing to predict.
+<pre><code>X = df_downsample.drop('DEFAULT', axis=1).copy()
+y = df_downsample['DEFAULT'].copy()</code></pre></li>
+      <li><strong>One-hot encode the categorical columns.</strong> <code>SEX</code>, <code>EDUCATION</code>, <code>MARRIAGE</code> and the <code>PAY</code> columns are categories. The pandas function <code>get_dummies()</code> turns each one into several 0/1 columns, one per category.
+<pre><code>X_encoded = pd.get_dummies(X, columns=['SEX', 'EDUCATION', 'MARRIAGE',
+                                       'PAY_0', 'PAY_2', 'PAY_3', 'PAY_4', 'PAY_5', 'PAY_6'])</code></pre></li>
+      <li><strong>Split into training and testing sets, then scale.</strong> The radial basis function assumes each column has mean 0 and standard deviation 1. Josh does not scale <code>y</code>, because it is only 0s and 1s.
+<pre><code>X_train, X_test, y_train, y_test = train_test_split(X_encoded, y, random_state=42)
+X_train_scaled = scale(X_train)
+X_test_scaled  = scale(X_test)</code></pre></li>
+      <li><strong>Build a preliminary SVM.</strong> <code>SVC()</code> makes an untrained shell of a support vector classifier, and <code>fit()</code> trains it. A confusion matrix is a table of correct and wrong predictions for each class. Josh draws one for the test set.
+<pre><code>clf_svm = SVC(random_state=42)
+clf_svm.fit(X_train_scaled, y_train)
+plot_confusion_matrix(clf_svm, X_test_scaled, y_test, values_format='d',
+                      display_labels=["Did not default", "Defaulted"])</code></pre></li>
+      <li><strong>Tune C and gamma with cross validation.</strong> Optimizing an SVM is mostly about finding the best gamma, and maybe the regularization parameter C. Gamma sets how far the influence of one point reaches in the RBF. C sets how strongly the model is penalized for misclassified training points. GridSearchCV tries every combination in a grid and scores each one with cross validation. Josh sticks with the radial basis function, because other kernels take a long time and RBF usually gives the best performance.
+<pre><code>param_grid = [{'C': [0.5, 1, 10, 100],        # values for C must be &gt; 0
+               'gamma': ['scale', 1, 0.1, 0.01, 0.001, 0.0001],
+               'kernel': ['rbf']}]
+optimal_params = GridSearchCV(SVC(), param_grid, cv=5, scoring='accuracy')
+optimal_params.fit(X_train_scaled, y_train)
+print(optimal_params.best_params_)   # C = 100, gamma = 0.001</code></pre></li>
+      <li><strong>Build and evaluate the final SVM.</strong> The code is the same as before, but with the tuned values. A new confusion matrix compares it with the preliminary model.
+<pre><code>clf_svm = SVC(random_state=42, C=100, gamma=0.001)
+clf_svm.fit(X_train_scaled, y_train)
+plot_confusion_matrix(clf_svm, X_test_scaled, y_test, values_format='d',
+                      display_labels=["Did not default", "Defaulted"])</code></pre></li>
+      <li><strong>Draw the decision surface with PCA.</strong> The data has 24 columns, so a true picture would need 24 or more dimensions. PCA (principal component analysis) combines columns into a few new ones that keep most of the variation. A scree plot shows how much variation each new column keeps. Josh uses PCA to shrink the data to two columns and checks a scree plot. Then he re-tunes and retrains an SVM on just those two columns and draws its decision surface.
+<pre><code>pca = PCA()
+X_train_pca = pca.fit_transform(X_train_scaled)
+per_var = np.round(pca.explained_variance_ratio_ * 100, decimals=1)   # heights for the scree plot
+
+pca_train_scaled = scale(np.column_stack((X_train_pca[:, 0], X_train_pca[:, 1])))
+optimal_params.fit(pca_train_scaled, y_train)   # new best C and gamma for 2-D data</code></pre></li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 290" role="img" aria-label="Confusion matrices before and after tuning">
+        <text x="290" y="40" text-anchor="middle" class="sv-tb">Before tuning (default SVC)</text>
+        <text x="590" y="40" text-anchor="middle" class="sv-tb">After tuning (C = 100, γ = 0.001)</text>
+        <text x="160" y="120" text-anchor="end" class="sv-ts">Did not default (257)</text>
+        <text x="160" y="190" text-anchor="end" class="sv-ts">Defaulted (243)</text>
+        <rect x="170" y="80" width="120" height="70" class="sv-good-soft"/>
+        <rect x="290" y="80" width="120" height="70" class="sv-paper2"/>
+        <rect x="170" y="150" width="120" height="70" class="sv-paper2"/>
+        <rect x="290" y="150" width="120" height="70" class="sv-good-soft"/>
+        <rect x="170" y="80" width="240" height="140" class="sv-line" stroke-width="1.5"/>
+        <text x="230" y="120" text-anchor="middle" class="sv-tm">≈203 (79%)</text>
+        <text x="350" y="120" text-anchor="middle" class="sv-tm">≈54</text>
+        <text x="230" y="190" text-anchor="middle" class="sv-tm">≈95</text>
+        <text x="350" y="190" text-anchor="middle" class="sv-tm">≈148 (61%)</text>
+        <rect x="470" y="80" width="120" height="70" class="sv-good-soft"/>
+        <rect x="590" y="80" width="120" height="70" class="sv-paper2"/>
+        <rect x="470" y="150" width="120" height="70" class="sv-paper2"/>
+        <rect x="590" y="150" width="120" height="70" class="sv-good-soft"/>
+        <rect x="470" y="80" width="240" height="140" class="sv-line" stroke-width="1.5"/>
+        <text x="530" y="120" text-anchor="middle" class="sv-tm">≈207 (+4)</text>
+        <text x="650" y="120" text-anchor="middle" class="sv-tm">≈50</text>
+        <text x="530" y="190" text-anchor="middle" class="sv-tm">≈96</text>
+        <text x="650" y="190" text-anchor="middle" class="sv-tm">≈147 (−1)</text>
+        <text x="440" y="256" text-anchor="middle" class="sv-ts">Rows: true class. Columns: predicted class. Green cells are correct.</text>
+      </svg>
+      <figcaption>Tuning moves only a handful of people, which shows that the SVM was already good out of the box (counts are rounded from the video's percentages).</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>The video has no derivations. Two simple rules sit under the code.</p>
+    <div class="formula"><span class="lbl">Centering and scaling one column</span><div class="math">$$ z_i = \frac{x_i - \bar{x}}{s} $$</div><p class="explain"><b>Symbols:</b> \(x_i\) is one value in a column, \(\bar{x}\) is the column mean, \(s\) is the column standard deviation, and \(z_i\) is the scaled value. <b>What it tells you:</b> after this step every column has mean 0 and standard deviation 1, which is what the radial basis function assumes.</p></div>
+    <div class="formula"><span class="lbl">Percent correct in one row of the confusion matrix</span><div class="math">$$ \text{percent correct} = \frac{\text{correctly classified in the row}}{\text{total people in the row}} \times 100 $$</div><p class="explain"><b>Symbols:</b> a row holds all test people with the same true class, for example the 257 people who did not default. <b>What it tells you:</b> how well the model does for each class on its own, which is how Josh reads the 79% and 61%.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p><b>Missing data.</b> 68 of 30,000 rows have a 0 in <code>EDUCATION</code> or <code>MARRIAGE</code>. That is \(68 / 30{,}000 \approx 0.23\%\), which is less than 1%. So Josh removes them, and \(30{,}000 - 68 = 29{,}932\) rows remain.</p>
+      <p><b>Preliminary model.</b> The test set has 257 people who did not default and 243 who did, 500 in total. 79% of 257 is about 203 correct. 61% of 243 is about 148 correct. Overall, about \((203 + 148) / 500 \approx 70\%\) are correct.</p>
+      <p><b>Tuned model.</b> GridSearchCV picks C = 100 and gamma = 0.001. Four more people are correctly classified as not defaulting, and one more person who defaulted is misclassified. So the tuned model is only a little better, or even a little worse if the defaulters matter more.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not treat category codes as continuous numbers. If <code>MARRIAGE</code> stays as 1, 2, 3, the SVM assumes "other" (3) is closer to "single" (2) than to "married" (1). One-hot encoding makes every category equally different from the others.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Treating 0 as missing is a guess. The data description does not explain 0, 5 or 6 in <code>EDUCATION</code>. Josh tried both ways, and the classifier did better when 0 was treated as missing.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Josh believes the default split is 70% training and 30% testing, but he says not to quote him. The test set in his confusion matrix has 257 + 243 = 500 people, which is 25% of 2,000.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The PCA picture is only an approximation. You want the first two bars of the scree plot to be much taller than the rest. Here only the first bar stands out, so the decision surface looks messy.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>Why do you one-hot encode categorical features before fitting an SVM?</summary><div class="a">The scikit-learn SVM supports continuous data natively, but not categorical data. If I leave codes like 1, 2, 3 as numbers, the model thinks 3 is closer to 2 than to 1. One-hot encoding gives each category its own 0/1 column, so no category is more similar to any other.</div></details>
+    <details class="qa" open><summary>Why do you scale the data, and what do you scale?</summary><div class="a">The radial basis function assumes each column is centered and scaled, with mean 0 and standard deviation 1. I scale the feature columns in the training and test sets. I do not scale the target, because it is just 0s and 1s.</div></details>
+    <details class="qa" open><summary>How did you tune the SVM, and did it help?</summary><div class="a">I used GridSearchCV with five-fold cross validation over values of C and gamma, with the RBF kernel. C is the regularization parameter and must be greater than zero. The best values were C = 100 and gamma = 0.001. The gain was small, which is common because SVMs tend to work well out of the box.</div></details>
+    <details class="qa" open><summary>Why downsample to 2,000 rows?</summary><div class="a">SVMs work well on relatively small data sets but can take a long time on large ones. Cross validation over a grid multiplies that cost. Taking 1,000 people from each class kept the grid search reasonably fast and gave equal class sizes.</div></details>
+    <details class="qa" open><summary>How can you draw a decision boundary when the data has 24 columns?</summary><div class="a">I use PCA to shrink the data to two principal components and retrain an SVM on just those two. I check the scree plot first, because the picture is only trustworthy if the first two components are much taller than the rest. In this data only the first one stood out, so the picture was a rough approximation.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Most of the work in an SVM project is getting the data into the right format.</li>
+      <li>Zeros in <code>EDUCATION</code> and <code>MARRIAGE</code> were treated as missing, and those 68 rows were removed.</li>
+      <li>The data was downsampled to 1,000 defaulters and 1,000 non-defaulters, because SVMs are slow on large data.</li>
+      <li>Categorical columns were one-hot encoded with <code>get_dummies()</code>, and the features were centered and scaled.</li>
+      <li>The default RBF SVC classified 79% of non-defaulters and 61% of defaulters correctly.</li>
+      <li>GridSearchCV chose C = 100 and gamma = 0.001, which changed only a few predictions.</li>
+      <li>PCA to two components gives a picture of the decision surface, but a weak scree plot means the picture is only approximate.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">SVM, start to finish</span><span class="board-tag">clean, shrink, encode, scale, then fit</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 260" role="img" aria-label="A tall table of 30,000 rows loses 68 rows with missing values, shrinks to 1,000 people who defaulted plus 1,000 who did not, is one-hot encoded and scaled to mean 0 and sd 1, and only then feeds a small RBF SVC tuned to C = 100 and gamma = 0.001.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <rect x="20" y="52" width="100" height="180" class="sv-paper"/>
+            <rect x="20" y="52" width="100" height="30" class="sv-paper2"/>
+            <g class="sv-line" stroke-width="2" stroke-linecap="round">
+              <line x1="22" y1="112" x2="118" y2="112"/>
+              <line x1="22" y1="142" x2="118" y2="142"/>
+              <line x1="22" y1="172" x2="118" y2="172"/>
+              <line x1="22" y1="202" x2="118" y2="202"/>
+              <line x1="53" y1="54" x2="53" y2="230"/>
+              <line x1="87" y1="54" x2="87" y2="230"/>
+            </g>
+            <line x1="20" y1="82" x2="120" y2="82" class="sv-stroke-ink" stroke-width="2"/>
+            <rect x="20" y="52" width="100" height="180" class="sv-stroke-ink" stroke-width="2"/>
+            <text x="20" y="38" class="sv-tb">30,000 rows</text>
+            <text x="148" y="38" class="sv-t">−68 missing</text>
+            <line x1="128" y1="92" x2="194" y2="92" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="162" y="78" text-anchor="middle" class="sv-t">shrink</text>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <rect x="204" y="77" width="20" height="30" class="sv-acc"/>
+              <rect x="224" y="77" width="20" height="30" class="sv-key"/>
+            </g>
+            <text x="256" y="99" class="sv-t">1,000 + 1,000</text>
+            <line x1="224" y1="115" x2="224" y2="160" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="240" y="134" class="sv-t">one-hot + scale</text>
+            <text x="240" y="158" class="sv-ts">mean 0, sd 1</text>
+            <g class="sv-stroke-ink" stroke-width="2"><rect x="164" y="172" width="120" height="44" rx="10" class="sv-good-soft"/></g>
+            <text x="224" y="201" text-anchor="middle" class="sv-tb">RBF SVC</text>
+            <text x="224" y="241" text-anchor="middle" class="sv-tm">C = 100, γ = 0.001</text>
+          </svg>
+          <p>Most of the work is data prep, not modelling. The SVM cannot handle missing values or raw category codes, and the RBF assumes mean 0, sd 1. After that, fitting and tuning take a few lines.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>RBF kernel</dt><dd>Radial basis function: scores how close two points are.</dd>
+            <dt>One-hot encoding</dt><dd>One 0/1 column per category.</dd>
+            <dt>C</dt><dd>How strongly misclassified training points are penalized. Must be above 0.</dd>
+            <dt>Gamma (γ)</dt><dd>How far one point's influence reaches.</dd>
+            <dt>GridSearchCV</dt><dd>Tries every C, γ pair with cross validation.</dd>
+            <dt>Confusion matrix</dt><dd>Table of right and wrong predictions per class.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Clean</b>0s as missing: drop 68 rows</li>
+            <li><b>Shrink</b>downsample to 1,000 per class</li>
+            <li><b>Encode</b>one-hot the category columns</li>
+            <li><b>Split + scale</b>train/test, then mean 0, sd 1</li>
+            <li><b>Fit + tune</b>SVC, then GridSearchCV on C, γ</li>
+            <li><b>PCA picture</b>24 columns → 2, retrain, draw</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$z_i=\frac{x_i-\bar{x}}{s}$$
+          $$\%\text{ correct}=\frac{\text{correct in row}}{\text{people in row}}\times 100$$
+          <ul class="keys">
+            <li>\(\bar{x}\) and \(s\) are the column's mean and standard deviation.</li>
+            <li>A row is one true class, such as the 257 who did not default.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>defaulted?</th><th>people</th><th>% correct</th><th>≈ correct</th></tr>
+            <tr><td>no</td><td>257</td><td>79%</td><td>203</td></tr>
+            <tr><td>yes</td><td>243</td><td>61%</td><td>148</td></tr>
+            <tr class="final"><td>all</td><td>500</td><td>≈ 70%</td><td>203 + 148</td></tr>
+          </table>
+          <p class="hand">That is the default SVC. Tuned to C = 100, γ = 0.001, it gets 4 more non-defaulters right, 1 more defaulter wrong.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Category codes 1, 2, 3 can stay as numbers.</span><span class="yes">Then "other" (3) looks closer to "single" (2) than "married" (1). One-hot fixes this.</span></li>
+            <li><span class="no">A 0 in EDUCATION or MARRIAGE surely means missing.</span><span class="yes">A guess. Josh tried both; the classifier did better with 0 as missing.</span></li>
+            <li><span class="no">The PCA picture is the true decision surface.</span><span class="yes">Only approximate: two scree bars should stand out, but only the first does.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="74-support-vector-machines-part-3-the-radial-rbf-kernel-part-3.html"><small>Previous</small>Support Vector Machines Part 3: The Radial (RBF) Kernel (Part 3 of 3)</a> <a href="76-the-essential-main-ideas-of-neural-networks.html"><small>Next</small>The Essential Main Ideas of Neural Networks</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

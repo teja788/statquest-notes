@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Decoder-Only Transformers, ChatGPTs specific Transformer — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>93</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 93 · 36.8 min</div>
+    <h1>Decoder-Only Transformers, ChatGPTs specific Transformer</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=bQ5BoolX9Ag" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: Neural Networks / Deep Learning (video 21)</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video builds a decoder-only transformer, the kind of transformer used for ChatGPT, one piece at a time. It shows how the model reads the prompt "What is StatQuest?" and answers "Awesome".</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Each token is turned into numbers with word embedding, and positional encoding adds word order. Masked self-attention lets each token look only at itself and the tokens before it. A residual connection adds the input back, and a fully connected layer plus SoftMax picks the next token. The same unit encodes the prompt and generates the answer, feeding each new token back in until it outputs EOS. Unlike the original transformer, there is no separate encoder and only one type of attention.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>A neural network needs numbers as input. So every word, word fragment, or symbol becomes a <b>token</b>, which is mapped to numbers. The model then adds position values so it knows word order. "Squatch eats pizza" and "Pizza eats Squatch" use the same words but mean very different things.</p>
+    <p>Next, <b>masked self-attention</b> works out how each token relates to the tokens before it. "Masked" means a token may never look at tokens that come after it. Because each token depends only on what came earlier, the method is also called <b>autoregressive</b>.</p>
+    <p>Finally, the model turns each token's numbers into a guess for the next token. When it answers a prompt, it appends that guess to the sequence and runs again. It stops when it generates the EOS (end of sequence) token.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 330" role="img" aria-label="Decoder-only transformer generation loop">
+        <defs>
+          <marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker>
+          <marker id="ah1k" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-key"/></marker>
+        </defs>
+        <rect x="20" y="120" width="128" height="74" rx="8" class="sv-paper2"/>
+        <text x="84" y="146" text-anchor="middle" class="sv-tb">Tokens</text>
+        <text x="84" y="166" text-anchor="middle" class="sv-ts">What is StatQuest?</text>
+        <text x="84" y="184" text-anchor="middle" class="sv-ts">then EOS</text>
+        <rect x="168" y="120" width="128" height="74" rx="8" class="sv-acc-soft"/>
+        <text x="232" y="150" text-anchor="middle" class="sv-tb">Word embedding</text>
+        <text x="232" y="172" text-anchor="middle" class="sv-ts">+ position values</text>
+        <rect x="316" y="120" width="128" height="74" rx="8" class="sv-key-soft"/>
+        <text x="380" y="150" text-anchor="middle" class="sv-tb">Masked</text>
+        <text x="380" y="172" text-anchor="middle" class="sv-tb">self-attention</text>
+        <rect x="464" y="120" width="128" height="74" rx="8" class="sv-acc-soft"/>
+        <text x="528" y="162" text-anchor="middle" class="sv-tb">+ residual</text>
+        <rect x="612" y="120" width="128" height="74" rx="8" class="sv-good-soft"/>
+        <text x="676" y="146" text-anchor="middle" class="sv-tb">Fully connected</text>
+        <text x="676" y="166" text-anchor="middle" class="sv-ts">+ SoftMax</text>
+        <text x="676" y="184" text-anchor="middle" class="sv-ts">→ next token</text>
+        <line x1="148" y1="157" x2="166" y2="157" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ah1)"/>
+        <line x1="296" y1="157" x2="314" y2="157" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ah1)"/>
+        <line x1="444" y1="157" x2="462" y2="157" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ah1)"/>
+        <line x1="592" y1="157" x2="610" y2="157" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ah1)"/>
+        <path d="M232,120 L232,70 L528,70 L528,116" class="sv-stroke-acc" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#ah1)"/>
+        <rect x="290" y="58" width="180" height="22" rx="4" class="sv-paper"/>
+        <text x="380" y="74" text-anchor="middle" class="sv-ts">residual connection (bypass)</text>
+        <path d="M676,194 L676,260 L84,260 L84,198" class="sv-stroke-key" stroke-width="2" marker-end="url(#ah1k)"/>
+        <rect x="200" y="248" width="360" height="24" rx="4" class="sv-paper"/>
+        <text x="380" y="265" text-anchor="middle" class="sv-t">new token is appended and fed back in</text>
+        <text x="380" y="300" text-anchor="middle" class="sv-tm">EOS → "awesome" → EOS (stop)</text>
+      </svg>
+      <figcaption>One unit does everything: the same steps encode the prompt and generate each new token, which loops back as the next input until EOS appears.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li><b>Word embedding.</b> A small network has one input per token in the vocabulary. Put 1 in the input for the current token and 0 elsewhere. The weights on that input pass through identity activation functions and become the token's numbers.</li>
+      <li><b>Weights come from training.</b> All weights start random. Backpropagation adjusts them step by step while the model learns to predict words in known documents.</li>
+      <li><b>Positional encoding.</b> Alternating sine and cosine squiggles give a position value for each embedding of each token. These values are added to the embeddings. A value may repeat now and then. But the squiggles get wider for later embeddings, so each token's full sequence is unique.</li>
+      <li><b>Queries, keys, and values.</b> For each token, three separate sets of weights turn its position-encoded numbers into query, key, and value numbers. The same three weight sets are reused for every token.</li>
+      <li><b>Masked similarity.</b> The dot product of a token's query with each key gives a similarity score. A dot product multiplies matching numbers and adds the products. A token only compares itself with itself and the tokens before it.</li>
+      <li><b>SoftMax and weighted sum.</b> SoftMax turns the scores into percentages that add up to 1. Each value is scaled by its percentage, and the scaled values are added to give the masked self-attention values.</li>
+      <li><b>Residual connection.</b> The position-encoded values are added to the self-attention values. This makes training easier, because attention does not also need to preserve the embedding and position information.</li>
+      <li><b>Next-token prediction.</b> A fully connected layer has one input per number and one output per token in the vocabulary. A final SoftMax picks the next token. This happens for every prompt token too, which lets training compare predictions with known words.</li>
+      <li><b>Generate the answer.</b> Start from EOS placed after the prompt, run the same steps, and get "awesome". Feed "awesome" back in, and the model outputs EOS, so it stops.</li>
+    </ol>
+    <p>The grid below shows the masking rule for the full sequence. Each row is a token asking for attention, and each column is a token it may attend to. The prompt and the generated output are treated the same way, so the EOS token can still attend to "What", "is", and "StatQuest".</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 320" role="img" aria-label="Masked self-attention grid, lower triangle allowed">
+        <text x="252" y="50" text-anchor="middle" class="sv-ts">What</text>
+        <text x="316" y="50" text-anchor="middle" class="sv-ts">is</text>
+        <text x="380" y="50" text-anchor="middle" class="sv-ts">StatQuest</text>
+        <text x="444" y="50" text-anchor="middle" class="sv-ts">EOS</text>
+        <text x="508" y="50" text-anchor="middle" class="sv-ts">awesome</text>
+        <text x="210" y="87" text-anchor="end" class="sv-t">What</text>
+        <text x="210" y="131" text-anchor="end" class="sv-t">is</text>
+        <text x="210" y="175" text-anchor="end" class="sv-t">StatQuest</text>
+        <text x="210" y="219" text-anchor="end" class="sv-t">EOS</text>
+        <text x="210" y="263" text-anchor="end" class="sv-t">awesome</text>
+        <g stroke-width="1.5">
+          <rect x="220" y="60" width="61" height="41" class="sv-acc-soft"/>
+          <rect x="284" y="60" width="61" height="41" class="sv-paper2"/>
+          <rect x="348" y="60" width="61" height="41" class="sv-paper2"/>
+          <rect x="412" y="60" width="61" height="41" class="sv-paper2"/>
+          <rect x="476" y="60" width="61" height="41" class="sv-paper2"/>
+          <rect x="220" y="104" width="61" height="41" class="sv-acc-soft"/>
+          <rect x="284" y="104" width="61" height="41" class="sv-acc-soft"/>
+          <rect x="348" y="104" width="61" height="41" class="sv-paper2"/>
+          <rect x="412" y="104" width="61" height="41" class="sv-paper2"/>
+          <rect x="476" y="104" width="61" height="41" class="sv-paper2"/>
+          <rect x="220" y="148" width="61" height="41" class="sv-acc-soft"/>
+          <rect x="284" y="148" width="61" height="41" class="sv-acc-soft"/>
+          <rect x="348" y="148" width="61" height="41" class="sv-acc-soft"/>
+          <rect x="412" y="148" width="61" height="41" class="sv-paper2"/>
+          <rect x="476" y="148" width="61" height="41" class="sv-paper2"/>
+          <rect x="220" y="192" width="61" height="41" class="sv-acc-soft"/>
+          <rect x="284" y="192" width="61" height="41" class="sv-acc-soft"/>
+          <rect x="348" y="192" width="61" height="41" class="sv-acc-soft"/>
+          <rect x="412" y="192" width="61" height="41" class="sv-acc-soft"/>
+          <rect x="476" y="192" width="61" height="41" class="sv-paper2"/>
+          <rect x="220" y="236" width="61" height="41" class="sv-acc-soft"/>
+          <rect x="284" y="236" width="61" height="41" class="sv-acc-soft"/>
+          <rect x="348" y="236" width="61" height="41" class="sv-acc-soft"/>
+          <rect x="412" y="236" width="61" height="41" class="sv-acc-soft"/>
+          <rect x="476" y="236" width="61" height="41" class="sv-acc-soft"/>
+        </g>
+        <text x="252" y="87" text-anchor="middle" class="sv-tm">1.0</text>
+        <text x="252" y="131" text-anchor="middle" class="sv-tm">0.0</text>
+        <text x="316" y="131" text-anchor="middle" class="sv-tm">1.0</text>
+        <rect x="575" y="110" width="20" height="20" class="sv-acc-soft"/>
+        <text x="603" y="125" class="sv-ts">may attend</text>
+        <rect x="575" y="146" width="20" height="20" class="sv-paper2"/>
+        <text x="603" y="161" class="sv-ts">masked (later token)</text>
+      </svg>
+      <figcaption>Each token attends only to itself and earlier tokens; the numbers are the SoftMax percentages from the video for "What" and "is".</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>The video shows these calculations with numbers rather than symbols. The lines below write the same arithmetic in compact form, for a model with 2 numbers per token.</p>
+    <div class="formula"><span class="lbl">Embedding plus position</span><div class="math">$$ p_i = e_i + \text{PE}_i $$</div><p class="explain"><b>Symbols:</b> \(e_i\) is the pair of word embedding numbers for token \(i\). \(\text{PE}_i\) is the pair of sine and cosine position values for position \(i\). \(p_i\) is the position-encoded token. <b>What it tells you:</b> the same word gets different numbers in different positions, so word order is kept.</p></div>
+    <div class="formula"><span class="lbl">Query, key, value</span><div class="math">$$ q_i = W_Q\,p_i,\quad k_i = W_K\,p_i,\quad v_i = W_V\,p_i $$</div><p class="explain"><b>Symbols:</b> \(W_Q, W_K, W_V\) are three separate sets of weights, shared by all tokens. \(q_i, k_i, v_i\) are the query, key, and value numbers for token \(i\). <b>What it tells you:</b> because the weights are reused, the model handles prompts of any length.</p></div>
+    <div class="formula"><span class="lbl">Masked similarity and SoftMax</span><div class="math">$$ s_{ij} = q_i \cdot k_j \;\; (j \le i), \qquad w_{ij} = \frac{e^{s_{ij}}}{\sum_{m \le i} e^{s_{im}}} $$</div><p class="explain"><b>Symbols:</b> \(s_{ij}\) is the dot product similarity of token \(i\)'s query with token \(j\)'s key. \(j \le i\) is the mask: only the token itself and earlier tokens count. \(w_{ij}\) is the SoftMax percentage, between 0 and 1, and the percentages for token \(i\) add up to 1. <b>What it tells you:</b> more similar earlier tokens get a bigger share in the encoding.</p></div>
+    <div class="formula"><span class="lbl">Attention output and residual</span><div class="math">$$ a_i = \sum_{j \le i} w_{ij}\, v_j, \qquad h_i = a_i + p_i $$</div><p class="explain"><b>Symbols:</b> \(a_i\) is the masked self-attention values for token \(i\). \(h_i\) is the result after adding the residual connection \(p_i\). <b>What it tells you:</b> each token's new numbers mix in context from earlier tokens, while the original information is still carried forward.</p></div>
+    <div class="formula"><span class="lbl">Next-token prediction</span><div class="math">$$ \text{next token} = \text{SoftMax}\big(W\,h_i + b\big) $$</div><p class="explain"><b>Symbols:</b> \(W\) and \(b\) are the weights and biases of the fully connected layer. It has one output per token in the vocabulary (five here). <b>What it tells you:</b> the token with the largest output becomes the predicted next token.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p><b>Vocabulary.</b> There are five tokens: What, is, StatQuest, Awesome, and EOS. There are two embedding numbers per token.</p>
+      <p><b>Embedding.</b> Put 1 in the input for "What" and 0 elsewhere. The identity activation functions return its weights, so "What" becomes \((-2.38,\ 0.10)\). "is" becomes \((0.61,\ 0.17)\).</p>
+      <p><b>Position.</b> For the first position, the sine squiggle gives 0 and the cosine squiggle gives 1. So the position-encoded "What" is \((-2.38 + 0,\ 0.10 + 1) = (-2.38,\ 1.10)\).</p>
+      <p><b>Attention for "is".</b> Its query is \((-2.4,\ 2.6)\). The query's dot product with the key for "is" is 5.9. Its dot product with the key for "What" is \(-25.7\). SoftMax turns these into 1.0 for "is" and 0.0 for "What", because \(1/(1+e^{5.9-(-25.7)}) = 1/(1+e^{31.6})\) is essentially 0. So the attention values for "is" are 100% of its own value numbers.</p>
+      <p><b>Attention for "What".</b> It only compares with itself: the similarity is \(-12.4\), and SoftMax of a single score is 1.0. Its attention values are just its value numbers, \((-2.9,\ -1.3)\).</p>
+      <p><b>Residual.</b> Add the position-encoded "What": \((-2.9 + (-2.38),\ -1.3 + 1.10) = (-5.28,\ -0.20)\). These two numbers go into the fully connected layer.</p>
+      <p><b>Predictions on the prompt.</b> "What" predicts "is", which is correct. "is" predicts "What", which is wrong, though "StatQuest" came close. "StatQuest" predicts EOS, which is correct. During training, the mistake would be used to update the weights. When answering, these guesses do not matter.</p>
+      <p><b>Generating.</b> EOS goes in at position 4. Its query is compared with its own key and the keys for "What is StatQuest". The output is "awesome". Then "awesome" goes in at position 5, and the output is EOS, so generation stops.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> In a decoder-only transformer, masked self-attention covers both the prompt and the output, at all times. In the original transformer, masked self-attention is used only on the output tokens, during training.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Generated tokens must still attend to the prompt. In "Don't eat the delicious-looking and smelling pizza", losing "Don't" flips the meaning. Including the prompt in masked self-attention while generating is what prevents this.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The model predicts a next token for every prompt token, even though those words are already known. The unit must both encode the prompt and generate output. Those predictions are also what training compares with the known words.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Generation starts from EOS even if EOS was not predicted at the end of the prompt. Some people use SOS (start of sequence) instead. Either way, generation continues until EOS is produced.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>How does a decoder-only transformer differ from the original encoder-decoder transformer?</summary><div class="a">The original transformer has an encoder for the input and a separate decoder for the output. At inference it uses self-attention over all input words and encoder-decoder attention, with queries from the decoder and keys and values from the encoder. A decoder-only transformer uses one unit for both jobs and only one kind of attention, masked self-attention. It applies that masking all the time, to the prompt and to the output.</div></details>
+    <details class="qa" open><summary>Why is the attention masked?</summary><div class="a">Each token may only look at itself and the tokens before it. This is what makes the model autoregressive: each new token depends only on what came earlier. It lets the model learn to generate correct output without looking ahead at the answer.</div></details>
+    <details class="qa" open><summary>Why not just use the position-encoded values instead of computing attention?</summary><div class="a">The attention values mix in information from earlier tokens, which gives each token context. Stacking several attention cells, each with its own weights, captures different relationships among words. The original GPT stacked twelve of them.</div></details>
+    <details class="qa" open><summary>What do the residual connections do?</summary><div class="a">They add the position-encoded values back onto the attention output. This makes complex networks easier to train. The attention layer can focus on relationships among words, without also having to preserve the embedding and position information.</div></details>
+    <details class="qa" open><summary>How does the model turn its numbers into a word?</summary><div class="a">A fully connected layer maps each token's numbers to one output per vocabulary token, and a SoftMax picks the next token. The original GPT instead reused the word embedding weights in reverse. A fully connected layer is a common alternative.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Word embedding turns each token into numbers, and sine and cosine positional encoding adds word order.</li>
+      <li>Query, key, and value weights are shared across tokens, so prompts can have any length.</li>
+      <li>Masked self-attention compares each token only with itself and earlier tokens, using dot products and SoftMax.</li>
+      <li>Residual connections add the input back, which makes the network easier to train.</li>
+      <li>A fully connected layer and SoftMax predict the next token for every position.</li>
+      <li>Generation starts from EOS, feeds each new token back in, and stops when EOS is produced.</li>
+      <li>Unlike the encoder-decoder transformer, a decoder-only transformer has one unit and one attention type, masked everywhere.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Decoder-only transformers</span><span class="board-tag">look back only, predict the next token</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 246" role="img" aria-label="In the sequence What, is, StatQuest, EOS, awesome, the EOS token attends back to What, is, StatQuest and itself but is masked from the later token awesome, and its next-token guess, awesome, is fed back in and outputs EOS, so generation stops.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <path d="M241 110 C236 16 60 16 44 108" class="sv-stroke-good" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <path d="M241 110 C226 40 110 40 97 108" class="sv-stroke-good" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <path d="M241 110 C216 74 186 74 173 108" class="sv-stroke-good" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <path d="M252 110 C246 84 274 84 268 108" class="sv-stroke-good" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <path d="M284 110 Q313 50 342 110" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-dasharray="5 5"/>
+            <path d="M306 73 L320 87 M320 73 L306 87" class="sv-stroke-key" stroke-width="3.5" stroke-linecap="round"/>
+            <path d="M262 150 Q302 192 338 152" class="sv-stroke-acc" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="372" y1="150" x2="372" y2="198" class="sv-stroke-acc" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <rect x="17" y="112" width="54" height="34" rx="8" class="sv-paper"/>
+              <rect x="79" y="112" width="36" height="34" rx="8" class="sv-paper"/>
+              <rect x="123" y="112" width="100" height="34" rx="8" class="sv-paper"/>
+              <rect x="231" y="112" width="62" height="34" rx="8" class="sv-key-soft"/>
+              <rect x="301" y="112" width="82" height="34" rx="8" class="sv-good-soft"/>
+            </g>
+            <text x="44" y="135" text-anchor="middle" class="sv-tm">What</text>
+            <text x="97" y="135" text-anchor="middle" class="sv-tm">is</text>
+            <text x="173" y="135" text-anchor="middle" class="sv-tm">StatQuest</text>
+            <text x="262" y="135" text-anchor="middle" class="sv-tm">EOS</text>
+            <text x="342" y="135" text-anchor="middle" class="sv-tm">awesome</text>
+            <text x="313" y="58" text-anchor="middle" class="sv-ts">masked</text>
+            <text x="300" y="196" text-anchor="middle" class="sv-ts">next token</text>
+            <text x="386" y="226" text-anchor="end" class="sv-tb">EOS: stop</text>
+          </svg>
+          <p>Each token becomes numbers plus position values. Masked self-attention lets a token look only at itself and earlier tokens, never later ones. The model predicts the next token, appends it and runs again until it outputs EOS.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Token</dt><dd>A word, word fragment or symbol, mapped to numbers.</dd>
+            <dt>Masked self-attention</dt><dd>A token looks only at itself and the tokens before it.</dd>
+            <dt>Autoregressive</dt><dd>Each token depends only on what came earlier.</dd>
+            <dt>Residual connection</dt><dd>Adds the position-encoded values back onto the attention output.</dd>
+            <dt>EOS</dt><dd>End of sequence. Generation starts from it and stops when it appears.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Embed</b>one input per vocabulary token</li>
+            <li><b>Add position</b>sine and cosine squiggle values</li>
+            <li><b>Query, key, value</b>three weight sets, shared by tokens</li>
+            <li><b>Masked attention</b>itself and earlier only, SoftMax, sum</li>
+            <li><b>Residual</b>add position-encoded values back</li>
+            <li><b>Next token</b>fully connected layer, then SoftMax</li>
+          </ol>
+          <p class="loop">↺ start from EOS after the prompt; append each new token until EOS</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$s_{ij} = q_i \cdot k_j \quad (j \le i)$$
+          $$a_i = \sum_{j \le i} w_{ij}\,v_j,\qquad h_i = a_i + p_i$$
+          $$\text{next token} = \text{SoftMax}\big(W\,h_i + b\big)$$
+          <ul class="keys">
+            <li>\(j \le i\) is the mask: only the token itself and earlier tokens count.</li>
+            <li>\(w_{ij}\): SoftMax share of \(s_{ij}\); \(p_i\): embedding plus position values.</li>
+            <li>\(W, b\): fully connected weights and biases; one output per token.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>step</th><th>"What"</th></tr>
+            <tr><td>embed</td><td>−2.38, 0.10</td></tr>
+            <tr><td>+ position (0, 1)</td><td>−2.38, 1.10</td></tr>
+            <tr><td>attention (only itself)</td><td>−2.9, −1.3</td></tr>
+            <tr><td>+ residual</td><td>−5.28, −0.20</td></tr>
+            <tr class="final"><td>predicts</td><td>"is" ✓</td></tr>
+          </table>
+          <p class="hand">For "is", scores 5.9 (itself) and −25.7 ("What") become 1.0 and 0.0. From EOS it generates "awesome", then EOS.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Masking is only for output tokens, during training.</span><span class="yes">That is the original transformer. Decoder-only masks the prompt and the output, at all times.</span></li>
+            <li><span class="no">Predictions on prompt tokens are wasted.</span><span class="yes">The unit must also encode the prompt, and training compares those predictions with known words.</span></li>
+            <li><span class="no">EOS must be predicted before generation starts.</span><span class="yes">It starts from EOS even if EOS was not predicted (some use SOS), and stops at EOS.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="92-transformer-neural-networks-chatgpt-s-foundation.html"><small>Previous</small>Transformer Neural Networks, ChatGPT&#x27;s foundation</a> <a href="94-encoder-only-transformers-like-bert-for-rag.html"><small>Next</small>Encoder-Only Transformers (like BERT) for RAG</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

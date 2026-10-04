@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quantiles and Percentiles — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>51</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 51 · 6.5 min</div>
+    <h1>Quantiles and Percentiles</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=IFKQLDmRK0Y" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Quantiles are the cut points that split a set of numbers into groups of equal size. Percentiles are the same cut points, written on a scale of 0 to 100.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh sorts the expression values of 15 genes. The median has seven genes below it and seven above, so it is a quantile. Two more cuts give four equal groups: the 0.25, 0.5 and 0.75 quantiles. In practice we call these the 25th, 50th and 75th percentiles. A percentile answers one question: what share of the values are smaller?</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh measures expression for 15 genes. Expression just means how active a gene is. Sort the values from lowest to highest. Now ask where you could cut the list so every piece holds the same count. Those cut points are the quantiles.</p>
+    <p>The middle cut is the median, at 4.5. Seven genes lie below and seven above, so it splits the data in half. We call it the 0.5 quantile, or the 50% quantile. Both labels are common.</p>
+    <p>Two more cuts give four equal groups. A quarter of the points are below 2.5, so 2.5 is the 0.25 or 25% quantile. Three quarters are below 7.3, so 7.3 is the 0.75 or 75% quantile.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 350" role="img" aria-label="Fifteen sorted gene expression values with three cut lines at 2.5, 4.5 and 7.3 that make four groups of three genes each">
+        <defs>
+          <marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker>
+        </defs>
+        <text x="20" y="20" class="sv-tb">Gene expression for 15 genes, sorted</text>
+        <line x1="100" y1="30" x2="100" y2="305" class="sv-line" stroke-width="1"/>
+        <line x1="100" y1="305" x2="590" y2="305" class="sv-line" stroke-width="1"/>
+
+        <line x1="100" y1="232.5" x2="590" y2="232.5" class="sv-stroke-key" stroke-width="2" stroke-dasharray="6 4"/>
+        <line x1="100" y1="178.5" x2="590" y2="178.5" class="sv-stroke-key" stroke-width="2" stroke-dasharray="6 4"/>
+        <line x1="100" y1="102.9" x2="590" y2="102.9" class="sv-stroke-key" stroke-width="2" stroke-dasharray="6 4"/>
+
+        <circle cx="120" cy="278.4" r="5" class="sv-acc"/>
+        <circle cx="150" cy="259.5" r="5" class="sv-acc"/>
+        <circle cx="180" cy="243.3" r="5" class="sv-acc"/>
+        <circle cx="210" cy="232.5" r="6" class="sv-key"/>
+        <circle cx="240" cy="219.0" r="5" class="sv-acc"/>
+        <circle cx="270" cy="202.8" r="5" class="sv-acc"/>
+        <circle cx="300" cy="189.3" r="5" class="sv-acc"/>
+        <circle cx="330" cy="178.5" r="6" class="sv-key"/>
+        <circle cx="360" cy="159.6" r="5" class="sv-acc"/>
+        <circle cx="390" cy="138.0" r="5" class="sv-acc"/>
+        <circle cx="420" cy="121.8" r="5" class="sv-acc"/>
+        <circle cx="450" cy="102.9" r="6" class="sv-key"/>
+        <circle cx="480" cy="81.3" r="5" class="sv-acc"/>
+        <circle cx="510" cy="62.4" r="5" class="sv-acc"/>
+        <circle cx="540" cy="43.5" r="5" class="sv-acc"/>
+
+        <text x="600" y="98" class="sv-ts">75% quantile = 7.3</text>
+        <text x="600" y="174" class="sv-ts">50% quantile = 4.5</text>
+        <text x="600" y="188" class="sv-ts">(the median)</text>
+        <text x="600" y="228" class="sv-ts">25% quantile = 2.5</text>
+
+        <text x="58" y="270" class="sv-ts" text-anchor="middle">3 genes</text>
+        <text x="58" y="209" class="sv-ts" text-anchor="middle">3 genes</text>
+        <text x="58" y="145" class="sv-ts" text-anchor="middle">3 genes</text>
+        <text x="58" y="70" class="sv-ts" text-anchor="middle">3 genes</text>
+
+        <text x="345" y="326" class="sv-ts" text-anchor="middle">15 genes, ordered from lowest to highest</text>
+      </svg>
+      <figcaption>Notice that each band holds the same number of genes. That equal split is what makes 2.5, 4.5 and 7.3 quantiles.</figcaption>
+    </figure>
+    <p>Strictly, percentiles are quantiles that make 100 equal groups. Fifteen genes cannot make 100 groups. Even so, everyone calls 4.5 the 50th percentile. The word is used loosely, and that is normal.</p>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Measure the quantity for every item. Josh measures expression for 15 genes.</li>
+      <li>Sort the values from lowest to highest.</li>
+      <li>Choose how many equal groups you want. Two groups give the median, four give quarters, 100 give true percentiles.</li>
+      <li>Place the cuts so each group holds the same count. Here they land at 2.5, 4.5 and 7.3.</li>
+      <li>Name each cut by the share of data below it. A quarter below means the 0.25 quantile, or 25th percentile.</li>
+      <li>For a single point, count the values smaller than it and divide by the total. That fraction is its quantile.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 230" role="img" aria-label="The same fifteen sorted values, with each point labelled by the count of values below it divided by fifteen">
+        <defs>
+          <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker>
+        </defs>
+        <text x="740" y="44" class="sv-tb" text-anchor="end">Every point has its own percentile</text>
+
+        <rect x="30" y="22" width="170" height="42" rx="4" class="sv-paper2"/>
+        <rect x="30" y="22" width="170" height="42" rx="4" class="sv-line" stroke-width="1"/>
+        <text x="42" y="41" class="sv-ts">1 of 15 below</text>
+        <text x="42" y="57" class="sv-ts">= 7th percentile</text>
+        <line x1="115" y1="64" x2="115" y2="80" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah2)"/>
+
+        <line x1="60" y1="90" x2="710" y2="90" class="sv-line" stroke-width="1"/>
+        <circle cx="70" cy="90" r="7" class="sv-key"/>
+        <circle cx="115" cy="90" r="7" class="sv-key"/>
+        <circle cx="160" cy="90" r="7" class="sv-acc"/>
+        <circle cx="205" cy="90" r="7" class="sv-key"/>
+        <circle cx="250" cy="90" r="7" class="sv-acc"/>
+        <circle cx="295" cy="90" r="7" class="sv-acc"/>
+        <circle cx="340" cy="90" r="7" class="sv-acc"/>
+        <circle cx="385" cy="90" r="7" class="sv-acc"/>
+        <circle cx="430" cy="90" r="7" class="sv-acc"/>
+        <circle cx="475" cy="90" r="7" class="sv-acc"/>
+        <circle cx="520" cy="90" r="7" class="sv-acc"/>
+        <circle cx="565" cy="90" r="7" class="sv-acc"/>
+        <circle cx="610" cy="90" r="7" class="sv-acc"/>
+        <circle cx="655" cy="90" r="7" class="sv-acc"/>
+        <circle cx="700" cy="90" r="7" class="sv-acc"/>
+
+        <line x1="70" y1="126" x2="70" y2="102" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah2)"/>
+        <rect x="20" y="128" width="140" height="44" rx="4" class="sv-paper2"/>
+        <rect x="20" y="128" width="140" height="44" rx="4" class="sv-line" stroke-width="1"/>
+        <text x="30" y="147" class="sv-ts">0 of 15 below</text>
+        <text x="30" y="163" class="sv-ts">= 0th percentile</text>
+
+        <line x1="205" y1="126" x2="205" y2="102" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah2)"/>
+        <rect x="170" y="128" width="155" height="44" rx="4" class="sv-paper2"/>
+        <rect x="170" y="128" width="155" height="44" rx="4" class="sv-line" stroke-width="1"/>
+        <text x="180" y="147" class="sv-ts">3 of 15 below</text>
+        <text x="180" y="163" class="sv-ts">= 20th percentile</text>
+
+        <text x="420" y="156" class="sv-ts">et cetera, et cetera</text>
+        <text x="385" y="200" class="sv-ts" text-anchor="middle">The same 15 values, sorted from lowest to highest</text>
+      </svg>
+      <figcaption>Notice that a point's percentile is only the count of values below it, divided by 15.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">Cut points for equal groups</span><div class="math">$$ q_j = \frac{j}{g}, \qquad j = 1, 2, \dots, g-1 $$</div><p class="explain"><b>Symbols:</b> \(g\) is how many equal groups you want, \(j\) counts the cuts, and \(q_j\) labels a cut on a 0 to 1 scale. <b>What it tells you:</b> four groups need three cuts, at 0.25, 0.5 and 0.75.</p></div>
+    <div class="formula"><span class="lbl">Quantile and percentile of one point</span><div class="math">$$ q = \frac{k}{n}, \qquad \text{percentile} = 100 \times q $$</div><p class="explain"><b>Symbols:</b> \(k\) is how many values are smaller than your point, \(n\) is the total count of values (15 here), and \(q\) is the quantile from 0 to 1. The 100 rescales \(q\) to a 0 to 100 range. <b>What it tells you:</b> the percentile is the share of the data lying below your value.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Take the 15 sorted values. The smallest has nothing below it, so \(k=0\): the 0% quantile, or zeroth percentile.</p>
+      <p>The next value up has one value below it, so \(k=1\):</p>
+      <div class="math">$$ q = \frac{1}{15} \approx 0.07 \quad \Rightarrow \quad \text{the 7th percentile} $$</div>
+      <p>The fourth smallest has three values below it, so \(k=3\):</p>
+      <div class="math">$$ q = \frac{3}{15} = 0.20 \quad \Rightarrow \quad \text{the 20th percentile} $$</div>
+      <p>Cut the same 15 genes into four equal groups instead, and you get 2.5, 4.5 and 7.3.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span>There is no single agreed way to compute a quantile. R's <code>quantile</code> function alone offers nine methods, each giving a slightly different answer.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span>Do not put much trust in quantiles from a small data set. They shift from method to method and sample to sample. With large data, all methods agree closely.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span>A quantile is a value on the data scale, not a count of points. The 75% quantile here is 7.3, an expression level. Also, 0.75 and 75% name the same cut.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is the difference between a quantile and a percentile?</summary><div class="a">They are the same idea on two scales. A quantile runs from 0 to 1, so the median is the 0.5 quantile. A percentile runs to 100, so the median is the 50th percentile. Strictly a percentile makes 100 groups, but the word is used loosely.</div></details>
+    <details class="qa" open><summary>How would you find the percentile of a single value?</summary><div class="a">I sort the data, count the values smaller than mine, divide by the sample size, and multiply by 100. With 15 genes, a value with three below it sits at the 20th percentile. Conventions differ, so I would state the one I used.</div></details>
+    <details class="qa" open><summary>Why can quantiles be unreliable on a small sample?</summary><div class="a">Two reasons. The methods disagree, and R alone offers nine. Sampling noise also moves the cuts when few points sit near them. With large data the methods converge, so I trust extreme quantiles only with enough data.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>A quantile is a cut point that divides sorted data into groups of equal size.</li>
+      <li>The median is a quantile, and it is labelled 0.5 or 50%.</li>
+      <li>For the 15 genes, the 25%, 50% and 75% quantiles are 2.5, 4.5 and 7.3.</li>
+      <li>For one point, count the values below it and divide by the total.</li>
+      <li>Many methods exist, so quantiles from small samples are unstable.</li>
+      <li>These ideas lead into QQ plots and quantile normalisation.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Quantiles and percentiles</span><span class="board-tag">cut sorted data into equal groups</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 210" role="img" aria-label="Fifteen sorted gene values in a row. Cuts at 2.5, 4.5 and 7.3 split them into four groups of three genes. The cuts are the 0.25, 0.5 and 0.75 quantiles, or 25%, 50% and 75%, and the middle one is the median.">
+            <g class="sv-stroke-key" stroke-width="2.5" stroke-dasharray="6 5" stroke-linecap="round">
+              <line x1="104" y1="86" x2="104" y2="154"/>
+              <line x1="200" y1="86" x2="200" y2="154"/>
+              <line x1="296" y1="86" x2="296" y2="154"/>
+            </g>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M24,142 L24,150 L88,150 L88,142"/>
+              <path d="M120,142 L120,150 L184,150 L184,142"/>
+              <path d="M216,142 L216,150 L280,150 L280,142"/>
+              <path d="M312,142 L312,150 L376,150 L376,142"/>
+            </g>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="32" cy="124" r="7" class="sv-acc"/>
+              <circle cx="56" cy="124" r="7" class="sv-acc"/>
+              <circle cx="80" cy="124" r="7" class="sv-acc"/>
+              <circle cx="104" cy="124" r="9" class="sv-key"/>
+              <circle cx="128" cy="124" r="7" class="sv-acc"/>
+              <circle cx="152" cy="124" r="7" class="sv-acc"/>
+              <circle cx="176" cy="124" r="7" class="sv-acc"/>
+              <circle cx="200" cy="124" r="9" class="sv-key"/>
+              <circle cx="224" cy="124" r="7" class="sv-acc"/>
+              <circle cx="248" cy="124" r="7" class="sv-acc"/>
+              <circle cx="272" cy="124" r="7" class="sv-acc"/>
+              <circle cx="296" cy="124" r="9" class="sv-key"/>
+              <circle cx="320" cy="124" r="7" class="sv-acc"/>
+              <circle cx="344" cy="124" r="7" class="sv-acc"/>
+              <circle cx="368" cy="124" r="7" class="sv-acc"/>
+            </g>
+            <text x="200" y="30" text-anchor="middle" class="sv-ts">median</text>
+            <text x="104" y="52" text-anchor="middle" class="sv-ts">0.25 = 25%</text>
+            <text x="200" y="52" text-anchor="middle" class="sv-ts">0.5 = 50%</text>
+            <text x="296" y="52" text-anchor="middle" class="sv-ts">0.75 = 75%</text>
+            <text x="104" y="76" text-anchor="middle" class="sv-tb">2.5</text>
+            <text x="200" y="76" text-anchor="middle" class="sv-tb">4.5</text>
+            <text x="296" y="76" text-anchor="middle" class="sv-tb">7.3</text>
+            <text x="200" y="184" text-anchor="middle" class="sv-t">15 sorted genes, 3 per group</text>
+          </svg>
+          <p>Sort the 15 values and cut the list so every group holds the same count. The cuts, 2.5, 4.5 and 7.3, are the 0.25, 0.5 and 0.75 quantiles: the 25th, 50th and 75th percentiles.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Quantile</dt><dd>A cut point splitting sorted data into equal-sized groups.</dd>
+            <dt>Percentile</dt><dd>The same cut, written on a 0 to 100 scale.</dd>
+            <dt>Median</dt><dd>The 0.5 quantile; here 4.5, with seven genes on each side.</dd>
+            <dt>Expression</dt><dd>How active a gene is; the value Josh measures.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Measure</b>expression for 15 genes</li>
+            <li><b>Sort</b>lowest to highest</li>
+            <li><b>Pick groups</b>2 median, 4 quarters, 100 percentiles</li>
+            <li><b>Place cuts</b>equal counts: 2.5, 4.5, 7.3</li>
+            <li><b>Name cuts</b>by the share below them</li>
+            <li><b>One point</b>count smaller values, divide by total</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$q_j=\frac{j}{g},\quad j=1,\dots,g-1$$
+          $$q=\frac{k}{n},\qquad \text{percentile}=100\,q$$
+          <ul class="keys">
+            <li>\(g\): equal groups wanted; four groups need cuts at 0.25, 0.5 and 0.75.</li>
+            <li>\(k\): values smaller than your point; \(n\): total count, 15 here.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>value</th><th>k</th><th>k / 15</th><th>percentile</th></tr>
+            <tr><td>smallest</td><td>0</td><td>0</td><td>0th</td></tr>
+            <tr><td>next up</td><td>1</td><td>≈ 0.07</td><td>7th</td></tr>
+            <tr class="final"><td>4th smallest</td><td>3</td><td>0.20</td><td>20th</td></tr>
+          </table>
+          <p class="hand">Each point's percentile is just the share of values below it. Cut into four groups instead: 2.5, 4.5, 7.3.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">There is one right way to compute a quantile.</span><span class="yes">No single agreed way: R's quantile function alone offers nine methods, each slightly different.</span></li>
+            <li><span class="no">Quantiles from a small data set are reliable.</span><span class="yes">They shift from method to method and sample to sample; with large data, all methods agree closely.</span></li>
+            <li><span class="no">A quantile is a count of points.</span><span class="yes">It is a value on the data scale: the 75% quantile here is 7.3.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="50-one-or-two-tailed-p-values.html"><small>Previous</small>One or Two Tailed P-Values</a> <a href="52-quantile-quantile-plots-qq-plots.html"><small>Next</small>Quantile-Quantile Plots (QQ plots)</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The matrix math behind transformer neural networks, one step at a time — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>97</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 97 · 23.7 min</div>
+    <h1>The matrix math behind transformer neural networks, one step at a time</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=KphmOJnLAdI" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: Neural Networks / Deep Learning (video 28)</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video rewrites every step of an encoder-decoder transformer as matrix multiplication. Josh says the matrix form makes coding transformers, and neural networks in general, far easier to understand.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>The example translates "&lt;SOS&gt; let's go" into "vamos &lt;EOS&gt;". Embeddings, queries, keys and values are each one matrix product for all tokens. Attention is Q times the transpose of K, scaled by the square root of d<sub>k</sub>, passed through SoftMax row by row, then multiplied by V. The decoder adds a mask so no token can peek at tokens that come after it. Encoder-decoder attention is the same math, but K and V come from the encoder's output.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>A transformer does the same small calculations for every token. If we stack the tokens as rows of a matrix, one matrix multiplication does the work for all of them at once. This also lets training run in parallel.</p>
+    <p>In this example each token has two values, so every token matrix has two columns. The figure follows the shapes through attention in the encoder, which has three tokens.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 360" role="img" aria-label="Attention as a matrix pipeline: encodings times query, key and value weights give Q, K and V; Q times K transpose, divided by root d k, plus an optional mask, SoftMax by row, then times V">
+        <defs><marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker></defs>
+        <rect x="20" y="150" width="130" height="70" rx="6" class="sv-paper2"/>
+        <text x="85" y="178" text-anchor="middle" class="sv-tb">Encodings X</text>
+        <text x="85" y="202" text-anchor="middle" class="sv-tm">3 × 2</text>
+        <line x1="150" y1="185" x2="198" y2="72" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <line x1="150" y1="185" x2="198" y2="185" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <line x1="150" y1="185" x2="198" y2="298" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <rect x="200" y="40" width="170" height="64" rx="6" class="sv-acc-soft"/>
+        <text x="285" y="66" text-anchor="middle" class="sv-tb">Q = X · W_Qᵀ</text>
+        <text x="285" y="90" text-anchor="middle" class="sv-tm">(3×2)(2×2) → 3×2</text>
+        <rect x="200" y="153" width="170" height="64" rx="6" class="sv-acc-soft"/>
+        <text x="285" y="179" text-anchor="middle" class="sv-tb">K = X · W_Kᵀ</text>
+        <text x="285" y="203" text-anchor="middle" class="sv-tm">3 × 2</text>
+        <rect x="200" y="266" width="170" height="64" rx="6" class="sv-acc-soft"/>
+        <text x="285" y="292" text-anchor="middle" class="sv-tb">V = X · W_Vᵀ</text>
+        <text x="285" y="316" text-anchor="middle" class="sv-tm">3 × 2</text>
+        <line x1="370" y1="72" x2="418" y2="72" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <path d="M370,185 L460,185 L460,106" fill="none" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <rect x="420" y="40" width="140" height="64" rx="6" class="sv-key-soft"/>
+        <text x="490" y="66" text-anchor="middle" class="sv-tb">Q · Kᵀ</text>
+        <text x="490" y="90" text-anchor="middle" class="sv-tm">(3×2)(2×3) → 3×3</text>
+        <line x1="560" y1="72" x2="588" y2="72" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <rect x="590" y="40" width="150" height="64" rx="6" class="sv-key-soft"/>
+        <text x="665" y="66" text-anchor="middle" class="sv-tb">÷ √d_k = √2</text>
+        <text x="665" y="90" text-anchor="middle" class="sv-tm">3 × 3</text>
+        <line x1="665" y1="104" x2="665" y2="151" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <rect x="590" y="153" width="150" height="64" rx="6" class="sv-paper2"/>
+        <rect x="590" y="153" width="150" height="64" rx="6" fill="none" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="5 4"/>
+        <text x="665" y="179" text-anchor="middle" class="sv-tb">+ M (mask)</text>
+        <text x="665" y="203" text-anchor="middle" class="sv-ts">decoder only: 0 or −∞</text>
+        <line x1="665" y1="217" x2="665" y2="264" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <rect x="590" y="266" width="150" height="64" rx="6" class="sv-key-soft"/>
+        <text x="665" y="292" text-anchor="middle" class="sv-tb">SoftMax each row</text>
+        <text x="665" y="316" text-anchor="middle" class="sv-ts">each row sums to 1</text>
+        <line x1="590" y1="298" x2="562" y2="298" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <line x1="370" y1="298" x2="418" y2="298" class="sv-stroke-acc" stroke-width="2" marker-end="url(#ar1)"/>
+        <rect x="420" y="266" width="140" height="64" rx="6" class="sv-good-soft"/>
+        <text x="490" y="292" text-anchor="middle" class="sv-tb">× V = attention</text>
+        <text x="490" y="316" text-anchor="middle" class="sv-tm">(3×3)(3×2) → 3×2</text>
+      </svg>
+      <figcaption>Notice how the shapes flow: three tokens with two values each become a 3×3 table of similarities, and multiplying by V brings it back to 3×2.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li><b>Word embeddings.</b> Each input token becomes a one-hot row: a 1 in its own column and 0 everywhere else. The input vocabulary is SOS, let's, to and go, so this matrix is 3×4. Multiplying it by the 4×2 embedding weight matrix simply picks out each token's two embedding values.</li>
+      <li><b>Positional encoding.</b> We add the matching y-axis values from the sine and cosine curves, element by element. In practice these values are precomputed and stored in a lookup table.</li>
+      <li><b>Queries, keys and values.</b> The encoded matrix X times a 2×2 query weight matrix gives Q. Different weights give K and V the same way. The weights carry a transpose symbol because PyTorch prints them in a form that must be transposed.</li>
+      <li><b>Q times Kᵀ.</b> Each entry is a dot product of one token's query and one token's key: multiply matching numbers, then add. A dot product is an unscaled similarity, closely related to cosine similarity.</li>
+      <li><b>Scale.</b> Divide every similarity by \(\sqrt{d_k}\), where \(d_k\) is the number of values per token, here 2.</li>
+      <li><b>SoftMax each row.</b> Each row now sums to 1, so it reads as percentages: how much each token relates to every other token.</li>
+      <li><b>Multiply by V.</b> Each row of percentages mixes the value columns. The result is the self-attention scores for every token.</li>
+      <li><b>Residual connection.</b> Add back the encodings from right after positional encoding. This is the encoder's output.</li>
+      <li><b>Decoder input.</b> During training, the decoder gets SOS and vamos. Its vocabulary has five tokens (SOS, ir, vamos, y, EOS). So a 2×5 one-hot matrix times a 5×2 embedding matrix gives two embeddings, plus positional encoding.</li>
+      <li><b>Masked self-attention.</b> The decoder computes Q, K, V and the scaled similarities with its own weights. Before SoftMax it adds a mask, so each token uses only itself and earlier tokens. Another residual connection follows.</li>
+      <li><b>Encoder-decoder attention.</b> Q comes from the decoder values. K and V come from the encoder's output, each with its own weights. The attention math is otherwise unchanged. Another residual connection follows.</li>
+      <li><b>Output.</b> A fully connected layer has two inputs and five outputs, one per output token. It is a matrix product, plus a bias added to each column. A final SoftMax gives one row of probabilities per decoder copy.</li>
+    </ol>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">Queries, keys and values</span><div class="math">$$ Q = X W_Q^{T}, \qquad K = X W_K^{T}, \qquad V = X W_V^{T} $$</div><p class="explain"><b>Symbols:</b> \(X\) is the matrix of encoded tokens (word embedding plus position), one row per token. \(W_Q, W_K, W_V\) are the learned query, key and value weight matrices. \(T\) means transpose: swap rows and columns. <b>What it tells you:</b> one multiplication computes the queries (or keys, or values) for every token at once.</p></div>
+    <div class="formula"><span class="lbl">Attention</span><div class="math">$$ \text{Attention}(Q,K,V) = \text{SoftMax}\!\left(\frac{QK^{T}}{\sqrt{d_k}} + M\right) V $$</div><p class="explain"><b>Symbols:</b> \(QK^{T}\) holds the dot products of every query with every key. \(d_k\) is the number of values per token in the key matrix (2 here). \(M\) is the mask: 0 where a value may be used and \(-\infty\) where it must be ignored. The encoder has no mask, so there \(M\) is all zeros. SoftMax turns each row into percentages that sum to 1. \(V\) is the value matrix. <b>What it tells you:</b> each token's output is a mix of all values, weighted by how similar its query is to each key.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p><b>Query for SOS.</b> The encoded SOS token is (1.16, 0.23). The first column of query weights is (2.22, 0.17) and the second column is (0.41, −0.51).</p>
+      <p>\(1.16 \times 2.22 + 0.23 \times 0.17 = 2.575 + 0.039 = 2.61\)<br>
+      \(1.16 \times 0.41 + 0.23 \times (-0.51) = 0.476 - 0.117 = 0.36\)</p>
+      <p>So the query for SOS is (2.61, 0.36).</p>
+      <p><b>SOS row of Q·Kᵀ.</b> The unscaled similarities between the query for SOS and the keys for SOS, let's and go are −4.49, 2.05 and −27.4. Dividing by \(\sqrt{2} \approx 1.414\) gives about −3.17, 1.45 and −19.4. SoftMax turns these into 1%, 99% and 0%. So SOS is 1% similar to itself, 99% to let's, and 0% to go.</p>
+      <p><b>First attention score for SOS.</b> Take 1% of the first value for SOS, add 99% of the first value for let's, and add 0% of the first value for go. The result is 1.54.</p>
+      <p><b>Decoder mask.</b> The query for SOS times the key for vamos gives 0.12. Scaled, this is \(0.12 / 1.414 \approx 0.08\). The mask adds \(-\infty\) to that cell, so SoftMax gives SOS 100% similarity to itself and 0% to vamos. The vamos row gets zeros in the mask and uses both tokens.</p>
+      <p><b>Final output.</b> The first row of the last SoftMax has 1 for vamos and 0 for the rest, so vamos is the first output token. In the second row, EOS has the highest value, so the transformer stops.</p>
+      <table>
+        <tr><th>Step</th><th>Shape</th></tr>
+        <tr><td>Encoder one-hot × embedding weights</td><td>(3×4)(4×2) → 3×2</td></tr>
+        <tr><td>Encoder Q·Kᵀ, then SoftMax</td><td>3×3</td></tr>
+        <tr><td>Encoder attention and output</td><td>3×2</td></tr>
+        <tr><td>Decoder one-hot × embedding weights</td><td>(2×5)(5×2) → 2×2</td></tr>
+        <tr><td>Decoder mask</td><td>2×2: [[0, −∞], [0, 0]]</td></tr>
+        <tr><td>Encoder-decoder Q·Kᵀ (Q from decoder, K from encoder)</td><td>(2×2)(2×3) → 2×3</td></tr>
+        <tr><td>Encoder-decoder attention × V</td><td>(2×3)(3×2) → 2×2</td></tr>
+        <tr><td>Fully connected layer, bias, SoftMax</td><td>(2×2)(2×5) → 2×5</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> We transpose K for two reasons. Without it, the shapes would not line up. More importantly, it makes each entry of the product a query-key dot product.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Dividing by \(\sqrt{d_k}\) is not a careful normalisation. In the example the scaled values still range from 5.01 to −66.2. The original transformer authors still reported that it improved performance.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> During training, the decoder processes SOS and vamos at the same time. This is called teacher forcing: the second decoder copy gets the known token vamos, whatever the first copy outputs. The mask stops SOS from using vamos, because after training SOS will not know what comes next.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>Why is attention computed as Q times K transpose?</summary><div class="a">Each row of Q is a token's query and each row of K is a token's key. Transposing K turns the keys into columns, so each entry of the product is the dot product of one query and one key. That gives an unscaled similarity for every pair of tokens in one multiplication.</div></details>
+    <details class="qa" open><summary>What does the mask do in decoder self-attention?</summary><div class="a">It adds zero to the similarities a token may use and minus infinity to the ones it must ignore. After SoftMax, the ignored ones become zero percent. So during training a token can look at itself and earlier tokens, but never peek at later ones.</div></details>
+    <details class="qa" open><summary>How does encoder-decoder attention differ from self-attention?</summary><div class="a">The math is the same. The difference is where the inputs come from. Queries are built from the decoder's values, while keys and values are built from the encoder's output, each with their own weight matrices.</div></details>
+    <details class="qa" open><summary>What is d<sub>k</sub> and why divide by its square root?</summary><div class="a">It is the number of values per token in the key matrix, 2 in the video's example. Dividing by its square root is a simple scaling step. It does not normalise the values in any systematic way, but the original authors said it improved performance.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Word embedding is a one-hot matrix times an embedding weight matrix, and positional encoding is added element by element.</li>
+      <li>Q, K and V are the encodings multiplied by three separate weight matrices.</li>
+      <li>Attention is SoftMax of Q·Kᵀ divided by √d<sub>k</sub>, plus a mask in the decoder, multiplied by V.</li>
+      <li>Each SoftMax row sums to 1 and tells how much one token relates to each other token.</li>
+      <li>Residual connections add the input of each attention step back to its output.</li>
+      <li>Encoder-decoder attention takes Q from the decoder and K and V from the encoder.</li>
+      <li>A fully connected layer with bias and a final SoftMax picks the output token for each decoder row.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Transformer Matrix Math</span><span class="board-tag">stack tokens as rows, multiply once</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 200" role="img" aria-label="Q, one row per token, times K transpose over root 2 and SoftMax gives a 3 by 3 table whose SOS row is 1%, 99% and 0%, and times V brings it back to 3 by 2.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <rect x="56" y="24" width="40" height="108" class="sv-paper"/>
+            <rect x="186" y="24" width="114" height="108" class="sv-paper"/>
+            <rect x="56" y="24" width="40" height="36" class="sv-key-soft"/>
+            <rect x="186" y="24" width="114" height="36" class="sv-key-soft"/>
+            <rect x="348" y="24" width="40" height="108" class="sv-good-soft"/>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="56" y="24" width="40" height="108"/>
+              <path d="M76 24 V132 M56 60 H96 M56 96 H96"/>
+              <rect x="186" y="24" width="114" height="108"/>
+              <path d="M224 24 V132 M262 24 V132 M186 60 H300 M186 96 H300"/>
+              <rect x="348" y="24" width="40" height="108"/>
+              <path d="M368 24 V132 M348 60 H388 M348 96 H388"/>
+            </g>
+            <g class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round">
+              <line x1="102" y1="78" x2="179" y2="78" marker-end="url(#board-arr)"/>
+              <line x1="306" y1="78" x2="341" y2="78" marker-end="url(#board-arr)"/>
+            </g>
+            <text x="48" y="48" text-anchor="end" class="sv-t">SOS</text>
+            <text x="205" y="48" text-anchor="middle" class="sv-tm">1%</text>
+            <text x="243" y="48" text-anchor="middle" class="sv-tm">99%</text>
+            <text x="281" y="48" text-anchor="middle" class="sv-tm">0%</text>
+            <text x="141" y="64" text-anchor="middle" class="sv-t">× Kᵀ ÷ √2</text>
+            <text x="141" y="106" text-anchor="middle" class="sv-t">SoftMax</text>
+            <text x="324" y="64" text-anchor="middle" class="sv-t">× V</text>
+            <text x="76" y="156" text-anchor="middle" class="sv-tm">Q 3×2</text>
+            <text x="243" y="156" text-anchor="middle" class="sv-tm">3×3</text>
+            <text x="368" y="156" text-anchor="middle" class="sv-tm">3×2</text>
+            <text x="243" y="182" text-anchor="middle" class="sv-ts">each row sums to 1</text>
+          </svg>
+          <p>Stack the tokens as rows, and one multiplication does the work for all of them at once. \(QK^{T}\) over \(\sqrt{2}\) is a 3×3 table of similarities; after SoftMax, SOS is 99% similar to let's. Times \(V\), the shape is back to 3×2.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>One-hot row</dt><dd>A 1 in the token's own column, 0 everywhere else.</dd>
+            <dt>Dot product</dt><dd>Multiply matching numbers, then add: an unscaled similarity.</dd>
+            <dt>\(d_k\)</dt><dd>The number of values per token in the key matrix, here 2.</dd>
+            <dt>Mask \(M\)</dt><dd>0 where a value may be used, −∞ where it must be ignored.</dd>
+            <dt>Residual connection</dt><dd>Adds an attention step's input back to its output.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Embed</b>one-hot × weights, plus position</li>
+            <li><b>Q, K, V</b>encodings × three weight matrices</li>
+            <li><b>Attention</b>Q·Kᵀ, ÷ √2, SoftMax, × V</li>
+            <li><b>Masked decoder</b>no peeking at later tokens</li>
+            <li><b>Encoder-decoder</b>Q: decoder; K, V: encoder</li>
+            <li><b>Output</b>fully connected, bias, SoftMax</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$Q=XW_Q^{T},\;\;K=XW_K^{T},\;\;V=XW_V^{T}$$
+          $$\text{Attention}=\text{SoftMax}\!\left(\frac{QK^{T}}{\sqrt{d_k}}+M\right)V$$
+          <ul class="keys">
+            <li>\(X\): encoded tokens, one row each; \(T\) means transpose.</li>
+            <li>\(QK^{T}\): every query dotted with every key; \(d_k=2\) here.</li>
+            <li>\(M\) is all zeros in the encoder; SoftMax makes each row sum to 1.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>key</th><th>Q·Kᵀ</th><th>÷ √2</th><th>SoftMax</th></tr>
+            <tr><td>SOS</td><td>−4.49</td><td>−3.17</td><td>1%</td></tr>
+            <tr><td>let's</td><td>2.05</td><td>1.45</td><td>99%</td></tr>
+            <tr><td>go</td><td>−27.4</td><td>−19.4</td><td>0%</td></tr>
+            <tr class="final"><td>× V</td><td colspan="2">first score</td><td>1.54 ✓</td></tr>
+          </table>
+          <p class="hand">SOS's query is (2.61, 0.36). Mixing the first values by 1%, 99% and 0% gives its first attention score, 1.54.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">K is transposed just so the shapes fit.</span><span class="yes">More importantly, it makes each entry of Q·Kᵀ a query-key dot product.</span></li>
+            <li><span class="no">Dividing by \(\sqrt{d_k}\) neatly normalises the values.</span><span class="yes">Scaled values still range from 5.01 to −66.2, yet the original authors reported better performance.</span></li>
+            <li><span class="no">In training, SOS may use vamos too.</span><span class="yes">Teacher forcing feeds both, but the mask hides vamos: after training, SOS won't know what comes next.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="96-essential-matrix-algebra-for-neural-networks.html"><small>Previous</small>Essential Matrix Algebra for Neural Networks</a> <a href="98-the-introduction-to-pytorch.html"><small>Next</small>The Introduction to PyTorch</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

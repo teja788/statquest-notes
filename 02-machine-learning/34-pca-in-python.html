@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PCA in Python — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>34</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 34 · 11.6 min</div>
+    <h1>PCA in Python</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=Lsue2gEM9D0" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Josh runs a complete PCA in Python, from made-up data to the final graph. The code comes from Chris Yogodzinski, and every line has a job.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>First you build a small gene expression table with 100 genes and 10 samples. Then you centre and scale the data, and you must transpose it first, because scikit-learn wants samples in rows. The <code>PCA</code> object from scikit-learn does the maths: <code>fit</code> finds the loading scores and the variation per component, and <code>transform</code> makes the graph coordinates. A scree plot shows that almost all the variation sits on PC1, so a PC1 against PC2 plot is enough. The plot separates the two sample groups, and the loading scores for PC1 tell you which genes caused that separation.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>PCA takes a table with many columns and finds a few new axes that hold most of the variation. Those new axes are the principal components. In Python you get them from the <code>PCA</code> class in scikit-learn.</p>
+    <p>Python has no built-in tables, random numbers, or graphs, so you import them. Pandas gives you the data frame, NumPy gives you the random numbers and the maths, and Matplotlib draws the plots.</p>
+    <p>One detail decides whether your result is right or nonsense: the shape of the input. Genomic tables usually store samples as columns, but scikit-learn expects one row per sample. So you transpose the table before you scale it. The figure below shows what that flip does.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="A gene by sample table transposed into a sample by gene table before scaling">
+        <defs>
+          <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" class="sv-ink3"></path>
+          </marker>
+        </defs>
+        <text x="24" y="30" class="sv-tb">Transpose first, then scale</text>
+
+        <text x="46" y="62" class="sv-ts">data — 100 rows, 10 columns</text>
+        <rect x="46" y="76" width="190" height="150" rx="4" class="sv-acc-soft"></rect>
+        <rect x="46" y="76" width="190" height="150" rx="4" class="sv-stroke-acc" stroke-width="1.5"></rect>
+        <line x1="84" y1="76" x2="84" y2="226" class="sv-line" stroke-width="1"></line>
+        <line x1="122" y1="76" x2="122" y2="226" class="sv-line" stroke-width="1"></line>
+        <line x1="160" y1="76" x2="160" y2="226" class="sv-line" stroke-width="1"></line>
+        <line x1="198" y1="76" x2="198" y2="226" class="sv-line" stroke-width="1"></line>
+        <text x="141" y="248" class="sv-tm" text-anchor="middle">wt1 … ko5</text>
+        <text x="36" y="151" class="sv-tm" text-anchor="middle" transform="rotate(-90 36 151)">gene1 … gene100</text>
+
+        <line x1="250" y1="151" x2="316" y2="151" class="sv-line" stroke-width="2" marker-end="url(#arw)"></line>
+        <text x="282" y="140" class="sv-tm" text-anchor="middle">data.T</text>
+
+        <text x="340" y="62" class="sv-ts">data.T — 10 rows, 100 columns</text>
+        <rect x="340" y="76" width="380" height="80" rx="4" class="sv-key-soft"></rect>
+        <rect x="340" y="76" width="380" height="80" rx="4" class="sv-stroke-key" stroke-width="1.5"></rect>
+        <line x1="340" y1="106" x2="720" y2="106" class="sv-line" stroke-width="1"></line>
+        <line x1="340" y1="136" x2="720" y2="136" class="sv-line" stroke-width="1"></line>
+        <text x="530" y="176" class="sv-tm" text-anchor="middle">gene1 … gene100</text>
+        <text x="334" y="116" class="sv-tm" text-anchor="end">wt1 … ko5</text>
+
+        <rect x="340" y="200" width="380" height="62" rx="6" class="sv-paper"></rect>
+        <rect x="340" y="200" width="4" height="62" class="sv-key"></rect>
+        <text x="356" y="222" class="sv-t">scale() works down each column.</text>
+        <text x="356" y="244" class="sv-ts">So every gene ends with mean 0 and standard deviation 1.</text>
+      </svg>
+      <figcaption>Notice that scaling only gives each gene a mean of zero once the genes are the columns.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Import the packages, because Python has no tables, random numbers, or plots on its own.</li>
+      <li>Build a fake data set of 100 genes across five wild type and five knockout samples.</li>
+      <li>Transpose the table, then centre and scale it so no gene dominates by size alone.</li>
+      <li>Create a <code>PCA</code> object, fit it, and transform the scaled data into coordinates.</li>
+      <li>Draw a scree plot to decide how many principal components matter.</li>
+      <li>Draw the PC1 against PC2 graph and label each point with its sample name.</li>
+      <li>Sort the PC1 loading scores by size to find the genes that drove the separation.</li>
+    </ol>
+
+    <h3>Import the packages</h3>
+    <p>The <code>random</code> package is only here to invent example data; real data needs no such thing.</p>
+<pre><code>import pandas as pd
+import numpy as np
+import random as rd
+from sklearn.decomposition import PCA
+from sklearn import preprocessing
+import matplotlib.pyplot as plt</code></pre>
+
+    <h3>Make the example data</h3>
+    <p>The stars unpack the two name lists into one flat list of column names.</p>
+<pre><code>genes = ['gene' + str(i) for i in range(1, 101)]
+
+wt = ['wt' + str(i) for i in range(1, 6)]   # 1, 2, 3, 4, 5
+ko = ['ko' + str(i) for i in range(1, 6)]
+
+data = pd.DataFrame(columns=[*wt, *ko], index=genes)
+
+for gene in data.index:
+    data.loc[gene, 'wt1':'wt5'] = np.random.poisson(lam=rd.randrange(10, 1000), size=5)
+    data.loc[gene, 'ko1':'ko5'] = np.random.poisson(lam=rd.randrange(10, 1000), size=5)
+
+print(data.head())
+print(data.shape)      # (100, 10)</code></pre>
+    <p>Each gene gets its own Poisson mean, drawn between 10 and 1000, so genes differ in size.</p>
+
+    <h3>Centre and scale</h3>
+    <p>Pass the transpose, then check the shape if you are unsure which way round it is.</p>
+<pre><code>scaled_data = preprocessing.scale(data.T)
+
+# same idea, the more usual machine learning style:
+# from sklearn.preprocessing import StandardScaler
+# scaled_data = StandardScaler().fit_transform(data.T)</code></pre>
+
+    <h3>Do the PCA</h3>
+    <p>Scikit-learn uses an object you fit on one data set and can apply to another.</p>
+<pre><code>pca = PCA()                        # create the object
+pca.fit(scaled_data)               # loading scores and variation per PC
+pca_data = pca.transform(scaled_data)   # coordinates for the graph</code></pre>
+
+    <h3>The scree plot</h3>
+    <p>This turns the variation ratios into percentages and draws one bar per component.</p>
+<pre><code>per_var = np.round(pca.explained_variance_ratio_ * 100, decimals=1)
+labels = ['PC' + str(x) for x in range(1, len(per_var) + 1)]
+
+plt.bar(x=range(1, len(per_var) + 1), height=per_var, tick_label=labels)
+plt.ylabel('Percentage of Explained Variance')
+plt.xlabel('Principal Component')
+plt.title('Scree Plot')
+plt.show()</code></pre>
+
+    <h3>The PCA graph</h3>
+    <p>Put the coordinates into a labelled data frame first, so the loop can annotate each point.</p>
+<pre><code>pca_df = pd.DataFrame(pca_data, index=[*wt, *ko], columns=labels)
+
+plt.scatter(pca_df.PC1, pca_df.PC2)
+plt.title('My PCA Graph')
+plt.xlabel('PC1 - {0}%'.format(per_var[0]))
+plt.ylabel('PC2 - {0}%'.format(per_var[1]))
+
+for sample in pca_df.index:
+    plt.annotate(sample, (pca_df.PC1.loc[sample], pca_df.PC2.loc[sample]))
+
+plt.show()</code></pre>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 280" role="img" aria-label="A scree plot with one tall bar and a PCA graph with wild type points on the left and knockout points on the right">
+        <text x="24" y="26" class="sv-tb">Scree plot</text>
+        <line x1="60" y1="60" x2="60" y2="220" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <line x1="60" y1="220" x2="330" y2="220" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <rect x="76" y="72" width="34" height="148" class="sv-acc"></rect>
+        <rect x="126" y="208" width="34" height="12" class="sv-acc-soft"></rect>
+        <rect x="176" y="212" width="34" height="8" class="sv-acc-soft"></rect>
+        <rect x="226" y="214" width="34" height="6" class="sv-acc-soft"></rect>
+        <rect x="276" y="215" width="34" height="5" class="sv-acc-soft"></rect>
+        <text x="93" y="236" class="sv-ts" text-anchor="middle">PC1</text>
+        <text x="143" y="236" class="sv-ts" text-anchor="middle">PC2</text>
+        <text x="243" y="236" class="sv-ts" text-anchor="middle">…</text>
+        <text x="54" y="140" class="sv-ts" text-anchor="middle" transform="rotate(-90 54 140)">% of variation</text>
+        <text x="130" y="60" class="sv-t">Almost all on PC1</text>
+
+        <text x="420" y="26" class="sv-tb">PCA graph</text>
+        <line x1="440" y1="60" x2="440" y2="220" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <line x1="440" y1="220" x2="736" y2="220" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <circle cx="492" cy="104" r="6" class="sv-acc"></circle>
+        <circle cx="506" cy="140" r="6" class="sv-acc"></circle>
+        <circle cx="484" cy="166" r="6" class="sv-acc"></circle>
+        <circle cx="516" cy="118" r="6" class="sv-acc"></circle>
+        <circle cx="500" cy="186" r="6" class="sv-acc"></circle>
+        <circle cx="664" cy="112" r="6" class="sv-key"></circle>
+        <circle cx="678" cy="150" r="6" class="sv-key"></circle>
+        <circle cx="656" cy="176" r="6" class="sv-key"></circle>
+        <circle cx="688" cy="128" r="6" class="sv-key"></circle>
+        <circle cx="670" cy="192" r="6" class="sv-key"></circle>
+        <text x="500" y="82" class="sv-ts" text-anchor="middle">wt1 … wt5</text>
+        <text x="672" y="90" class="sv-ts" text-anchor="middle">ko1 … ko5</text>
+        <text x="588" y="242" class="sv-ts" text-anchor="middle">PC1</text>
+        <text x="432" y="140" class="sv-ts" text-anchor="middle" transform="rotate(-90 432 140)">PC2</text>
+      </svg>
+      <figcaption>Notice that the gap between the two groups runs along PC1, the axis that holds almost all the variation.</figcaption>
+    </figure>
+
+    <h3>The loading scores</h3>
+    <p>Principal components are zero indexed, so PC1 is row zero of <code>components_</code>.</p>
+<pre><code>loading_scores = pd.Series(pca.components_[0], index=genes)
+
+sorted_loading_scores = loading_scores.abs().sort_values(ascending=False)
+top_10_genes = sorted_loading_scores[0:10].index.values
+
+print(loading_scores[top_10_genes])</code></pre>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Centre and scale</span>
+      <div class="math">$$ z_{ij} = \frac{x_{ij} - \bar{x}_j}{s_j} $$</div>
+      <p class="explain"><b>Symbols:</b> \(x_{ij}\) is the count of gene \(j\) in sample \(i\); \(\bar{x}_j\) is the mean of gene \(j\) across the samples; \(s_j\) is its standard deviation; \(z_{ij}\) is the scaled value. <b>What it tells you:</b> after this step every gene has mean zero and standard deviation one, so a loud gene cannot dominate a quiet one.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Two divisors: Python and R</span>
+      <div class="math">$$ s^2_{\text{sklearn}} = \frac{\sum (x - \bar{x})^2}{n} \qquad s^2_{\text{R}} = \frac{\sum (x - \bar{x})^2}{n - 1} $$</div>
+      <p class="explain"><b>Symbols:</b> \(n\) is the number of measurements; \(x\) is one measurement; \(\bar{x}\) is their mean. <b>What it tells you:</b> R divides by \(n-1\), which gives a larger but unbiased estimate. The loading scores and the percentages per component are the same either way, so only the drawn coordinates shift a little.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Percentage of variation per component</span>
+      <div class="math">$$ \text{per\_var}_k = 100 \times \frac{\lambda_k}{\sum_m \lambda_m} $$</div>
+      <p class="explain"><b>Symbols:</b> \(\lambda_k\) is the variation held by component \(k\); the sum runs over all components. <b>What it tells you:</b> this is exactly <code>explained_variance_ratio_</code> turned into a percentage, and it is the height of each scree plot bar.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Where a sample lands on PC1</span>
+      <div class="math">$$ \text{PC1}_i = \sum_{j=1}^{100} w_j \, z_{ij} $$</div>
+      <p class="explain"><b>Symbols:</b> \(w_j\) is the loading score of gene \(j\) in PC1, from <code>pca.components_[0]</code>; \(z_{ij}\) is the scaled value of that gene in sample \(i\). <b>What it tells you:</b> a coordinate is the loading scores multiplied by the scaled values and added up. That is why a different scaling divisor moves the points slightly.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>The made-up table has 100 genes and 10 samples, so <code>data.shape</code> prints <code>(100, 10)</code>. Five samples are wild type and five are knockout. Every gene gets a fresh Poisson mean between 10 and 1000, drawn once for the wild type group and once for the knockout group.</p>
+      <p>After the PCA, the scree plot shows almost all the variation on the first principal component. That is the signal to stop at two dimensions: PC1 and PC2 will represent the original data well.</p>
+      <p>The PCA graph then shows the five wild type samples together on the left and the five knockout samples together on the right. Points that sit together are correlated with each other. The wide gap along the x axis says the two groups are very different.</p>
+      <p>Finally the top 10 PC1 loading scores come out very similar in size. Josh reads this as many genes sharing the work of separating the groups, rather than one or two genes doing it alone.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+
+    <div class="pitfall"><span class="lbl">Watch out</span> Scikit-learn wants one row per sample. Genomic tables usually store samples as columns, so you pass <code>data.T</code>. If you forget the transpose, you scale samples instead of genes and the whole result is wrong. Nothing warns you, because the code still runs.</div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span> Python counts from zero, so PC1 is <code>pca.components_[0]</code>. It is easy to type <code>[1]</code> and quietly report the second component's loading scores.</div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span> Sort the loading scores by their absolute value. A large negative score matters as much as a large positive one; it only means the gene pushes samples the other way along the axis.</div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span> Python and R use different divisors when they compute variation. The loading scores and the percentage per component agree, but the plotted coordinates differ slightly.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>Why do you centre and scale before PCA?</summary><div class="a">PCA looks for the directions with the most variation. Without scaling, a variable measured on a large scale looks more important simply because its numbers are bigger. Centring puts every variable's mean at zero and scaling puts every standard deviation at one, so each variable starts on equal terms.</div></details>
+
+    <details class="qa" open><summary>What does a scree plot tell you?</summary><div class="a">It shows the percentage of variation held by each principal component, in order. You use it to decide how many components to keep. In this example almost everything sits on PC1, so a two dimensional plot of PC1 against PC2 already represents the data well.</div></details>
+
+    <details class="qa" open><summary>What is the difference between fit and transform on a PCA object?</summary><div class="a">Fit does the actual PCA maths on the data you give it: it finds the loading scores and how much variation each component accounts for. Transform then uses those loading scores to turn data into coordinates. Keeping them apart lets you fit on training data and transform new data with the same components.</div></details>
+
+    <details class="qa" open><summary>How do you find which variables drive the separation?</summary><div class="a">You look at the loading scores for the component that separates the groups, here PC1. Put them in a pandas Series indexed by variable name, sort by absolute value, and read off the top few. If those top scores are all similar, many variables share the effect rather than one dominating.</div></details>
+
+    <details class="qa" open><summary>Two samples sit close together on the PCA graph. What does that mean?</summary><div class="a">It means their values are correlated across the measured variables, so the components score them almost the same. In this example the wild type samples cluster on one side and the knockout samples on the other. The distance between the two clusters along PC1 is the real finding.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap">
+      <ul>
+        <li>Import pandas, NumPy, Matplotlib, and <code>PCA</code> plus <code>preprocessing</code> from scikit-learn.</li>
+        <li>The example data is 100 genes by 10 samples, built from Poisson draws with a fresh mean per gene.</li>
+        <li>Transpose the table before scaling, because scikit-learn expects samples in rows.</li>
+        <li>After scaling, every gene has a mean of zero and a standard deviation of one.</li>
+        <li>Create the <code>PCA</code> object, call <code>fit</code> for the maths, then <code>transform</code> for the coordinates.</li>
+        <li>The scree plot uses <code>explained_variance_ratio_</code> and shows how many components you need.</li>
+        <li>The PCA graph puts wild type samples on the left and knockout samples on the right, separated along PC1.</li>
+        <li>The PC1 loading scores, sorted by absolute value, name the genes that caused that separation.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">PCA</span><span class="board-tag">transpose, scale, fit, transform, read the loadings</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 290" role="img" aria-label="A tall table with 100 genes in rows is flipped by data.T into a wide table with 10 samples in rows. Scale, fit and transform then give a PC1 against PC2 graph: the five wild type samples sit on the left, the five knockout samples on the right, with a wide gap along PC1, which holds almost all the variation.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <text x="20" y="28" class="sv-ts">100 genes in rows</text>
+            <text x="380" y="28" text-anchor="end" class="sv-ts">10 samples in rows</text>
+            <g class="sv-stroke-ink" stroke-width="2.5" stroke-linejoin="round">
+              <rect x="40" y="40" width="44" height="96" rx="4" class="sv-acc-soft"/>
+              <rect x="172" y="44" width="208" height="48" rx="4" class="sv-good-soft"/>
+            </g>
+            <line x1="51" y1="44" x2="51" y2="132" class="sv-stroke-acc" stroke-width="2" stroke-linecap="round"/>
+            <line x1="62" y1="44" x2="62" y2="132" class="sv-stroke-acc" stroke-width="2" stroke-linecap="round"/>
+            <line x1="73" y1="44" x2="73" y2="132" class="sv-stroke-acc" stroke-width="2" stroke-linecap="round"/>
+            <line x1="176" y1="56" x2="376" y2="56" class="sv-stroke-good" stroke-width="2" stroke-linecap="round"/>
+            <line x1="176" y1="68" x2="376" y2="68" class="sv-stroke-good" stroke-width="2" stroke-linecap="round"/>
+            <line x1="176" y1="80" x2="376" y2="80" class="sv-stroke-good" stroke-width="2" stroke-linecap="round"/>
+            <line x1="98" y1="68" x2="156" y2="68" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="128" y="56" text-anchor="middle" class="sv-tm">data.T</text>
+            <line x1="360" y1="100" x2="360" y2="154" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="346" y="134" text-anchor="end" class="sv-t">scale, fit, transform</text>
+            <line x1="56" y1="164" x2="56" y2="244" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="56" y1="244" x2="384" y2="244" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <text x="48" y="178" text-anchor="end" class="sv-ts">PC2</text>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="92" cy="204" r="7" class="sv-acc"/>
+              <circle cx="110" cy="190" r="7" class="sv-acc"/>
+              <circle cx="126" cy="216" r="7" class="sv-acc"/>
+              <circle cx="102" cy="226" r="7" class="sv-acc"/>
+              <circle cx="138" cy="200" r="7" class="sv-acc"/>
+              <circle cx="276" cy="206" r="7" class="sv-key"/>
+              <circle cx="294" cy="192" r="7" class="sv-key"/>
+              <circle cx="310" cy="218" r="7" class="sv-key"/>
+              <circle cx="286" cy="228" r="7" class="sv-key"/>
+              <circle cx="324" cy="202" r="7" class="sv-key"/>
+            </g>
+            <line x1="156" y1="210" x2="258" y2="210" class="sv-stroke-ink" stroke-width="2.5" stroke-dasharray="6 5" stroke-linecap="round" marker-start="url(#board-arr)" marker-end="url(#board-arr)"/>
+            <text x="115" y="174" text-anchor="middle" class="sv-ts">wt1 … wt5</text>
+            <text x="300" y="174" text-anchor="middle" class="sv-ts">ko1 … ko5</text>
+            <text x="384" y="270" text-anchor="end" class="sv-tb">PC1: almost all variation</text>
+          </svg>
+          <p>Scikit-learn wants one row per sample, so flip the 100 × 10 gene table with <code>data.T</code>, then scale it. <code>fit</code> finds the loading scores and <code>transform</code> makes the coordinates. Almost all the variation lands on PC1, which splits wild type from knockout.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>data.T</dt><dd>The transposed table: samples become rows, as scikit-learn expects.</dd>
+            <dt>Scaling</dt><dd>Every gene ends with mean 0 and standard deviation 1.</dd>
+            <dt>fit, transform</dt><dd>fit finds loading scores and variation; transform makes the coordinates.</dd>
+            <dt>Scree plot</dt><dd>One bar per component: its percentage of the variation.</dd>
+            <dt>Loading score</dt><dd>How much a gene drives a component; PC1's sit in components_[0].</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Import</b>pandas, NumPy, scikit-learn, Matplotlib</li>
+            <li><b>Fake data</b>100 genes, 5 wt, 5 ko</li>
+            <li><b>Transpose, scale</b>flip with data.T, then scale</li>
+            <li><b>Fit, transform</b>PCA() gives loadings, then coordinates</li>
+            <li><b>Plot</b>scree plot, then PC1 against PC2</li>
+            <li><b>Loadings</b>sort PC1 scores by absolute size</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$z_{ij}=\frac{x_{ij}-\bar{x}_j}{s_j}$$
+          $$\text{per\_var}_k=100\times\frac{\lambda_k}{\sum_m\lambda_m}$$
+          $$\text{PC1}_i=\sum_{j=1}^{100}w_j\,z_{ij}$$
+          <ul class="keys">
+            <li>\(x_{ij}\): gene \(j\) in sample \(i\); \(\bar{x}_j\), \(s_j\): its mean and standard deviation (scikit-learn divides by \(n\), R by \(n-1\)).</li>
+            <li>\(\lambda_k\): variation held by component \(k\); per_var is its scree bar.</li>
+            <li>\(w_j\): gene \(j\)'s PC1 loading score.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>check</th><th>result</th></tr>
+            <tr><td>data.shape</td><td>(100, 10)</td></tr>
+            <tr><td>samples</td><td>5 wt, 5 ko</td></tr>
+            <tr><td>Poisson mean</td><td>10 to 1000, per gene</td></tr>
+            <tr><td>scree plot</td><td>almost all on PC1</td></tr>
+            <tr class="final"><td>PCA graph</td><td>wt left, ko right</td></tr>
+          </table>
+          <p class="hand">The top 10 PC1 loading scores are very similar: many genes share the work of separating the groups.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Pass the gene table as it is.</span><span class="yes">Pass data.T, or you scale samples, not genes. The code still runs, so nothing warns you.</span></li>
+            <li><span class="no">PC1's loading scores are components_[1].</span><span class="yes">Python counts from zero, so PC1 is pca.components_[0].</span></li>
+            <li><span class="no">Only large positive loading scores matter.</span><span class="yes">Sort by absolute value: a large negative score matters as much, pushing the other way.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="33-pca-in-r.html"><small>Previous</small>PCA in R</a> <a href="35-linear-discriminant-analysis-lda.html"><small>Next</small>Linear Discriminant Analysis (LDA).</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

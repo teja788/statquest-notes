@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>StatQuickie: Which t test to use — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>49</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 49 · 5.2 min</div>
+    <h1>StatQuickie: Which t test to use</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=nnBJeb_I-q8" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Josh answers the two questions he hears most in his genetics lab: which t-test to run, and one-tailed or two-tailed.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>A t-test compares two sets of measurements. If both come from the same subject, such as blood pressure before and after a drug, use a paired t-test. If they come from separate groups, use an unpaired t-test. Then pick the version that does not assume equal variance, and use two tails. Both choices are conservative, so passing them means the result is solid.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>The first decision is simple. Ask whether each number in one set has a partner in the other set. Josh's example is a blood pressure drug. You measure each person, give the drug, then measure again. Every person now has a before value and an after value. That data is <strong>paired</strong>, so use a paired t-test.</p>
+    <p>Now change the study. You measure the heights of one group, A, and the heights of a different group, B. Nobody is in both groups, so no number has a partner. That data is <strong>unpaired</strong>, so use an unpaired t-test.</p>
+    <p>Unpaired t-tests come in two versions. One assumes the spread in group A equals the spread in group B. Spread here means variance: how far measurements scatter around their own average. The other version lets the groups differ. Josh recommends the second, because it is slightly more conservative. Data that passes it is rock solid.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 400" role="img" aria-label="Decision diagram for choosing between a paired t-test and the two kinds of unpaired t-test">
+        <defs>
+          <marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" class="sv-ink3"/>
+          </marker>
+        </defs>
+        <rect x="300" y="20" width="160" height="38" rx="6" class="sv-acc-soft"/>
+        <text x="380" y="45" text-anchor="middle" class="sv-tb">Your data</text>
+        <path d="M380,58 L380,84" class="sv-line" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <rect x="210" y="88" width="340" height="54" rx="6" class="sv-paper2"/>
+        <text x="380" y="111" text-anchor="middle" class="sv-t">Are the two measurements taken</text>
+        <text x="380" y="130" text-anchor="middle" class="sv-t">from the same subject?</text>
+        <path d="M380,142 L380,162 L150,162 L150,184" class="sv-line" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <path d="M380,142 L380,162 L570,162 L570,184" class="sv-line" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <text x="255" y="156" text-anchor="middle" class="sv-ts">YES</text>
+        <text x="500" y="156" text-anchor="middle" class="sv-ts">NO</text>
+        <rect x="30" y="188" width="240" height="58" rx="6" class="sv-good-soft"/>
+        <text x="150" y="213" text-anchor="middle" class="sv-tb">Paired t-test</text>
+        <text x="150" y="233" text-anchor="middle" class="sv-ts">before and after, per person</text>
+        <rect x="330" y="188" width="400" height="42" rx="6" class="sv-acc-soft"/>
+        <text x="530" y="214" text-anchor="middle" class="sv-tb">Unpaired t-test: group A vs group B</text>
+        <path d="M420,230 L420,268" class="sv-line" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <path d="M640,230 L640,268" class="sv-line" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <rect x="330" y="272" width="180" height="66" rx="6" class="sv-paper2"/>
+        <text x="420" y="298" text-anchor="middle" class="sv-t">Assumes equal</text>
+        <text x="420" y="317" text-anchor="middle" class="sv-t">variance</text>
+        <rect x="550" y="272" width="180" height="66" rx="6" class="sv-good-soft"/>
+        <text x="640" y="298" text-anchor="middle" class="sv-t">Does not assume</text>
+        <text x="640" y="317" text-anchor="middle" class="sv-t">equal variance</text>
+        <text x="640" y="333" text-anchor="middle" class="sv-ts">recommended</text>
+        <rect x="30" y="346" width="700" height="34" rx="6" class="sv-key-soft"/>
+        <text x="380" y="368" text-anchor="middle" class="sv-t">In every case: use a two-tailed test.</text>
+      </svg>
+      <figcaption>Notice that a single question splits paired from unpaired, and the boxes marked "recommended" are Josh's advice.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Look at how the data was collected. If each subject gave a before and an after value, the data is paired.</li>
+      <li>For paired data, run a paired t-test. It works on the difference inside each pair.</li>
+      <li>For two separate groups with no shared members, run an unpaired t-test.</li>
+      <li>For the unpaired case, take the version that does not assume equal variance.</li>
+      <li>Finally choose the number of tails. Use two tails.</li>
+    </ol>
+    <p>A two-tailed test asks whether group A is taller than group B, and also whether it is shorter. It carries no preconceived idea. A one-tailed test asks only one of those questions. It is less conservative, and you must claim the direction in advance. Josh always recommends two tails.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 250" role="img" aria-label="Two bell curves comparing a two-tailed test with rejection regions on both sides and a one-tailed test with one rejection region">
+        <defs>
+          <clipPath id="bellL"><path d="M50,180 C132.5,180 117.5,70 200,70 C282.5,70 267.5,180 350,180 Z"/></clipPath>
+          <clipPath id="bellR"><path d="M410,180 C492.5,180 477.5,70 560,70 C642.5,70 627.5,180 710,180 Z"/></clipPath>
+        </defs>
+        <text x="200" y="34" text-anchor="middle" class="sv-tb">Two-tailed (recommended)</text>
+        <text x="560" y="34" text-anchor="middle" class="sv-tb">One-tailed</text>
+        <path d="M50,180 C132.5,180 117.5,70 200,70 C282.5,70 267.5,180 350,180 Z" class="sv-acc-soft"/>
+        <rect x="50" y="60" width="45" height="122" class="sv-key" clip-path="url(#bellL)"/>
+        <rect x="305" y="60" width="45" height="122" class="sv-key" clip-path="url(#bellL)"/>
+        <path d="M410,180 C492.5,180 477.5,70 560,70 C642.5,70 627.5,180 710,180 Z" class="sv-acc-soft"/>
+        <rect x="665" y="60" width="45" height="122" class="sv-key" clip-path="url(#bellR)"/>
+        <path d="M50,180 L350,180" class="sv-line" stroke-width="1.5"/>
+        <path d="M410,180 L710,180" class="sv-line" stroke-width="1.5"/>
+        <text x="200" y="204" text-anchor="middle" class="sv-ts">A smaller than B, or A bigger than B</text>
+        <text x="560" y="204" text-anchor="middle" class="sv-ts">only A bigger than B</text>
+        <text x="380" y="228" text-anchor="middle" class="sv-t">The shaded tails hold the results that count as significant.</text>
+      </svg>
+      <figcaption>Notice that the one-tailed test throws away one whole side, so it can only ever detect a difference in the direction you picked first.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>Josh shows no maths here. The two formulas below sit behind the boxes in the diagram.</p>
+    <div class="formula"><span class="lbl">Paired t-test</span><div class="math">$$ t = \frac{\bar{d}}{s_d / \sqrt{n}} $$</div><p class="explain"><b>Symbols:</b> \(d\) is one subject's difference, after minus before; \(\bar{d}\) is the average of those differences; \(s_d\) is their standard deviation, a measure of spread; \(n\) is the number of subjects. <b>What it tells you:</b> it weighs the average within-person change against how much that change varies.</p></div>
+    <div class="formula"><span class="lbl">Unpaired t-test that does not assume equal variance</span><div class="math">$$ t = \frac{\bar{x}_A - \bar{x}_B}{\sqrt{\dfrac{s_A^2}{n_A} + \dfrac{s_B^2}{n_B}}} $$</div><p class="explain"><b>Symbols:</b> \(\bar{x}_A\) and \(\bar{x}_B\) are the group averages; \(s_A^2\) and \(s_B^2\) are the group variances; \(n_A\) and \(n_B\) are the group sizes. <b>What it tells you:</b> each group keeps its own variance, so equal spread is never assumed.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Blood pressure drug. You measure everyone, give the drug, then measure again. Each person has a before and an after value, so the data is paired. Choose a paired t-test.</p>
+      <p>Heights. You measure one group and call it A, then measure a different group and call it B. Nobody appears in both, so the data is unpaired. Choose an unpaired t-test, take the version that does not assume equal variance, and run it two-tailed.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Pairing comes from the study design, not from the numbers. Two groups of equal size are still unpaired if no person appears in both.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Assuming equal variance is a real assumption about your groups. Josh advises against it. The version that allows different variances is more conservative, so a result that survives it is stronger.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A one-tailed test is tempting because significance is easier to reach. That is the problem. You must declare the direction before you look at the data.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>When would you use a paired t-test instead of an unpaired one?</summary><div class="a">I use a paired t-test when each subject gives two measurements, such as blood pressure before and after a drug. Every value has a natural partner, so the test works on the within-person differences. If the two sets come from separate groups, there are no pairs, so I use an unpaired test.</div></details>
+    <details class="qa" open><summary>Should an unpaired t-test assume equal variance?</summary><div class="a">I default to the version that does not assume equal variance. Real groups rarely have identical spread, and that version is slightly more conservative. It is harder to reach significance, so a result that passes is solid.</div></details>
+    <details class="qa" open><summary>One-tailed or two-tailed, and why?</summary><div class="a">Two-tailed, almost always. It checks both directions, so it carries no preconceived idea about which group is bigger. A one-tailed test is less conservative and makes me commit to a direction first. Journals expect two tails, and I would rather let the data speak for itself.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>T-tests split into two main families, paired and unpaired.</li>
+      <li>Use a paired t-test when the same subject gives you a before and an after measurement.</li>
+      <li>Use an unpaired t-test when two separate groups are compared, like heights in group A and group B.</li>
+      <li>Unpaired tests come in two versions; prefer the one that does not assume equal variance.</li>
+      <li>Prefer a two-tailed test, because it checks both directions and lets the data speak for itself.</li>
+      <li>Conservative choices mean a significant result is worth more.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Which t-test to use</span><span class="board-tag">pair by design, then play it safe</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 290" role="img" aria-label="Left: each subject's before and after values are linked in pairs, so use a paired t-test. Right: groups A and B share nobody and have different spreads, so use an unpaired t-test that lets the variances differ. Below: a bell curve with both tails shaded, because the test runs two-tailed.">
+            <line x1="200" y1="18" x2="200" y2="204" class="sv-line" stroke-width="2" stroke-dasharray="4 6" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round">
+              <line x1="60" y1="80" x2="140" y2="96"/>
+              <line x1="60" y1="106" x2="140" y2="116"/>
+              <line x1="60" y1="132" x2="140" y2="146"/>
+              <line x1="60" y1="158" x2="140" y2="168"/>
+            </g>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="60" cy="80" r="7" class="sv-good"/>
+              <circle cx="60" cy="106" r="7" class="sv-good"/>
+              <circle cx="60" cy="132" r="7" class="sv-good"/>
+              <circle cx="60" cy="158" r="7" class="sv-good"/>
+              <circle cx="140" cy="96" r="7" class="sv-good"/>
+              <circle cx="140" cy="116" r="7" class="sv-good"/>
+              <circle cx="140" cy="146" r="7" class="sv-good"/>
+              <circle cx="140" cy="168" r="7" class="sv-good"/>
+              <circle cx="262" cy="98" r="7" class="sv-acc"/>
+              <circle cx="262" cy="116" r="7" class="sv-acc"/>
+              <circle cx="262" cy="134" r="7" class="sv-acc"/>
+              <circle cx="262" cy="152" r="7" class="sv-acc"/>
+              <circle cx="340" cy="80" r="7" class="sv-key"/>
+              <circle cx="340" cy="110" r="7" class="sv-key"/>
+              <circle cx="340" cy="140" r="7" class="sv-key"/>
+              <circle cx="340" cy="170" r="7" class="sv-key"/>
+            </g>
+            <path d="M36,268 C76,268 82,214 106,214 C130,214 136,268 176,268 Z" class="sv-acc-soft"/>
+            <path d="M36,268 Q55.5,268 71,249 L71,268 Z" class="sv-key"/>
+            <path d="M176,268 Q156.5,268 141,249 L141,268 Z" class="sv-key"/>
+            <path d="M36,268 C76,268 82,214 106,214 C130,214 136,268 176,268" class="sv-stroke-acc" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="28" y1="268" x2="184" y2="268" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <text x="100" y="34" text-anchor="middle" class="sv-tb">paired t-test</text>
+            <text x="300" y="34" text-anchor="middle" class="sv-tb">unpaired t-test</text>
+            <text x="300" y="58" text-anchor="middle" class="sv-ts">variances may differ</text>
+            <text x="60" y="198" text-anchor="middle" class="sv-ts">before</text>
+            <text x="140" y="198" text-anchor="middle" class="sv-ts">after</text>
+            <text x="262" y="198" text-anchor="middle" class="sv-ts">group A</text>
+            <text x="340" y="198" text-anchor="middle" class="sv-ts">group B</text>
+            <text x="194" y="248" class="sv-tb">always two tails</text>
+          </svg>
+          <p>One question decides it: did the same subject give both values? Linked before-and-after pairs get a paired t-test; two separate groups get an unpaired one that does not assume equal variance. Either way, use two tails.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Paired</dt><dd>Both values come from the same subject, like before and after a drug.</dd>
+            <dt>Unpaired</dt><dd>Two separate groups; nobody appears in both.</dd>
+            <dt>Variance</dt><dd>How far measurements scatter around their own average.</dd>
+            <dt>Conservative</dt><dd>Harder to reach significance, so a result that passes is solid.</dd>
+            <dt>Two-tailed</dt><dd>Checks both directions: is A taller or shorter than B?</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Look at design</b>same subject before and after?</li>
+            <li><b>Paired t-test</b>uses each pair's difference</li>
+            <li><b>Unpaired t-test</b>separate groups, nobody shared</li>
+            <li><b>Unequal variance</b>do not assume equal spread</li>
+            <li><b>Two tails</b>check both directions</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$t=\frac{\bar d}{s_d/\sqrt{n}}$$
+          $$t=\frac{\bar x_A-\bar x_B}{\sqrt{s_A^2/n_A+s_B^2/n_B}}$$
+          <ul class="keys">
+            <li>Paired: \(\bar d\) is the average after-minus-before difference, \(s_d\) its standard deviation, \(n\) the subjects.</li>
+            <li>Unpaired: \(s_A^2\) and \(s_B^2\) are each group's own variance, so equal spread is never assumed.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>question</th><th>blood pressure</th><th>heights</th></tr>
+            <tr><td>same subject?</td><td>yes</td><td>no</td></tr>
+            <tr><td>equal variance?</td><td>–</td><td>do not assume</td></tr>
+            <tr><td>tails</td><td>two</td><td>two</td></tr>
+            <tr class="final"><td>test</td><td>paired</td><td>unpaired</td></tr>
+          </table>
+          <p class="hand">Each person's before and after are partners; groups A and B share nobody, so they are unpaired.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Equal group sizes mean the data is paired.</span><span class="yes">Pairing comes from the design. Groups are unpaired if no person appears in both.</span></li>
+            <li><span class="no">Assuming equal variance is harmless.</span><span class="yes">It is a real assumption. The version allowing different variances is more conservative, so passing it is stronger.</span></li>
+            <li><span class="no">One tail is fine; significance comes easier.</span><span class="yes">That is the problem. You must declare the direction before looking at the data.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="48-statquickie-thresholds-for-significance.html"><small>Previous</small>StatQuickie: Thresholds for Significance</a> <a href="50-one-or-two-tailed-p-values.html"><small>Next</small>One or Two Tailed P-Values</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

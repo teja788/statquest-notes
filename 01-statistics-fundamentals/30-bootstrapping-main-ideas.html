@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bootstrapping Main Ideas — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>30</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 30 · 9.4 min</div>
+    <h1>Bootstrapping Main Ideas</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=Xz0x-8-cgaQ" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Bootstrapping answers one question: if we ran this study again, how much would our answer move? Josh shows how to answer it by reusing the data we already have, instead of collecting more.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>A new drug is given to eight people. Five appear to feel better, three appear to feel worse, and the mean response is 0.5. That could be a real effect, or it could be luck. Repeating the whole experiment many times would settle it, but that is expensive and slow. Bootstrapping imitates those repeats by drawing new data sets of size eight from the original eight values, with duplicates allowed. The histogram of the means from those data sets gives us a standard error and a confidence interval.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh starts with a small study. Eight people with an illness take a new drug. Five appear to feel better and three appear to feel worse. The mean of the eight responses is 0.5, a small improvement.</p>
+    <p>Half a point is not much. Maybe those five people were healthier to begin with. Maybe the other three had unhealthy lifestyles. So the mean of 0.5 could come from random things we cannot control.</p>
+    <p>One honest fix is to repeat the whole experiment many times. Each repeat gives a new mean, and those means form a histogram. That histogram shows which mean values are common and which are rare. The problem is that real repeats cost money and time.</p>
+    <p>Bootstrapping gives a similar histogram without new patients. The drawing rule is the heart of the method. Pick one of the eight values at random and write it down. Put it back, then pick again. Because a value can be picked twice, this is called <strong>sampling with replacement</strong>. Keep going until the new set holds eight values, the same count as the original.</p>
+    <p>That new set is a <strong>bootstrapped data set</strong>. Every value in it is a real measurement, but the mix is different, so its mean is different too. That difference is the wobble we wanted to measure.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 270" role="img" aria-label="The bootstrap loop: draw eight values with replacement from the original eight, calculate the mean, add it to a histogram, and repeat about ten thousand times">
+        <defs>
+          <marker id="bsArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker>
+        </defs>
+
+        <text x="122" y="26" text-anchor="middle" class="sv-tb">1. The original 8 values</text>
+        <line x1="35" y1="120" x2="210" y2="120" class="sv-stroke-ink" stroke-width="1.2"/>
+        <line x1="105" y1="113" x2="105" y2="127" class="sv-stroke-ink" stroke-width="1.2"/>
+        <text x="105" y="140" text-anchor="middle" class="sv-ts">0</text>
+        <circle cx="52" cy="104" r="5" class="sv-warn"/><circle cx="70" cy="104" r="5" class="sv-warn"/><circle cx="88" cy="104" r="5" class="sv-warn"/>
+        <circle cx="122" cy="104" r="5" class="sv-good"/><circle cx="140" cy="104" r="5" class="sv-good"/><circle cx="158" cy="104" r="5" class="sv-good"/><circle cx="176" cy="104" r="5" class="sv-good"/><circle cx="194" cy="104" r="5" class="sv-good"/>
+        <text x="122" y="160" text-anchor="middle" class="sv-ts">3 felt worse, 5 felt better</text>
+        <text x="122" y="180" text-anchor="middle" class="sv-tm">mean = 0.5</text>
+
+        <line x1="222" y1="112" x2="262" y2="112" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#bsArrow)"/>
+
+        <text x="365" y="26" text-anchor="middle" class="sv-tb">2. Draw 8, with replacement</text>
+        <line x1="285" y1="120" x2="450" y2="120" class="sv-stroke-ink" stroke-width="1.2"/>
+        <line x1="350" y1="113" x2="350" y2="127" class="sv-stroke-ink" stroke-width="1.2"/>
+        <text x="350" y="140" text-anchor="middle" class="sv-ts">0</text>
+        <circle cx="300" cy="104" r="5" class="sv-warn"/>
+        <circle cx="320" cy="104" r="5" class="sv-warn"/><circle cx="320" cy="90" r="5" class="sv-warn"/>
+        <circle cx="368" cy="104" r="5" class="sv-good"/>
+        <circle cx="388" cy="104" r="5" class="sv-good"/><circle cx="388" cy="90" r="5" class="sv-good"/><circle cx="388" cy="76" r="5" class="sv-good"/>
+        <circle cx="408" cy="104" r="5" class="sv-good"/>
+        <text x="365" y="160" text-anchor="middle" class="sv-ts">duplicates allowed, some values left out</text>
+        <text x="365" y="180" text-anchor="middle" class="sv-tm">a different mean</text>
+
+        <line x1="462" y1="112" x2="502" y2="112" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#bsArrow)"/>
+
+        <text x="625" y="26" text-anchor="middle" class="sv-tb">3. Add its mean to a histogram</text>
+        <circle cx="605" cy="76" r="6" class="sv-key"/>
+        <line x1="605" y1="86" x2="605" y2="104" class="sv-stroke-key" stroke-width="1.5" marker-end="url(#bsArrow)"/>
+        <rect x="532" y="138" width="26" height="12" class="sv-acc-soft"/>
+        <rect x="562" y="124" width="26" height="26" class="sv-acc-soft"/>
+        <rect x="592" y="112" width="26" height="38" class="sv-key-soft"/>
+        <rect x="622" y="120" width="26" height="30" class="sv-acc-soft"/>
+        <rect x="652" y="134" width="26" height="16" class="sv-acc-soft"/>
+        <line x1="524" y1="150" x2="726" y2="150" class="sv-stroke-ink" stroke-width="1.2"/>
+        <text x="625" y="172" text-anchor="middle" class="sv-ts">one bar step per bootstrapped mean</text>
+
+        <path d="M 700 190 L 700 232 L 122 232 L 122 198" class="sv-stroke-ink" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#bsArrow)"/>
+        <rect x="293" y="220" width="212" height="24" class="sv-paper"/>
+        <text x="399" y="237" text-anchor="middle" class="sv-t">4. Repeat about 10,000 times</text>
+      </svg>
+      <figcaption>Notice that panel 2 uses only values taken from panel 1, but in a different mix, and that is why its mean moves.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Start with the original data set. Here that is eight responses, with a mean of 0.5. Note its size, because every bootstrapped data set must match it.</li>
+      <li>Make a bootstrapped data set. Draw eight values at random from the original eight, with replacement.</li>
+      <li>Calculate something. Josh calculates the mean, but the median or any other statistic works the same way.</li>
+      <li>Keep track of that number. Add it to a histogram of results.</li>
+      <li>Repeat steps two to four many times. A computer normally does this about 10,000 times.</li>
+      <li>Read the finished histogram. Its spread is the standard error, and its middle 95% is a 95% confidence interval.</li>
+    </ol>
+    <p>The finished histogram answers the question we started with. Values close to the original mean are common, and values far from it are rare. In this study the 95% interval reaches across zero. So we cannot reject the idea that the drug does nothing.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Histogram of ten thousand bootstrapped means, centred on the original mean of 0.5, with a 95 percent confidence interval that still covers zero">
+        <text x="380" y="28" text-anchor="middle" class="sv-tb">Histogram of 10,000 bootstrapped means</text>
+
+        <rect x="60" y="224" width="32" height="6" class="sv-paper2"/>
+        <rect x="92" y="220" width="32" height="10" class="sv-paper2"/>
+        <rect x="124" y="212" width="32" height="18" class="sv-acc-soft"/>
+        <rect x="156" y="200" width="32" height="30" class="sv-acc-soft"/>
+        <rect x="188" y="184" width="32" height="46" class="sv-acc-soft"/>
+        <rect x="220" y="164" width="32" height="66" class="sv-acc-soft"/>
+        <rect x="252" y="142" width="32" height="88" class="sv-acc-soft"/>
+        <rect x="284" y="120" width="32" height="110" class="sv-acc-soft"/>
+        <rect x="316" y="102" width="32" height="128" class="sv-acc-soft"/>
+        <rect x="348" y="92" width="32" height="138" class="sv-acc-soft"/>
+        <rect x="380" y="92" width="32" height="138" class="sv-acc-soft"/>
+        <rect x="412" y="102" width="32" height="128" class="sv-acc-soft"/>
+        <rect x="444" y="120" width="32" height="110" class="sv-acc-soft"/>
+        <rect x="476" y="142" width="32" height="88" class="sv-acc-soft"/>
+        <rect x="508" y="164" width="32" height="66" class="sv-acc-soft"/>
+        <rect x="540" y="184" width="32" height="46" class="sv-acc-soft"/>
+        <rect x="572" y="200" width="32" height="30" class="sv-acc-soft"/>
+        <rect x="604" y="212" width="32" height="18" class="sv-acc-soft"/>
+        <rect x="636" y="220" width="32" height="10" class="sv-paper2"/>
+        <rect x="668" y="224" width="32" height="6" class="sv-paper2"/>
+        <line x1="46" y1="230" x2="714" y2="230" class="sv-stroke-ink" stroke-width="1.2"/>
+
+        <line x1="300" y1="230" x2="300" y2="72" class="sv-stroke-ink" stroke-width="1.5" stroke-dasharray="5 4"/>
+        <text x="294" y="66" text-anchor="end" class="sv-tm">0, no effect</text>
+        <line x1="380" y1="230" x2="380" y2="88" class="sv-stroke-key" stroke-width="2"/>
+        <text x="388" y="82" class="sv-tm">original mean = 0.5</text>
+
+        <text x="714" y="120" text-anchor="end" class="sv-ts">the width of this histogram</text>
+        <text x="714" y="138" text-anchor="end" class="sv-ts">is the standard error</text>
+
+        <text x="92" y="212" text-anchor="middle" class="sv-ts">2.5%</text>
+        <text x="668" y="212" text-anchor="middle" class="sv-ts">2.5%</text>
+        <rect x="124" y="248" width="512" height="9" class="sv-acc"/>
+        <line x1="124" y1="242" x2="124" y2="263" class="sv-stroke-acc" stroke-width="2"/>
+        <line x1="636" y1="242" x2="636" y2="263" class="sv-stroke-acc" stroke-width="2"/>
+        <text x="380" y="280" text-anchor="middle" class="sv-t">95% confidence interval, and it still covers zero</text>
+      </svg>
+      <figcaption>Notice that the band holding the middle 95% of the bootstrapped means stretches past zero, so zero stays a plausible result.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">The statistic we start with</span>
+      <div class="math">$$ \bar{x} \;=\; \frac{1}{n}\sum_{i=1}^{n} x_i \;=\; 0.5, \qquad n = 8 $$</div>
+      <p class="explain"><b>Symbols:</b> \(x_i\) is the response of person \(i\); \(n\) is how many people were measured, which is 8 here; \(\bar{x}\) is their mean. <b>What it tells you:</b> this is the single number the study reports before any resampling, and it is the number whose reliability we want to judge.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Bootstrap standard error</span>
+      <div class="math">$$ \mathrm{SE}_{\text{boot}} \;=\; \sqrt{\frac{1}{B-1}\sum_{b=1}^{B}\left(m_b - \bar{m}\right)^{2}} $$</div>
+      <p class="explain"><b>Symbols:</b> \(B\) is how many bootstrapped data sets we made, often 10,000. \(m_b\) is the mean of data set \(b\). \(\bar{m}\) is the average of all \(B\) of those means. <b>What it tells you:</b> the standard deviation of the histogram is the standard error of the original statistic.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Percentile confidence interval</span>
+      <div class="math">$$ \text{95\% CI} \;=\; \left[\; m_{(0.025)}, \;\; m_{(0.975)} \;\right] $$</div>
+      <p class="explain"><b>Symbols:</b> \(m_{(0.025)}\) is the value that 2.5% of the bootstrap means fall below. \(m_{(0.975)}\) is the value that 97.5% fall below. <b>What it tells you:</b> cut 2.5% off each tail of the histogram, and the middle covers 95% of the results.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Eight people take the drug. Five appear to feel better, so their responses are positive. Three appear to feel worse, so their responses are negative. The mean of all eight responses is 0.5.</p>
+      <p>Now build one bootstrapped data set. Draw eight values from those same eight, with replacement. Suppose the draw picks two positive responses twice and misses one negative one. That data set has a mean above 0.5. Another draw may pick a negative response three times, so its mean falls below 0.5.</p>
+      <p>Neither result is a mistake. Each is a believable version of the same small study. After about 10,000 draws the histogram of means sits around 0.5 and spreads on both sides. Its standard deviation is the standard error. Its middle 95% is the confidence interval, and in the video that interval reaches past zero.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Bootstrapping does not create new information. Every value came from the original eight measurements. If the original sample is unrepresentative, the histogram carries that weakness forward.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Two rules hold together. The bootstrapped data set must match the original size, and the draws must allow duplicates. Without replacement you only reshuffle the same eight values, so every mean is identical.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The 10,000 data sets are a sample of the possibilities, not all of them. There are too many combinations to list, so we use a large subset to estimate the full distribution.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> An interval that covers zero is not proof that the drug is useless. It only means this study cannot reject that idea. Josh notes that fancier bootstrap methods give better intervals.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>What is bootstrapping, in plain words?</summary>
+      <div class="a">It is a way to see how much a statistic would move if you repeated the study. You draw new data sets of the same size from your own data, with replacement. You calculate the statistic on each one. The spread of those values is the standard error, and the middle 95% is a confidence interval.</div>
+    </details>
+
+    <details class="qa"><summary>Why do you sample with replacement?</summary>
+      <div class="a">Without replacement each draw would return the same values in a different order. The mean would never change, and the histogram would collapse to a single spike. Replacement lets some values appear twice and others drop out, and that variation is what imitates the randomness of collecting a fresh sample.</div>
+    </details>
+
+    <details class="qa"><summary>When would you bootstrap instead of using a formula?</summary>
+      <div class="a">For a mean I usually do not need to, because clean formulas already exist. I reach for the bootstrap when the statistic has no convenient formula, such as a median. The procedure stays the same whatever statistic I choose, and that flexibility is the real advantage.</div>
+    </details>
+
+    <details class="qa"><summary>How do you read the interval in this drug example?</summary>
+      <div class="a">The 95% interval covers zero, so a mean response of zero is still a plausible outcome for this study. I would say we cannot reject the hypothesis that the drug does nothing. I would not say the drug has been shown to be useless. With only eight people the study is simply too small to decide.</div>
+    </details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap">
+      <ul>
+        <li>A small study gave a mean drug response of 0.5, and we wanted to know whether that number is real or luck.</li>
+        <li>Repeating the whole experiment many times would answer it, but that is expensive and slow.</li>
+        <li>Bootstrapping imitates those repeats by drawing new data sets from the original data, at the same size, with replacement.</li>
+        <li>For each bootstrapped data set we calculate the statistic we care about and keep the result.</li>
+        <li>Doing that thousands of times builds a histogram of what the statistic might have been.</li>
+        <li>The standard deviation of that histogram is the standard error of the statistic.</li>
+        <li>The middle 95% of that histogram is a 95% confidence interval, and here it covers zero.</li>
+        <li>The big win is that this works for any statistic, even one with no tidy formula.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Bootstrapping</span><span class="board-tag">resample your own data to imitate repeats</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 300" role="img" aria-label="The original eight values, three worse and five better, have mean 0.5. Drawing eight with replacement gives a new mix and a new mean. About 10,000 such means form a histogram centred on 0.5; its spread is the standard error, and the 95% confidence interval covers 0, no effect.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <text x="14" y="24" class="sv-ts">original 8</text>
+            <text x="386" y="24" text-anchor="end" class="sv-ts">draw 8, with replacement</text>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="22" cy="46" r="6" class="sv-warn"/>
+              <circle cx="39" cy="46" r="6" class="sv-warn"/>
+              <circle cx="56" cy="46" r="6" class="sv-warn"/>
+              <circle cx="73" cy="46" r="6" class="sv-good"/>
+              <circle cx="90" cy="46" r="6" class="sv-good"/>
+              <circle cx="107" cy="46" r="6" class="sv-good"/>
+              <circle cx="124" cy="46" r="6" class="sv-good"/>
+              <circle cx="141" cy="46" r="6" class="sv-good"/>
+              <circle cx="245" cy="46" r="6" class="sv-warn"/>
+              <circle cx="262" cy="46" r="6" class="sv-warn"/>
+              <circle cx="279" cy="46" r="6" class="sv-good"/>
+              <circle cx="296" cy="46" r="6" class="sv-good"/>
+              <circle cx="313" cy="46" r="6" class="sv-good"/>
+              <circle cx="330" cy="46" r="6" class="sv-good"/>
+              <circle cx="347" cy="46" r="6" class="sv-good"/>
+              <circle cx="364" cy="46" r="6" class="sv-good"/>
+            </g>
+            <line x1="158" y1="46" x2="222" y2="46" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="81" y="74" text-anchor="middle" class="sv-ts">mean 0.5</text>
+            <line x1="270" y1="62" x2="270" y2="148" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="258" y="96" text-anchor="end" class="sv-ts">about 10,000 times</text>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <rect x="80" y="228" width="20" height="6" class="sv-paper2"/>
+              <rect x="100" y="220" width="20" height="14" class="sv-acc-soft"/>
+              <rect x="120" y="208" width="20" height="26" class="sv-acc-soft"/>
+              <rect x="140" y="192" width="20" height="42" class="sv-acc-soft"/>
+              <rect x="160" y="174" width="20" height="60" class="sv-acc-soft"/>
+              <rect x="180" y="156" width="20" height="78" class="sv-acc-soft"/>
+              <rect x="200" y="142" width="20" height="92" class="sv-acc-soft"/>
+              <rect x="220" y="142" width="20" height="92" class="sv-acc-soft"/>
+              <rect x="240" y="156" width="20" height="78" class="sv-acc-soft"/>
+              <rect x="260" y="174" width="20" height="60" class="sv-acc-soft"/>
+              <rect x="280" y="192" width="20" height="42" class="sv-acc-soft"/>
+              <rect x="300" y="208" width="20" height="26" class="sv-acc-soft"/>
+              <rect x="320" y="220" width="20" height="14" class="sv-acc-soft"/>
+              <rect x="340" y="228" width="20" height="6" class="sv-paper2"/>
+            </g>
+            <line x1="40" y1="234" x2="380" y2="234" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="170" y1="234" x2="170" y2="132" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="5 5" stroke-linecap="round"/>
+            <text x="164" y="126" text-anchor="end" class="sv-ts">0, no effect</text>
+            <line x1="220" y1="234" x2="220" y2="132" class="sv-stroke-key" stroke-width="3" stroke-linecap="round"/>
+            <text x="220" y="126" text-anchor="middle" class="sv-tb">0.5</text>
+            <text x="386" y="156" text-anchor="end" class="sv-ts">spread = SE</text>
+            <rect x="100" y="244" width="240" height="8" rx="2" class="sv-acc"/>
+            <line x1="100" y1="240" x2="100" y2="256" class="sv-stroke-acc" stroke-width="3" stroke-linecap="round"/>
+            <line x1="340" y1="240" x2="340" y2="256" class="sv-stroke-acc" stroke-width="3" stroke-linecap="round"/>
+            <text x="220" y="282" text-anchor="middle" class="sv-t">95% CI covers 0</text>
+          </svg>
+          <p>Draw eight from the original eight, with replacement, so the mix and the mean change. About 10,000 such means form a histogram: its spread is the standard error, its middle 95% the confidence interval.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Bootstrapped data set</dt><dd>Eight draws from the original eight: real values, new mix.</dd>
+            <dt>With replacement</dt><dd>Each value goes back, so it can be picked twice.</dd>
+            <dt>Standard error</dt><dd>The standard deviation of the bootstrapped means.</dd>
+            <dt>95% confidence interval</dt><dd>The middle 95% of the bootstrapped means.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Original data</b>8 responses, mean 0.5</li>
+            <li><b>Resample</b>draw 8, with replacement</li>
+            <li><b>Calculate</b>the mean, or any statistic</li>
+            <li><b>Keep track</b>add it to a histogram</li>
+            <li><b>Read it</b>spread = SE, middle 95% = CI</li>
+          </ol>
+          <p class="loop">↺ repeat steps 2 to 4 about 10,000 times, then read the histogram</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\mathrm{SE}_{\text{boot}}=\sqrt{\frac{1}{B-1}\sum_{b=1}^{B}(m_b-\bar{m})^2}$$
+          $$\text{95\% CI}=[\,m_{(0.025)},\;m_{(0.975)}\,]$$
+          <ul class="keys">
+            <li>\(B\) data sets, often 10,000; \(m_b\) is the mean of set \(b\), \(\bar{m}\) the average of all.</li>
+            <li>Cut 2.5% off each tail; the middle covers 95%.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>data set</th><th>values</th><th>mean</th></tr>
+            <tr><td>original</td><td>5 better, 3 worse</td><td>0.5</td></tr>
+            <tr><td>bootstrap 1</td><td>2 positives twice, 1 negative missed</td><td>above 0.5</td></tr>
+            <tr><td>bootstrap 2</td><td>a negative 3 times</td><td>below 0.5</td></tr>
+            <tr class="final"><td>about 10,000</td><td>histogram around 0.5</td><td>95% CI past 0</td></tr>
+          </table>
+          <p class="hand">Each draw is a believable version of the same small study. Zero stays plausible, so we cannot reject "the drug does nothing".</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Bootstrapping creates new information.</span><span class="yes">Every value comes from the original eight. An unrepresentative sample carries its weakness forward.</span></li>
+            <li><span class="no">Drawing without replacement works too.</span><span class="yes">Without replacement you only reshuffle the same eight, so every mean is identical.</span></li>
+            <li><span class="no">A CI covering zero proves the drug is useless.</span><span class="yes">It only means this study cannot reject that idea.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="29-the-standard-error.html"><small>Previous</small>The standard error</a> <a href="31-using-bootstrapping-to-calculate-p-values.html"><small>Next</small>Using Bootstrapping to Calculate p-values</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

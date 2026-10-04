@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Entropy (for data science) — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>07</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 07 · 16.6 min</div>
+    <h1>Entropy (for data science)</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=YtebGVx-Fxw" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Entropy is a single number that says how mixed a set of outcomes is. Josh builds it from a simpler idea called surprise, so you can derive the formula instead of memorising it.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Surprise is high when something is unlikely and low when it is likely. Josh defines surprise as the log of one over the probability, because that gives zero surprise for a certain event. Entropy is then the expected value of surprise, which means the average surprise per draw. He works it out for a biased coin and gets 0.47, then for three groups of chickens. Entropy is highest when the two colours are balanced, and it falls as one colour takes over.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh starts with chickens, not equations. Imagine orange and blue chickens sorted into three areas, A, B and C. If you reach into an area and grab a chicken at random, how startled would you be by the colour you pull out?</p>
+    <p>In area A, six of the seven chickens are orange. Grabbing an orange one is common, so it is barely surprising. Grabbing the single blue one is rare, so it is quite surprising. Area B is the mirror image, with many blue chickens and one orange. Area C has equal numbers, so both colours surprise you the same moderate amount.</p>
+    <p>That gives the first insight. Surprise moves in the opposite direction to probability. When a probability is low, the surprise is high. When a probability is high, the surprise is low.</p>
+    <p>A first idea is to use \( 1/p \) as the measure of surprise. It does grow as the probability shrinks, but it fails at the easy end. Josh uses a rigged coin that always lands heads. Here the probability is 1, so the surprise should be 0. Yet \( 1/1 = 1 \). So he takes the log of the inverse instead, and the log of 1 is 0.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 310" role="img" aria-label="Two curves against probability: the inverse of probability stays above zero at probability one, while the log of the inverse reaches zero.">
+        <defs>
+          <marker id="arwA" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="sv-ink2"/></marker>
+        </defs>
+        <rect x="0" y="0" width="760" height="310" class="sv-paper"/>
+        <!-- axes -->
+        <line x1="90" y1="40" x2="90" y2="240" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="90" y1="240" x2="710" y2="240" class="sv-stroke-ink" stroke-width="1.5"/>
+        <!-- y ticks -->
+        <line x1="84" y1="240" x2="90" y2="240" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="84" y1="151" x2="90" y2="151" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="84" y1="62" x2="90" y2="62" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="78" y="245" class="sv-tm" text-anchor="end">0</text>
+        <text x="78" y="156" class="sv-tm" text-anchor="end">2</text>
+        <text x="78" y="67" class="sv-tm" text-anchor="end">4</text>
+        <!-- x ticks -->
+        <line x1="90" y1="240" x2="90" y2="246" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="395" y1="240" x2="395" y2="246" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="700" y1="240" x2="700" y2="246" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="90" y="262" class="sv-tm" text-anchor="middle">0</text>
+        <text x="395" y="262" class="sv-tm" text-anchor="middle">0.5</text>
+        <text x="700" y="262" class="sv-tm" text-anchor="middle">1</text>
+        <text x="400" y="284" class="sv-ts" text-anchor="middle">probability p</text>
+        <text x="30" y="140" class="sv-ts" text-anchor="middle" transform="rotate(-90 30 140)">surprise</text>
+        <!-- 1/p curve (dashed) -->
+        <path d="M242,62 L273,92 L334,129 L395,151 L456,166 L517,177 L578,184 L639,191 L700,196" class="sv-stroke-key" stroke-width="2.5" stroke-dasharray="6 5"/>
+        <!-- log2(1/p) curve -->
+        <path d="M120,48 L151,92 L182,118 L212,137 L273,163 L334,181 L395,196 L456,207 L517,217 L578,226 L639,233 L700,240" class="sv-stroke-acc" stroke-width="3"/>
+        <!-- endpoints -->
+        <circle cx="700" cy="196" r="6" class="sv-key"/>
+        <circle cx="700" cy="240" r="6" class="sv-acc"/>
+        <!-- labels -->
+        <rect x="470" y="86" width="150" height="24" rx="4" class="sv-paper2"/>
+        <text x="478" y="103" class="sv-t sv-key">1 / p  (rejected)</text>
+        <rect x="150" y="196" width="200" height="24" rx="4" class="sv-paper2"/>
+        <text x="158" y="213" class="sv-t sv-acc">log₂(1 / p)  (surprise)</text>
+        <!-- callout -->
+        <path d="M640,132 L694,190" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#arwA)"/>
+        <rect x="470" y="112" width="270" height="22" rx="4" class="sv-paper2"/>
+        <text x="478" y="128" class="sv-ts">at p = 1 the inverse is still 1, not 0</text>
+      </svg>
+      <figcaption>Notice the right-hand edge: a sure event must carry zero surprise, and only the log curve lands on zero there.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Look at the three chicken areas. Surprise runs opposite to probability, so rare colours startle you and common ones do not.</li>
+      <li>Reject \( 1/p \) as the measure of surprise. It gives 1 for a certain event, and a certain event should give 0.</li>
+      <li>Define surprise as \( \log(1/p) \). It is 0 when the probability is 1, and it grows as the probability falls. With two outcomes we use log base 2.</li>
+      <li>Check the impossible case. A probability of 0 gives the log of 0, which is undefined. That is fine, because the event never happens.</li>
+      <li>Switch to a coin that gives heads 90% of the time. The surprise is 0.15 for heads and 3.32 for tails.</li>
+      <li>Flip it three times and get heads, heads, tails. The log rules make the total surprise the sum of the three, 3.62.</li>
+      <li>Estimate the total surprise over 100 flips. Multiply each surprise by its expected count, then add the two terms to get 46.7.</li>
+      <li>Divide by 100 flips. The average surprise per flip is 0.47, and that is the entropy of the coin.</li>
+      <li>Write the average in sigma notation and rearrange to reach Shannon's standard form. Then apply it to the chickens.</li>
+    </ol>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Surprise</span>
+      <div class="math">$$ \text{Surprise}(x) \;=\; \log_2\!\left(\frac{1}{p(x)}\right) $$</div>
+      <p class="explain"><b>Symbols:</b> \( x \) is one possible outcome, such as heads or an orange chicken. \( p(x) \) is the probability of that outcome. \( \log_2 \) is the logarithm in base 2, which is the usual choice when there are two outcomes. <b>What it tells you:</b> how startling one single observation is, measured in bits, with 0 for a sure thing.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Surprises add up</span>
+      <div class="math">$$ \log_2\!\left(\frac{1}{p_1 p_2 p_3}\right) \;=\; \log_2\!\frac{1}{p_1} + \log_2\!\frac{1}{p_2} + \log_2\!\frac{1}{p_3} $$</div>
+      <p class="explain"><b>Symbols:</b> \( p_1, p_2, p_3 \) are the probabilities of three independent flips, whose joint probability is the product. <b>What it tells you:</b> the surprise of a sequence is the sum of the surprises of its parts, which is exactly why a log was the right choice.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Entropy as expected surprise</span>
+      <div class="math">$$ H \;=\; \sum_{x} \log_2\!\left(\frac{1}{p(x)}\right) p(x) $$</div>
+      <p class="explain"><b>Symbols:</b> \( H \) is the entropy. The sum runs over every possible outcome \( x \). The first factor is the surprise of that outcome and \( p(x) \) is how often you expect to see it. <b>What it tells you:</b> the surprise you expect per draw, so it is a weighted average of the surprises.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Derivation to Shannon's form</span>
+      <div class="math">$$ H \;=\; \sum_{x} p(x)\,\log_2\!\left(\frac{1}{p(x)}\right) $$</div>
+      <p class="explain">Step 1. Swap the order of the two factors so the probability comes first.</p>
+      <div class="math">$$ H \;=\; \sum_{x} p(x)\,\Big[\log_2(1) - \log_2 p(x)\Big] $$</div>
+      <p class="explain">Step 2. Use the log rule that turns a fraction into a subtraction.</p>
+      <div class="math">$$ H \;=\; \sum_{x} \Big[\,p(x)\cdot 0 \;-\; p(x)\log_2 p(x)\Big] $$</div>
+      <p class="explain">Step 3. The log of 1 is 0, and the probability multiplies both terms in the bracket.</p>
+      <div class="math">$$ H \;=\; -\sum_{x} p(x)\,\log_2 p(x) $$</div>
+      <p class="explain">Step 4. Pull the minus sign outside the sum. <b>Symbols:</b> same as above, and the leading minus sign only exists because the logs of probabilities are negative. <b>What it tells you:</b> this is the equation Claude Shannon published in 1948. It is the same quantity as the expected surprise, only written more compactly.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+
+    <div class="example"><span class="lbl">Example</span>
+      <p>Take the coin that lands heads 90% of the time. Josh puts the probabilities and their surprises in a small table.</p>
+      <table>
+        <tr><th></th><th>Heads</th><th>Tails</th></tr>
+        <tr><th>Probability</th><td>0.9</td><td>0.1</td></tr>
+        <tr><th>Surprise</th><td>0.15</td><td>3.32</td></tr>
+      </table>
+      <p>Flip it 100 times. You expect about \( 0.9 \times 100 = 90 \) heads, each worth 0.15 of surprise, and about \( 0.1 \times 100 = 10 \) tails, each worth 3.32. The total expected surprise is 46.7.</p>
+      <div class="math">$$ \frac{(0.9 \times 100 \times 0.15) + (0.1 \times 100 \times 3.32)}{100} \;=\; \frac{46.7}{100} \;=\; 0.47 $$</div>
+      <p>The 100s cancel, and what is left is \( 0.15 \times 0.9 + 3.32 \times 0.1 = 0.47 \). That is the entropy of this coin: the surprise you expect from one flip.</p>
+    </div>
+
+    <div class="example"><span class="lbl">Example</span>
+      <p>Now the chickens. Area A holds six orange and one blue, so the probabilities are 6/7 and 1/7.</p>
+      <div class="math">$$ H_A = \frac{6}{7}\log_2\!\frac{7}{6} + \frac{1}{7}\log_2\!\frac{7}{1} = 0.59 $$</div>
+      <p>The blue chicken is very surprising, but it is so rare that the answer sits close to the small surprise of the orange chickens. Area B has one orange and ten blue.</p>
+      <div class="math">$$ H_B = \frac{1}{11}\log_2\!\frac{11}{1} + \frac{10}{11}\log_2\!\frac{11}{10} = 0.44 $$</div>
+      <p>Area C has equal numbers of both colours, so every draw carries the same moderate surprise of 1, and the entropy is 1. No small surprise pulls the average down. That makes area C the most uncertain of the three.</p>
+    </div>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 306" role="img" aria-label="Three areas of chickens with their entropy values: six orange and one blue gives 0.59, one orange and ten blue gives 0.44, and equal numbers gives 1.00.">
+        <defs>
+          <marker id="arwB" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="sv-ink2"/></marker>
+        </defs>
+        <rect x="0" y="0" width="760" height="306" class="sv-paper"/>
+
+        <text x="135" y="30" class="sv-tb" text-anchor="middle">Area A · 6 orange, 1 blue</text>
+        <text x="380" y="30" class="sv-tb" text-anchor="middle">Area B · 1 orange, 10 blue</text>
+        <text x="625" y="30" class="sv-tb" text-anchor="middle">Area C · equal numbers</text>
+
+        <rect x="20" y="44" width="230" height="170" rx="10" class="sv-paper2"/>
+        <rect x="265" y="44" width="230" height="170" rx="10" class="sv-paper2"/>
+        <rect x="510" y="44" width="230" height="170" rx="10" class="sv-paper2"/>
+
+        <!-- Area A: 6 orange, 1 blue -->
+        <circle cx="55" cy="100" r="11" class="sv-key"/>
+        <circle cx="100" cy="100" r="11" class="sv-key"/>
+        <circle cx="145" cy="100" r="11" class="sv-key"/>
+        <circle cx="190" cy="100" r="11" class="sv-key"/>
+        <circle cx="77" cy="145" r="11" class="sv-key"/>
+        <circle cx="122" cy="145" r="11" class="sv-key"/>
+        <circle cx="167" cy="145" r="11" class="sv-acc"/>
+        <text x="135" y="192" class="sv-ts" text-anchor="middle">p = 6/7 and 1/7</text>
+
+        <!-- Area B: 1 orange, 10 blue -->
+        <circle cx="300" cy="90" r="10" class="sv-key"/>
+        <circle cx="342" cy="90" r="10" class="sv-acc"/>
+        <circle cx="384" cy="90" r="10" class="sv-acc"/>
+        <circle cx="426" cy="90" r="10" class="sv-acc"/>
+        <circle cx="300" cy="127" r="10" class="sv-acc"/>
+        <circle cx="342" cy="127" r="10" class="sv-acc"/>
+        <circle cx="384" cy="127" r="10" class="sv-acc"/>
+        <circle cx="426" cy="127" r="10" class="sv-acc"/>
+        <circle cx="321" cy="164" r="10" class="sv-acc"/>
+        <circle cx="363" cy="164" r="10" class="sv-acc"/>
+        <circle cx="405" cy="164" r="10" class="sv-acc"/>
+        <text x="380" y="192" class="sv-ts" text-anchor="middle">p = 1/11 and 10/11</text>
+
+        <!-- Area C: balanced -->
+        <circle cx="550" cy="100" r="11" class="sv-key"/>
+        <circle cx="592" cy="100" r="11" class="sv-key"/>
+        <circle cx="634" cy="100" r="11" class="sv-key"/>
+        <circle cx="676" cy="100" r="11" class="sv-key"/>
+        <circle cx="718" cy="100" r="11" class="sv-key"/>
+        <circle cx="550" cy="145" r="11" class="sv-acc"/>
+        <circle cx="592" cy="145" r="11" class="sv-acc"/>
+        <circle cx="634" cy="145" r="11" class="sv-acc"/>
+        <circle cx="676" cy="145" r="11" class="sv-acc"/>
+        <circle cx="718" cy="145" r="11" class="sv-acc"/>
+        <text x="625" y="192" class="sv-ts" text-anchor="middle">p = 1/2 and 1/2</text>
+
+        <rect x="20" y="224" width="230" height="30" rx="6" class="sv-acc-soft"/>
+        <rect x="265" y="224" width="230" height="30" rx="6" class="sv-acc-soft"/>
+        <rect x="510" y="224" width="230" height="30" rx="6" class="sv-good-soft"/>
+        <text x="135" y="244" class="sv-tm" text-anchor="middle">Entropy = 0.59</text>
+        <text x="380" y="244" class="sv-tm" text-anchor="middle">Entropy = 0.44</text>
+        <text x="625" y="244" class="sv-tm" text-anchor="middle">Entropy = 1.00</text>
+
+        <path d="M300,275 L556,275" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#arwB)"/>
+        <text x="290" y="279" class="sv-ts" text-anchor="end">more lopsided</text>
+        <text x="570" y="279" class="sv-ts">more balanced, higher entropy</text>
+      </svg>
+      <figcaption>Notice that area B holds the most chickens but the lowest entropy; only the balance of the two colours matters, not the count.</figcaption>
+    </figure>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Do not use \( 1/p \) as a measure of surprise, even though it points the right way. A guaranteed outcome would score 1 instead of 0. The log fixes that, and it also makes surprises add across independent events.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>The surprise of an impossible outcome is undefined. Josh says that is acceptable, because the event never happens.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Entropy is not the plain average of the two surprise values. Each surprise is weighted by its own probability. In area A the blue chicken has a surprise of 2.81, yet the entropy is only 0.59.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>The minus sign in Shannon's form is bookkeeping, not meaning. It appears because \( \log_2 p \) is negative for probabilities below 1. If you get confused, use the expected surprise version instead.</p>
+    </div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>What is entropy, in plain words?</summary><div class="a">Entropy is the surprise you expect from a single random draw. Surprise is high for rare outcomes and zero for certain ones. So entropy is a weighted average of surprise, where each outcome is weighted by how often it happens. It tells you how mixed a set of outcomes is.</div></details>
+
+    <details class="qa" open><summary>Why is surprise defined with a logarithm?</summary><div class="a">There are two reasons. A certain event must score zero surprise, and the log of one is zero, while the plain inverse gives one. The log also turns products into sums, so the surprise of a sequence is the sum of the individual surprises.</div></details>
+
+    <details class="qa" open><summary>When is entropy highest and when is it lowest?</summary><div class="a">For two categories, entropy is highest when they are balanced at fifty-fifty, which gives one bit. It falls as one category takes over, and it reaches zero when everything is one category. That is why a classification tree prefers splits that push each child towards one class.</div></details>
+
+    <details class="qa" open><summary>Where does entropy show up in data science?</summary><div class="a">It is used to choose splits when building classification trees. It is also the base of mutual information, which quantifies the relationship between two things. And it underlies relative entropy, the Kullback-Leibler distance, and cross-entropy, which appear in t-SNE and UMAP.</div></details>
+
+    <details class="qa" open><summary>Why base 2, and does the base matter?</summary><div class="a">Base 2 is customary with two outcomes, and it makes the answer read in bits, so a fair coin scores exactly one. Changing the base only multiplies every entropy by a constant, so comparisons are unaffected.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap">
+      <ul>
+        <li>Surprise moves opposite to probability: rare outcomes surprise you, common ones do not.</li>
+        <li>Surprise is the log of one over the probability, so a certain outcome scores zero.</li>
+        <li>Because it is a log, the surprise of a sequence is the sum of the individual surprises.</li>
+        <li>Entropy is the expected value of surprise, meaning the average surprise per draw.</li>
+        <li>The coin that lands heads 90% of the time has an entropy of 0.47.</li>
+        <li>Rearranging the expected surprise gives Shannon's 1948 form, with the minus sign in front.</li>
+        <li>Areas A, B and C of chickens give entropies of 0.59, 0.44 and 1.</li>
+        <li>Entropy peaks when the categories are balanced and drops as one category dominates.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Entropy</span><span class="board-tag">the surprise you expect from one draw</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 284" role="img" aria-label="Bars for the coin that lands heads 90% of the time. Each bar is as wide as its probability and as tall as its surprise: heads is wide and short at 0.15, tails is narrow and tall at 3.32. A dashed line at 0.47 marks their weighted average, the entropy.">
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <rect x="40" y="212.2" width="270" height="7.8" class="sv-acc"/>
+              <rect x="310" y="47.4" width="30" height="172.6" class="sv-key"/>
+            </g>
+            <path d="M40 36 V220 H356" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="40" y1="195.6" x2="350" y2="195.6" class="sv-stroke-good" stroke-width="3" stroke-dasharray="8 6" stroke-linecap="round"/>
+            <text x="300" y="60" text-anchor="end" class="sv-t">tails · p = 0.1</text>
+            <text x="300" y="86" text-anchor="end" class="sv-t">surprise 3.32</text>
+            <text x="52" y="183" class="sv-tb">entropy = 0.47</text>
+            <text x="175" y="244" text-anchor="middle" class="sv-t">heads · p = 0.9</text>
+            <text x="175" y="268" text-anchor="middle" class="sv-t">surprise 0.15</text>
+          </svg>
+          <p>Each bar is as wide as its probability and as tall as its surprise: rare tails is narrow and tall. Entropy is the average height, weighted by width: 0.47 for this coin.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Surprise</dt><dd>\(\log_2(1/p)\): high for rare outcomes, 0 for a certain one.</dd>
+            <dt>Entropy</dt><dd>Expected surprise: the average surprise per draw.</dd>
+            <dt>Base 2</dt><dd>The usual log for two outcomes. Answers are in bits; a fair coin scores 1.</dd>
+            <dt>Shannon's form</dt><dd>The same entropy, rearranged with a minus sign in front (1948).</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Feel the surprise</b>rare startles, common does not</li>
+            <li><b>Log of 1/p</b>so a sure thing scores 0</li>
+            <li><b>Score a coin</b>90% heads: 0.15; tails: 3.32</li>
+            <li><b>Surprises add</b>heads, heads, tails: 3.62</li>
+            <li><b>Average</b>46.7 over 100 flips = 0.47</li>
+            <li><b>Shannon's form</b>rearrange, then try the chickens</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{Surprise}=\log_2\frac{1}{p(x)}$$
+          $$H=\sum_x p(x)\log_2\frac{1}{p(x)}$$
+          $$H=-\sum_x p(x)\log_2 p(x)$$
+          <ul class="keys">
+            <li>\(p(x)\) is the probability of outcome \(x\); \(H\) is the entropy.</li>
+            <li>The minus sign appears only because \(\log_2 p\) is negative below 1.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>case</th><th>mix</th><th>entropy</th></tr>
+            <tr><td>coin</td><td>90% heads</td><td>0.47</td></tr>
+            <tr><td>area A</td><td>6 orange, 1 blue</td><td>0.59</td></tr>
+            <tr><td>area B</td><td>1 orange, 10 blue</td><td>0.44</td></tr>
+            <tr class="final"><td>area C</td><td>equal numbers</td><td>1</td></tr>
+          </table>
+          <p class="hand">Coin: 0.15 × 0.9 + 3.32 × 0.1 = 0.47. Area C is balanced, so its entropy is the highest.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">1/p is a fine measure of surprise.</span><span class="yes">A sure thing would score 1, not 0. The log fixes that and makes surprises add.</span></li>
+            <li><span class="no">Entropy is the plain average of surprises.</span><span class="yes">Each is weighted by its probability: the blue chicken's surprise is 2.81, yet area A's entropy is 0.59.</span></li>
+            <li><span class="no">The minus sign in Shannon's form means something.</span><span class="yes">It is bookkeeping: \(\log_2 p\) is negative below 1. If confused, use the expected surprise form.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="06-machine-learning-fundamentals-bias-and-variance.html"><small>Previous</small>Machine Learning Fundamentals: Bias and Variance</a> <a href="08-mutual-information.html"><small>Next</small>Mutual Information</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

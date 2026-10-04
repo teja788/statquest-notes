@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Logistic Regression Details Pt 2: Maximum Likelihood — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>18</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 18 · 10.4 min</div>
+    <h1>Logistic Regression Details Pt 2: Maximum Likelihood</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=BfKanl1aSG0" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Linear regression picks its line with least squares. Logistic regression cannot do that, so it picks its squiggle with maximum likelihood.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>In logistic regression the y-axis holds log odds, so the data sit at plus and minus infinity. That makes the residuals infinite, and least squares stops working. Instead we take a candidate log odds line, project each mouse onto it, and turn each log odds value into a predicted probability. We then multiply the likelihoods of what we actually observed, or add their logs. We rotate the line, repeat, and keep the line with the largest log likelihood.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>First recall how linear regression fits a line. We measure the residuals, which are the vertical distances from each point to the line. We square them so negative distances do not cancel positive ones, and we add them up. We rotate the line and repeat. The line with the smallest sum of squared residuals wins.</p>
+    <p>Now take the video's example. We use weight to predict obesity in mice. Some mice are obese and some are not. Logistic regression puts the log odds of obesity on the y-axis, not the probability. That transformation pushes the raw data points out to positive and negative infinity. So the distance from a data point to any candidate line is also infinite, and least squares has nothing finite to add up.</p>
+    <p>Maximum likelihood solves this. It never measures distances. It asks a different question: given this candidate squiggle, how likely is the data we actually observed? A good squiggle gives high predicted probability of obesity to the obese mice, and low predicted probability of obesity to the mice that are not obese. We score every candidate that way, and the best score wins.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 340" role="img" aria-label="Left panel shows mice projected onto a candidate log odds line; an arrow transforms log odds into probability; right panel shows the same mice sitting on the s-shaped probability squiggle.">
+        <defs>
+          <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-acc"></path></marker>
+        </defs>
+
+        <text x="30" y="28" class="sv-tb">1. Project onto the candidate line</text>
+        <line x1="60" y1="40" x2="60" y2="262" class="sv-line" stroke-width="1.5"></line>
+        <line x1="60" y1="262" x2="340" y2="262" class="sv-line" stroke-width="1.5"></line>
+        <text x="34" y="150" class="sv-ts" transform="rotate(-90 34 150)" text-anchor="middle">log(odds of obesity)</text>
+        <text x="200" y="288" class="sv-ts" text-anchor="middle">weight</text>
+        <line x1="75" y1="225" x2="330" y2="65" class="sv-stroke-acc" stroke-width="2.5"></line>
+        <circle cx="100" cy="209" r="5" class="sv-acc"></circle>
+        <circle cx="140" cy="184" r="5" class="sv-acc"></circle>
+        <circle cx="180" cy="159" r="5" class="sv-key"></circle>
+        <circle cx="220" cy="134" r="5" class="sv-key"></circle>
+        <circle cx="260" cy="109" r="5" class="sv-key"></circle>
+        <circle cx="300" cy="84" r="5" class="sv-key"></circle>
+        <rect x="86" y="228" width="90" height="19" rx="3" class="sv-paper"></rect>
+        <text x="90" y="242" class="sv-tm">-2.1 log odds</text>
+
+        <line x1="356" y1="162" x2="406" y2="162" class="sv-stroke-acc" stroke-width="2" marker-end="url(#a1)"></line>
+        <rect x="340" y="106" width="82" height="38" rx="4" class="sv-acc-soft"></rect>
+        <text x="381" y="121" class="sv-ts" text-anchor="middle">2. log odds</text>
+        <text x="381" y="136" class="sv-ts" text-anchor="middle">to probability</text>
+
+        <text x="430" y="28" class="sv-tb">3. Read the likelihood off the squiggle</text>
+        <line x1="425" y1="40" x2="425" y2="262" class="sv-line" stroke-width="1.5"></line>
+        <line x1="425" y1="262" x2="735" y2="262" class="sv-line" stroke-width="1.5"></line>
+        <text x="415" y="65" class="sv-ts" text-anchor="end">1.0</text>
+        <text x="415" y="254" class="sv-ts" text-anchor="end">0.0</text>
+        <text x="580" y="288" class="sv-ts" text-anchor="middle">weight</text>
+        <polyline points="425,249 450,249 475,247 500,241 525,228 550,200 575,158 600,115 625,87 650,74 675,68 700,66 725,66" class="sv-stroke-key" stroke-width="2.5"></polyline>
+        <circle cx="520" cy="231" r="5" class="sv-acc"></circle>
+        <circle cx="574" cy="159" r="5" class="sv-key"></circle>
+        <circle cx="630" cy="84" r="5" class="sv-key"></circle>
+        <rect x="486" y="204" width="34" height="19" rx="3" class="sv-paper"></rect>
+        <text x="490" y="218" class="sv-tm">0.1</text>
+        <rect x="586" y="146" width="42" height="19" rx="3" class="sv-paper"></rect>
+        <text x="590" y="160" class="sv-tm">0.49</text>
+        <rect x="642" y="94" width="34" height="19" rx="3" class="sv-paper"></rect>
+        <text x="646" y="108" class="sv-tm">0.9</text>
+
+        <circle cx="70" cy="314" r="5" class="sv-key"></circle>
+        <text x="82" y="319" class="sv-ts">obese mouse</text>
+        <circle cx="200" cy="314" r="5" class="sv-acc"></circle>
+        <text x="212" y="319" class="sv-ts">not obese mouse</text>
+      </svg>
+      <figcaption>Notice that the straight line lives in log odds space, while the same mice sit on an s-shaped curve once we convert to probability.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Draw a candidate straight line on the log odds graph. This is just a guess to be scored.</li>
+      <li>Project every mouse onto that line. Each mouse now has a candidate log odds value, for example -2.1.</li>
+      <li>Convert each candidate log odds value into a candidate probability of obesity. The formula below does this, and it is only a rearrangement of the probability to log odds transformation.</li>
+      <li>Plot those probabilities. Together they form the squiggle, and each mouse now sits somewhere on it.</li>
+      <li>For each obese mouse, the likelihood is the predicted probability itself. For each mouse that is not obese, the likelihood is one minus that probability.</li>
+      <li>Multiply all the individual likelihoods together. Statisticians prefer to add the logs instead, which gives the log likelihood.</li>
+      <li>Rotate the line, redo everything, and compare log likelihoods. Keep the line with the largest one.</li>
+    </ol>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 290" role="img" aria-label="Two candidate log odds lines on the left, and their log likelihood scores marked on a number line on the right.">
+        <defs>
+          <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-good"></path></marker>
+        </defs>
+        <text x="30" y="28" class="sv-tb">Two candidate lines</text>
+        <line x1="60" y1="45" x2="60" y2="235" class="sv-line" stroke-width="1.5"></line>
+        <line x1="60" y1="235" x2="350" y2="235" class="sv-line" stroke-width="1.5"></line>
+        <text x="34" y="140" class="sv-ts" transform="rotate(-90 34 140)" text-anchor="middle">log(odds)</text>
+        <line x1="70" y1="212" x2="345" y2="62" class="sv-stroke-acc" stroke-width="2.5"></line>
+        <line x1="70" y1="176" x2="345" y2="98" class="sv-stroke-ink" stroke-width="2.5" stroke-dasharray="7 5"></line>
+        <rect x="250" y="40" width="58" height="19" rx="3" class="sv-paper"></rect>
+        <text x="254" y="54" class="sv-tm">line A</text>
+        <rect x="250" y="102" width="58" height="19" rx="3" class="sv-paper"></rect>
+        <text x="254" y="116" class="sv-tm">line B</text>
+        <text x="60" y="262" class="sv-ts">rotating the line changes every predicted probability</text>
+
+        <text x="430" y="28" class="sv-tb">Their log likelihood scores</text>
+        <line x1="430" y1="150" x2="735" y2="150" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <line x1="430" y1="196" x2="700" y2="196" class="sv-stroke-good" stroke-width="2" marker-end="url(#a2)"></line>
+        <text x="430" y="216" class="sv-ts">worse</text>
+        <text x="700" y="216" class="sv-ts" text-anchor="end">better (closer to 0)</text>
+        <line x1="430" y1="144" x2="430" y2="156" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <line x1="580" y1="144" x2="580" y2="156" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <line x1="730" y1="144" x2="730" y2="156" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <text x="430" y="172" class="sv-ts" text-anchor="middle">-4.5</text>
+        <text x="580" y="172" class="sv-ts" text-anchor="middle">-4.0</text>
+        <text x="734" y="172" class="sv-ts" text-anchor="end">-3.5</text>
+        <circle cx="535" cy="150" r="6" class="sv-ink2"></circle>
+        <circle cx="649" cy="150" r="6" class="sv-acc"></circle>
+        <rect x="486" y="106" width="98" height="20" rx="3" class="sv-paper2"></rect>
+        <text x="490" y="121" class="sv-tm">line B = -4.15</text>
+        <rect x="600" y="106" width="98" height="20" rx="3" class="sv-acc-soft"></rect>
+        <text x="604" y="121" class="sv-tm">line A = -3.77</text>
+      </svg>
+      <figcaption>Notice that line A scores -3.77 and line B scores -4.15, so line A fits the data better and the search keeps going in that direction.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Log odds to probability</span>
+      <div class="math">$$ p = \frac{e^{\log(\text{odds})}}{1 + e^{\log(\text{odds})}} $$</div>
+      <p class="explain"><b>Symbols:</b> \(p\) is the predicted probability that the mouse is obese. \(\log(\text{odds})\) is the value we read off the candidate straight line. \(e\) is Euler's number, about 2.718. <b>What it tells you:</b> it converts any value on the straight line, however large or small, into a probability between 0 and 1.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Where that formula comes from</span>
+      <div class="math">$$ \log(\text{odds}) = \log\!\left(\frac{p}{1-p}\right) $$</div>
+      <div class="math">$$ e^{\log(\text{odds})} = \frac{p}{1-p} \;\Longrightarrow\; (1-p)\,e^{\log(\text{odds})} = p $$</div>
+      <div class="math">$$ e^{\log(\text{odds})} = p + p\,e^{\log(\text{odds})} = p\left(1 + e^{\log(\text{odds})}\right) $$</div>
+      <p class="explain"><b>Symbols:</b> same as above. <b>What it tells you:</b> we start from the usual probability to log odds transformation, exponentiate both sides, collect every \(p\) on one side, and divide by \(1 + e^{\log(\text{odds})}\). Nothing new is invented; it is the same relationship read backwards.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Likelihood of the data</span>
+      <div class="math">$$ L = \prod_{\text{obese}} p_i \; \times \prod_{\text{not obese}} (1 - p_i) $$</div>
+      <p class="explain"><b>Symbols:</b> \(L\) is the likelihood of the observed data given the squiggle. \(p_i\) is the predicted probability of obesity for mouse \(i\). The first product runs over the obese mice, the second over the mice that are not obese. <b>What it tells you:</b> a squiggle scores well when it gives obese mice a high \(p\) and non-obese mice a low \(p\).</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Log likelihood</span>
+      <div class="math">$$ \log L = \sum_{\text{obese}} \log(p_i) \; + \sum_{\text{not obese}} \log(1 - p_i) $$</div>
+      <p class="explain"><b>Symbols:</b> \(\log L\) is the log of the likelihood, usually the natural log. The other symbols are as above. <b>What it tells you:</b> logs turn the product into a sum, which is easier and safer to compute. The squiggle that maximises \(L\) also maximises \(\log L\), so either one gives the same answer.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>After projecting the mice onto the first candidate line and converting to probabilities, the five obese mice get predicted probabilities of 0.49, 0.9, 0.91, 0.91 and 0.92. Those values are their likelihoods directly.</p>
+      <p>The four mice that are not obese get predicted probabilities of obesity of 0.9, 0.3, 0.01 and 0.01. Their likelihoods are one minus those numbers, so 0.1, 0.7, 0.99 and 0.99.</p>
+      <div class="math">$$ \log L = \log(0.49)+\log(0.9)+2\log(0.91)+\log(0.92) $$</div>
+      <div class="math">$$ +\;\log(0.1)+\log(0.7)+2\log(0.99) \;=\; -3.77 $$</div>
+      <p>So this candidate line scores -3.77. The video then rotates the line and repeats the whole process. The rotated line scores -4.15, which is smaller, so it fits worse. The search keeps rotating and keeps the best score.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Here the likelihood equals the predicted probability, and that is unusual. For a continuous curve, probability is an area under the curve and likelihood is a height on it. In this setting the probability is read straight off the y-axis, so the two numbers coincide.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>The log likelihood is negative, because every probability is below 1 and its log is below zero. A larger value means a better fit, so -3.77 beats -4.15. Do not read the minus sign as a problem.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Do not reach for least squares here. On the log odds axis the observed data sit at plus and minus infinity, so the residuals are infinite. This is also why logistic regression needs its own R squared and p value, which is the next video.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>The algorithm does not rotate the line blindly through every angle. Each rotation is chosen so that the log likelihood goes up, so the optimum arrives after a few well-directed steps.</p>
+    </div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>Why can't logistic regression be fit with least squares?</summary><div class="a">Logistic regression models the log odds, and the observed outcomes are 0 and 1. On the log odds scale those become minus and plus infinity, so the residual for every point is infinite. There is nothing finite to square and add, so we score candidate lines by likelihood instead.</div></details>
+
+    <details class="qa" open><summary>How does maximum likelihood actually choose the line?</summary><div class="a">We take a candidate straight line in log odds space and project each observation onto it. We convert each log odds value to a probability with the logistic function. Then we multiply the predicted probability for each positive case by one minus the predicted probability for each negative case. The line with the highest value of that product, or of its log, is the fit.</div></details>
+
+    <details class="qa" open><summary>Why do we use the log likelihood rather than the likelihood?</summary><div class="a">The log turns a long product into a sum, which is numerically stable and easier to differentiate. Multiplying many small probabilities underflows quickly. Because the log is monotonic, the parameters that maximise the likelihood also maximise the log likelihood, so nothing is lost.</div></details>
+
+    <details class="qa" open><summary>One candidate scores -3.77 and another -4.15. Which is better and why?</summary><div class="a">The one at -3.77, because it is closer to zero and therefore larger. Log likelihoods are negative here since every individual likelihood is a probability below one. The bigger number means the model assigned more probability to what we actually observed.</div></details>
+
+    <details class="qa" open><summary>What does the likelihood of a single observation mean here?</summary><div class="a">For an observation labelled positive, it is the model's predicted probability for that class. For an observation labelled negative, it is one minus that predicted probability. So each observation contributes the probability the model gave to the outcome that really happened.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap">
+      <ul>
+        <li>Linear regression fits its line by minimising the sum of squared residuals.</li>
+        <li>Logistic regression cannot do that, because on the log odds axis the data lie at plus and minus infinity.</li>
+        <li>Instead we draw a candidate line, project each observation onto it, and read off a candidate log odds value.</li>
+        <li>We convert each log odds value to a probability with the logistic formula, which is just the transformation read backwards.</li>
+        <li>The likelihood of an obese mouse is its predicted probability, and the likelihood of a mouse that is not obese is one minus that probability.</li>
+        <li>Multiplying all of them gives the likelihood, and adding their logs gives the log likelihood, which was -3.77 for the first line.</li>
+        <li>Rotating the line gave -4.15, a worse score, and the algorithm keeps rotating in the direction that raises the score.</li>
+        <li>The line with the maximum log likelihood is the fitted model, and the next video covers its R squared and p value.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Fitting logistic regression</span><span class="board-tag">infinite residuals, so maximise the likelihood</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 274" role="img" aria-label="The squiggle gives the probability of obesity at each weight. Five obese mice sit at the top and four mice that are not obese sit at the bottom. An obese mouse at p = 0.49 has likelihood 0.49. A mouse that is not obese at p = 0.9 has likelihood 1 − p = 0.1. All the logs add to −3.77; the rotated line scores −4.15, which is worse.">
+            <line x1="34" y1="50" x2="385" y2="50" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="8 6"/>
+            <line x1="34" y1="50" x2="34" y2="200" class="sv-stroke-ink" stroke-width="2"/>
+            <line x1="34" y1="200" x2="385" y2="200" class="sv-stroke-ink" stroke-width="2"/>
+            <polyline points="34,199.6 60,198.9 80,197.4 100,194.2 115,189.5 130,181.5 142,171.7 154,158.4 165,143.4 177,125 189,106.6 200,91.6 212,78.3 224,68.5 239,60.5 254,55.8 274,52.6 294,51.1 320,50.4 350,50.1" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="176" y1="58" x2="176" y2="120" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="3 5" stroke-linecap="round"/>
+            <line x1="157" y1="192" x2="157" y2="161" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="3 5" stroke-linecap="round"/>
+            <line x1="230" y1="192" x2="230" y2="71" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="3 5" stroke-linecap="round"/>
+            <circle cx="176" cy="126.6" r="4.5" class="sv-ink"/>
+            <circle cx="157" cy="154.5" r="4.5" class="sv-ink"/>
+            <circle cx="230" cy="65" r="4.5" class="sv-ink"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="176" cy="50" r="6" class="sv-key"/>
+              <circle cx="230" cy="50" r="6" class="sv-key"/>
+              <circle cx="244" cy="50" r="6" class="sv-key"/>
+              <circle cx="258" cy="50" r="6" class="sv-key"/>
+              <circle cx="272" cy="50" r="6" class="sv-key"/>
+              <circle cx="58" cy="200" r="6" class="sv-paper2"/>
+              <circle cx="72" cy="200" r="6" class="sv-paper2"/>
+              <circle cx="157" cy="200" r="6" class="sv-paper2"/>
+              <circle cx="230" cy="200" r="6" class="sv-paper2"/>
+            </g>
+            <text x="286" y="38" class="sv-ts">5 obese</text>
+            <text x="42" y="226" class="sv-ts">4 not obese</text>
+            <text x="164" y="124" text-anchor="end" class="sv-t">p = 0.49</text>
+            <text x="240" y="88" class="sv-t">p = 0.9</text>
+            <text x="242" y="186" class="sv-t">1 − p = 0.1</text>
+            <text x="385" y="226" text-anchor="end" class="sv-ts">weight →</text>
+            <text x="34" y="258" class="sv-tb">log L = −3.77</text>
+            <text x="385" y="258" text-anchor="end" class="sv-ts">rotated: −4.15, worse</text>
+          </svg>
+          <p>On the log odds axis the mice sit at ±∞, so residuals are infinite. Instead, read each mouse's likelihood off the squiggle: \(p\) if obese, \(1-p\) if not. Add the logs, rotate, keep the largest.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Log odds</dt><dd>The straight line's y-axis. The data sit at ±∞.</dd>
+            <dt>Squiggle</dt><dd>The line turned into probabilities.</dd>
+            <dt>Likelihood</dt><dd>Obese mouse: its predicted \(p\). Not obese: \(1-p\).</dd>
+            <dt>Log likelihood</dt><dd>Sum of the logs. Closer to 0 is better.</dd>
+            <dt>Maximum likelihood</dt><dd>Keep the line with the largest log likelihood.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Draw a line</b>a guess, in log odds</li>
+            <li><b>Project mice</b>log odds per mouse, e.g. −2.1</li>
+            <li><b>Convert</b>log odds to \(p\): the squiggle</li>
+            <li><b>Score each mouse</b>obese \(p\), not obese \(1-p\)</li>
+            <li><b>Add the logs</b>log likelihood −3.77</li>
+            <li><b>Keep the best</b>largest log likelihood wins</li>
+          </ol>
+          <p class="loop">↺ rotate and redo steps 2 to 5, turning the way that raises the log likelihood</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$p=\frac{e^{\log(\text{odds})}}{1+e^{\log(\text{odds})}}$$
+          $$\log L=\sum_{\text{obese}}\log(p_i)+\sum_{\text{not obese}}\log(1-p_i)$$
+          <ul class="keys">
+            <li>\(p_i\) is mouse \(i\)'s predicted probability of obesity.</li>
+            <li>The first is \(\log\frac{p}{1-p}\) solved for \(p\).</li>
+            <li>Each log is below 0, so \(\log L\) is negative.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>mouse</th><th>p</th><th>likelihood</th></tr>
+            <tr><td>obese</td><td>0.49, 0.9</td><td>same</td></tr>
+            <tr><td>obese</td><td>0.91, 0.91, 0.92</td><td>same</td></tr>
+            <tr><td>not obese</td><td>0.9, 0.3</td><td>0.1, 0.7</td></tr>
+            <tr><td>not obese</td><td>0.01, 0.01</td><td>0.99, 0.99</td></tr>
+            <tr class="final"><td>log L</td><td>sum of logs</td><td>−3.77 ✓</td></tr>
+          </table>
+          <p class="hand">The rotated line scores −4.15: smaller, so it fits worse.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Fit it with least squares.</span><span class="yes">The residuals are infinite. That is also why it needs its own R squared and p value.</span></li>
+            <li><span class="no">Negative log likelihood means a bad fit.</span><span class="yes">Logs of probabilities are below 0. Larger is better: −3.77 beats −4.15.</span></li>
+            <li><span class="no">Likelihood is just another word for probability.</span><span class="yes">Here they coincide, which is unusual. On a continuous curve likelihood is a height, probability an area.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="17-logistic-regression-details-pt1-coefficients.html"><small>Previous</small>Logistic Regression Details Pt1: Coefficients</a> <a href="19-logistic-regression-details-pt-3-r-squared-and-p-value.html"><small>Next</small>Logistic Regression Details Pt 3: R-squared and p-value</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

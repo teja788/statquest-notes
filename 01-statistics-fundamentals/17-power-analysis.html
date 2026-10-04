@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Power Analysis — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>17</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 17 · 16.8 min</div>
+    <h1>Power Analysis</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=VX_M3tIyiYk" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">A power analysis tells you how many measurements to collect per group before you run an experiment, so that the experiment has a good chance of finding a real difference.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Power is the probability that we correctly reject the null hypothesis when the groups really are different. Two things drive it: how much the two distributions overlap, and how many measurements we collect per group. Small samples give wobbly estimated means, so the groups look mixed together and the p-value stays large. Bigger samples pull the estimated means close to the population means, so the groups separate and power goes up. A power analysis takes the power you want, the significance threshold, and the effect size, and returns the sample size you need.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh starts with a virus and two drugs. Three people take drug A and three take drug B, and we record how long each takes to recover. Drug A looks faster, so we compare the two means with a statistical test. The p-value comes back as 0.06.</p>
+    <p>That is just above the usual 0.05 threshold, so we cannot say drug A is better. We suspect the two drugs have different distributions. But 0.06 does not let us reject the idea that everything came from one distribution in the middle.</p>
+    <p>It is tempting to add one more person per group and test again. That is <strong>p-hacking</strong>, and we must resist it. The honest fix is a <strong>power analysis</strong>, which sets the sample size for the next experiment in advance.</p>
+    <p>Two things matter most for power. The first is the <strong>overlap</strong> between the two distributions we want to tell apart. The second is the <strong>sample size</strong>, the number of measurements per group. Say we want power equal to 0.8, an 80% chance of correctly rejecting the null hypothesis. With very little overlap, a small sample already gives us that. The more the distributions overlap, the more measurements we need.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 308" role="img" aria-label="Two panels: barely overlapping distributions need a small sample size, heavily overlapping distributions need a large sample size, for the same power of 0.8">
+        <rect x="20" y="20" width="350" height="268" rx="8" class="sv-paper2"/>
+        <rect x="390" y="20" width="350" height="268" rx="8" class="sv-paper2"/>
+        <text x="195" y="40" text-anchor="middle" class="sv-tb">Little overlap</text>
+        <text x="565" y="40" text-anchor="middle" class="sv-tb">A lot of overlap</text>
+
+        <path d="M65 210 C 97.5 210, 97.5 115, 130 115 C 162.5 115, 162.5 210, 195 210 Z" class="sv-acc-soft"/>
+        <path d="M65 210 C 97.5 210, 97.5 115, 130 115 C 162.5 115, 162.5 210, 195 210" class="sv-stroke-acc" stroke-width="2"/>
+        <path d="M190 210 C 222.5 210, 222.5 115, 255 115 C 287.5 115, 287.5 210, 320 210 Z" class="sv-key-soft"/>
+        <path d="M190 210 C 222.5 210, 222.5 115, 255 115 C 287.5 115, 287.5 210, 320 210" class="sv-stroke-key" stroke-width="2"/>
+        <path d="M45 210 L350 210" class="sv-line" stroke-width="1.5"/>
+        <text x="195" y="240" text-anchor="middle" class="sv-t">small sample size</text>
+        <text x="195" y="262" text-anchor="middle" class="sv-ts">is enough for power = 0.8</text>
+
+        <path d="M455 210 C 492.5 210, 492.5 115, 530 115 C 567.5 115, 567.5 210, 605 210 Z" class="sv-acc-soft"/>
+        <path d="M455 210 C 492.5 210, 492.5 115, 530 115 C 567.5 115, 567.5 210, 605 210" class="sv-stroke-acc" stroke-width="2"/>
+        <path d="M525 210 C 562.5 210, 562.5 115, 600 115 C 637.5 115, 637.5 210, 675 210 Z" class="sv-key-soft"/>
+        <path d="M525 210 C 562.5 210, 562.5 115, 600 115 C 637.5 115, 637.5 210, 675 210" class="sv-stroke-key" stroke-width="2"/>
+        <path d="M415 210 L720 210" class="sv-line" stroke-width="1.5"/>
+        <text x="565" y="240" text-anchor="middle" class="sv-t">large sample size</text>
+        <text x="565" y="262" text-anchor="middle" class="sv-ts">is needed for power = 0.8</text>
+      </svg>
+      <figcaption>Both panels aim for the same power. Notice that only the amount of overlap changes what sample size is required.</figcaption>
+    </figure>
+
+    <p>Why does sample size help? Because a statistical test usually does not compare the individual measurements. It compares summaries of the data, most often the means. So the question becomes: how reliable is an estimated mean?</p>
+    <p>Take drug A. The population mean is a fixed value we normally cannot see, so we estimate it from our sample. With a single measurement, the estimated mean is just that measurement. Repeat this many times and the estimates land all over the place. About 25% fall well to the left of the population mean and another 25% well to the right. Half our estimates are far off, so we cannot trust any single one.</p>
+    <p>The same happens for drug B. Two sets of untrustworthy estimated means smear into each other, so the test gives a large p-value and we fail to reject the null hypothesis.</p>
+    <p>Now average two measurements instead of one. We still get the occasional wild point, but the second measurement pulls the average back. There is a 25% chance of an extreme value on the left, and a 75% chance the partner lands in the normal range. Extreme values matter less, so the estimated means cluster closer to the population mean.</p>
+    <p>With ten measurements per estimate the clustering is much tighter. In Josh's picture the estimated means for the two drugs no longer overlap at all, which means a high probability of correctly rejecting the null hypothesis. He notes that we used normal distributions here, but the central limit theorem makes the same argument work for any underlying distribution.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 330" role="img" aria-label="Estimated means from drug A and drug B plotted for sample sizes of one, two and ten; the spread shrinks and the two groups stop overlapping">
+        <text x="280" y="42" text-anchor="middle" class="sv-ts">population mean, drug A</text>
+        <text x="500" y="42" text-anchor="middle" class="sv-ts">population mean, drug B</text>
+        <path d="M280 52 L280 300" class="sv-stroke-acc" stroke-width="1.5" stroke-dasharray="5 4"/>
+        <path d="M500 52 L500 300" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="5 4"/>
+
+        <text x="24" y="104" class="sv-tm">n = 1</text>
+        <path d="M80 100 L640 100" class="sv-line" stroke-width="1"/>
+        <circle cx="170" cy="100" r="4.5" class="sv-acc"/><circle cx="208" cy="100" r="4.5" class="sv-acc"/><circle cx="245" cy="100" r="4.5" class="sv-acc"/><circle cx="272" cy="100" r="4.5" class="sv-acc"/><circle cx="298" cy="100" r="4.5" class="sv-acc"/><circle cx="332" cy="100" r="4.5" class="sv-acc"/><circle cx="372" cy="100" r="4.5" class="sv-acc"/><circle cx="410" cy="100" r="4.5" class="sv-acc"/>
+        <circle cx="392" cy="100" r="4.5" class="sv-key"/><circle cx="430" cy="100" r="4.5" class="sv-key"/><circle cx="466" cy="100" r="4.5" class="sv-key"/><circle cx="492" cy="100" r="4.5" class="sv-key"/><circle cx="520" cy="100" r="4.5" class="sv-key"/><circle cx="552" cy="100" r="4.5" class="sv-key"/><circle cx="590" cy="100" r="4.5" class="sv-key"/><circle cx="626" cy="100" r="4.5" class="sv-key"/>
+        <text x="736" y="104" text-anchor="end" class="sv-ts">groups overlap</text>
+
+        <text x="24" y="184" class="sv-tm">n = 2</text>
+        <path d="M80 180 L640 180" class="sv-line" stroke-width="1"/>
+        <circle cx="222" cy="180" r="4.5" class="sv-acc"/><circle cx="248" cy="180" r="4.5" class="sv-acc"/><circle cx="266" cy="180" r="4.5" class="sv-acc"/><circle cx="282" cy="180" r="4.5" class="sv-acc"/><circle cx="296" cy="180" r="4.5" class="sv-acc"/><circle cx="316" cy="180" r="4.5" class="sv-acc"/><circle cx="340" cy="180" r="4.5" class="sv-acc"/>
+        <circle cx="442" cy="180" r="4.5" class="sv-key"/><circle cx="468" cy="180" r="4.5" class="sv-key"/><circle cx="486" cy="180" r="4.5" class="sv-key"/><circle cx="502" cy="180" r="4.5" class="sv-key"/><circle cx="516" cy="180" r="4.5" class="sv-key"/><circle cx="536" cy="180" r="4.5" class="sv-key"/><circle cx="560" cy="180" r="4.5" class="sv-key"/>
+        <text x="736" y="184" text-anchor="end" class="sv-ts">spread shrinks</text>
+
+        <text x="24" y="264" class="sv-tm">n = 10</text>
+        <path d="M80 260 L640 260" class="sv-line" stroke-width="1"/>
+        <circle cx="258" cy="260" r="4.5" class="sv-acc"/><circle cx="268" cy="260" r="4.5" class="sv-acc"/><circle cx="276" cy="260" r="4.5" class="sv-acc"/><circle cx="283" cy="260" r="4.5" class="sv-acc"/><circle cx="290" cy="260" r="4.5" class="sv-acc"/><circle cx="298" cy="260" r="4.5" class="sv-acc"/><circle cx="306" cy="260" r="4.5" class="sv-acc"/>
+        <circle cx="478" cy="260" r="4.5" class="sv-key"/><circle cx="488" cy="260" r="4.5" class="sv-key"/><circle cx="496" cy="260" r="4.5" class="sv-key"/><circle cx="503" cy="260" r="4.5" class="sv-key"/><circle cx="510" cy="260" r="4.5" class="sv-key"/><circle cx="518" cy="260" r="4.5" class="sv-key"/><circle cx="526" cy="260" r="4.5" class="sv-key"/>
+        <text x="736" y="264" text-anchor="end" class="sv-ts">no overlap left</text>
+
+        <text x="380" y="308" text-anchor="middle" class="sv-ts">each dot is one estimated mean</text>
+      </svg>
+      <figcaption>Each dot is a mean estimated from a fresh sample. More measurements per estimate means less spread, and the two groups pull apart.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Decide how much power you want. Any value between 0 and 1 is allowed, and 0.8 is common. Power 0.8 means an 80% probability of correctly rejecting the null hypothesis.</li>
+      <li>Decide the threshold for significance, called <strong>alpha</strong>. Again any value between 0 and 1 works, and 0.05 is the usual choice.</li>
+      <li>Estimate the overlap between the two distributions. Overlap depends on both the distance between the population means and the standard deviations.</li>
+      <li>Combine those into one number called the <strong>effect size</strong>, written as \(d\). Get the means and standard deviations from prior data, a literature search, or, in the worst case, an educated guess.</li>
+      <li>Put the power, alpha, and effect size into a statistics power calculator. Almost every statistics department publishes one online. The calculator returns the sample size you need per group.</li>
+    </ol>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Effect size</span>
+      <div class="math">$$ d = \frac{\bar{x}_A - \bar{x}_B}{s_{\text{pooled}}} $$</div>
+      <p class="explain"><b>Symbols:</b> \(d\) is the effect size, a single number for how far apart the two distributions are. \(\bar{x}_A\) and \(\bar{x}_B\) are the estimated means of the two groups, so the numerator is the estimated difference in the means. \(s_{\text{pooled}}\) is the two estimated standard deviations combined into one spread. <b>What it tells you:</b> it measures the gap between the groups in units of their own spread, so a large \(d\) means little overlap and a small \(d\) means a lot of overlap.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Pooled standard deviation</span>
+      <div class="math">$$ s_{\text{pooled}} = \sqrt{\frac{s_A^2 + s_B^2}{2}} $$</div>
+      <p class="explain"><b>Symbols:</b> \(s_A\) is the estimated standard deviation of the first distribution and \(s_B\) is the estimated standard deviation of the second. We square both, average them, and take the square root. <b>What it tells you:</b> it is one typical spread for the two groups together, which becomes the yardstick in the denominator of the effect size. Josh notes this is one of the simplest ways to pool, and that many other effect size formulas exist, so you may need to research which one your situation calls for.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>The first experiment used three people per drug and produced a p-value of 0.06. From that original data, the difference between the two means is 10. The estimated standard deviations are 7 for one drug and 6 for the other.</p>
+      <p>First pool the standard deviations:</p>
+      <div class="math">$$ s_{\text{pooled}} = \sqrt{\frac{7^2 + 6^2}{2}} = \sqrt{\frac{49 + 36}{2}} = \sqrt{42.5} = 6.5 $$</div>
+      <p>Then divide the difference in means by that pooled spread:</p>
+      <div class="math">$$ d = \frac{10}{6.5} = 1.5 $$</div>
+      <p>Now feed three numbers into a power calculator: effect size 1.5, power 0.8, and alpha 0.05. The calculator returns a sample size of 9. So nine measurements per group give an 80% chance of correctly rejecting the null hypothesis next time.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Adding a few more people because the p-value came out at 0.06 is p-hacking, not a fix. The correct response is to plan a fresh experiment with the sample size a power analysis recommends.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A power analysis is done before you collect the data, not after. Its whole value is that it commits you to a sample size in advance, so that whatever p-value appears, you know you had enough data to make a good decision.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The recommended sample size is only as good as the effect size you feed in. Means and standard deviations come from prior data, a literature search, or an educated guess, so treat the answer as a plan, not a guarantee.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>What is a power analysis and when do you run one?</summary>
+      <div class="a">A power analysis works out the sample size that gives a high probability of correctly rejecting the null hypothesis when a real difference exists. You run it before collecting data, during experiment design. It takes three inputs: the power you want, commonly 0.8, the significance threshold alpha, commonly 0.05, and the effect size. The point is to know the experiment was big enough, whatever the p-value turns out to be.</div>
+    </details>
+
+    <details class="qa" open><summary>Why does a bigger sample size increase power?</summary>
+      <div class="a">Statistical tests compare summaries such as means, not individual measurements. With one measurement per estimate, the estimated mean swings wildly around the population mean, so the two groups look mixed together. Averaging more measurements lets ordinary values offset extreme ones, so the estimated means sit close to the population means. The groups then separate cleanly, which raises the chance of correctly rejecting the null hypothesis.</div>
+    </details>
+
+    <details class="qa" open><summary>How do you estimate the effect size before you have data?</summary>
+      <div class="a">You use prior data from a pilot or an earlier experiment, or a literature search for published means and standard deviations. If neither is available, an educated guess is the last resort. One common form is the difference in means divided by the pooled standard deviation, though many other effect size definitions exist.</div>
+    </details>
+
+    <details class="qa" open><summary>Your p-value is 0.06. What do you do?</summary>
+      <div class="a">I would not add subjects to the existing experiment, because that is p-hacking and it inflates the false positive rate. I would use the data I have to estimate an effect size, run a power analysis for power 0.8 at alpha 0.05, and then run a new experiment at the recommended sample size. That way the next result stands on its own.</div>
+    </details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Power is the probability of correctly rejecting the null hypothesis when the groups truly differ.</li>
+      <li>Two main factors drive power: the overlap between the two distributions, and the sample size per group.</li>
+      <li>With a small sample, estimated means scatter far from the population means, so the groups look mixed and the p-value stays large.</li>
+      <li>With a larger sample, extreme measurements matter less, the estimated means land close to the population means, and the groups separate.</li>
+      <li>A power analysis takes the desired power, the alpha threshold, and the effect size, and returns the sample size you need.</li>
+      <li>In the video, an effect size of 1.5 with power 0.8 and alpha 0.05 called for nine measurements per group.</li>
+      <li>Running a power analysis first is the honest alternative to p-hacking your way past 0.05.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Power analysis</span><span class="board-tag">pick the sample size before you start</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 266" role="img" aria-label="Estimated means of drug A and drug B from samples of 1, 2 and 10 measurements: with 1 they scatter and the two groups overlap, and with 10 they cluster near the population means and no longer overlap.">
+            <line x1="140" y1="46" x2="140" y2="226" class="sv-stroke-acc" stroke-width="2.5" stroke-dasharray="6 6" stroke-linecap="round"/>
+            <line x1="240" y1="46" x2="240" y2="226" class="sv-stroke-key" stroke-width="2.5" stroke-dasharray="6 6" stroke-linecap="round"/>
+            <text x="140" y="34" text-anchor="middle" class="sv-t">drug A</text>
+            <text x="240" y="34" text-anchor="middle" class="sv-t">drug B</text>
+            <text x="16" y="89" class="sv-tb">n = 1</text>
+            <text x="16" y="149" class="sv-tb">n = 2</text>
+            <text x="16" y="209" class="sv-tb">n = 10</text>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="88" cy="82" r="6" class="sv-acc"/>
+              <circle cx="112" cy="82" r="6" class="sv-acc"/>
+              <circle cx="140" cy="82" r="6" class="sv-acc"/>
+              <circle cx="172" cy="82" r="6" class="sv-acc"/>
+              <circle cx="204" cy="82" r="6" class="sv-acc"/>
+              <circle cx="188" cy="82" r="6" class="sv-key"/>
+              <circle cx="220" cy="82" r="6" class="sv-key"/>
+              <circle cx="240" cy="82" r="6" class="sv-key"/>
+              <circle cx="266" cy="82" r="6" class="sv-key"/>
+              <circle cx="296" cy="82" r="6" class="sv-key"/>
+              <circle cx="108" cy="142" r="6" class="sv-acc"/>
+              <circle cx="124" cy="142" r="6" class="sv-acc"/>
+              <circle cx="140" cy="142" r="6" class="sv-acc"/>
+              <circle cx="156" cy="142" r="6" class="sv-acc"/>
+              <circle cx="172" cy="142" r="6" class="sv-acc"/>
+              <circle cx="208" cy="142" r="6" class="sv-key"/>
+              <circle cx="224" cy="142" r="6" class="sv-key"/>
+              <circle cx="240" cy="142" r="6" class="sv-key"/>
+              <circle cx="256" cy="142" r="6" class="sv-key"/>
+              <circle cx="272" cy="142" r="6" class="sv-key"/>
+              <circle cx="122" cy="202" r="6" class="sv-acc"/>
+              <circle cx="131" cy="202" r="6" class="sv-acc"/>
+              <circle cx="140" cy="202" r="6" class="sv-acc"/>
+              <circle cx="149" cy="202" r="6" class="sv-acc"/>
+              <circle cx="158" cy="202" r="6" class="sv-acc"/>
+              <circle cx="222" cy="202" r="6" class="sv-key"/>
+              <circle cx="231" cy="202" r="6" class="sv-key"/>
+              <circle cx="240" cy="202" r="6" class="sv-key"/>
+              <circle cx="249" cy="202" r="6" class="sv-key"/>
+              <circle cx="258" cy="202" r="6" class="sv-key"/>
+            </g>
+            <text x="388" y="88" text-anchor="end" class="sv-ts">overlap</text>
+            <text x="388" y="208" text-anchor="end" class="sv-ts">no overlap</text>
+            <text x="200" y="250" text-anchor="middle" class="sv-ts">dot = one estimated mean</text>
+          </svg>
+          <p>Power depends on overlap and sample size. Tests compare estimated means: with few measurements they scatter and the groups look mixed together, with more they cluster and separate. A power analysis picks the sample size in advance.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Power</dt><dd>The probability of correctly rejecting the null when the groups truly differ.</dd>
+            <dt>Alpha</dt><dd>The significance threshold, usually 0.05.</dd>
+            <dt>Effect size \(d\)</dt><dd>How far apart the two groups are, in units of their spread.</dd>
+            <dt>Estimated mean</dt><dd>Your sample's mean; it wobbles around the unseen population mean.</dd>
+            <dt>P-hacking</dt><dd>Adding more people after seeing p = 0.06 and testing again.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Choose power</b>0.8 is common</li>
+            <li><b>Choose alpha</b>usually 0.05</li>
+            <li><b>Estimate overlap</b>distance between means, and spreads</li>
+            <li><b>Effect size \(d\)</b>prior data, literature, or a guess</li>
+            <li><b>Power calculator</b>returns the sample size per group</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$d=\frac{\bar{x}_A-\bar{x}_B}{s_{\text{pooled}}}$$
+          $$s_{\text{pooled}}=\sqrt{\frac{s_A^2+s_B^2}{2}}$$
+          <ul class="keys">
+            <li>\(\bar{x}_A, \bar{x}_B\): estimated means; \(s_A, s_B\): estimated standard deviations.</li>
+            <li>Large \(d\) means little overlap; small \(d\) means a lot of overlap.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>quantity</th><th>value</th></tr>
+            <tr><td>difference in means</td><td>10</td></tr>
+            <tr><td>SDs</td><td>7 and 6</td></tr>
+            <tr><td>pooled SD = √42.5</td><td>6.5</td></tr>
+            <tr><td>d = 10 / 6.5</td><td>1.5</td></tr>
+            <tr class="final"><td>n at power 0.8, α 0.05</td><td>9 ✓</td></tr>
+          </table>
+          <p class="hand">Nine measurements per group give an 80% chance of correctly rejecting the null next time.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">p = 0.06? Just add a few more people.</span><span class="yes">That is p-hacking. Plan a fresh experiment with the size a power analysis gives.</span></li>
+            <li><span class="no">Run the power analysis after collecting data.</span><span class="yes">Run it before: it commits you to a sample size in advance.</span></li>
+            <li><span class="no">The recommended sample size is a guarantee.</span><span class="yes">It is only as good as the effect size you feed in. Treat it as a plan.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="16-statistical-power.html"><small>Previous</small>Statistical Power</a> <a href="18-covariance.html"><small>Next</small>Covariance</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

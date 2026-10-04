@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The SoftMax Derivative, Step-by-Step — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>83</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 83 · 7.2 min</div>
+    <h1>The SoftMax Derivative, Step-by-Step</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=M59JElEPgIg" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: Neural Networks / Deep Learning (video 11)</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video derives the derivative of the SoftMax function, one algebra step at a time. You need these derivatives to train a neural network that ends with a SoftMax layer.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh uses the iris network that predicts setosa, versicolor, or virginica. The SoftMax output for setosa is the predicted probability for setosa. With the quotient rule, its derivative with respect to its own raw output is \(p_s(1-p_s)\). Its derivative with respect to another class's raw output is \(-p_s\,p_{\mathit{ve}}\) or \(-p_s\,p_{\mathit{vi}}\). With the video's numbers, these give 0.21, −0.07, and −0.15.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>The network gives three raw output values, one for each iris species. These values are all over the place, so a SoftMax layer turns them into predicted probabilities. The SoftMax value for setosa is a fraction. Its numerator is \(e\) raised to the setosa raw value. Its denominator is the sum of \(e\) raised to all three raw values.</p>
+    <p>All three raw values sit in the denominator, so all three change the setosa probability. That means we need three derivatives: one for setosa's own raw value, and one each for versicolor and virginica.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 320" role="img" aria-label="Three raw outputs feed the SoftMax for setosa, each with its own derivative">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink3"/></marker>
+        </defs>
+        <rect x="30" y="50" width="130" height="44" rx="8" class="sv-paper2"/>
+        <rect x="30" y="50" width="130" height="44" rx="8" class="sv-stroke-ink" stroke-width="1.2"/>
+        <text x="95" y="77" text-anchor="middle" class="sv-t">setosa raw: s</text>
+        <rect x="30" y="138" width="130" height="44" rx="8" class="sv-paper2"/>
+        <rect x="30" y="138" width="130" height="44" rx="8" class="sv-stroke-ink" stroke-width="1.2"/>
+        <text x="95" y="165" text-anchor="middle" class="sv-t">versicolor raw: ve</text>
+        <rect x="30" y="226" width="130" height="44" rx="8" class="sv-paper2"/>
+        <rect x="30" y="226" width="130" height="44" rx="8" class="sv-stroke-ink" stroke-width="1.2"/>
+        <text x="95" y="253" text-anchor="middle" class="sv-t">virginica raw: vi</text>
+
+        <line x1="160" y1="72" x2="466" y2="140" class="sv-stroke-acc" stroke-width="2.5" marker-end="url(#ah)"/>
+        <line x1="160" y1="160" x2="466" y2="160" class="sv-stroke-key" stroke-width="2" marker-end="url(#ah)"/>
+        <line x1="160" y1="248" x2="466" y2="180" class="sv-stroke-key" stroke-width="2" marker-end="url(#ah)"/>
+
+        <rect x="205" y="92" width="210" height="24" rx="5" class="sv-paper"/>
+        <text x="310" y="109" text-anchor="middle" class="sv-tm">p(s)·(1 − p(s)) = 0.21</text>
+        <rect x="215" y="148" width="190" height="24" rx="5" class="sv-paper"/>
+        <text x="310" y="165" text-anchor="middle" class="sv-tm">−p(s)·p(ve) = −0.07</text>
+        <rect x="215" y="203" width="190" height="24" rx="5" class="sv-paper"/>
+        <text x="310" y="220" text-anchor="middle" class="sv-tm">−p(s)·p(vi) = −0.15</text>
+
+        <rect x="470" y="118" width="130" height="84" rx="10" class="sv-acc-soft"/>
+        <text x="535" y="152" text-anchor="middle" class="sv-tb">SoftMax</text>
+        <text x="535" y="176" text-anchor="middle" class="sv-ts">e^s / (e^s+e^ve+e^vi)</text>
+
+        <line x1="600" y1="160" x2="636" y2="160" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"/>
+        <rect x="640" y="136" width="100" height="48" rx="8" class="sv-good-soft"/>
+        <text x="690" y="165" text-anchor="middle" class="sv-tb">p(s) = 0.69</text>
+
+        <text x="310" y="296" text-anchor="middle" class="sv-ts">Arrow labels: derivative of p(s) with respect to that raw value</text>
+      </svg>
+      <figcaption>All three raw values feed the setosa probability, so each one gets its own derivative; only setosa's own derivative has the p(1 − p) form.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Write the SoftMax for setosa as a fraction. This fraction equals the predicted probability for setosa.</li>
+      <li>Apply the quotient rule, because the probability is one function divided by another.</li>
+      <li>For setosa's own raw value, split the result into pieces. Each piece is a probability or 1, which gives \(p_s(1-p_s)\).</li>
+      <li>For versicolor's raw value, the numerator's derivative is zero. Splitting what is left gives \(-p_s\,p_{\mathit{ve}}\).</li>
+      <li>Virginica is left as homework. It works the same way and gives \(-p_s\,p_{\mathit{vi}}\).</li>
+    </ol>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">SoftMax for setosa</span><div class="math">$$ p_s = \frac{e^{s}}{e^{s} + e^{\mathit{ve}} + e^{\mathit{vi}}} $$</div><p class="explain"><b>Symbols:</b> \(s\), \(\mathit{ve}\), \(\mathit{vi}\) are the raw output values for setosa, versicolor, and virginica. \(e\) is Euler's number, about 2.718. \(p_s\) is the predicted probability for setosa. <b>What it tells you:</b> every raw value appears in the denominator, so every raw value affects \(p_s\).</p></div>
+
+    <div class="formula"><span class="lbl">Quotient rule</span><div class="math">$$ \frac{d}{dx}\left(\frac{f}{g}\right) = \frac{f'\,g - g'\,f}{g^{2}} $$</div><p class="explain"><b>Symbols:</b> \(f\) is the numerator and \(g\) is the denominator. \(f'\) and \(g'\) are their derivatives with respect to the variable \(x\). <b>What it tells you:</b> take the numerator's derivative times the denominator, subtract the denominator's derivative times the numerator, and divide by the denominator squared.</p></div>
+
+    <div class="formula"><span class="lbl">Derivative with respect to its own raw value</span><div class="math">$$ \frac{\partial p_s}{\partial s} = \frac{e^{s}\,(e^{s}+e^{\mathit{ve}}+e^{\mathit{vi}}) - e^{s}\,e^{s}}{(e^{s}+e^{\mathit{ve}}+e^{\mathit{vi}})^{2}} $$</div><p class="explain">This is the quotient rule with \(f' = g' = e^{s}\).</p>
+      <div class="math">$$ = \frac{e^{s}}{e^{s}+e^{\mathit{ve}}+e^{\mathit{vi}}}\left(\frac{e^{s}+e^{\mathit{ve}}+e^{\mathit{vi}}}{e^{s}+e^{\mathit{ve}}+e^{\mathit{vi}}} - \frac{e^{s}}{e^{s}+e^{\mathit{ve}}+e^{\mathit{vi}}}\right) $$</div><p class="explain">We pull \(e^{s}\) out of the numerator and split the rest into two terms.</p>
+      <div class="math">$$ = p_s\,(1 - p_s) $$</div><p class="explain">The outside fraction and the last term are both \(p_s\), and the middle term is 1. <b>What it tells you:</b> the slope of a class's probability with respect to its own raw value depends only on that probability.</p></div>
+
+    <div class="formula"><span class="lbl">Derivative with respect to another class's raw value</span><div class="math">$$ \frac{\partial p_s}{\partial \mathit{ve}} = \frac{0\cdot(e^{s}+e^{\mathit{ve}}+e^{\mathit{vi}}) - e^{\mathit{ve}}\,e^{s}}{(e^{s}+e^{\mathit{ve}}+e^{\mathit{vi}})^{2}} $$</div><p class="explain">The numerator \(e^{s}\) has no versicolor term, so its derivative is 0 and the first term drops out.</p>
+      <div class="math">$$ = -\frac{e^{s}}{e^{s}+e^{\mathit{ve}}+e^{\mathit{vi}}}\cdot\frac{e^{\mathit{ve}}}{e^{s}+e^{\mathit{ve}}+e^{\mathit{vi}}} = -p_s\,p_{\mathit{ve}} $$</div><p class="explain">Splitting the fraction gives two familiar pieces: \(p_s\) with a minus sign, and \(p_{\mathit{ve}}\), the predicted probability for versicolor. <b>What it tells you:</b> for virginica the same steps give \(-p_s\,p_{\mathit{vi}}\).</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span> <p>In the iris network, the predicted probability for setosa is 0.69 and for versicolor is 0.1.</p>
+      <p>With respect to setosa: \(0.69 \times (1 - 0.69) = 0.69 \times 0.31 \approx 0.21\).</p>
+      <p>With respect to versicolor: \(-0.69 \times 0.1 \approx -0.07\).</p>
+      <p>With respect to virginica: \(-p_s\,p_{\mathit{vi}}\) gives about \(-0.15\).</p></div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not stop at the derivative with respect to setosa's own raw value. The versicolor and virginica raw values sit in the denominator, so they also change the setosa probability.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> When the derivative is with respect to versicolor, the numerator \(e^{s}\) has a derivative of zero. The whole first part of the quotient rule disappears.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The two cases have different forms. The own-class case is \(p_s(1-p_s)\). The other-class case is \(-p_s\,p_j\), with a minus sign.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is the derivative of a SoftMax output with respect to its own input?</summary><div class="a">It is the predicted probability times one minus that probability, \(p_i(1-p_i)\). You get it with the quotient rule and a little algebra. For a setosa probability of 0.69, it is about 0.21.</div></details>
+    <details class="qa" open><summary>And with respect to another class's input?</summary><div class="a">It is minus the product of the two probabilities, \(-p_i\,p_j\). The numerator does not contain the other input, so only the denominator term of the quotient rule survives. With 0.69 and 0.1, that is about −0.07.</div></details>
+    <details class="qa" open><summary>Why do we need derivatives with respect to every raw output?</summary><div class="a">Every raw output appears in the SoftMax denominator. So every raw output changes each predicted probability. To train the network, we need all of these derivatives, not just the one for the matching class.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>The SoftMax output for a class is its predicted probability.</li>
+      <li>It is a fraction, so its derivative needs the quotient rule.</li>
+      <li>With respect to its own raw value, the derivative is \(p_s(1-p_s)\).</li>
+      <li>With respect to another class's raw value, the derivative is \(-p_s\,p_j\).</li>
+      <li>In the iris example, the three derivatives are 0.21, −0.07, and −0.15.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">SoftMax derivative</span><span class="board-tag">quotient rule, then split into probabilities</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 264" role="img" aria-label="The setosa probability p(s) is e to the s over e to the s, ve and vi added together; s sits in the top and the bottom, ve and vi only in the bottom, giving derivatives of about 0.21, −0.07 and −0.15.">
+            <g stroke-width="2.5" stroke-linejoin="round">
+              <g class="sv-stroke-key">
+                <rect x="80" y="16" width="212" height="36" rx="6" class="sv-key-soft"/>
+                <rect x="80" y="76" width="212" height="36" rx="6" class="sv-key-soft"/>
+                <rect x="16" y="168" width="16" height="16" rx="3" class="sv-key-soft"/>
+              </g>
+              <g class="sv-stroke-acc">
+                <rect x="296" y="76" width="42" height="36" rx="6" class="sv-paper"/>
+                <rect x="16" y="200" width="16" height="16" rx="3" class="sv-paper"/>
+              </g>
+              <g class="sv-stroke-good">
+                <rect x="342" y="76" width="44" height="36" rx="6" class="sv-good-soft"/>
+                <rect x="16" y="232" width="16" height="16" rx="3" class="sv-good-soft"/>
+              </g>
+            </g>
+            <line x1="80" y1="64" x2="386" y2="64" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round"/>
+            <text x="14" y="70" class="sv-tb">p(s) =</text>
+            <text x="186" y="42" text-anchor="middle" class="sv-tb">e<tspan dy="-8" class="sv-ts">s</tspan></text>
+            <text x="186" y="102" text-anchor="middle" class="sv-tb">e<tspan dy="-8" class="sv-ts">s</tspan></text>
+            <text x="317" y="102" text-anchor="middle" class="sv-tb">e<tspan dy="-8" class="sv-ts">ve</tspan></text>
+            <text x="364" y="102" text-anchor="middle" class="sv-tb">e<tspan dy="-8" class="sv-ts">vi</tspan></text>
+            <text x="14" y="148" class="sv-ts">derivatives of p(s)</text>
+            <text x="44" y="182" class="sv-t">p(s)·(1 − p(s)) ≈ 0.21</text>
+            <text x="44" y="214" class="sv-t">−p(s)·p(ve) ≈ −0.07</text>
+            <text x="44" y="246" class="sv-t">−p(s)·p(vi) ≈ −0.15</text>
+          </svg>
+          <p>The setosa probability is \(e^{s}\) over \(e^{s}+e^{\mathit{ve}}+e^{\mathit{vi}}\). Setosa's raw value is in the top and the bottom, so its derivative is \(p_s(1-p_s)\). Versicolor and virginica are only in the bottom, so the top's derivative is 0 and each gives \(-p_s\) times its own probability.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Raw output value</dt><dd>One number per class from the network: \(s\), \(\mathit{ve}\), \(\mathit{vi}\).</dd>
+            <dt>SoftMax output</dt><dd>The predicted probability for a class, such as \(p_s\) for setosa.</dd>
+            <dt>Quotient rule</dt><dd>The derivative of \(f/g\) is \((f'g-g'f)/g^2\).</dd>
+            <dt>Numerator</dt><dd>The top, \(e^{s}\). Only setosa's raw value is in it.</dd>
+            <dt>Denominator</dt><dd>The bottom, \(e^{s}+e^{\mathit{ve}}+e^{\mathit{vi}}\). Every raw value is in it.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Write the fraction</b>\(p_s\) is \(e^{s}\) over the sum</li>
+            <li><b>Quotient rule</b>one function over another</li>
+            <li><b>Own raw value</b>pieces give \(p_s(1-p_s)\)</li>
+            <li><b>Versicolor</b>top's derivative is 0: \(-p_s\,p_{\mathit{ve}}\)</li>
+            <li><b>Virginica</b>homework, same way: \(-p_s\,p_{\mathit{vi}}\)</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$p_s=\frac{e^{s}}{e^{s}+e^{\mathit{ve}}+e^{\mathit{vi}}}$$
+          $$\frac{\partial p_s}{\partial s}=p_s(1-p_s)$$
+          $$\frac{\partial p_s}{\partial \mathit{ve}}=-p_s\,p_{\mathit{ve}}$$
+          <ul class="keys">
+            <li>\(s\), \(\mathit{ve}\), \(\mathit{vi}\) are the raw outputs; \(e\) is about 2.718.</li>
+            <li>Quotient rule with \(f'=g'=e^{s}\) for \(s\), but \(f'=0\) for \(\mathit{ve}\).</li>
+            <li>Virginica gives \(-p_s\,p_{\mathit{vi}}\) the same way.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>raw</th><th>\(s\)</th><th>\(\mathit{ve}\)</th><th>\(\mathit{vi}\)</th></tr>
+            <tr><td>form</td><td>\(p_s(1-p_s)\)</td><td>\(-p_s\,p_{\mathit{ve}}\)</td><td>\(-p_s\,p_{\mathit{vi}}\)</td></tr>
+            <tr><td>numbers</td><td>0.69×0.31</td><td>−0.69×0.1</td><td>homework</td></tr>
+            <tr class="final"><td>slope</td><td>≈ 0.21</td><td>≈ −0.07</td><td>≈ −0.15</td></tr>
+          </table>
+          <p class="hand">Inputs: \(p_s=0.69\), \(p_{\mathit{ve}}=0.1\). Only setosa's own slope is positive, and training needs all three.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Only setosa's own raw value changes its probability.</span><span class="yes">Versicolor and virginica sit in the denominator, so they change the setosa probability too.</span></li>
+            <li><span class="no">Both quotient rule parts survive for versicolor.</span><span class="yes">The numerator \(e^{s}\) has a derivative of zero, so the whole first part disappears.</span></li>
+            <li><span class="no">Own and other cases share one form.</span><span class="yes">Own class gives \(p_s(1-p_s)\); another class gives \(-p_s\,p_j\), with a minus sign.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="82-neural-networks-part-5-argmax-and-softmax.html"><small>Previous</small>Neural Networks Part 5: ArgMax and SoftMax</a> <a href="84-neural-networks-part-6-cross-entropy.html"><small>Next</small>Neural Networks Part 6: Cross Entropy</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

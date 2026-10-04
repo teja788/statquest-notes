@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Saturated Models and Deviance — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>20</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 20 · 18.7 min</div>
+    <h1>Saturated Models and Deviance</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=9T0wlKdew6I" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">The saturated model is the best a model could ever do on your data. It gives the log-likelihood-based R-squared an upper bound, and deviance turns that bound into a p-value.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh fits three models to the same mouse weights: a null model with one parameter, a proposed model with two, and a saturated model with one parameter per data point. The null model marks the worst case and the saturated model marks the best case. McFadden's R-squared uses both, so the score stays between 0 and 1. Residual deviance and null deviance measure the gap from the saturated model, and their difference gives the p-value for that R-squared. In logistic regression the saturated log-likelihood is always zero, so you can drop it from every formula.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Imagine we weighed some mice, and we already know the standard deviation of the data. Then fitting a normal curve only means estimating a mean. That single curve is a model of the data: we can use it instead of the raw numbers to work out probabilities and run tests.</p>
+    <p>Because it estimates only one thing, this is as simple as a model gets. Josh calls it the <strong>null model</strong>. We score it with a likelihood, which says how well the model explains the data we actually saw. Its likelihood is 0.03, so its log-likelihood is \(\log(0.03) = -3.51\).</p>
+    <p>We can also fit two normal curves, which means estimating two means. That is the <strong>proposed model</strong>, the one we really want to use. Its likelihood is 3.57, so its log-likelihood is 1.27. Finally we can fit one curve per data point. That is the <strong>saturated model</strong>: it maxes out the number of parameters we are allowed to estimate. Its likelihood is 1291.5, so its log-likelihood is 7.16.</p>
+    <p>The null model shows the worst case and the saturated model shows the best case. We want the proposed model to sit well above the null model and close to the saturated model.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 340" role="img" aria-label="Three models placed on a log-likelihood scale: the null model lowest at minus 3.51, the proposed model in the middle at 1.27, and the saturated model at the top at 7.16">
+        <defs>
+          <marker id="arrA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker>
+        </defs>
+        <text x="20" y="30" class="sv-ts">log-likelihood of the data</text>
+        <line x1="120" y1="40" x2="120" y2="296" class="sv-line" stroke-width="1.5"/>
+
+        <line x1="120" y1="60" x2="380" y2="60" class="sv-stroke-acc" stroke-width="2" stroke-dasharray="5 4"/>
+        <rect x="380" y="44" width="212" height="32" rx="6" class="sv-acc-soft"/>
+        <text x="392" y="65" class="sv-t">Saturated · 6 parameters</text>
+        <text x="112" y="64" text-anchor="end" class="sv-tm">7.16</text>
+
+        <line x1="120" y1="176" x2="380" y2="176" class="sv-stroke-good" stroke-width="2" stroke-dasharray="5 4"/>
+        <rect x="380" y="160" width="212" height="32" rx="6" class="sv-good-soft"/>
+        <text x="392" y="181" class="sv-t">Proposed · 2 parameters</text>
+        <text x="112" y="180" text-anchor="end" class="sv-tm">1.27</text>
+
+        <line x1="120" y1="270" x2="380" y2="270" class="sv-stroke-key" stroke-width="2" stroke-dasharray="5 4"/>
+        <rect x="380" y="254" width="212" height="32" rx="6" class="sv-key-soft"/>
+        <text x="392" y="275" class="sv-t">Null · 1 parameter</text>
+        <text x="112" y="274" text-anchor="end" class="sv-tm">-3.51</text>
+
+        <line x1="618" y1="270" x2="618" y2="176" class="sv-stroke-ink" stroke-width="1.2" marker-start="url(#arrA)" marker-end="url(#arrA)"/>
+        <text x="626" y="227" class="sv-tm">4.78</text>
+        <line x1="688" y1="270" x2="688" y2="60" class="sv-stroke-ink" stroke-width="1.2" marker-start="url(#arrA)" marker-end="url(#arrA)"/>
+        <text x="696" y="168" class="sv-tm">10.67</text>
+
+        <text x="20" y="320" class="sv-tb">R-squared = 4.78 / 10.67 = 0.45</text>
+      </svg>
+      <figcaption>Notice that R-squared is one distance divided by another: how far the proposed model climbed, over the whole climb available.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Fit the null model, the simplest model possible, and record its log-likelihood. This sets the floor for how badly a model can do.</li>
+      <li>Fit the saturated model, with one parameter per data point, and record its log-likelihood. This sets the ceiling for how well any model can do.</li>
+      <li>Fit the proposed model, the one you actually care about, and record its log-likelihood.</li>
+      <li>Put the three numbers into McFadden's R-squared. The saturated value in the denominator is the scaling factor that keeps the result between 0 and 1.</li>
+      <li>Compute the residual deviance: twice the gap between the saturated and proposed log-likelihoods. Compute the null deviance the same way, using the null model.</li>
+      <li>Subtract residual deviance from null deviance. That difference is a chi-squared value, and its degrees of freedom are the difference in parameter counts.</li>
+      <li>Read the p-value off the chi-squared distribution. It tells you whether the R-squared is real or could be chance.</li>
+    </ol>
+    <p>Josh contrasts this with ordinary R-squared from linear regression. There, a perfect fit has residuals of zero, so the best possible sum of squares is a fixed value: zero. Log-likelihoods have no such fixed ceiling. The saturated model supplies the missing ceiling, one that changes with each dataset.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Bar chart of null deviance 21.34 and residual deviance 11.78 measured from the saturated model at zero, with their difference of 9.56 marked between the bar ends">
+        <defs>
+          <marker id="arrB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker>
+        </defs>
+        <text x="110" y="30" class="sv-ts">0 = the saturated model, the perfect fit</text>
+        <line x1="110" y1="38" x2="110" y2="240" class="sv-line" stroke-width="1.5"/>
+
+        <rect x="110" y="50" width="516" height="34" rx="4" class="sv-key-soft"/>
+        <text x="122" y="72" class="sv-t">Null deviance = 21.34 (df 5)</text>
+
+        <rect x="110" y="100" width="285" height="34" rx="4" class="sv-good-soft"/>
+        <text x="122" y="122" class="sv-t">Residual deviance = 11.78 (df 4)</text>
+
+        <line x1="395" y1="134" x2="395" y2="165" class="sv-line" stroke-width="1"/>
+        <line x1="626" y1="84" x2="626" y2="165" class="sv-line" stroke-width="1"/>
+        <line x1="395" y1="165" x2="626" y2="165" class="sv-stroke-ink" stroke-width="1.2" marker-start="url(#arrB)" marker-end="url(#arrB)"/>
+        <text x="398" y="190" class="sv-tm">21.34 - 11.78 = 9.56, df 1, p = 0.002</text>
+
+        <line x1="110" y1="230" x2="700" y2="230" class="sv-line" stroke-width="1.5"/>
+        <line x1="110" y1="230" x2="110" y2="237" class="sv-line"/>
+        <line x1="231" y1="230" x2="231" y2="237" class="sv-line"/>
+        <line x1="352" y1="230" x2="352" y2="237" class="sv-line"/>
+        <line x1="473" y1="230" x2="473" y2="237" class="sv-line"/>
+        <line x1="593" y1="230" x2="593" y2="237" class="sv-line"/>
+        <text x="110" y="252" text-anchor="middle" class="sv-ts">0</text>
+        <text x="231" y="252" text-anchor="middle" class="sv-ts">5</text>
+        <text x="352" y="252" text-anchor="middle" class="sv-ts">10</text>
+        <text x="473" y="252" text-anchor="middle" class="sv-ts">15</text>
+        <text x="593" y="252" text-anchor="middle" class="sv-ts">20</text>
+        <text x="110" y="280" class="sv-ts">deviance: distance from the perfect fit, so smaller is better</text>
+      </svg>
+      <figcaption>Notice that both deviances are measured from the same zero point, so subtracting them cancels the saturated model out.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Log-likelihood R-squared (McFadden)</span>
+      <div class="math">$$ R^2 = \frac{LL(\text{null}) - LL(\text{proposed})}{LL(\text{null}) - LL(\text{saturated})} $$</div>
+      <p class="explain"><b>Symbols:</b> \(LL(\text{null})\) is the log-likelihood of the data given the one-parameter null model. \(LL(\text{proposed})\) is the log-likelihood given the model you want to use. \(LL(\text{saturated})\) is the log-likelihood given the model with one parameter per data point. <b>What it tells you:</b> it is the share of the available improvement that your model actually captured, on a 0 to 1 scale.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Residual deviance</span>
+      <div class="math">$$ D_{\text{res}} = 2\,\big(LL(\text{saturated}) - LL(\text{proposed})\big) $$</div>
+      <p class="explain"><b>Symbols:</b> \(D_{\text{res}}\) is the residual deviance. The two log-likelihoods are the same as above. <b>What it tells you:</b> how far your proposed model sits below a perfect fit. The factor of 2 makes it follow a chi-squared distribution, with degrees of freedom equal to the difference in parameter counts.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Null deviance</span>
+      <div class="math">$$ D_{\text{null}} = 2\,\big(LL(\text{saturated}) - LL(\text{null})\big) $$</div>
+      <p class="explain"><b>Symbols:</b> \(D_{\text{null}}\) is the null deviance. <b>What it tells you:</b> how far the simplest possible model sits below a perfect fit. It is the total distance your model could hope to close.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">p-value for the R-squared</span>
+      <div class="math">$$ \chi^2 = D_{\text{null}} - D_{\text{res}} = 2\,\big(LL(\text{proposed}) - LL(\text{null})\big) $$</div>
+      <p class="explain"><b>Symbols:</b> \(\chi^2\) is the chi-squared test value. Its degrees of freedom are the parameters in the proposed model minus the parameters in the null model. <b>What it tells you:</b> whether the R-squared is bigger than chance would give. The two forms are equal because the saturated term cancels, so you can use whichever numbers your software reports.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">The logistic regression shortcut</span>
+      <div class="math">$$ LL(\text{saturated}) = 0 \;\Rightarrow\; R^2 = \frac{LL(\text{null}) - LL(\text{proposed})}{LL(\text{null})},\quad D_{\text{res}} = -2\,LL(\text{proposed}) $$</div>
+      <p class="explain"><b>Symbols:</b> the same three log-likelihoods. <b>What it tells you:</b> in logistic regression the saturated squiggle fits every point exactly, so each probability is 1 and \(\log(1)=0\). The saturated log-likelihood is a sum of zeros, so it drops out and the deviances become minus twice the log-likelihoods.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>The three mouse-weight models give log-likelihoods of \(-3.51\) (null), \(1.27\) (proposed) and \(7.16\) (saturated). First, see what goes wrong if you forget the saturated model:</p>
+      <div class="math">$$ \frac{-3.51 - 1.27}{-3.51} = \frac{-4.78}{-3.51} = 1.36 $$</div>
+      <p>An R-squared of 1.36 is impossible, so a scaling factor is clearly missing. Now put the saturated model back in the denominator:</p>
+      <div class="math">$$ \frac{-3.51 - 1.27}{-3.51 - 7.16} = \frac{-4.78}{-10.67} = 0.45 $$</div>
+      <p>That is a sensible value between 0 and 1. Next the deviances. The saturated model has 6 parameters, the proposed model has 2, and the null model has 1.</p>
+      <div class="math">$$ D_{\text{res}} = 2\,(7.16 - 1.27) = 11.78 \quad (df = 6 - 2 = 4) $$</div>
+      <div class="math">$$ D_{\text{null}} = 2\,(7.16 - (-3.51)) = 21.34 \quad (df = 6 - 1 = 5) $$</div>
+      <p>With 4 degrees of freedom, the area beyond 11.78 is 0.02, so the proposed model differs significantly from the saturated model. With 5 degrees of freedom, the area beyond 21.34 is close to zero. Finally, subtract the two deviances:</p>
+      <div class="math">$$ 21.34 - 11.78 = 9.56 \quad (df = 2 - 1 = 1) \;\Rightarrow\; p = 0.002 $$</div>
+      <p>So the R-squared of 0.45 is a reasonable effect size, and the p-value of 0.002 says it is not down to chance.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> The chi-squared test only works when the models are nested. The proposed model must be a simpler version of the saturated model, not just any other model. The same rule applies when you compare the proposed model to the null model.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The saturated model is a yardstick, not a model to use. It has one parameter per data point, so it copies the data instead of describing it. Its only job is to say how high the log-likelihood could possibly go.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Josh is not a fan of the residual and null deviance p-values on their own. They are reported everywhere, but their real value here is as a stepping stone to the p-value for the R-squared.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not expect the degrees of freedom to be the same in every step. Residual deviance uses saturated minus proposed, null deviance uses saturated minus null, and their difference uses proposed minus null. In the example those are 4, 5 and 1.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> In logistic regression the deviances come out positive, even though the log-likelihoods are negative. Likelihoods there are probabilities between 0 and 1, so their logs are negative, and multiplying by \(-2\) flips the sign.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>What is a saturated model?</summary><div class="a">It is a model with one parameter per data point, so it fits the data perfectly. That maxes out the parameters you are allowed to estimate, which makes its log-likelihood the highest any model could reach. You never deploy it. You use it as the best-case reference point when you score another model.</div></details>
+
+    <details class="qa" open><summary>Why does the log-likelihood R-squared need the saturated model?</summary><div class="a">Ordinary R-squared has a fixed best value, because a perfect fit gives residuals of zero. Log-likelihoods have no fixed ceiling, and it changes from dataset to dataset. The saturated model supplies that ceiling in the denominator. Without it the score can go above 1, as in the video where it came out at 1.36 instead of 0.45.</div></details>
+
+    <details class="qa" open><summary>What are null deviance and residual deviance?</summary><div class="a">Both are twice the gap between the saturated log-likelihood and another model's log-likelihood. Residual deviance uses the proposed model, null deviance uses the null model. The factor of two makes each one follow a chi-squared distribution, with degrees of freedom equal to the difference in parameter counts.</div></details>
+
+    <details class="qa" open><summary>How do you get a p-value for the pseudo R-squared?</summary><div class="a">Subtract the residual deviance from the null deviance. That difference is a chi-squared value, with degrees of freedom equal to the proposed model's parameters minus the null model's. You can also get the same number directly as twice the difference of the proposed and null log-likelihoods. People use the deviance route because software reports the deviances more often.</div></details>
+
+    <details class="qa" open><summary>Why can you ignore the saturated model in logistic regression?</summary><div class="a">In logistic regression a saturated fit puts every observed outcome at probability 1, and the log of 1 is zero. So the saturated log-likelihood is a sum of zeros. The term drops out of the R-squared, and the deviances reduce to minus two times the log-likelihoods of the proposed and null models.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>The null model is the simplest model, and it marks the worst case.</li>
+      <li>The saturated model has one parameter per data point, and it marks the best case.</li>
+      <li>McFadden's R-squared divides the improvement your model made by the improvement that was available.</li>
+      <li>The saturated log-likelihood in the denominator is what keeps R-squared between 0 and 1.</li>
+      <li>Residual deviance and null deviance are twice the gap from the saturated model to the proposed and null models.</li>
+      <li>Their difference is a chi-squared value that gives the p-value for the R-squared.</li>
+      <li>The models being compared must be nested for the chi-squared test to be valid.</li>
+      <li>In logistic regression the saturated log-likelihood is always zero, so every formula simplifies.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Saturated models and deviance</span><span class="board-tag">null is the floor, saturated the ceiling</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 282" role="img" aria-label="Three sketches of the same six mouse weights: one normal curve for the null model, two curves for the proposed model, and one curve per point for the saturated model. Arrows place them on a log-likelihood bar: null −3.51, proposed 1.27, saturated 7.16. The proposed model fills 4.78 of the 10.67, so R² = 0.45. Brackets measured from the saturated end show the residual deviance 11.78 and the null deviance 21.34, and 21.34 − 11.78 = 9.56 gives p = 0.002.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <g class="sv-stroke-acc" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15,50.5 22.5,48.1 30,43.5 37.5,36.4 45,28 52.5,20.8 60,18 67.5,20.8 75,28 82.5,36.4 90,43.5 97.5,48.1 105,50.5"/>
+              <polyline points="141,51 147,47.4 153,38 159,24.8 165,18 171,24.8 177,38 183,47.4 189,51"/>
+              <polyline points="181,51 187,47.4 193,38 199,24.8 205,18 211,24.8 217,38 223,47.4 229,51"/>
+              <polyline points="305,50.5 307.5,36.4 310,18 312.5,36.4 315,50.5 317.5,36.4 320,18 322.5,36.4 325,50.5 327.5,36.4 330,18 332.5,36.4 335,50.5"/>
+              <polyline points="345,50.5 347.5,36.4 350,18 352.5,36.4 355,50.5 357.5,36.4 360,18 362.5,36.4 365,50.5 367.5,36.4 370,18 372.5,36.4 375,50.5"/>
+            </g>
+            <g class="sv-ink">
+              <circle cx="30" cy="58" r="3.5"/><circle cx="40" cy="58" r="3.5"/><circle cx="50" cy="58" r="3.5"/><circle cx="70" cy="58" r="3.5"/><circle cx="80" cy="58" r="3.5"/><circle cx="90" cy="58" r="3.5"/>
+              <circle cx="155" cy="58" r="3.5"/><circle cx="165" cy="58" r="3.5"/><circle cx="175" cy="58" r="3.5"/><circle cx="195" cy="58" r="3.5"/><circle cx="205" cy="58" r="3.5"/><circle cx="215" cy="58" r="3.5"/>
+              <circle cx="310" cy="58" r="3.5"/><circle cx="320" cy="58" r="3.5"/><circle cx="330" cy="58" r="3.5"/><circle cx="350" cy="58" r="3.5"/><circle cx="360" cy="58" r="3.5"/><circle cx="370" cy="58" r="3.5"/>
+            </g>
+            <line x1="60" y1="64" x2="60" y2="80" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="185" y1="64" x2="185" y2="80" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="340" y1="64" x2="340" y2="80" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <rect x="60" y="88" width="280" height="18" rx="6" class="sv-paper"/>
+              <rect x="60" y="88" width="125.4" height="18" rx="6" class="sv-key"/>
+            </g>
+            <text x="60" y="128" text-anchor="middle" class="sv-ts">null −3.51</text>
+            <text x="185" y="128" text-anchor="middle" class="sv-ts">proposed 1.27</text>
+            <text x="385" y="128" text-anchor="end" class="sv-ts">saturated 7.16</text>
+            <text x="200" y="162" text-anchor="middle" class="sv-tb">R² = 4.78 / 10.67 = 0.45</text>
+            <path d="M185.4 172 L185.4 178 L340 178 L340 172" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="262.7" y="198" text-anchor="middle" class="sv-ts">residual deviance 11.78</text>
+            <path d="M60 208 L60 214 L340 214 L340 208" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="200" y="234" text-anchor="middle" class="sv-ts">null deviance 21.34</text>
+            <text x="200" y="266" text-anchor="middle" class="sv-t">21.34 − 11.78 = 9.56 → p = 0.002</text>
+          </svg>
+          <p>The null model is the floor and the saturated model, one parameter per data point, the ceiling. R² is the share of that climb the proposed model makes. Deviances are twice the gaps below the ceiling; their difference gives the p-value.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Null model</dt><dd>The simplest model, one parameter: the worst case.</dd>
+            <dt>Proposed model</dt><dd>The model you actually want to use.</dd>
+            <dt>Saturated model</dt><dd>One parameter per data point: the best case.</dd>
+            <dt>Residual deviance</dt><dd>Twice the gap from saturated down to proposed.</dd>
+            <dt>Null deviance</dt><dd>Twice the gap from saturated down to null.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Null model</b>LL −3.51, the floor</li>
+            <li><b>Saturated model</b>LL 7.16, the ceiling</li>
+            <li><b>Proposed model</b>LL 1.27, the one you want</li>
+            <li><b>R²</b>4.78 / 10.67 = 0.45</li>
+            <li><b>Deviances</b>residual 11.78, null 21.34</li>
+            <li><b>Subtract</b>9.56, 1 df, p = 0.002</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$R^2=\frac{LL(\text{null})-LL(\text{prop})}{LL(\text{null})-LL(\text{sat})}$$
+          $$D_{\text{res}}=2\big(LL(\text{sat})-LL(\text{prop})\big)$$
+          $$\chi^2=D_{\text{null}}-D_{\text{res}}$$
+          <ul class="keys">
+            <li>prop and sat: the proposed and saturated models.</li>
+            <li>\(D_{\text{null}}\) is the same with the null model in place of prop.</li>
+            <li>Logistic regression: \(LL(\text{sat})=0\), so it drops out.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th></th><th>null</th><th>proposed</th><th>saturated</th></tr>
+            <tr><td>LL</td><td>−3.51</td><td>1.27</td><td>7.16</td></tr>
+            <tr><td>deviance</td><td>21.34</td><td>11.78</td><td>0</td></tr>
+            <tr><td>R²</td><td colspan="3">4.78 / 10.67 = 0.45</td></tr>
+            <tr class="final"><td>χ²</td><td colspan="3">9.56, df 1, p = 0.002 ✓</td></tr>
+          </table>
+          <p class="hand">Without the saturated model, R² comes out at 1.36: impossible.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">The saturated model is a model to use.</span><span class="yes">It copies the data. It is only a yardstick for the ceiling.</span></li>
+            <li><span class="no">Any two models can be compared.</span><span class="yes">The chi-squared test needs nested models: the proposed must be a simpler version of the saturated.</span></li>
+            <li><span class="no">Degrees of freedom stay the same each step.</span><span class="yes">They are 6 − 2 = 4, 6 − 1 = 5, then 2 − 1 = 1.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="19-logistic-regression-details-pt-3-r-squared-and-p-value.html"><small>Previous</small>Logistic Regression Details Pt 3: R-squared and p-value</a> <a href="21-logistic-regression-in-r.html"><small>Next</small>Logistic Regression in R</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

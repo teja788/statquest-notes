@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Clustering with DBSCAN — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>42</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 42 · 9.5 min</div>
+    <h1>Clustering with DBSCAN</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=RDZUdRSDOok" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">DBSCAN groups points by how tightly they are packed. It finds clusters that wrap around each other, and it leaves lonely points out as outliers.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh plots people by weight and height. Your eye sees two clumps, one wrapped around the other, plus a few points sitting far away. A simple method like k-means struggles with wrapped clusters, and with four or more features you cannot even draw the graph. DBSCAN copies what your eye does. It counts how many neighbours each point has, calls the crowded points core points, and then grows clusters outward from them.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Imagine we measure the weight and height of many people. We put weight on the x-axis and height on the y-axis, and plot one dot per person. By eye we see two clumps of dots that are fairly dense. A few dots sit far away from everyone else, and those look like outliers.</p>
+    <p>Here the two clumps are nested. That means the green cluster wraps around the blue cluster, like a ring around a ball. A standard method like k-means clustering can have trouble with this shape. It may cut the picture in a strange place, and give the blue cluster some points that clearly belong to the green ring.</p>
+    <p>There is a second problem. This graph uses only two measurements. Add each person's age and we need a third axis, which is awkward on a flat screen. With four or more measurements we cannot draw the graph at all.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 328" role="img" aria-label="Left: a blue clump of points surrounded by a green ring of points, with three far-away outliers. Right: the same points cut in half by a straight line, so the ring is split between two clusters.">
+        <text x="205" y="30" text-anchor="middle" class="sv-tb">What your eye sees</text>
+        <text x="575" y="30" text-anchor="middle" class="sv-tb">What a simple split does</text>
+        <circle cx="205" cy="160" r="5" class="sv-acc"></circle>
+        <circle cx="185" cy="148" r="5" class="sv-acc"></circle>
+        <circle cx="223" cy="150" r="5" class="sv-acc"></circle>
+        <circle cx="196" cy="177" r="5" class="sv-acc"></circle>
+        <circle cx="219" cy="178" r="5" class="sv-acc"></circle>
+        <circle cx="205" cy="137" r="5" class="sv-acc"></circle>
+        <circle cx="233" cy="166" r="5" class="sv-acc"></circle>
+        <circle cx="180" cy="171" r="5" class="sv-acc"></circle>
+        <circle cx="295" cy="160" r="5" class="sv-good"></circle>
+        <circle cx="283" cy="115" r="5" class="sv-good"></circle>
+        <circle cx="250" cy="82" r="5" class="sv-good"></circle>
+        <circle cx="205" cy="70" r="5" class="sv-good"></circle>
+        <circle cx="160" cy="82" r="5" class="sv-good"></circle>
+        <circle cx="127" cy="115" r="5" class="sv-good"></circle>
+        <circle cx="115" cy="160" r="5" class="sv-good"></circle>
+        <circle cx="127" cy="205" r="5" class="sv-good"></circle>
+        <circle cx="160" cy="238" r="5" class="sv-good"></circle>
+        <circle cx="205" cy="250" r="5" class="sv-good"></circle>
+        <circle cx="250" cy="238" r="5" class="sv-good"></circle>
+        <circle cx="283" cy="205" r="5" class="sv-good"></circle>
+        <circle cx="258" cy="107" r="5" class="sv-good"></circle>
+        <circle cx="152" cy="107" r="5" class="sv-good"></circle>
+        <circle cx="152" cy="213" r="5" class="sv-good"></circle>
+        <circle cx="258" cy="213" r="5" class="sv-good"></circle>
+        <circle cx="72" cy="262" r="5" class="sv-ink3"></circle>
+        <circle cx="332" cy="64" r="5" class="sv-ink3"></circle>
+        <circle cx="336" cy="258" r="5" class="sv-ink3"></circle>
+        <rect x="26" y="226" width="52" height="18" class="sv-paper"></rect>
+        <text x="30" y="240" class="sv-ts">outliers</text>
+        <path d="M575 56 V276" class="sv-stroke-ink" stroke-width="1.5" stroke-dasharray="5 4"></path>
+        <circle cx="575" cy="160" r="5" class="sv-good"></circle>
+        <circle cx="555" cy="148" r="5" class="sv-acc"></circle>
+        <circle cx="593" cy="150" r="5" class="sv-good"></circle>
+        <circle cx="566" cy="177" r="5" class="sv-acc"></circle>
+        <circle cx="589" cy="178" r="5" class="sv-good"></circle>
+        <circle cx="575" cy="137" r="5" class="sv-good"></circle>
+        <circle cx="603" cy="166" r="5" class="sv-good"></circle>
+        <circle cx="550" cy="171" r="5" class="sv-acc"></circle>
+        <circle cx="665" cy="160" r="5" class="sv-good"></circle>
+        <circle cx="653" cy="115" r="5" class="sv-good"></circle>
+        <circle cx="620" cy="82" r="5" class="sv-good"></circle>
+        <circle cx="575" cy="70" r="5" class="sv-good"></circle>
+        <circle cx="530" cy="82" r="5" class="sv-acc"></circle>
+        <circle cx="497" cy="115" r="5" class="sv-acc"></circle>
+        <circle cx="485" cy="160" r="5" class="sv-acc"></circle>
+        <circle cx="497" cy="205" r="5" class="sv-acc"></circle>
+        <circle cx="530" cy="238" r="5" class="sv-acc"></circle>
+        <circle cx="575" cy="250" r="5" class="sv-good"></circle>
+        <circle cx="620" cy="238" r="5" class="sv-good"></circle>
+        <circle cx="653" cy="205" r="5" class="sv-good"></circle>
+        <circle cx="628" cy="107" r="5" class="sv-good"></circle>
+        <circle cx="522" cy="107" r="5" class="sv-acc"></circle>
+        <circle cx="522" cy="213" r="5" class="sv-acc"></circle>
+        <circle cx="628" cy="213" r="5" class="sv-good"></circle>
+        <circle cx="442" cy="262" r="5" class="sv-acc"></circle>
+        <circle cx="702" cy="64" r="5" class="sv-good"></circle>
+        <circle cx="706" cy="258" r="5" class="sv-good"></circle>
+        <rect x="424" y="40" width="132" height="18" class="sv-paper"></rect>
+        <text x="428" y="54" class="sv-ts">ring cut in half</text>
+        <text x="205" y="302" text-anchor="middle" class="sv-ts">a green ring wrapped around a blue clump</text>
+        <text x="575" y="302" text-anchor="middle" class="sv-ts">points land in the wrong cluster</text>
+      </svg>
+      <figcaption>Notice the right panel: a straight split has to break the ring, so half of it is wrongly joined to the inner clump.</figcaption>
+    </figure>
+    <p>DBSCAN works from density, which is just how crowded a small region is. Clusters live in crowded regions, and outliers live in empty ones. Counting neighbours works in any number of dimensions, so DBSCAN keeps working when the picture is impossible to draw.</p>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Choose a radius. Draw a circle of that radius around each point, and count how many other points the circle overlaps. The radius is set by you, so expect to try a few values.</li>
+      <li>Choose the smallest number of neighbours a crowded point must have. In this video a point needs at least 4 close points. This number is also set by you.</li>
+      <li>Label every point. A point with enough neighbours is a <strong>core point</strong>. Every other point is a <strong>non-core point</strong>.</li>
+      <li>Pick one core point at random. It becomes the start of the first cluster.</li>
+      <li>Add the core points that are close to the cluster. Each new core point can pull in more core points near it, so the cluster grows outward.</li>
+      <li>Stop growing when no core point can be added. At this moment every point in the cluster is a core point.</li>
+      <li>Now add the non-core points that are close to a core point in the cluster. They join the cluster, but they cannot pass it on to their own neighbours.</li>
+      <li>Take a core point that has no cluster yet and start the next cluster. Repeat until every core point belongs to a cluster. The non-core points that are close to no core point are called outliers.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 340" role="img" aria-label="Left: two points with circles around them, one overlapping eight neighbours and one overlapping two. Right: a chain of core points extending a cluster, a non-core point that joins, and a further non-core point that is not added.">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" class="sv-key"></path>
+          </marker>
+        </defs>
+        <text x="205" y="34" text-anchor="middle" class="sv-tb">Count the close points</text>
+        <circle cx="170" cy="150" r="55" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="5 4"></circle>
+        <circle cx="300" cy="230" r="55" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="5 4"></circle>
+        <circle cx="140" cy="120" r="5" class="sv-ink2"></circle>
+        <circle cx="200" cy="125" r="5" class="sv-ink2"></circle>
+        <circle cx="210" cy="170" r="5" class="sv-ink2"></circle>
+        <circle cx="150" cy="190" r="5" class="sv-ink2"></circle>
+        <circle cx="190" cy="190" r="5" class="sv-ink2"></circle>
+        <circle cx="125" cy="160" r="5" class="sv-ink2"></circle>
+        <circle cx="205" cy="145" r="5" class="sv-ink2"></circle>
+        <circle cx="165" cy="105" r="5" class="sv-ink2"></circle>
+        <circle cx="270" cy="190" r="5" class="sv-ink2"></circle>
+        <circle cx="340" cy="255" r="5" class="sv-ink2"></circle>
+        <circle cx="95" cy="255" r="5" class="sv-ink2"></circle>
+        <circle cx="170" cy="150" r="7" class="sv-key"></circle>
+        <circle cx="300" cy="230" r="7" class="sv-ink3"></circle>
+        <rect x="60" y="60" width="212" height="20" class="sv-paper"></rect>
+        <text x="64" y="75" class="sv-t">close to 8 points, so it is a core point</text>
+        <rect x="140" y="292" width="216" height="20" class="sv-paper"></rect>
+        <text x="144" y="307" class="sv-t">close to 2 points, so it is non-core</text>
+        <path d="M390 40 V310" class="sv-line" stroke-width="1.5"></path>
+        <text x="575" y="34" text-anchor="middle" class="sv-tb">Grow the cluster</text>
+        <circle cx="450" cy="150" r="8" class="sv-key"></circle>
+        <circle cx="520" cy="150" r="8" class="sv-key"></circle>
+        <circle cx="590" cy="150" r="8" class="sv-key"></circle>
+        <circle cx="660" cy="150" r="8" class="sv-ink3"></circle>
+        <circle cx="722" cy="220" r="8" class="sv-ink3"></circle>
+        <path d="M462 150 H508" class="sv-stroke-key" stroke-width="2" marker-end="url(#ah)"></path>
+        <path d="M532 150 H578" class="sv-stroke-key" stroke-width="2" marker-end="url(#ah)"></path>
+        <path d="M602 150 H648" class="sv-stroke-key" stroke-width="2" marker-end="url(#ah)"></path>
+        <path d="M668 162 L712 210" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="5 4"></path>
+        <path d="M682 178 L700 196 M700 178 L682 196" class="sv-stroke-ink" stroke-width="2.5"></path>
+        <text x="450" y="128" text-anchor="middle" class="sv-ts">core</text>
+        <text x="590" y="128" text-anchor="middle" class="sv-ts">core</text>
+        <text x="660" y="128" text-anchor="middle" class="sv-ts">non-core</text>
+        <text x="575" y="270" text-anchor="middle" class="sv-t">core points extend the cluster</text>
+        <text x="575" y="292" text-anchor="middle" class="sv-ts">a non-core point joins, but the chain stops there</text>
+      </svg>
+      <figcaption>Notice the crossed-out arrow: the last point is close to a non-core point only, so the cluster never reaches it.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>The video states the rules in words and pictures. These three lines write the same rules down.</p>
+    <div class="formula"><span class="lbl">Distance between two points</span><div class="math">$$ d(p,q)=\sqrt{\sum_{i=1}^{m}\left(p_i-q_i\right)^2} $$</div><p class="explain"><b>Symbols:</b> \(p\) and \(q\) are two points, for example two people. \(m\) is how many measurements each person has, such as weight, height and age. \(p_i\) is the value of measurement \(i\) for person \(p\). \(d(p,q)\) is the straight-line distance between them. <b>What it tells you:</b> distance is just arithmetic, so it works with 2 measurements or with 200, even when no graph can be drawn.</p></div>
+    <div class="formula"><span class="lbl">The points inside the circle</span><div class="math">$$ N_\varepsilon(p)=\{\;q\in D\;:\;q\neq p,\;d(p,q)\le\varepsilon\;\} $$</div><p class="explain"><b>Symbols:</b> \(\varepsilon\) is the radius of the circle you draw around a point, and you choose it. \(D\) is the whole set of points. \(N_\varepsilon(p)\) is the group of other points that fall inside the circle around \(p\). <b>What it tells you:</b> this group is what you count when you ask how crowded the area around a point is.</p></div>
+    <div class="formula"><span class="lbl">The core point test</span><div class="math">$$ \left|N_\varepsilon(p)\right|\;\ge\;\text{minPts}\quad\Longrightarrow\quad p\ \text{is a core point} $$</div><p class="explain"><b>Symbols:</b> \(\left|N_\varepsilon(p)\right|\) is the number of points inside the circle around \(p\). \(\text{minPts}\) is the smallest count you accept, and you choose it; in the video it is 4. <b>What it tells you:</b> two numbers, \(\varepsilon\) and \(\text{minPts}\), decide the whole clustering, because everything else follows from which points pass this test.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh draws an orange circle of the chosen radius around one red point. The circle touches 8 other points, so that point is close to 8 points. He repeats this for more points and gets counts of 5, 6 and 7. One point is close to only 2 points, and one point sits alone, so its count is 0.</p>
+      <p>The rule here is <em>at least 4 close points</em>. The points with 8, 5, 6 and 7 neighbours all pass, so they are core points. The points with 2 and 0 neighbours fail, so they are non-core.</p>
+      <p>Now pick a core point at random and call it cluster 1. Core points close to it join and extend it, and their neighbours extend it again, until no core point is left to add. At that moment every member of cluster 1 is a core point. Then the non-core points that touch a core point of cluster 1 are added.</p>
+      <p>One non-core point sits next to a non-core point that just joined. It is not close to any core point, so it stays out. The core points that never touched cluster 1 are close to each other, so they start cluster 2, and their nearby non-core points join it. When all core points have a cluster, the leftover non-core points are labelled outliers.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Both settings are yours to choose. The circle radius and the minimum number of close points are not learned from the data. Josh says plainly that you may need to fiddle with each of them, so treat DBSCAN results as a function of those two numbers.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Core points and non-core points do not behave the same way. A core point pulls its neighbours into the cluster and keeps the chain going. A non-core point may join a cluster, but the cluster stops there and never spreads through it.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Clusters are built one after another, not all at once. Suppose a non-core point is close to core points in two different clusters. It joins whichever cluster is built first, and after that it is no longer available to the other one.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Not every point gets a cluster. Points that are non-core and far from all core points are returned as outliers. That is the intended output, not a failure of the method.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>Why would you use DBSCAN instead of k-means?</summary><div class="a">Because DBSCAN works from density rather than from distance to a centre. That lets it find nested clusters, like a ring wrapped around a ball, where k-means would cut straight through the ring. DBSCAN also reports outliers instead of forcing every point into a group.</div></details>
+    <details class="qa" open><summary>What is a core point?</summary><div class="a">A core point is a point with a crowded neighbourhood. You draw a circle of a chosen radius around it and count the other points inside. If that count reaches your chosen minimum, four in the video, the point is a core point. Core points are the only points that can grow a cluster.</div></details>
+    <details class="qa" open><summary>How does a cluster actually form?</summary><div class="a">You start from a random core point. Core points inside its circle join the cluster and then extend it to their own neighbours, and this repeats until no more core points can be reached. Only then do you add the non-core points that sit next to a core point in the cluster. Those points join, but they do not carry the cluster any further.</div></details>
+    <details class="qa" open><summary>Can DBSCAN give different answers on the same data?</summary><div class="a">The core points are fixed by the two settings, so the dense parts of each cluster are stable. The edges can move, because clusters are made one at a time and a non-core point near two clusters goes to whichever one is built first. Since the starting core point is picked at random, the assignment of those border points can change between runs.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Your eye finds clusters by density, and DBSCAN copies that idea with counting.</li>
+      <li>You choose two things: a circle radius, and the smallest number of close points a crowded point must have.</li>
+      <li>A point that meets the minimum is a core point, and everything else is non-core.</li>
+      <li>A random core point starts a cluster, and nearby core points join it and extend it further.</li>
+      <li>When no core point can be added, the non-core points next to core points join, but they do not extend the cluster.</li>
+      <li>The remaining core points start the next cluster, and the process repeats until every core point is assigned.</li>
+      <li>Non-core points that touch no core point are reported as outliers.</li>
+      <li>Because it only needs distances, DBSCAN finds nested clusters in data you cannot plot.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">DBSCAN</span><span class="board-tag">crowded points grow clusters, lonely ones are outliers</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 250" role="img" aria-label="A circle of the chosen radius around one point holds 4 other points, so it is a core point. Core points fill the middle of a cluster, non-core points at its edge join it, and a lonely point far away is left out as an outlier.">
+            <rect x="24" y="110" width="232" height="76" rx="38" class="sv-good-soft"/>
+            <rect x="24" y="110" width="232" height="76" rx="38" class="sv-stroke-good" stroke-width="2" stroke-dasharray="6 4"/>
+            <circle cx="140" cy="128" r="62" class="sv-stroke-key" stroke-width="2.5" stroke-dasharray="6 5"/>
+            <line x1="140" y1="128" x2="183.8" y2="84.2" class="sv-stroke-key" stroke-width="2.5" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="44" cy="128" r="8" class="sv-ink3"/>
+              <circle cx="92" cy="128" r="8" class="sv-key"/>
+              <circle cx="140" cy="128" r="8" class="sv-key"/>
+              <circle cx="188" cy="128" r="8" class="sv-key"/>
+              <circle cx="236" cy="128" r="8" class="sv-ink3"/>
+              <circle cx="68" cy="168" r="8" class="sv-ink3"/>
+              <circle cx="116" cy="168" r="8" class="sv-key"/>
+              <circle cx="164" cy="168" r="8" class="sv-key"/>
+              <circle cx="212" cy="168" r="8" class="sv-ink3"/>
+              <circle cx="352" cy="226" r="8" class="sv-ink3"/>
+            </g>
+            <text x="140" y="50" text-anchor="middle" class="sv-tb">≥ 4 inside → core</text>
+            <text x="192" y="80" class="sv-ts">radius</text>
+            <text x="262" y="134" class="sv-ts">non-core joins</text>
+            <text x="24" y="216" class="sv-t">cores grow the cluster</text>
+            <text x="334" y="232" text-anchor="end" class="sv-ts">outlier</text>
+          </svg>
+          <p>Draw a circle of your radius around each point and count who is inside; 4 or more makes it a core point. Clusters grow through core points, non-core points at the edge join without extending them, and lonely points become outliers.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Radius and minPts</dt><dd>Your two settings: circle size and smallest neighbour count (4 here).</dd>
+            <dt>Core point</dt><dd>At least minPts points inside its circle. Only cores grow clusters.</dd>
+            <dt>Non-core point</dt><dd>Joins a cluster if close to a core point, but never extends it.</dd>
+            <dt>Outlier</dt><dd>A non-core point close to no core point.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Pick a radius</b>circle around each point</li>
+            <li><b>Pick minPts</b>at least 4 here</li>
+            <li><b>Label</b>core or non-core</li>
+            <li><b>Grow</b>random core pulls in close cores</li>
+            <li><b>Add edges</b>close non-core join, can't extend</li>
+            <li><b>Next cluster</b>from a core with no cluster</li>
+          </ol>
+          <p class="loop">↺ steps 4 to 6 repeat until every core point has a cluster</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$d(p,q)=\sqrt{\sum_{i=1}^{m}\left(p_i-q_i\right)^2}$$
+          $$N_\varepsilon(p)=\{\,q\in D:\ q\neq p,\ d(p,q)\le\varepsilon\,\}$$
+          $$\left|N_\varepsilon(p)\right|\ge\text{minPts}\ \Rightarrow\ \text{core}$$
+          <ul class="keys">
+            <li>\(m\): measurements per point, 2 or 200; no graph needed.</li>
+            <li>\(\varepsilon\): your radius; \(D\): all the points.</li>
+            <li>minPts: your minimum count, 4 in the video.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>close points</th><th>≥ 4?</th><th>label</th></tr>
+            <tr><td>8</td><td>yes</td><td>core</td></tr>
+            <tr><td>5, 6, 7</td><td>yes</td><td>core</td></tr>
+            <tr><td>2</td><td>no</td><td>non-core</td></tr>
+            <tr><td>0</td><td>no</td><td>non-core</td></tr>
+            <tr class="final"><td>result</td><td>2 clusters</td><td>+ outliers</td></tr>
+          </table>
+          <p class="hand">Cores grow cluster 1, then cluster 2. A point next to a non-core member only stays out; leftovers become outliers.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">DBSCAN learns the radius and minimum from the data.</span><span class="yes">You choose both and may need to fiddle; results depend on those two numbers.</span></li>
+            <li><span class="no">Any cluster member can extend the cluster.</span><span class="yes">Only core points extend it. A non-core point may join, but the cluster stops there.</span></li>
+            <li><span class="no">A border point always lands in the same cluster.</span><span class="yes">Clusters form one at a time; a point near two joins whichever is built first.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="41-k-means-clustering.html"><small>Previous</small>K-means clustering</a> <a href="43-k-nearest-neighbors.html"><small>Next</small>K-nearest neighbors</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

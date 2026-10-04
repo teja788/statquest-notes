@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Conditional Probabilities — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>20</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 20 · 10.9 min</div>
+    <h1>Conditional Probabilities</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=_IgyaD7vOOA" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">A conditional probability is the probability of something, given that we already know something else. This video builds one from a small survey, so you can see which numbers go on top and which go underneath.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh visits StatLand and asks 14 people whether they love candy, soda, both, or neither. The answers go into a contingency table, and dividing each count by 14 turns them into probabilities. Now suppose we learn that a person loves soda. We can ignore everyone else, so the question shrinks to the 7 people who love soda. Five of those 7 do not love candy, so the conditional probability is 5/7, which is 0.71.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh takes a trip to StatLand and asks everyone the same question. Do you love candy, do you love soda, or both? Every person is drawn as one coloured dot. Two people love candy and soda. Four people love only candy. Five people love only soda. Three people love neither. That is 14 people in total.</p>
+    <p>To keep track of the answers, he puts them in a contingency table. A contingency table is a grid that counts how many people fall into each combination of two questions. The rows here are about candy, and the columns are about soda. Each of the four inner cells holds the number of people with that pair of answers.</p>
+    <p>Any count becomes a probability once we divide it by the size of the whole population. Two people love both, so that probability is 2/14, or 0.14. Adding down the first column gives 7 people who love soda, so that probability is 7/14, or 0.50. These row and column totals are the plain, unconditional probabilities.</p>
+    <p>Conditional probability arrives when we are given a piece of information. Suppose we already know that the person in front of us loves soda. The 7 people who do not love soda are now impossible, so we drop them. Our whole world is the 7 people in the soda column. We ask our question inside that smaller world.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 340" role="img" aria-label="Contingency table of 14 StatLand people by whether they love candy and whether they love soda, with the loves soda column highlighted">
+        <rect x="230" y="56" width="160" height="196" class="sv-acc-soft"/>
+        <text x="20" y="34" class="sv-tb">StatLand: 14 people, asked about candy and soda</text>
+        <line x1="20" y1="96" x2="700" y2="96" class="sv-line" stroke-width="1.5"/>
+        <line x1="20" y1="148" x2="700" y2="148" class="sv-line" stroke-width="1.5"/>
+        <line x1="20" y1="200" x2="700" y2="200" class="sv-line" stroke-width="1.5"/>
+        <line x1="20" y1="252" x2="700" y2="252" class="sv-line" stroke-width="1.5"/>
+        <line x1="230" y1="56" x2="230" y2="252" class="sv-line" stroke-width="1.5"/>
+        <line x1="390" y1="56" x2="390" y2="252" class="sv-line" stroke-width="1.5"/>
+        <line x1="570" y1="56" x2="570" y2="252" class="sv-line" stroke-width="1.5"/>
+        <text x="240" y="84" class="sv-tm">Loves soda</text>
+        <text x="400" y="84" class="sv-tm">No soda</text>
+        <text x="580" y="84" class="sv-tm">Total</text>
+        <text x="20" y="128" class="sv-t">Loves candy</text>
+        <text x="20" y="180" class="sv-t">Does not love candy</text>
+        <text x="20" y="232" class="sv-t">Total</text>
+        <text x="300" y="132" class="sv-tb" text-anchor="middle">2</text>
+        <text x="470" y="132" class="sv-tb" text-anchor="middle">4</text>
+        <text x="628" y="132" class="sv-tb" text-anchor="middle">6</text>
+        <text x="300" y="184" class="sv-tb" text-anchor="middle">5</text>
+        <text x="470" y="184" class="sv-tb" text-anchor="middle">3</text>
+        <text x="628" y="184" class="sv-tb" text-anchor="middle">8</text>
+        <text x="300" y="236" class="sv-tb" text-anchor="middle">7</text>
+        <text x="470" y="236" class="sv-tb" text-anchor="middle">7</text>
+        <text x="628" y="236" class="sv-tb" text-anchor="middle">14</text>
+        <path d="M 300 294 L 300 260" class="sv-stroke-acc" stroke-width="2" marker-end="url(#ar20)"/>
+        <text x="20" y="313" class="sv-ts">Given that the person loves soda, only the shaded column can still happen.</text>
+        <defs><marker id="ar20" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" class="sv-acc"/></marker></defs>
+      </svg>
+      <figcaption>Notice that the condition does not change any count. It only decides which part of the table we are allowed to look at.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Ask both questions of every person. In StatLand that gives 2 people who love both, 4 who love only candy, 5 who love only soda, and 3 who love neither.</li>
+      <li>Put the four counts into a contingency table, with candy down the rows and soda across the columns.</li>
+      <li>Divide each count by the total population of 14 to turn the counts into probabilities.</li>
+      <li>Add up the rows and the columns. Seven people love soda and 7 do not; 6 love candy and 8 do not.</li>
+      <li>Write down what you are given. Here we are told that the person loves soda, so only the soda column can still happen.</li>
+      <li>Count inside that column. Five of its 7 people do not love candy, so the conditional probability is 5/7 = 0.71. Divide the top and bottom by 14 and you get the standard formula.</li>
+    </ol>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Fourteen dots for StatLand narrowing down to the seven dots who love soda, five of which do not love candy">
+        <text x="20" y="30" class="sv-tb">Everyone in StatLand</text>
+        <circle cx="60" cy="62" r="11" class="sv-key"/>
+        <circle cx="105" cy="62" r="11" class="sv-key"/>
+        <circle cx="150" cy="62" r="11" class="sv-good"/>
+        <circle cx="195" cy="62" r="11" class="sv-good"/>
+        <circle cx="240" cy="62" r="11" class="sv-good"/>
+        <circle cx="285" cy="62" r="11" class="sv-good"/>
+        <circle cx="330" cy="62" r="11" class="sv-acc"/>
+        <circle cx="375" cy="62" r="11" class="sv-acc"/>
+        <circle cx="420" cy="62" r="11" class="sv-acc"/>
+        <circle cx="465" cy="62" r="11" class="sv-acc"/>
+        <circle cx="510" cy="62" r="11" class="sv-acc"/>
+        <circle cx="555" cy="62" r="11" class="sv-ink3"/>
+        <circle cx="600" cy="62" r="11" class="sv-ink3"/>
+        <circle cx="645" cy="62" r="11" class="sv-ink3"/>
+        <text x="42" y="94" class="sv-ts">2 love both</text>
+        <text x="140" y="94" class="sv-ts">4 love only candy</text>
+        <text x="322" y="94" class="sv-ts">5 love only soda</text>
+        <text x="546" y="94" class="sv-ts">3 love neither</text>
+        <path d="M 380 112 L 380 148" class="sv-stroke-acc" stroke-width="2" marker-end="url(#ar20b)"/>
+        <text x="396" y="136" class="sv-t">We are told: this person loves soda</text>
+        <rect x="150" y="160" width="460" height="80" rx="8" class="sv-acc-soft"/>
+        <circle cx="215" cy="196" r="11" class="sv-key"/>
+        <circle cx="260" cy="196" r="11" class="sv-key"/>
+        <circle cx="305" cy="196" r="11" class="sv-acc"/>
+        <circle cx="350" cy="196" r="11" class="sv-acc"/>
+        <circle cx="395" cy="196" r="11" class="sv-acc"/>
+        <circle cx="440" cy="196" r="11" class="sv-acc"/>
+        <circle cx="485" cy="196" r="11" class="sv-acc"/>
+        <text x="176" y="228" class="sv-ts">the 7 people who love soda</text>
+        <text x="20" y="276" class="sv-t">5 of these 7 do not love candy, so the probability is 5 / 7 = 0.71</text>
+        <defs><marker id="ar20b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" class="sv-acc"/></marker></defs>
+      </svg>
+      <figcaption>Notice that the 7 people who do not love soda simply leave the picture, which is why the denominator falls from 14 to 7.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Count to probability</span>
+      <div class="math">$$ P(\text{loves candy and loves soda}) = \frac{2}{14} = 0.14 $$</div>
+      <p class="explain"><b>Symbols:</b> \(P(\cdot)\) means the probability of the thing in brackets, 2 is the count in that cell, and 14 is the total number of people in StatLand. <b>What it tells you:</b> every cell becomes a probability once you divide it by the whole population.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Conditional probability from counts</span>
+      <div class="math">$$ P(\text{no candy and soda} \mid \text{loves soda}) = \frac{5}{7} = 0.71 $$</div>
+      <p class="explain"><b>Symbols:</b> the vertical bar \(\mid\) is read as "given that", and everything to its right is what we already know. The 5 is the number of people who love soda but not candy. The 7 is the number of people who love soda. <b>What it tells you:</b> once we know the person loves soda, the denominator is the size of that group, not the whole population.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">The same answer, written with probabilities</span>
+      <div class="math">$$ \frac{5}{7} = \frac{5/14}{7/14} = \frac{0.36}{0.50} = 0.71 $$</div>
+      <p class="explain"><b>Symbols:</b> dividing the top and the bottom by the same number 14 leaves the value unchanged. <b>What it tells you:</b> the top is now the plain probability of loving soda but not candy, and the bottom is the plain probability of loving soda.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">General definition</span>
+      <div class="math">$$ P(A \mid B) = \frac{P(A \text{ and } B)}{P(B)} $$</div>
+      <p class="explain"><b>Symbols:</b> \(A\) is the event we care about, \(B\) is the event we already know happened, \(P(A \text{ and } B)\) is the probability that both happen, and \(P(B)\) is the probability of what we know. <b>What it tells you:</b> a conditional probability is the probability of an event, scaled by the knowledge we already have about it.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>We meet someone in StatLand and learn that they love soda. What is the probability that they do not love candy?</p>
+      <p>The soda column holds 2 people who also love candy and 5 people who do not, so 7 love soda in total. The condition removes the other 7 people from the question.</p>
+      <p>Divide inside the column: \(5 \div 7 = 0.71\). So there is a 71 percent chance that a soda lover does not love candy.</p>
+      <p>Now do the same sum with probabilities. Loving soda but not candy is 5/14 = 0.36, and loving soda at all is 7/14 = 0.50. Then \(0.36 \div 0.50 = 0.71\), the same answer. That extra division changed nothing, but it shows where the general formula comes from.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> The denominator is the easiest thing to get wrong. Once you are given something, stop dividing by the whole population. Divide by the size of the group that the condition describes.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A joint probability and a conditional probability are different questions. The probability of loving soda and not candy is 5/14 = 0.36. The probability of not loving candy given that they love soda is 5/7 = 0.71.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The full wording repeats itself: "does not love candy and loves soda, given that they love soda". Most people drop the repeated part and write "does not love candy, given that they love soda". The short form is standard, but the long form makes the top and bottom of the fraction easier to match.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is a conditional probability, in plain words?</summary><div class="a">It is the probability of an event once you already know that something else happened. The information you are given shrinks the set of outcomes that are still possible. You then ask your original question inside that smaller set. So it is the probability of an event, scaled by what you already know.</div></details>
+    <details class="qa"><summary>How do you read one off a contingency table?</summary><div class="a">Find the row or column that matches the thing you were told, because that becomes your new total. Then find the cell that also matches the thing you are asking about. Divide the cell count by that row or column total. In the StatLand example, 5 people out of the 7 soda lovers do not love candy, which gives 0.71.</div></details>
+    <details class="qa"><summary>Where does the formula P(A given B) = P(A and B) / P(B) come from?</summary><div class="a">It is the same count-based division, with both numbers divided by the population size. Five over seven becomes 5/14 over 7/14, and the value does not change. The top is now the joint probability of A and B, and the bottom is the probability of B. So the formula is just the counting rule written in probability form.</div></details>
+    <details class="qa"><summary>Why does this matter before learning Bayes' theorem?</summary><div class="a">Bayes' theorem is built directly on this definition, so the notation has to feel automatic. If you are comfortable with which count sits on top and which total sits underneath, the rest is rearrangement. It also matters in practice, because most model outputs, such as a predicted class probability, are conditional on the features you fed in.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Josh asked 14 people in StatLand whether they love candy, soda, both, or neither.</li>
+      <li>A contingency table stores the four counts: 2 love both, 4 love only candy, 5 love only soda, and 3 love neither.</li>
+      <li>Dividing any count by the total of 14 turns it into an ordinary probability, and the row and column totals give the unconditional ones.</li>
+      <li>Being given a fact removes every outcome that contradicts it, which shrinks the denominator.</li>
+      <li>Knowing that the person loves soda leaves 7 people, and 5 of them do not love candy, so the answer is 5/7 = 0.71.</li>
+      <li>Dividing the top and bottom by 14 gives the standard formula, probability of A and B over probability of B.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Conditional probability</span><span class="board-tag">given a fact, shrink the denominator</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 240" role="img" aria-label="Fourteen people split by soda. Given that the person loves soda, the 7 who do not are dropped. Five of the remaining 7 do not love candy, so the answer is 5 over 7, which is 0.71.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <text x="20" y="28" class="sv-tb">given: loves soda</text>
+            <text x="214" y="28" class="sv-t">no soda: dropped</text>
+            <g class="sv-stroke-ink" stroke-width="3"><rect x="20" y="42" width="170" height="108" rx="12" class="sv-paper"/></g>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-dasharray="6 5"><rect x="210" y="42" width="170" height="108" rx="12" class="sv-paper2"/></g>
+            <rect x="32" y="102" width="148" height="34" rx="10" class="sv-stroke-acc" stroke-width="2" stroke-dasharray="5 4"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="46" cy="70" r="9" class="sv-key"/>
+              <circle cx="76" cy="70" r="9" class="sv-key"/>
+              <circle cx="50" cy="119" r="9" class="sv-acc"/>
+              <circle cx="78" cy="119" r="9" class="sv-acc"/>
+              <circle cx="106" cy="119" r="9" class="sv-acc"/>
+              <circle cx="134" cy="119" r="9" class="sv-acc"/>
+              <circle cx="162" cy="119" r="9" class="sv-acc"/>
+              <circle cx="236" cy="70" r="9" class="sv-ink3"/>
+              <circle cx="266" cy="70" r="9" class="sv-ink3"/>
+              <circle cx="296" cy="70" r="9" class="sv-ink3"/>
+              <circle cx="326" cy="70" r="9" class="sv-ink3"/>
+              <circle cx="236" cy="119" r="9" class="sv-ink3"/>
+              <circle cx="266" cy="119" r="9" class="sv-ink3"/>
+              <circle cx="296" cy="119" r="9" class="sv-ink3"/>
+            </g>
+            <text x="96" y="76" class="sv-ts">candy too</text>
+            <line x1="106" y1="139" x2="106" y2="170" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="105" y="190" text-anchor="middle" class="sv-t">5 no candy</text>
+            <line x1="50" y1="200" x2="160" y2="200" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round"/>
+            <text x="105" y="224" text-anchor="middle" class="sv-t">7 love soda</text>
+            <text x="172" y="207" class="sv-tb">= 0.71</text>
+            <text x="380" y="207" text-anchor="end" class="sv-ts">not 5/14 = 0.36</text>
+          </svg>
+          <p>Being told the person loves soda rules out everyone who does not. The question shrinks to the 7 soda lovers, and 5 of them do not love candy, so the answer is 5/7 = 0.71.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Contingency table</dt><dd>A grid counting how many people fall in each pair of answers.</dd>
+            <dt>Conditional probability</dt><dd>The probability of something, given that you already know something else.</dd>
+            <dt>Joint probability</dt><dd>The chance both things happen, out of everyone: 5/14 = 0.36.</dd>
+            <dt>Unconditional probability</dt><dd>A row or column total over 14, like 7/14 = 0.50 for soda.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Ask everyone</b>14 people, candy and soda</li>
+            <li><b>Build a table</b>candy rows, soda columns</li>
+            <li><b>Divide by 14</b>counts become probabilities</li>
+            <li><b>Add totals</b>7 love soda, 6 love candy</li>
+            <li><b>Use the given</b>only the soda column remains</li>
+            <li><b>Count inside</b>5 of 7 = 0.71</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$P(A\mid B)=\frac{P(A\text{ and }B)}{P(B)}$$
+          $$\frac{5}{7}=\frac{5/14}{7/14}=\frac{0.36}{0.50}=0.71$$
+          <ul class="keys">
+            <li>\(A\) is what we ask about, \(B\) is what we already know; \(\mid\) reads "given that".</li>
+            <li>Dividing top and bottom by 14 changes nothing; it just turns counts into probabilities.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>question</th><th>top</th><th>bottom</th><th>P</th></tr>
+            <tr><td>soda, no candy</td><td>5</td><td>14</td><td>0.36</td></tr>
+            <tr><td>loves soda</td><td>7</td><td>14</td><td>0.50</td></tr>
+            <tr><td>ratio</td><td>0.36</td><td>0.50</td><td>0.71</td></tr>
+            <tr class="final"><td>no candy | soda</td><td>5</td><td>7</td><td>0.71</td></tr>
+          </table>
+          <p class="hand">Both routes give 0.71: a 71 percent chance a soda lover does not love candy.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Always divide by everyone, all 14.</span><span class="yes">Once given a fact, divide by that group's size: the 7 soda lovers, not 14.</span></li>
+            <li><span class="no">Joint and conditional are the same question.</span><span class="yes">Soda and no candy is 5/14 = 0.36. No candy given soda is 5/7 = 0.71.</span></li>
+            <li><span class="no">The short wording asks something different.</span><span class="yes">Same question. The long form, "no candy and soda, given soda", makes top and bottom easier to match.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="19-pearson-s-correlation.html"><small>Previous</small>Pearson&#x27;s Correlation</a> <a href="21-bayes-theorem.html"><small>Next</small>Bayes&#x27; Theorem</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

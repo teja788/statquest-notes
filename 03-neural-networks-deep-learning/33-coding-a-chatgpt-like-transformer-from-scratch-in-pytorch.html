@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Coding a ChatGPT Like Transformer From Scratch in PyTorch — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-nn">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Neural Networks / Deep Learning</a><span class="sep">/</span><span>33</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Neural Networks / Deep Learning · Video 33 · 31.2 min</div>
+    <h1>Coding a ChatGPT Like Transformer From Scratch in PyTorch</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=C9QSpl5nmrY" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: —</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Josh codes a tiny decoder-only transformer, the kind of model behind ChatGPT, in PyTorch. He uses Lightning, a library that handles the training loop. The model learns to answer two prompts with the word "awesome".</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>First, Josh builds a five-token vocabulary and turns two prompts and their answers into inputs and labels. Then he writes three classes. <code>PositionEncoding</code> adds sine and cosine values to the word embeddings. <code>Attention</code> computes masked self-attention with matrix math. <code>DecoderOnlyTransformer</code> joins all the pieces and adds a residual connection and a fully connected layer. Before training, the model answers "What is StatQuest &lt;EOS&gt;" with just &lt;EOS&gt;. After 30 epochs of training it answers both prompts with "awesome &lt;EOS&gt;".</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>A decoder-only transformer reads a sequence of tokens and, for each token, predicts the token that should come next. A token is a word or symbol the model knows. Josh's model has only five tokens: "what", "is", "statquest", "awesome" and &lt;EOS&gt;, which marks the end of a sequence.</p>
+    <p>The whole model is a short chain of steps. Token ID numbers go into a word embedding layer, which turns each token into a few numbers. Position encoding adds values that tell the model where each token sits. Masked self-attention lets each token look only at itself and earlier tokens. A residual connection adds the position-encoded values back to the attention output. Finally, a fully connected layer gives one output value per possible token.</p>
+    <p>Only the outer class inherits from Lightning's <code>LightningModule</code>. The two helper classes inherit from <code>nn.Module</code>. Josh does this so the model gets everything Lightning offers without inheriting it many times.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 280" role="img" aria-label="Class structure of the decoder-only transformer: token IDs flow through embedding, position encoding, masked attention, a residual add, and a linear layer to the output.">
+        <defs>
+          <marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker>
+        </defs>
+        <rect x="98" y="28" width="532" height="226" rx="10" class="sv-paper2"/>
+        <rect x="98" y="28" width="532" height="226" rx="10" class="sv-stroke-acc" stroke-width="1.5" stroke-dasharray="6 4"/>
+        <text x="364" y="52" text-anchor="middle" class="sv-tb">DecoderOnlyTransformer (L.LightningModule)</text>
+
+        <rect x="20" y="130" width="70" height="56" rx="6" class="sv-paper"/>
+        <rect x="20" y="130" width="70" height="56" rx="6" class="sv-line" stroke-width="1.5"/>
+        <text x="55" y="163" text-anchor="middle" class="sv-ts">Token IDs</text>
+
+        <rect x="106" y="130" width="98" height="56" rx="6" class="sv-key-soft"/>
+        <text x="155" y="163" text-anchor="middle" class="sv-tm">nn.Embedding</text>
+
+        <rect x="220" y="130" width="136" height="56" rx="6" class="sv-good-soft"/>
+        <text x="288" y="163" text-anchor="middle" class="sv-tm">PositionEncoding</text>
+
+        <rect x="372" y="130" width="100" height="56" rx="6" class="sv-acc-soft"/>
+        <text x="422" y="155" text-anchor="middle" class="sv-tm">Attention</text>
+        <text x="422" y="174" text-anchor="middle" class="sv-ts">masked self-attn</text>
+
+        <circle cx="500" cy="158" r="14" class="sv-paper"/>
+        <circle cx="500" cy="158" r="14" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="500" y="163" text-anchor="middle" class="sv-tb">+</text>
+
+        <rect x="528" y="130" width="92" height="56" rx="6" class="sv-key-soft"/>
+        <text x="574" y="163" text-anchor="middle" class="sv-tm">nn.Linear</text>
+
+        <rect x="636" y="130" width="104" height="56" rx="6" class="sv-paper"/>
+        <rect x="636" y="130" width="104" height="56" rx="6" class="sv-line" stroke-width="1.5"/>
+        <text x="688" y="155" text-anchor="middle" class="sv-ts">one output</text>
+        <text x="688" y="172" text-anchor="middle" class="sv-ts">per token</text>
+
+        <line x1="90" y1="158" x2="104" y2="158" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <line x1="204" y1="158" x2="218" y2="158" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <line x1="356" y1="158" x2="370" y2="158" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <line x1="472" y1="158" x2="484" y2="158" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <line x1="514" y1="158" x2="526" y2="158" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <line x1="620" y1="158" x2="634" y2="158" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+
+        <path d="M364,158 L364,96 L500,96 L500,142" class="sv-stroke-good" stroke-width="2" marker-end="url(#ar1)"/>
+        <rect x="396" y="84" width="72" height="22" rx="4" class="sv-paper"/>
+        <text x="432" y="100" text-anchor="middle" class="sv-ts">residual</text>
+
+        <rect x="362" y="212" width="120" height="28" rx="5" class="sv-warn"/>
+        <text x="422" y="231" text-anchor="middle" class="sv-tm">mask (tril)</text>
+        <line x1="422" y1="212" x2="422" y2="188" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+      </svg>
+      <figcaption>Notice that the residual path skips attention and is added back before the final linear layer, and that the mask only enters the attention step.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li><b>Imports.</b> Josh imports <code>torch</code>, <code>torch.nn</code> for the Linear and Embedding classes, <code>torch.nn.functional</code> for softmax, <code>Adam</code> for training, <code>TensorDataset</code> and <code>DataLoader</code> for the data, and <code>lightning as L</code>.</li>
+      <li><b>Vocabulary.</b> The tokens are mapped to ID numbers in <code>token_to_id</code>, because <code>nn.Embedding</code> only accepts numbers. A reverse dictionary, <code>id_to_token</code>, turns the output back into words.</li>
+      <li><b>Training data.</b> The inputs include both the prompt and the answer. Each label is the token that should come next, so the labels are the inputs shifted by one position.</li>
+      <li><b>Word embedding.</b> Josh lets <code>nn.Embedding</code> handle this step.</li>
+      <li><b>Position encoding.</b> The sine and cosine values are computed once and stored in a matrix, so adding them later is fast.</li>
+      <li><b>Masked self-attention.</b> Queries, keys and values come from three weight matrices. Then the model computes the similarities, scales them, masks them, applies softmax and multiplies by the values.</li>
+      <li><b>Put it together.</b> The forward pass runs embedding, position encoding, the mask, attention, the residual add and the fully connected layer.</li>
+      <li><b>Train and generate.</b> Josh sets up Adam, writes a training step and trains for 30 epochs, or full passes through the data. Then he generates tokens one at a time until &lt;EOS&gt; appears.</li>
+    </ol>
+
+    <p>These are the imports at the top of the code.</p>
+<pre><code>import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torch.optim import Adam
+from torch.utils.data import TensorDataset, DataLoader
+import lightning as L</code></pre>
+
+    <p>The training set holds two prompts, "what is statquest" and "statquest is what". Both should be answered with "awesome". Each input row contains the prompt, &lt;EOS&gt; and "awesome". Each label row contains the token that should come next at every position.</p>
+<pre><code>token_to_id = {'what': 0, 'is': 1, 'statquest': 2, 'awesome': 3, '&lt;EOS&gt;': 4}
+id_to_token = dict(map(reversed, token_to_id.items()))
+
+# what is statquest &lt;EOS&gt; awesome  |  statquest is what &lt;EOS&gt; awesome
+inputs = torch.tensor([[0, 1, 2, 4, 3],
+                       [2, 1, 0, 4, 3]])
+# is statquest &lt;EOS&gt; awesome &lt;EOS&gt;  |  is what &lt;EOS&gt; awesome &lt;EOS&gt;
+labels = torch.tensor([[1, 2, 4, 3, 4],
+                       [1, 0, 4, 3, 4]])
+
+dataset = TensorDataset(inputs, labels)
+dataloader = DataLoader(dataset)</code></pre>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 250" role="img" aria-label="Inputs and labels for the prompt what is statquest: each input token points down to the next token, which is its label.">
+        <defs>
+          <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker>
+        </defs>
+        <text x="20" y="75" class="sv-tb">Input</text>
+        <text x="20" y="175" class="sv-tb">Label</text>
+
+        <rect x="130" y="50" width="110" height="40" rx="6" class="sv-key-soft"/>
+        <rect x="254" y="50" width="110" height="40" rx="6" class="sv-key-soft"/>
+        <rect x="378" y="50" width="110" height="40" rx="6" class="sv-key-soft"/>
+        <rect x="502" y="50" width="110" height="40" rx="6" class="sv-acc-soft"/>
+        <rect x="626" y="50" width="110" height="40" rx="6" class="sv-acc-soft"/>
+        <text x="185" y="75" text-anchor="middle" class="sv-tm">what</text>
+        <text x="309" y="75" text-anchor="middle" class="sv-tm">is</text>
+        <text x="433" y="75" text-anchor="middle" class="sv-tm">statquest</text>
+        <text x="557" y="75" text-anchor="middle" class="sv-tm">&lt;EOS&gt;</text>
+        <text x="681" y="75" text-anchor="middle" class="sv-tm">awesome</text>
+
+        <line x1="185" y1="92" x2="185" y2="148" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <line x1="309" y1="92" x2="309" y2="148" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <line x1="433" y1="92" x2="433" y2="148" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <line x1="557" y1="92" x2="557" y2="148" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <line x1="681" y1="92" x2="681" y2="148" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar2)"/>
+
+        <rect x="130" y="150" width="110" height="40" rx="6" class="sv-good-soft"/>
+        <rect x="254" y="150" width="110" height="40" rx="6" class="sv-good-soft"/>
+        <rect x="378" y="150" width="110" height="40" rx="6" class="sv-good-soft"/>
+        <rect x="502" y="150" width="110" height="40" rx="6" class="sv-good-soft"/>
+        <rect x="626" y="150" width="110" height="40" rx="6" class="sv-good-soft"/>
+        <text x="185" y="175" text-anchor="middle" class="sv-tm">is</text>
+        <text x="309" y="175" text-anchor="middle" class="sv-tm">statquest</text>
+        <text x="433" y="175" text-anchor="middle" class="sv-tm">&lt;EOS&gt;</text>
+        <text x="557" y="175" text-anchor="middle" class="sv-tm">awesome</text>
+        <text x="681" y="175" text-anchor="middle" class="sv-tm">&lt;EOS&gt;</text>
+
+        <line x1="130" y1="210" x2="488" y2="210" class="sv-stroke-key" stroke-width="2"/>
+        <text x="309" y="230" text-anchor="middle" class="sv-ts">processing the prompt</text>
+        <line x1="502" y1="210" x2="736" y2="210" class="sv-stroke-acc" stroke-width="2"/>
+        <text x="619" y="230" text-anchor="middle" class="sv-ts">generating the output</text>
+      </svg>
+      <figcaption>Each label is simply the next token, so the training pairs cover both reading the prompt and writing the answer.</figcaption>
+    </figure>
+
+    <p>The <code>PositionEncoding</code> class builds the matrix <code>pe</code> once, with <code>max_len</code> rows and <code>d_model</code> columns. Josh uses <code>d_model=2</code> and <code>max_len=6</code> here, but real models use much larger values.</p>
+<pre><code>class PositionEncoding(nn.Module):
+    def __init__(self, d_model=2, max_len=6):
+        super().__init__()
+        pe = torch.zeros(max_len, d_model)
+        position = torch.arange(start=0, end=max_len, step=1).float().unsqueeze(1)
+        embedding_index = torch.arange(start=0, end=d_model, step=2).float()
+        div_term = 1/torch.tensor(10000.0)**(embedding_index / d_model)
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        self.register_buffer('pe', pe)
+
+    def forward(self, word_embeddings):
+        return word_embeddings + self.pe[:word_embeddings.size(0), :]</code></pre>
+    <p>Here <code>position</code> is a column of positions, and <code>unsqueeze(1)</code> turns the sequence into a column. Setting <code>step=2</code> gives the values of 2i directly. <code>0::2</code> fills every other column starting at column 0 with sine values, and <code>1::2</code> fills the rest with cosine values. <code>register_buffer</code> makes sure <code>pe</code> moves to a GPU if one is used.</p>
+
+    <p>The <code>Attention</code> class uses three <code>nn.Linear</code> objects for the query, key and value weights. Each is a <code>d_model</code> by <code>d_model</code> matrix with no bias, as in the original transformer paper. A Linear object stores the weights and also does the math. The forward method accepts separate encodings for q, k and v. That way the same class could also do encoder-decoder attention. There, the queries come from the decoder and the keys and values from the encoder.</p>
+<pre><code>class Attention(nn.Module):
+    def __init__(self, d_model=2):
+        super().__init__()
+        self.W_q = nn.Linear(in_features=d_model, out_features=d_model, bias=False)
+        self.W_k = nn.Linear(in_features=d_model, out_features=d_model, bias=False)
+        self.W_v = nn.Linear(in_features=d_model, out_features=d_model, bias=False)
+        self.row_dim = 0
+        self.col_dim = 1
+
+    def forward(self, encodings_for_q, encodings_for_k, encodings_for_v, mask=None):
+        q = self.W_q(encodings_for_q)
+        k = self.W_k(encodings_for_k)
+        v = self.W_v(encodings_for_v)
+        sims = torch.matmul(q, k.transpose(dim0=self.row_dim, dim1=self.col_dim))
+        scaled_sims = sims / torch.tensor(k.size(self.col_dim)**0.5)
+        if mask is not None:
+            scaled_sims = scaled_sims.masked_fill(mask=mask, value=-1e9)
+        attention_percents = F.softmax(scaled_sims, dim=self.col_dim)
+        attention_scores = torch.matmul(attention_percents, v)
+        return attention_scores</code></pre>
+
+    <p>The <code>DecoderOnlyTransformer</code> class joins the pieces. The fully connected layer maps <code>d_model</code> values to one value per token in the vocabulary. The loss is <code>nn.CrossEntropyLoss</code>, because the model has several outputs.</p>
+<pre><code>class DecoderOnlyTransformer(L.LightningModule):
+    def __init__(self, num_tokens=4, d_model=2, max_len=6):
+        super().__init__()
+        self.we = nn.Embedding(num_embeddings=num_tokens, embedding_dim=d_model)
+        self.pe = PositionEncoding(d_model=d_model, max_len=max_len)
+        self.self_attention = Attention(d_model=d_model)
+        self.fc_layer = nn.Linear(in_features=d_model, out_features=num_tokens)
+        self.loss = nn.CrossEntropyLoss()
+
+    def forward(self, token_ids):
+        word_embeddings = self.we(token_ids)
+        position_encoded = self.pe(word_embeddings)
+        mask = torch.tril(torch.ones((token_ids.size(dim=0), token_ids.size(dim=0))))
+        mask = mask == 0
+        self_attention_values = self.self_attention(position_encoded, position_encoded,
+                                                    position_encoded, mask=mask)
+        residual_connection_values = position_encoded + self_attention_values
+        fc_layer_output = self.fc_layer(residual_connection_values)
+        return fc_layer_output
+
+    def configure_optimizers(self):
+        return Adam(self.parameters(), lr=0.1)
+
+    def training_step(self, batch, batch_idx):
+        input_tokens, labels = batch
+        output = self.forward(input_tokens[0])
+        loss = self.loss(output, labels[0])
+        return loss</code></pre>
+    <p>The same position-encoded values are passed three times, once each for queries, keys and values, because this is self-attention. Josh uses a learning rate of 0.1 because it trains this small model quickly. The default of 0.001 is more common.</p>
+
+    <p>Generation runs the prompt through the model and keeps only the prediction made at the last token, <code>&lt;EOS&gt;</code>, using index <code>-1</code>. Then <code>argmax</code> picks the token with the largest output. Each new token is appended to the input, so the next prediction uses the full context.</p>
+<pre><code>model = DecoderOnlyTransformer(num_tokens=len(token_to_id), d_model=2, max_len=6)
+model_input = torch.tensor([token_to_id["what"], token_to_id["is"],
+                            token_to_id["statquest"], token_to_id["&lt;EOS&gt;"]])
+input_length = model_input.size(dim=0)
+
+predictions = model(model_input)
+predicted_id = torch.tensor([torch.argmax(predictions[-1, :])])
+predicted_ids = predicted_id
+
+max_length = 6
+for i in range(input_length, max_length):
+    if predicted_id == token_to_id["&lt;EOS&gt;"]:
+        break
+    model_input = torch.cat((model_input, predicted_id))
+    predictions = model(model_input)
+    predicted_id = torch.tensor([torch.argmax(predictions[-1, :])])
+    predicted_ids = torch.cat((predicted_ids, predicted_id))
+
+for id in predicted_ids:
+    print(id_to_token[id.item()])</code></pre>
+
+    <p>Training takes only two lines. After it finishes, Josh reruns the generation code with the trained model instead of a new one.</p>
+<pre><code>trainer = L.Trainer(max_epochs=30)
+trainer.fit(model, train_dataloaders=dataloader)</code></pre>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">Position encoding</span>
+      <div class="math">$$ PE_{(pos,\,2i)} = \sin\!\left(\frac{pos}{10000^{2i/d_{model}}}\right) \qquad PE_{(pos,\,2i+1)} = \cos\!\left(\frac{pos}{10000^{2i/d_{model}}}\right) $$</div>
+      <p class="explain"><b>Symbols:</b> \(pos\) is the position of the token in the input, starting at 0. \(i\) is the index of the sine and cosine pair. \(2i\) is the column for the sine value and \(2i+1\) is the column right after it, for the cosine value. \(d_{model}\) is the number of embedding values per token. <b>What it tells you:</b> every token gets a unique pattern of squiggle values. The "+1" only means the cosine comes after the sine; the formula inside both functions is the same.</p>
+    </div>
+    <div class="formula"><span class="lbl">Masked self-attention</span>
+      <div class="math">$$ Q = XW_Q,\quad K = XW_K,\quad V = XW_V $$
+      $$ \text{Attention} = \text{softmax}\!\left(\frac{QK^{T}}{\sqrt{d_k}} + M\right)V $$</div>
+      <p class="explain"><b>Symbols:</b> \(X\) holds the word embeddings plus position encodings, one row per token. \(W_Q, W_K, W_V\) are the weight matrices in <code>W_q</code>, <code>W_k</code>, <code>W_v</code>. \(Q, K, V\) are the queries, keys and values, one row per token. \(QK^T\) holds the similarities (<code>sims</code>). \(d_k\) is the number of values in each key. \(M\) is the mask: 0 where a token may look, and \(-10^9\) (about minus infinity) where it may not. <b>What it tells you:</b> softmax turns the scaled similarities into percentages of influence. Those percentages then weight the values to give the attention scores.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p><b>Position encoding for two tokens with \(d_{model}=4\).</b> For the first token, \(pos=0\). With \(i=0\), \(\sin(0)=0\) and \(\cos(0)=1\). With \(i=1\), the angle is still 0, so the values are again 0 and 1. The first token gets \([0,\ 1,\ 0,\ 1]\).</p>
+      <p>For the second token, \(pos=1\) and \(i\) resets to 0. With \(i=0\) the angle is \(1/10000^{0}=1\), giving \(\sin(1)\approx0.841\) and \(\cos(1)\approx0.540\). With \(i=1\) the angle is \(1/10000^{2/4}=0.01\), giving about \(0.010\) and \(1.000\). The second token gets about \([0.841,\ 0.540,\ 0.010,\ 1.000]\).</p>
+      <p><b>The precomputed matrix with max_len = 3 and d_model = 2.</b> <code>pe</code> starts as a 3 by 2 matrix of zeros, and <code>position</code> is the column \([0, 1, 2]\). With d_model = 2, <code>embedding_index</code> is just 0, so the divisor is 1. Column 0 gets \(\sin(0), \sin(1), \sin(2) \approx 0, 0.841, 0.909\). Column 1 gets \(\cos(0), \cos(1), \cos(2) \approx 1, 0.540, -0.416\).</p>
+      <p><b>The mask for four tokens.</b> <code>torch.ones</code> makes a 4 by 4 matrix of ones. <code>torch.tril</code> keeps the lower triangle and zeros the rest. Then <code>mask == 0</code> turns the zeros into True:</p>
+      <div class="math">$$ \begin{bmatrix} F&amp;T&amp;T&amp;T\\ F&amp;F&amp;T&amp;T\\ F&amp;F&amp;F&amp;T\\ F&amp;F&amp;F&amp;F \end{bmatrix} $$</div>
+      <p>True means "ignore", so the first token sees only itself, and the last token sees all four.</p>
+      <p><b>Before and after training.</b> The untrained model answers "what is statquest &lt;EOS&gt;" with just &lt;EOS&gt;. After 30 epochs it answers "awesome &lt;EOS&gt;". The prompt "statquest is what &lt;EOS&gt;" also gives "awesome &lt;EOS&gt;".</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> The forward method returns the raw output of the fully connected layer, with no softmax. <code>nn.CrossEntropyLoss</code> applies softmax for you during training. Adding another softmax would be wrong.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> In the mask, True means "ignore this attention value". <code>torch.tril</code> puts ones in the lower triangle, so <code>mask == 0</code> is needed to mark the upper triangle as True. <code>masked_fill</code> then puts \(-10^9\) there, which softmax turns into almost zero.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> <code>max_len</code> counts the input and output tokens together. With a four-token prompt and <code>max_len=6</code>, only two generated tokens can be fed back in. That is why the loop runs from <code>input_length</code> to <code>max_length</code>.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Scaling by the square root of the key size has been standard since the 2017 transformer paper. Josh notes it is not required and mainly helps larger models.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>How do you build inputs and labels to train a decoder-only transformer?</summary><div class="a">The input is the prompt, then the end-of-sequence token, then the answer. The label at each position is the next token, so the labels are the inputs shifted by one. That way the model learns from both reading the prompt and generating the answer. For "what is statquest &lt;EOS&gt; awesome", the labels are "is statquest &lt;EOS&gt; awesome &lt;EOS&gt;".</div></details>
+    <details class="qa" open><summary>How is the causal mask built and applied?</summary><div class="a">I make a square matrix of ones, keep its lower triangle with <code>torch.tril</code>, and compare it with zero. That gives True above the diagonal, meaning "ignore". Before softmax, <code>masked_fill</code> replaces those scaled similarities with minus one billion. So each token gets almost zero attention from the tokens after it and cannot look ahead.</div></details>
+    <details class="qa" open><summary>Why doesn't the model end with a softmax?</summary><div class="a">The loss is cross entropy, and PyTorch's <code>CrossEntropyLoss</code> already applies softmax internally. So the forward pass returns the raw fully connected outputs, one per vocabulary token. At generation time we only need <code>argmax</code>, and softmax would not change which token is largest.</div></details>
+    <details class="qa" open><summary>Walk me through how the model generates a response.</summary><div class="a">I run the prompt through the model and take the output row for the last token. I pick the token with the largest value using <code>argmax</code>. I append it to the input and run the model again, so each prediction sees the full context. I stop when the model produces the end token or when the total length reaches <code>max_len</code>.</div></details>
+    <details class="qa" open><summary>Why precompute position encodings and use register_buffer?</summary><div class="a">The sine and cosine values depend only on position and column, not on the data. So I compute them once into a <code>max_len</code> by <code>d_model</code> matrix, and adding them later is just a fast slice and add. <code>register_buffer</code> makes the matrix move with the model to a GPU, but it is not trained.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>The model is a decoder-only transformer, the foundation of ChatGPT, trained on two prompts that should both get the answer "awesome".</li>
+      <li>Tokens are mapped to IDs with <code>token_to_id</code>, and each label is the next token after the matching input.</li>
+      <li><code>PositionEncoding</code> precomputes sine values in even columns and cosine values in odd columns, then adds them to the embeddings.</li>
+      <li><code>Attention</code> uses three bias-free <code>nn.Linear</code> layers for Q, K and V, then scales, masks, applies softmax and multiplies by V.</li>
+      <li><code>DecoderOnlyTransformer</code> chains embedding, position encoding, masked self-attention, a residual add and a fully connected layer.</li>
+      <li>Cross entropy loss includes the softmax, and Adam with a learning rate of 0.1 trains the model in 30 epochs.</li>
+      <li>Generation uses <code>argmax</code> on the last token's output, appends the result, and stops at &lt;EOS&gt; or at <code>max_len</code>.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Transformer from scratch</span><span class="board-tag">predict the next token, append, repeat</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 300" role="img" aria-label="The prompt what is statquest &lt;EOS&gt; flows down through embedding plus position, masked attention, a residual add and a fully connected layer to the next token, awesome, which is appended and fed back in until &lt;EOS&gt;.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <path d="M192 270 H362 V28 H268" class="sv-stroke-key" stroke-width="2.5" stroke-dasharray="7 6" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#board-arr)"/>
+            <path d="M140 103 H28 V171 H127" class="sv-stroke-good" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#board-arr)"/>
+            <line x1="140" y1="46" x2="140" y2="62" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="140" y1="96" x2="140" y2="118" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="140" y1="151" x2="140" y2="159" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="140" y1="183" x2="140" y2="202" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="140" y1="236" x2="140" y2="252" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <rect x="16" y="12" width="248" height="32" rx="10" class="sv-paper"/>
+              <rect x="50" y="64" width="180" height="30" rx="8" class="sv-paper2"/>
+              <rect x="50" y="120" width="180" height="30" rx="8" class="sv-key-soft"/>
+              <circle cx="140" cy="171" r="11" class="sv-paper"/>
+              <rect x="50" y="204" width="180" height="30" rx="8" class="sv-paper2"/>
+              <rect x="90" y="254" width="100" height="32" rx="10" class="sv-good-soft"/>
+            </g>
+            <path d="M134 171 H146 M140 165 V177" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round"/>
+            <text x="140" y="33" text-anchor="middle" class="sv-tm">what is statquest &lt;EOS&gt;</text>
+            <text x="140" y="84" text-anchor="middle" class="sv-t">embed + position</text>
+            <text x="140" y="141" text-anchor="middle" class="sv-t">masked attention</text>
+            <text x="160" y="177" class="sv-ts">residual</text>
+            <text x="140" y="224" text-anchor="middle" class="sv-t">fully connected</text>
+            <text x="140" y="275" text-anchor="middle" class="sv-tm">awesome</text>
+            <text x="352" y="84" text-anchor="end" class="sv-ts">append, rerun</text>
+            <text x="352" y="108" text-anchor="end" class="sv-ts">until &lt;EOS&gt;</text>
+          </svg>
+          <p>For each token, a decoder-only transformer predicts the next token. The mask stops tokens from looking ahead, and the residual path skips attention. Answers grow one token at a time.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Token</dt><dd>A word or symbol the model knows; &lt;EOS&gt; ends a sequence.</dd>
+            <dt>Word embedding</dt><dd>Turns each token into a few numbers.</dd>
+            <dt>Position encoding</dt><dd>Sine and cosine values that tell where each token sits.</dd>
+            <dt>Masked self-attention</dt><dd>Each token looks only at itself and earlier tokens.</dd>
+            <dt>Residual connection</dt><dd>Adds the position-encoded values back to the attention output.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Vocabulary</b>tokens ↔ ID numbers</li>
+            <li><b>Training data</b>labels = inputs shifted by one</li>
+            <li><b>Position encoding</b>sin, cos matrix, computed once</li>
+            <li><b>Masked attention</b>Q, K, V; scale, mask, softmax</li>
+            <li><b>Put together</b>residual add, then fully connected</li>
+            <li><b>Train</b>Adam, rate 0.1, 30 epochs</li>
+          </ol>
+          <p class="loop">↺ generate: append the argmax token, rerun until &lt;EOS&gt; or max_len</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$PE_{(pos,\,2i)}=\sin\!\left(\frac{pos}{10000^{2i/d}}\right)$$
+          $$PE_{(pos,\,2i+1)}=\cos\!\left(\frac{pos}{10000^{2i/d}}\right)$$
+          $$\text{softmax}\!\left(\frac{QK^{T}}{\sqrt{d_k}}+M\right)V$$
+          <ul class="keys">
+            <li>\(pos\) is the position from 0; \(d\) is \(d_{model}\).</li>
+            <li>\(QK^T\) holds the similarities; \(d_k\) is the key size.</li>
+            <li>\(M\) is 0 where a token may look and \(-10^9\) where it may not.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>pos</th><th>i</th><th>angle</th><th>sin, cos</th></tr>
+            <tr><td>0</td><td>0, 1</td><td>0</td><td>0, 1</td></tr>
+            <tr><td>1</td><td>0</td><td>1</td><td>0.841, 0.540</td></tr>
+            <tr><td>1</td><td>1</td><td>0.01</td><td>0.010, 1.000</td></tr>
+            <tr class="final"><td>pos 1</td><td colspan="3">[0.841, 0.540, 0.010, 1.000]</td></tr>
+          </table>
+          <p class="hand">With d_model = 4, every position gets its own pattern. Untrained, it answers just &lt;EOS&gt;; after 30 epochs, awesome &lt;EOS&gt;.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">The model should end with a softmax.</span><span class="yes">Return raw outputs; nn.CrossEntropyLoss already applies softmax, so another would be wrong.</span></li>
+            <li><span class="no">True in the mask means keep.</span><span class="yes">True means ignore: tril keeps the lower triangle, so mask == 0 marks the upper one.</span></li>
+            <li><span class="no">max_len=6 counts only generated tokens.</span><span class="yes">It counts input and output together: after a four-token prompt, only two generated tokens can be fed back.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="32-word-embedding-in-pytorch-lightning.html"><small>Previous</small>Word Embedding in PyTorch + Lightning</a> <a href="index.html"><small>Next</small>Back to Neural Networks / Deep Learning</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

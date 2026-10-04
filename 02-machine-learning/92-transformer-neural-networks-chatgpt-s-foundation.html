@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Transformer Neural Networks, ChatGPT's foundation — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>92</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 92 · 36.2 min</div>
+    <h1>Transformer Neural Networks, ChatGPT's foundation</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=zxQyTK8quyY" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: Neural Networks / Deep Learning (video 20)</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video builds a tiny Transformer one piece at a time. It translates the English phrase "Let's go" into the Spanish word "Vamos". Transformers are the foundation of ChatGPT, so each part is core interview material.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>A Transformer turns words into numbers with word embedding. It adds positional encoding so it knows word order. Self-attention compares every word with every word, using queries, keys and values, and mixes values by similarity. Residual connections add the inputs back so each part can focus on one job. The decoder repeats these steps and adds encoder-decoder attention to track the important input words. A fully connected layer and a SoftMax pick each output word until the decoder outputs EOS.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Neural networks need numbers as input, so the first job is to turn words into numbers. Josh uses word embedding, a small network with one input per token. A token is any item in the vocabulary, such as a word, a word fragment, or a symbol like EOS (end of sequence).</p>
+    <p>Word order matters. "Squatch eats pizza" and "Pizza eats Squatch" use the same words but mean very different things. So the Transformer adds position values to each word's embedding. This is called positional encoding.</p>
+    <p>Next, the Transformer needs to know how words relate to each other. In "The pizza came out of the oven and it tasted good", the word "it" should be linked to "pizza", not "oven". Self-attention does this by measuring how similar each word is to every word in the sentence, including itself. Those similarities decide how much each word contributes to the new encoding of a word.</p>
+    <p>Finally, the original position-encoded values are added back to the self-attention values. These bypasses are called residual connections. The figure shows the whole encoder path for the word "let's" with the video's numbers.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Encoder path for the word let's: embedding plus position, queries and keys, dot products, SoftMax, weighted sum of values, plus residual connection">
+        <defs><marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker></defs>
+        <rect x="20" y="40" width="150" height="70" rx="6" class="sv-paper2"/>
+        <text x="95" y="68" text-anchor="middle" class="sv-tb">Word embedding</text>
+        <text x="95" y="92" text-anchor="middle" class="sv-tm">1.87, 0.09</text>
+        <circle cx="195" cy="75" r="12" class="sv-paper2"/>
+        <text x="195" y="80" text-anchor="middle" class="sv-tb">+</text>
+        <rect x="220" y="40" width="120" height="70" rx="6" class="sv-paper2"/>
+        <text x="280" y="68" text-anchor="middle" class="sv-tb">Position</text>
+        <text x="280" y="92" text-anchor="middle" class="sv-tm">0, 1</text>
+        <line x1="340" y1="75" x2="368" y2="75" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <rect x="370" y="40" width="160" height="70" rx="6" class="sv-acc-soft"/>
+        <text x="450" y="68" text-anchor="middle" class="sv-tb">Position encoded</text>
+        <text x="450" y="92" text-anchor="middle" class="sv-tm">1.87, 1.09</text>
+        <line x1="530" y1="75" x2="558" y2="75" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <rect x="560" y="40" width="180" height="70" rx="6" class="sv-key-soft"/>
+        <text x="650" y="68" text-anchor="middle" class="sv-tb">Query, keys, values</text>
+        <text x="650" y="92" text-anchor="middle" class="sv-tm">query = −1.0, 3.7</text>
+        <line x1="650" y1="110" x2="650" y2="198" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <rect x="560" y="200" width="180" height="70" rx="6" class="sv-key-soft"/>
+        <text x="650" y="228" text-anchor="middle" class="sv-tb">Dot products</text>
+        <text x="650" y="252" text-anchor="middle" class="sv-tm">let's 11.7 · go −2.6</text>
+        <line x1="560" y1="235" x2="532" y2="235" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <rect x="370" y="200" width="160" height="70" rx="6" class="sv-key-soft"/>
+        <text x="450" y="228" text-anchor="middle" class="sv-tb">SoftMax</text>
+        <text x="450" y="252" text-anchor="middle" class="sv-tm">1.0 · 0.0</text>
+        <line x1="370" y1="235" x2="342" y2="235" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <rect x="200" y="200" width="140" height="70" rx="6" class="sv-key-soft"/>
+        <text x="270" y="228" text-anchor="middle" class="sv-tb">Weighted sum</text>
+        <text x="270" y="252" text-anchor="middle" class="sv-ts">of the values</text>
+        <line x1="200" y1="235" x2="189" y2="235" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <circle cx="175" cy="235" r="12" class="sv-acc-soft"/>
+        <text x="175" y="240" text-anchor="middle" class="sv-tb">+</text>
+        <line x1="163" y1="235" x2="152" y2="235" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <rect x="20" y="200" width="130" height="70" rx="6" class="sv-good-soft"/>
+        <text x="85" y="228" text-anchor="middle" class="sv-tb">Encoded</text>
+        <text x="85" y="252" text-anchor="middle" class="sv-tb">"let's"</text>
+        <path d="M410,110 L410,160 L175,160 L175,221" class="sv-stroke-acc" stroke-width="2" marker-end="url(#ar1)"/>
+        <rect x="222" y="150" width="140" height="20" class="sv-paper"/>
+        <text x="292" y="165" text-anchor="middle" class="sv-ts">residual connection</text>
+      </svg>
+      <figcaption>Notice that "let's" is almost entirely encoded from its own value, because its similarity with itself (11.7) is far larger than with "go" (−2.6).</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li><b>Word embedding.</b> Put a 1 in the input for the word and 0 everywhere else. Each connection multiplies the input by a weight. The activation functions are identity functions (output equals input), so that word's weights come straight out. The same network is reused for every word, so any sentence length works.</li>
+      <li><b>Training.</b> All weights start as random numbers. Backpropagation, an iterative fitting method, improves them step by step. It learns from English phrases with known Spanish translations.</li>
+      <li><b>Positional encoding.</b> Position values come from a sequence of alternating sine and cosine squiggles, one squiggle per embedding value. Later squiggles are wider, so each word gets a unique sequence of position values. These are added to the embedding values.</li>
+      <li><b>Queries, keys and values.</b> For each word, multiply the position-encoded values by sets of weights and add the products. This gives a query, a key and a value for each word. The same weights are reused for every word.</li>
+      <li><b>Self-attention.</b> Take the dot product of a word's query with every word's key. Run these similarities through a SoftMax, scale each word's values by its percentage, and add them up.</li>
+      <li><b>Run it in parallel and stack it.</b> Queries, keys and values for all words can be computed at the same time, so Transformers run fast on GPUs. A stack of self-attention cells, each with its own weights, is called multi-head attention. The original paper used eight.</li>
+      <li><b>Residual connections.</b> Add the position-encoded values to the self-attention values. Now self-attention can focus on relationships without also having to preserve the embedding and position information. This finishes the encoder.</li>
+      <li><b>Decoder start.</b> The decoder embeds the output vocabulary: "ir", "vamos", "y" and EOS. It starts with the EOS token, though some people use SOS (start of sequence). It adds the same positional encoding, then its own self-attention with different weights, plus residual connections.</li>
+      <li><b>Encoder-decoder attention.</b> A query from the decoder is compared with keys from each encoded input word. A SoftMax turns the similarities into percentages, which scale the input words' values. This keeps important input words, like "don't" in "Don't eat the delicious looking and smelling pizza", from being lost. Another set of residual connections follows.</li>
+      <li><b>Pick the word.</b> A fully connected layer (a simple network with weights and biases) has one input per value and one output per output token. A final SoftMax selects "vamos". Then "vamos" goes back into a copy of the decoder, which outputs EOS, so decoding stops.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 370" role="img" aria-label="Decoder path for the EOS token: embedding plus position, self-attention, residual, encoder-decoder attention using the encoder outputs, residual, fully connected layer, SoftMax, output vamos">
+        <defs><marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker></defs>
+        <rect x="20" y="30" width="150" height="70" rx="6" class="sv-paper2"/>
+        <text x="95" y="58" text-anchor="middle" class="sv-tb">EOS embedding</text>
+        <text x="95" y="82" text-anchor="middle" class="sv-tm">2.70, −1.34</text>
+        <circle cx="195" cy="65" r="12" class="sv-paper2"/>
+        <text x="195" y="70" text-anchor="middle" class="sv-tb">+</text>
+        <rect x="220" y="30" width="120" height="70" rx="6" class="sv-paper2"/>
+        <text x="280" y="58" text-anchor="middle" class="sv-tb">Position</text>
+        <text x="280" y="82" text-anchor="middle" class="sv-tm">0, 1</text>
+        <line x1="340" y1="65" x2="368" y2="65" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <rect x="370" y="30" width="160" height="70" rx="6" class="sv-acc-soft"/>
+        <text x="450" y="58" text-anchor="middle" class="sv-tb">Position encoded</text>
+        <text x="450" y="82" text-anchor="middle" class="sv-tm">2.70, −0.34</text>
+        <line x1="530" y1="65" x2="558" y2="65" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <rect x="560" y="30" width="180" height="70" rx="6" class="sv-key-soft"/>
+        <text x="650" y="58" text-anchor="middle" class="sv-tb">Self-attention</text>
+        <text x="650" y="82" text-anchor="middle" class="sv-tm">−2.8, −2.3</text>
+        <line x1="650" y1="100" x2="650" y2="126" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <path d="M450,100 L450,140 L636,140" class="sv-stroke-acc" stroke-width="2" marker-end="url(#ar2)"/>
+        <circle cx="650" cy="140" r="12" class="sv-acc-soft"/>
+        <text x="650" y="145" text-anchor="middle" class="sv-tb">+</text>
+        <line x1="650" y1="152" x2="650" y2="188" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <path d="M650,166 L525,166 L525,211" class="sv-stroke-acc" stroke-width="2" marker-end="url(#ar2)"/>
+        <rect x="560" y="190" width="180" height="70" rx="6" class="sv-key-soft"/>
+        <text x="650" y="218" text-anchor="middle" class="sv-tb">Encoder-decoder</text>
+        <text x="650" y="242" text-anchor="middle" class="sv-tm">let's 100% · go 0%</text>
+        <line x1="560" y1="225" x2="539" y2="225" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <circle cx="525" cy="225" r="12" class="sv-acc-soft"/>
+        <text x="525" y="230" text-anchor="middle" class="sv-tb">+</text>
+        <line x1="513" y1="225" x2="492" y2="225" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <rect x="340" y="190" width="150" height="70" rx="6" class="sv-paper2"/>
+        <text x="415" y="218" text-anchor="middle" class="sv-tb">Fully connected</text>
+        <text x="415" y="242" text-anchor="middle" class="sv-ts">2 inputs, 4 outputs</text>
+        <line x1="340" y1="225" x2="312" y2="225" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <rect x="190" y="190" width="120" height="70" rx="6" class="sv-paper2"/>
+        <text x="250" y="230" text-anchor="middle" class="sv-tb">SoftMax</text>
+        <line x1="190" y1="225" x2="152" y2="225" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <rect x="20" y="190" width="130" height="70" rx="6" class="sv-good-soft"/>
+        <text x="85" y="230" text-anchor="middle" class="sv-tb">"vamos"</text>
+        <rect x="560" y="300" width="180" height="50" rx="6" class="sv-acc-soft"/>
+        <text x="650" y="330" text-anchor="middle" class="sv-tb">Encoder output</text>
+        <line x1="650" y1="300" x2="650" y2="262" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <text x="660" y="286" class="sv-ts">keys, values</text>
+        <text x="20" y="300" class="sv-ts">"vamos" goes back into the decoder.</text>
+        <text x="20" y="320" class="sv-ts">The next output is EOS, so decoding stops.</text>
+      </svg>
+      <figcaption>Notice the two attention steps: self-attention looks within the output, while encoder-decoder attention looks back at the encoded input words.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">Position-encoded input</span><div class="math">$$ x = e + p $$</div><p class="explain"><b>Symbols:</b> \(x\) is the position-encoded values for a word, \(e\) is its word embedding values, and \(p\) is its position values from the sine and cosine squiggles. <b>What it tells you:</b> word meaning and word position are simply added together, value by value.</p></div>
+    <div class="formula"><span class="lbl">Making a query (keys and values work the same way)</span><div class="math">$$ q_1 = w_1 x_1 + w_2 x_2, \qquad q_2 = w_3 x_1 + w_4 x_2 $$</div><p class="explain"><b>Symbols:</b> \(x_1, x_2\) are a word's two position-encoded values, \(w_1\) to \(w_4\) are weights learned by backpropagation, and \(q_1, q_2\) are the two query values. <b>What it tells you:</b> each query, key or value is just a weighted sum of the inputs, with separate weights for queries, keys and values.</p></div>
+    <div class="formula"><span class="lbl">Dot-product similarity</span><div class="math">$$ s = q \cdot k = q_1 k_1 + q_2 k_2 $$</div><p class="explain"><b>Symbols:</b> \(q\) is the query for the word being encoded, \(k\) is the key for the word it is compared with, and \(s\) is their similarity score. <b>What it tells you:</b> multiply each pair of numbers and add the products; a larger score means the two words are more similar.</p></div>
+    <div class="formula"><span class="lbl">SoftMax</span><div class="math">$$ p_i = \frac{e^{s_i}}{\sum_j e^{s_j}} $$</div><p class="explain"><b>Symbols:</b> \(s_i\) is the similarity with word \(i\), \(e\) is Euler's number (about 2.718), the sum runs over all words \(j\), and \(p_i\) is the share given to word \(i\). <b>What it tells you:</b> it keeps the order of the scores from low to high and turns them into numbers between 0 and 1 that add up to 1.</p></div>
+    <div class="formula"><span class="lbl">Weighted sum of values, plus the residual</span><div class="math">$$ a = \sum_i p_i \, v_i, \qquad \text{output} = a + x $$</div><p class="explain"><b>Symbols:</b> \(v_i\) is the value for word \(i\), \(p_i\) is its SoftMax share, \(a\) is the attention values, and \(x\) is the position-encoded input added back by the residual connection. <b>What it tells you:</b> each word's new encoding is a blend of all words' values, weighted by similarity, plus its original values.</p></div>
+    <div class="formula"><span class="lbl">Scaled dot product (original paper)</span><div class="math">$$ s = \frac{q \cdot k}{\sqrt{d}} $$</div><p class="explain"><b>Symbols:</b> \(q \cdot k\) is the dot product above and \(d\) is the number of embedding values per token. <b>What it tells you:</b> the authors found that scaling the dot product helped encode and decode long, complicated phrases.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p><b>Embedding.</b> "Let's" becomes 1.87 and 0.09. "Go" becomes −0.78 and 0.27. For "to", the weights are −1.45 and 1.50, but its input is 0, so it sends only zeros.</p>
+      <p><b>Positional encoding.</b> "Let's" gets position values 0 and 1, so it becomes \(1.87 + 0 = 1.87\) and \(0.09 + 1 = 1.09\). "Go" gets −0.9 and 0.4, so it becomes \(-0.78 - 0.9 = -1.68\) and \(0.27 + 0.4 = 0.67\).</p>
+      <p><b>Self-attention for "let's".</b> The query for "let's" is −1.0 and 3.7. Its dot product with the key for "let's" is 11.7, and with the key for "go" it is −2.6. SoftMax turns these into 1.0 and 0.0, so "let's" is encoded from 100% of its own values and 0% of the values for "go". The same steps, with a new query, give the self-attention values for "go".</p>
+      <p><b>Decoder.</b> EOS embeds as 2.70 and −1.34. Adding position values 0 and 1 gives 2.70 and −0.34. Its self-attention values are −2.8 and −2.3. Encoder-decoder attention says to use 100% of the first input word and 0% of the second. The fully connected layer gives four outputs, and SoftMax picks "vamos". Feeding "vamos" back in gives EOS, so the translation is "Vamos".</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Weights are shared across words, not across parts. The same query, key and value weights are reused for every word, but the decoder's self-attention and the encoder-decoder attention each use their own sets, different from the encoder's.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Two words can get the same value from one squiggle. In "Squatch eats pizza", the second and third words both got −0.9 for the first position value. The full sequence of position values is still unique, because later squiggles are wider.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> In encoder-decoder attention, the query comes from the decoder, while the keys and values come from the encoded input words. Mixing these up is a common slip.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The video's Transformer is deliberately minimal. The original one also normalized values after each step, scaled the dot product, and added extra neural networks with hidden layers to both the encoder and decoder.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>Why do Transformers need positional encoding?</summary><div class="a">Word order changes meaning, as in "Squatch eats pizza" versus "Pizza eats Squatch". Positional encoding is how a Transformer keeps track of that order. It adds values from sine and cosine squiggles to each word's embedding. Each position gets a unique sequence of values, so the model can tell where each word sits.</div></details>
+    <details class="qa" open><summary>Walk me through self-attention.</summary><div class="a">Each word's position-encoded values are turned into a query, a key and a value using shared weights. The query for one word is compared with every key using a dot product. A SoftMax turns those similarities into percentages, and the word's new encoding is the sum of all values scaled by those percentages.</div></details>
+    <details class="qa" open><summary>What do residual connections do?</summary><div class="a">They add a sub-unit's input back to its output, for example adding position-encoded values to the self-attention values. This lets each sub-unit focus on one part of the problem, such as word relationships, without also preserving the earlier information. It also makes complex networks easier to train.</div></details>
+    <details class="qa" open><summary>How is encoder-decoder attention different from self-attention?</summary><div class="a">Self-attention relates words within one phrase. Encoder-decoder attention takes a query from the decoder and compares it with keys from the encoded input words, then scales those input words' values. It makes sure important input words, like "don't", are not lost in the translation.</div></details>
+    <details class="qa" open><summary>Why are Transformers fast to train?</summary><div class="a">One unit is built per word and copied for every word, with the same weights. So embeddings, queries, keys, values and attention for all words can be computed at the same time. That fits well on hardware with many cores, like GPUs.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Word embedding turns each token into numbers, using one network reused for every word.</li>
+      <li>Positional encoding adds sine and cosine values so the Transformer keeps track of word order.</li>
+      <li>Self-attention compares queries with keys by dot product, applies SoftMax, and sums the scaled values.</li>
+      <li>Residual connections add inputs back so each sub-unit can focus on one job.</li>
+      <li>The decoder starts from EOS and uses its own self-attention plus encoder-decoder attention.</li>
+      <li>A fully connected layer and SoftMax pick each output word until the decoder outputs EOS.</li>
+      <li>Shared weights let all words be processed in parallel, which makes Transformers fast.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Transformer neural networks</span><span class="board-tag">embed, add position, attend, add back</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 282" role="img" aria-label="The position-encoded word let's (1.87, 1.09) dots its query with the keys of let's and go, scoring 11.7 and −2.6; SoftMax turns these into 1.0 and 0.0, so its new encoding takes all of its own values, and a residual connection adds the starting values back.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <path d="M92 32 H22 V252 H124" class="sv-stroke-acc" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#board-arr)"/>
+            <line x1="148" y1="54" x2="116" y2="90" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="252" y1="54" x2="284" y2="90" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="110" y1="188" x2="180" y2="228" class="sv-stroke-key" stroke-width="3.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="290" y1="188" x2="258" y2="228" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-dasharray="5 5" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <rect x="92" y="12" width="216" height="40" rx="20" class="sv-paper2"/>
+              <rect x="35" y="94" width="150" height="36" rx="8" class="sv-paper"/>
+              <rect x="215" y="94" width="150" height="36" rx="8" class="sv-paper"/>
+              <rect x="50" y="168" width="120" height="16" rx="4" class="sv-key"/>
+              <rect x="230" y="168" width="120" height="16" rx="4" class="sv-paper"/>
+              <rect x="128" y="232" width="184" height="38" rx="8" class="sv-good-soft"/>
+            </g>
+            <text x="200" y="39" text-anchor="middle"><tspan class="sv-tb">"let's"</tspan><tspan dx="8" class="sv-tm">1.87, 1.09</tspan></text>
+            <text x="200" y="80" text-anchor="middle" class="sv-ts">query · key</text>
+            <text x="110" y="119" text-anchor="middle" class="sv-tb">key "let's"</text>
+            <text x="290" y="119" text-anchor="middle" class="sv-tb">key "go"</text>
+            <text x="110" y="156" text-anchor="middle" class="sv-tm">11.7 → 1.0</text>
+            <text x="290" y="156" text-anchor="middle" class="sv-tm">−2.6 → 0.0</text>
+            <text x="32" y="240" class="sv-ts">+ residual</text>
+            <text x="220" y="257" text-anchor="middle" class="sv-tb">encoded "let's"</text>
+          </svg>
+          <p>Each word becomes numbers plus position values. Self-attention compares a word's query with every word's key; SoftMax turns the scores into shares of the values, so "let's" uses 100% of its own. A residual connection adds the position-encoded values back.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Token</dt><dd>A word, word fragment or symbol, like EOS (end of sequence).</dd>
+            <dt>Positional encoding</dt><dd>Sine and cosine values added to each embedding to keep word order.</dd>
+            <dt>Query, key, value</dt><dd>Weighted sums of position-encoded values; same weights for every word.</dd>
+            <dt>Self-attention</dt><dd>Similarity to every word, itself included, sets each word's share.</dd>
+            <dt>Residual connection</dt><dd>Adds a sub-unit's input back to its output.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Embed</b>one network, reused for every word</li>
+            <li><b>Add position</b>sine and cosine squiggle values</li>
+            <li><b>Self-attention</b>query · key, SoftMax, sum values</li>
+            <li><b>Residual</b>add position-encoded values back</li>
+            <li><b>Decode</b>from EOS, plus encoder-decoder attention</li>
+            <li><b>Pick the word</b>fully connected layer, then SoftMax</li>
+          </ol>
+          <p class="loop">↺ feed each picked word back into the decoder; stop when it outputs EOS</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$s = q \cdot k = q_1 k_1 + q_2 k_2$$
+          $$p_i = \frac{e^{s_i}}{\sum_j e^{s_j}}$$
+          $$a = \sum_i p_i\,v_i,\qquad \text{output} = a + x$$
+          <ul class="keys">
+            <li>\(s\): query–key similarity; \(p_i\): SoftMax share of word \(i\).</li>
+            <li>\(v_i\): value of word \(i\); \(x\): embedding plus position values.</li>
+            <li>The original paper divides \(s\) by \(\sqrt{d}\), \(d\) = embedding values per token.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>step</th><th>"let's"</th><th>"go"</th></tr>
+            <tr><td>embed</td><td>1.87, 0.09</td><td>−0.78, 0.27</td></tr>
+            <tr><td>+ position</td><td>1.87, 1.09</td><td>−1.68, 0.67</td></tr>
+            <tr><td>q(let's) · k</td><td>11.7</td><td>−2.6</td></tr>
+            <tr><td>SoftMax</td><td>1.0</td><td>0.0</td></tr>
+            <tr class="final"><td>decoder</td><td colspan="2">EOS → vamos → EOS</td></tr>
+          </table>
+          <p class="hand">"let's" is most similar to itself, so it is encoded from 100% of its own values. The translation is "Vamos".</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">All parts share one set of weights.</span><span class="yes">Weights are shared across words. Decoder self-attention and encoder-decoder attention have their own sets.</span></li>
+            <li><span class="no">In encoder-decoder attention, the input gives the query.</span><span class="yes">The query comes from the decoder; keys and values come from the encoded input words.</span></li>
+            <li><span class="no">This is the full original Transformer.</span><span class="yes">It is minimal. The original also normalized values, scaled the dot product and added hidden-layer networks.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="91-attention-for-neural-networks.html"><small>Previous</small>Attention for Neural Networks</a> <a href="93-decoder-only-transformers-chatgpts-specific-transformer.html"><small>Next</small>Decoder-Only Transformers, ChatGPTs specific Transformer</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

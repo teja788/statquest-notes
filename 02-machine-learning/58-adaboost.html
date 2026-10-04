@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AdaBoost — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>58</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 58 · 20.9 min</div>
+    <h1>AdaBoost</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=LsK-xG1cLYA" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">AdaBoost builds a forest of very small trees, one after another, and lets the good ones vote louder. This video shows the three ideas behind it, then builds a forest by hand from an eight-patient heart disease table.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>AdaBoost combines many weak learners, and those weak learners are almost always stumps. A stump is a tree with one node and two leaves, so it can only use one variable. Each stump gets an amount of say, which is a vote weight computed from how many samples it got wrong. Each stump is also built from the mistakes of the stump before it, because the misclassified samples get heavier. To classify a new patient, you add up the amounts of say for each class and pick the larger sum.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh explains AdaBoost by comparing it to a random forest. In a random forest every tree is full sized. There is no fixed maximum depth, so a tree can use all four variables in the heart disease table: chest pain, blood circulation, blocked arteries and patient weight.</p>
+    <p>AdaBoost does the opposite. Its trees are usually just one node and two leaves. A tree that small has a name: a <strong>stump</strong>. A stump can only ask one question about one variable, so it classifies poorly. That makes it a <strong>weak learner</strong>, and AdaBoost likes weak learners.</p>
+    <p>The second difference is the vote. In a random forest every tree has an equal vote. In AdaBoost some stumps get more say in the final answer than others. Josh draws the strong stumps bigger than the weak ones.</p>
+    <p>The third difference is order. Random forest trees are independent, so it does not matter which one you build first. AdaBoost stumps are a chain. The errors of the first stump change how the second stump is built, and the errors of the second stump change the third.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Left: a random forest of three full size trees with equal votes, built independently. Right: an AdaBoost forest of three stumps of different sizes, built in order, each from the errors of the one before.">
+        <defs>
+          <marker id="ab-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" class="sv-ink3"></path>
+          </marker>
+        </defs>
+        <line x1="380" y1="28" x2="380" y2="238" class="sv-line" stroke-width="1.5"></line>
+
+        <text x="30" y="42" class="sv-tb">Random forest</text>
+
+        <line x1="90" y1="76" x2="60" y2="110" class="sv-line" stroke-width="1.5"></line>
+        <line x1="90" y1="76" x2="120" y2="110" class="sv-line" stroke-width="1.5"></line>
+        <line x1="60" y1="110" x2="44" y2="144" class="sv-line" stroke-width="1.5"></line>
+        <line x1="60" y1="110" x2="76" y2="144" class="sv-line" stroke-width="1.5"></line>
+        <line x1="120" y1="110" x2="104" y2="144" class="sv-line" stroke-width="1.5"></line>
+        <line x1="120" y1="110" x2="136" y2="144" class="sv-line" stroke-width="1.5"></line>
+        <circle cx="90" cy="76" r="7" class="sv-acc"></circle>
+        <circle cx="60" cy="110" r="6" class="sv-acc"></circle>
+        <circle cx="120" cy="110" r="6" class="sv-acc"></circle>
+        <circle cx="44" cy="144" r="5" class="sv-ink3"></circle>
+        <circle cx="76" cy="144" r="5" class="sv-ink3"></circle>
+        <circle cx="104" cy="144" r="5" class="sv-ink3"></circle>
+        <circle cx="136" cy="144" r="5" class="sv-ink3"></circle>
+        <text x="90" y="174" text-anchor="middle" class="sv-ts">vote 1</text>
+
+        <line x1="200" y1="76" x2="170" y2="110" class="sv-line" stroke-width="1.5"></line>
+        <line x1="200" y1="76" x2="230" y2="110" class="sv-line" stroke-width="1.5"></line>
+        <line x1="170" y1="110" x2="154" y2="144" class="sv-line" stroke-width="1.5"></line>
+        <line x1="170" y1="110" x2="186" y2="144" class="sv-line" stroke-width="1.5"></line>
+        <line x1="230" y1="110" x2="214" y2="144" class="sv-line" stroke-width="1.5"></line>
+        <line x1="230" y1="110" x2="246" y2="144" class="sv-line" stroke-width="1.5"></line>
+        <circle cx="200" cy="76" r="7" class="sv-acc"></circle>
+        <circle cx="170" cy="110" r="6" class="sv-acc"></circle>
+        <circle cx="230" cy="110" r="6" class="sv-acc"></circle>
+        <circle cx="154" cy="144" r="5" class="sv-ink3"></circle>
+        <circle cx="186" cy="144" r="5" class="sv-ink3"></circle>
+        <circle cx="214" cy="144" r="5" class="sv-ink3"></circle>
+        <circle cx="246" cy="144" r="5" class="sv-ink3"></circle>
+        <text x="200" y="174" text-anchor="middle" class="sv-ts">vote 1</text>
+
+        <line x1="310" y1="76" x2="280" y2="110" class="sv-line" stroke-width="1.5"></line>
+        <line x1="310" y1="76" x2="340" y2="110" class="sv-line" stroke-width="1.5"></line>
+        <line x1="280" y1="110" x2="264" y2="144" class="sv-line" stroke-width="1.5"></line>
+        <line x1="280" y1="110" x2="296" y2="144" class="sv-line" stroke-width="1.5"></line>
+        <line x1="340" y1="110" x2="324" y2="144" class="sv-line" stroke-width="1.5"></line>
+        <line x1="340" y1="110" x2="356" y2="144" class="sv-line" stroke-width="1.5"></line>
+        <circle cx="310" cy="76" r="7" class="sv-acc"></circle>
+        <circle cx="280" cy="110" r="6" class="sv-acc"></circle>
+        <circle cx="340" cy="110" r="6" class="sv-acc"></circle>
+        <circle cx="264" cy="144" r="5" class="sv-ink3"></circle>
+        <circle cx="296" cy="144" r="5" class="sv-ink3"></circle>
+        <circle cx="324" cy="144" r="5" class="sv-ink3"></circle>
+        <circle cx="356" cy="144" r="5" class="sv-ink3"></circle>
+        <text x="310" y="174" text-anchor="middle" class="sv-ts">vote 1</text>
+
+        <text x="30" y="216" class="sv-ts">Full-size trees. Every tree gets one equal vote.</text>
+        <text x="30" y="234" class="sv-ts">Each tree is built on its own, in any order.</text>
+
+        <text x="410" y="42" class="sv-tb">AdaBoost: a forest of stumps</text>
+
+        <rect x="422" y="62" width="76" height="28" rx="5" class="sv-key-soft"></rect>
+        <rect x="422" y="62" width="76" height="28" rx="5" class="sv-stroke-key" stroke-width="2"></rect>
+        <line x1="460" y1="90" x2="432" y2="112" class="sv-line" stroke-width="1.5"></line>
+        <line x1="460" y1="90" x2="488" y2="112" class="sv-line" stroke-width="1.5"></line>
+        <rect x="411" y="112" width="42" height="24" rx="4" class="sv-paper2"></rect>
+        <rect x="467" y="112" width="42" height="24" rx="4" class="sv-paper2"></rect>
+        <text x="460" y="158" text-anchor="middle" class="sv-ts">big say</text>
+
+        <rect x="562" y="70" width="46" height="20" rx="4" class="sv-key-soft"></rect>
+        <rect x="562" y="70" width="46" height="20" rx="4" class="sv-stroke-key" stroke-width="1.5"></rect>
+        <line x1="585" y1="90" x2="567" y2="112" class="sv-line" stroke-width="1.5"></line>
+        <line x1="585" y1="90" x2="603" y2="112" class="sv-line" stroke-width="1.5"></line>
+        <rect x="551" y="112" width="28" height="18" rx="3" class="sv-paper2"></rect>
+        <rect x="591" y="112" width="28" height="18" rx="3" class="sv-paper2"></rect>
+        <text x="585" y="158" text-anchor="middle" class="sv-ts">small say</text>
+
+        <rect x="668" y="66" width="62" height="24" rx="5" class="sv-key-soft"></rect>
+        <rect x="668" y="66" width="62" height="24" rx="5" class="sv-stroke-key" stroke-width="1.5"></rect>
+        <line x1="699" y1="90" x2="676" y2="112" class="sv-line" stroke-width="1.5"></line>
+        <line x1="699" y1="90" x2="722" y2="112" class="sv-line" stroke-width="1.5"></line>
+        <rect x="655" y="112" width="34" height="21" rx="4" class="sv-paper2"></rect>
+        <rect x="705" y="112" width="34" height="21" rx="4" class="sv-paper2"></rect>
+        <text x="699" y="158" text-anchor="middle" class="sv-ts">medium say</text>
+
+        <line x1="505" y1="182" x2="548" y2="182" class="sv-line" stroke-width="1.5" marker-end="url(#ab-ar)"></line>
+        <line x1="622" y1="182" x2="662" y2="182" class="sv-line" stroke-width="1.5" marker-end="url(#ab-ar)"></line>
+
+        <text x="410" y="216" class="sv-ts">One node, two leaves, so one variable only.</text>
+        <text x="410" y="234" class="sv-ts">Built in order, each from the last one's errors.</text>
+      </svg>
+      <figcaption>The three differences at a glance: stumps instead of full trees, unequal votes instead of equal ones, and a chain instead of independent builds.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Start with the data. Josh uses eight patients and predicts heart disease from chest pain, blocked arteries and patient weight.</li>
+      <li>Give every sample a <strong>sample weight</strong>. This number says how important it is to classify that row correctly. At the start every row gets \(1/8\), so all rows matter equally.</li>
+      <li>Build the first stump. Try each variable on its own and pick the split with the lowest Gini index. Here patient weight above 176 wins, so that becomes the first stump.</li>
+      <li>Count how badly that stump did. Add up the sample weights of the rows it got wrong. This sum is the <strong>total error</strong>.</li>
+      <li>Turn the total error into the stump's <strong>amount of say</strong>. A small error gives a large positive say, an error of 0.5 gives zero say, and an error near 1 gives a large negative say.</li>
+      <li>Raise the sample weights of the rows this stump got wrong, and lower the weights of the rows it got right.</li>
+      <li>Normalise the new weights, which means dividing each one by their sum so they add up to 1 again.</li>
+      <li>Build the next stump with these weights. Either use a weighted Gini index, or draw a new data set of the same size where heavy rows appear several times, then reset the weights to equal.</li>
+      <li>Repeat until you have the forest you want. To classify a patient, add the amounts of say for each class and take the larger sum.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Bar chart of the eight sample weights before and after the update. Before, all eight bars are 0.125. After, the misclassified sample rises to 0.49 and the seven correct samples drop to 0.07.">
+        <defs>
+          <marker id="ab-ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" class="sv-ink3"></path>
+          </marker>
+        </defs>
+        <text x="30" y="42" class="sv-tb">Before the first stump</text>
+        <text x="30" y="62" class="sv-ts">all eight weights = 1/8 = 0.125</text>
+        <text x="420" y="42" class="sv-tb">After the update and normalising</text>
+        <text x="420" y="62" class="sv-ts">the wrong row 0.49, the seven right rows 0.07</text>
+
+        <line x1="24" y1="230" x2="736" y2="230" class="sv-line" stroke-width="1.5"></line>
+
+        <rect x="30" y="192" width="30" height="38" class="sv-acc-soft"></rect>
+        <rect x="68" y="192" width="30" height="38" class="sv-acc-soft"></rect>
+        <rect x="106" y="192" width="30" height="38" class="sv-acc-soft"></rect>
+        <rect x="144" y="192" width="30" height="38" class="sv-key"></rect>
+        <rect x="182" y="192" width="30" height="38" class="sv-acc-soft"></rect>
+        <rect x="220" y="192" width="30" height="38" class="sv-acc-soft"></rect>
+        <rect x="258" y="192" width="30" height="38" class="sv-acc-soft"></rect>
+        <rect x="296" y="192" width="30" height="38" class="sv-acc-soft"></rect>
+        <text x="178" y="184" text-anchor="middle" class="sv-ts">each 0.125</text>
+
+        <line x1="344" y1="150" x2="404" y2="150" class="sv-line" stroke-width="1.5" marker-end="url(#ab-ar2)"></line>
+        <text x="374" y="140" text-anchor="middle" class="sv-ts">rescale</text>
+
+        <rect x="420" y="209" width="30" height="21" class="sv-acc-soft"></rect>
+        <rect x="458" y="209" width="30" height="21" class="sv-acc-soft"></rect>
+        <rect x="496" y="209" width="30" height="21" class="sv-acc-soft"></rect>
+        <rect x="534" y="83" width="30" height="147" class="sv-key"></rect>
+        <rect x="572" y="209" width="30" height="21" class="sv-acc-soft"></rect>
+        <rect x="610" y="209" width="30" height="21" class="sv-acc-soft"></rect>
+        <rect x="648" y="209" width="30" height="21" class="sv-acc-soft"></rect>
+        <rect x="686" y="209" width="30" height="21" class="sv-acc-soft"></rect>
+        <text x="549" y="75" text-anchor="middle" class="sv-ts">0.49</text>
+        <text x="663" y="201" text-anchor="middle" class="sv-ts">0.07 each</text>
+
+        <rect x="30" y="256" width="14" height="14" rx="3" class="sv-key"></rect>
+        <text x="52" y="268" class="sv-ts">the one misclassified sample</text>
+        <rect x="250" y="256" width="14" height="14" rx="3" class="sv-acc-soft"></rect>
+        <text x="272" y="268" class="sv-ts">the seven correctly classified samples</text>
+      </svg>
+      <figcaption>Notice that one row now carries almost half of the total weight, so the next stump cannot afford to miss it.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Total error of a stump</span>
+      <div class="math">$$ \text{Total Error} = \sum_{i \in \text{wrong}} w_i $$</div>
+      <p class="explain"><b>Symbols:</b> \(w_i\) is the sample weight of row \(i\); "wrong" is the set of rows this stump misclassified. <b>What it tells you:</b> because the sample weights always add up to 1, the total error is always between 0 for a perfect stump and 1 for a stump that gets everything backwards.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Amount of say</span>
+      <div class="math">$$ \alpha = \frac{1}{2}\,\ln\!\left(\frac{1 - \text{Total Error}}{\text{Total Error}}\right) $$</div>
+      <p class="explain"><b>Symbols:</b> \(\alpha\) is the amount of say, which is how loudly this stump votes; \(\ln\) is the natural log. <b>What it tells you:</b> a small total error gives a large positive \(\alpha\); a total error of 0.5, which is a coin flip, gives \(\alpha = 0\); a total error near 1 gives a large negative \(\alpha\), which flips the stump's vote to the other class.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Updating the sample weights</span>
+      <div class="math">$$ w_{\text{new}} = w_{\text{old}} \times e^{\,\alpha} \quad \text{(row was wrong)} $$</div>
+      <div class="math">$$ w_{\text{new}} = w_{\text{old}} \times e^{-\alpha} \quad \text{(row was right)} $$</div>
+      <p class="explain"><b>Symbols:</b> \(w_{\text{old}}\) is the weight used for the stump we just built; \(w_{\text{new}}\) is the weight before normalising; \(\alpha\) is that stump's amount of say. <b>What it tells you:</b> the only difference is the minus sign. A stump with a large amount of say changes the weights a lot. A stump with a small amount of say barely moves them.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Normalising</span>
+      <div class="math">$$ w_i \leftarrow \frac{w_i}{\sum_{j} w_j} $$</div>
+      <p class="explain"><b>Symbols:</b> \(w_i\) is one new weight; \(\sum_j w_j\) is the sum of all the new weights. <b>What it tells you:</b> after scaling, the weights no longer add up to 1. Dividing by their sum fixes that, so the total error of the next stump stays on the 0 to 1 scale.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Final classification</span>
+      <div class="math">$$ \text{prediction} = \arg\max_{c}\ \sum_{\text{stumps that vote } c} \alpha $$</div>
+      <p class="explain"><b>Symbols:</b> \(c\) is a class, such as "has heart disease"; the sum runs over every stump whose leaf sends this patient to class \(c\); \(\alpha\) is each stump's amount of say. <b>What it tells you:</b> the forest does not count stumps, it adds their amounts of say. A few confident stumps can outvote many unsure ones.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>There are eight patients, so every sample weight starts at \(1/8 = 0.125\). Josh tries chest pain, blocked arteries and patient weight, and patient weight above 176 gives the lowest Gini index. That stump makes one mistake: a patient who weighs less than 176 does have heart disease, but the stump says they do not.</p>
+      <p>The total error is the weight of that single wrong row, so it is \(1/8\). The amount of say is</p>
+      <div class="math">$$ \alpha = \frac{1}{2}\ln\!\left(\frac{1 - 1/8}{1/8}\right) = \frac{1}{2}\ln(7) = 0.97 $$</div>
+      <p>Now update the weights. For the wrong row, \(e^{0.97} = 2.64\), so its new weight is \(0.125 \times 2.64 = 0.33\). For each of the seven right rows, \(e^{-0.97} = 0.38\), so each new weight is \(0.125 \times 0.38 = 0.05\). Those eight numbers add up to \(0.68\), not 1, so divide each by \(0.68\). The wrong row becomes \(0.49\) and each right row becomes \(0.07\).</p>
+      <p>Josh also checks the chest pain stump, which would have made three mistakes. Its total error would be \(3/8\), so its amount of say should fall between 0 and 0.5. The formula gives \(\frac{1}{2}\ln(5/3) = 0.26\). The video shows 0.42, which looks like a slip, but both are well below 0.97.</p>
+      <p>To build the second stump without a weighted Gini index, we treat the new weights as a distribution. We draw random numbers between 0 and 1 until the new set has eight rows. The first three rows cover 0 to 0.07, 0.07 to 0.14 and 0.14 to 0.21. The heavy fourth row covers 0.21 to 0.70. The draws 0.42 and 0.51 both land on the heavy row, while 0.72 and 0.83 land on lighter rows. In the end the heavy row appears four times, and every row is reset to an equal weight.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Sample weight and patient weight are two different things in this example. The sample weight says how important a row is. The patient weight is a measured variable that a stump can split on.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The amount of say formula breaks when the total error is exactly 0 or exactly 1, because you divide by zero or take the log of zero. Real implementations add a tiny error term to keep it finite.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> When you resample instead of using a weighted Gini index, the weights go back to equal. The emphasis is not lost. It now lives in the duplicated rows, which act as one block and cause a large penalty if the next stump misses them.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What are the three ideas behind AdaBoost?</summary><div class="a">First, AdaBoost combines many weak learners, and in practice those are stumps, which are trees with one node and two leaves. Second, the stumps do not vote equally; each one gets an amount of say based on how well it classified the training data. Third, the stumps are built in order, and every stump is shaped by the mistakes of the one before it.</div></details>
+    <details class="qa" open><summary>How does AdaBoost decide how much a stump's vote is worth?</summary><div class="a">It first computes the total error, which is the sum of the sample weights of the rows the stump got wrong. Then it puts that error into one half times the log of one minus the error over the error. A low error gives a big positive vote weight, an error of one half gives zero, and a very high error gives a negative weight that flips the stump's vote.</div></details>
+    <details class="qa" open><summary>How is AdaBoost different from a random forest?</summary><div class="a">A random forest grows full-size trees independently, and each tree gets one equal vote, so you can build them in parallel. AdaBoost grows depth-one stumps in sequence, and each stump votes with its own amount of say. Because each stump depends on the previous one's errors, you cannot parallelise the boosting itself.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>AdaBoost builds a forest of stumps, where a stump is a tree with one node and two leaves.</li>
+      <li>Every row starts with the same sample weight, one over the number of rows.</li>
+      <li>Each stump is chosen as the single split with the lowest Gini index on the current weights.</li>
+      <li>The total error is the sum of the weights of the misclassified rows, and it drives the amount of say.</li>
+      <li>Misclassified rows are scaled up by e to the amount of say, correct rows are scaled down, and everything is normalised.</li>
+      <li>The next stump uses those weights, either through a weighted Gini index or through a resampled data set.</li>
+      <li>A patient is classified by adding the amounts of say on each side and taking the larger sum.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">AdaBoost</span><span class="board-tag">weak stumps, unequal votes, built in order</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 280" role="img" aria-label="A stump that splits on patient weight above 176 gets 1 of 8 rows wrong, so its amount of say is 0.97. Before, all eight sample weights are 1/8. After the update, the wrong row grows to 0.49 and the seven right rows shrink to 0.07 each, so the next stump focuses on that row.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <line x1="68" y1="48" x2="42" y2="72" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="68" y1="48" x2="94" y2="72" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <rect x="40" y="22" width="56" height="26" rx="5" class="sv-key-soft"/>
+              <rect x="22" y="72" width="40" height="22" rx="4" class="sv-paper"/>
+              <rect x="74" y="72" width="40" height="22" rx="4" class="sv-paper"/>
+            </g>
+            <text x="132" y="34" class="sv-ts">patient weight &gt; 176</text>
+            <text x="132" y="62" class="sv-t">1 of 8 rows wrong</text>
+            <text x="132" y="90" class="sv-tb">amount of say = 0.97</text>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="50" cy="128" r="10" class="sv-acc"/>
+              <circle cx="84" cy="128" r="10" class="sv-acc"/>
+              <circle cx="118" cy="128" r="10" class="sv-acc"/>
+              <circle cx="152" cy="128" r="10" class="sv-warn"/>
+              <circle cx="186" cy="128" r="10" class="sv-acc"/>
+              <circle cx="220" cy="128" r="10" class="sv-acc"/>
+              <circle cx="254" cy="128" r="10" class="sv-acc"/>
+              <circle cx="288" cy="128" r="10" class="sv-acc"/>
+            </g>
+            <text x="310" y="134" class="sv-ts">1/8 each</text>
+            <line x1="24" y1="124" x2="24" y2="210" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="152" y="186" text-anchor="middle" class="sv-tb">0.49</text>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="50" cy="216" r="7" class="sv-acc"/>
+              <circle cx="84" cy="216" r="7" class="sv-acc"/>
+              <circle cx="118" cy="216" r="7" class="sv-acc"/>
+              <circle cx="152" cy="216" r="19" class="sv-warn"/>
+              <circle cx="186" cy="216" r="7" class="sv-acc"/>
+              <circle cx="220" cy="216" r="7" class="sv-acc"/>
+              <circle cx="254" cy="216" r="7" class="sv-acc"/>
+              <circle cx="288" cy="216" r="7" class="sv-acc"/>
+            </g>
+            <text x="310" y="222" class="sv-ts">0.07 each</text>
+            <text x="152" y="262" text-anchor="middle" class="sv-t">next stump's focus</text>
+          </svg>
+          <p>Each stump's say comes from its total error: one wrong row of 8 gives 0.97. That row's weight then jumps from 0.125 to 0.49, so the next stump focuses on it.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Stump</dt><dd>One node, two leaves, so one variable.</dd>
+            <dt>Weak learner</dt><dd>Classifies poorly alone, like a stump.</dd>
+            <dt>Sample weight</dt><dd>How much a row matters. Starts at 1/8.</dd>
+            <dt>Total error</dt><dd>Sum of the weights of the wrong rows.</dd>
+            <dt>Amount of say</dt><dd>How loudly a stump votes.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Equal weights</b>1/8 for each row</li>
+            <li><b>Best stump</b>lowest Gini: patient weight &gt; 176</li>
+            <li><b>Total error</b>sum of wrong rows' weights</li>
+            <li><b>Amount of say</b>small error, big say</li>
+            <li><b>Reweight</b>wrong up, right down, normalise</li>
+            <li><b>Next stump</b>weighted Gini or resample</li>
+          </ol>
+          <p class="loop">↺ repeat 2 to 6; classify by adding the say per class</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{TE}=\sum_{i\in\text{wrong}}w_i$$
+          $$\alpha=\frac{1}{2}\ln\!\left(\frac{1-\text{TE}}{\text{TE}}\right)$$
+          $$w_{\text{new}}=w_{\text{old}}\times e^{\pm\alpha}$$
+          <ul class="keys">
+            <li>\(\text{TE}\) is the total error; \(\alpha\) is the amount of say.</li>
+            <li>Use \(+\alpha\) for wrong rows, \(-\alpha\) for right rows; then normalise.</li>
+            <li>\(\text{TE}=0.5\) gives \(\alpha=0\); near 1, the vote flips.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>step</th><th>wrong row</th><th>right rows</th></tr>
+            <tr><td>start</td><td>0.125</td><td>0.125</td></tr>
+            <tr><td>scale</td><td>× 2.64 = 0.33</td><td>× 0.38 = 0.05</td></tr>
+            <tr class="final"><td>÷ 0.68</td><td>0.49</td><td>0.07</td></tr>
+          </table>
+          <p class="hand">Total error 1/8 gives say ½ ln 7 = 0.97. Chest pain, 3 wrong, would get 0.26.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Sample weight and patient weight are the same.</span><span class="yes">Sample weight is a row's importance; patient weight is a variable to split on.</span></li>
+            <li><span class="no">The say formula works for any error.</span><span class="yes">Exactly 0 or 1 breaks it, so real implementations add a tiny error term.</span></li>
+            <li><span class="no">Resampling resets the weights, so the emphasis is lost.</span><span class="yes">It lives in the duplicated rows: a big penalty if the next stump misses them.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="57-stochastic-gradient-descent.html"><small>Previous</small>Stochastic Gradient Descent</a> <a href="59-gradient-boost-part-1-regression-main-ideas.html"><small>Next</small>Gradient Boost Part 1 (of 4): Regression Main Ideas</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

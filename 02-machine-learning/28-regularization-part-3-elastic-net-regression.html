@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Regularization Part 3: Elastic Net Regression — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>28</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 28 · 5.3 min</div>
+    <h1>Regularization Part 3: Elastic Net Regression</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=1dKRdX9bfIo" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Elastic Net Regression joins the Lasso penalty and the Ridge penalty in one model. Use it when you have many variables and cannot tell which ones are useful.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Lasso works best when many variables are useless, because it can set their slopes to zero. Ridge works best when most variables are useful, because it only shrinks slopes. With millions of parameters you cannot know which case you are in. Elastic Net avoids the choice. It adds both penalties to least squares, each with its own lambda.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh starts from the two earlier methods. Lasso Regression can remove terms, so it suits a model full of useless variables. Ridge Regression only shrinks terms, so it suits a model where most variables help. When you know your variables well, the choice is easy.</p>
+    <p>The problem appears with very large models. Josh mentions a deep learning conference where models had millions of parameters. Nobody can inspect that many. You almost certainly need regularization, but you cannot tell which penalty fits.</p>
+    <p>Elastic Net solves this by refusing to pick. It starts with least squares, then adds both penalties together. Each penalty gets its own lambda: \(\lambda_1\) for Lasso and \(\lambda_2\) for Ridge. Cross validation over combinations of the two lambdas finds the best pair.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 340" role="img" aria-label="Grid showing which model you get for each combination of lambda one and lambda two">
+        <line class="sv-line" x1="110" y1="290" x2="720" y2="290" stroke-width="1.5"></line>
+        <line class="sv-line" x1="110" y1="290" x2="110" y2="50" stroke-width="1.5"></line>
+        <rect class="sv-paper2" x="130" y="205" width="250" height="70" rx="6"></rect>
+        <text class="sv-tb" x="146" y="232">Least Squares</text>
+        <text class="sv-ts" x="146" y="254">no penalty at all</text>
+        <rect class="sv-key-soft" x="440" y="205" width="260" height="70" rx="6"></rect>
+        <text class="sv-tb" x="456" y="232">Lasso Regression</text>
+        <text class="sv-ts" x="456" y="254">can set slopes to zero</text>
+        <rect class="sv-acc-soft" x="130" y="80" width="250" height="70" rx="6"></rect>
+        <text class="sv-tb" x="146" y="107">Ridge Regression</text>
+        <text class="sv-ts" x="146" y="129">shrinks, keeps everything</text>
+        <rect class="sv-good-soft" x="440" y="80" width="260" height="70" rx="6"></rect>
+        <text class="sv-tb" x="456" y="107">Elastic Net</text>
+        <text class="sv-ts" x="456" y="129">hybrid of both penalties</text>
+        <text class="sv-tm" x="146" y="196">λ₁ = 0, λ₂ = 0</text>
+        <text class="sv-tm" x="456" y="196">λ₁ &gt; 0, λ₂ = 0</text>
+        <text class="sv-tm" x="146" y="71">λ₁ = 0, λ₂ &gt; 0</text>
+        <text class="sv-tm" x="456" y="71">λ₁ &gt; 0, λ₂ &gt; 0</text>
+        <text class="sv-t" x="415" y="316" text-anchor="middle">λ₁ — the Lasso penalty grows →</text>
+        <text class="sv-t" x="70" y="170" text-anchor="middle" transform="rotate(-90 70 170)">λ₂ — the Ridge penalty grows →</text>
+      </svg>
+      <figcaption>Notice that Least Squares, Lasso and Ridge are just three corners of the same Elastic Net formula.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Start with least squares, the fit that makes the squared residuals as small as possible.</li>
+      <li>Add the Lasso penalty: \(\lambda_1\) times the sum of the absolute slopes.</li>
+      <li>Add the Ridge penalty: \(\lambda_2\) times the sum of the squared slopes.</li>
+      <li>Try many combinations of the two lambdas and keep the pair that predicts new data best.</li>
+      <li>Read the corners. Both lambdas zero gives least squares. Only \(\lambda_1\) gives Lasso. Only \(\lambda_2\) gives Ridge.</li>
+    </ol>
+    <p>The hybrid has one more strength. On its own, Lasso tends to pick just one of a group of correlated terms and delete the rest. Ridge shrinks all the correlated slopes together but never removes them. Elastic Net groups the correlated variables, then keeps them all or removes them all at once.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Three panels comparing how Lasso, Ridge and Elastic Net treat three correlated variables">
+        <line class="sv-line" x1="20" y1="135" x2="740" y2="135" stroke-width="1.5" stroke-dasharray="5 5"></line>
+        <text class="sv-ts" x="740" y="128" text-anchor="end">original slope size</text>
+        <text class="sv-tb" x="30" y="45">Lasso alone</text>
+        <rect class="sv-key" x="40" y="150" width="36" height="85" rx="2"></rect>
+        <rect class="sv-ink3" x="95" y="231" width="36" height="4" rx="1"></rect>
+        <rect class="sv-ink3" x="150" y="231" width="36" height="4" rx="1"></rect>
+        <text class="sv-ts" x="30" y="272">keeps one, deletes the rest</text>
+        <text class="sv-tb" x="285" y="45">Ridge alone</text>
+        <rect class="sv-acc" x="295" y="173" width="36" height="62" rx="2"></rect>
+        <rect class="sv-acc" x="350" y="173" width="36" height="62" rx="2"></rect>
+        <rect class="sv-acc" x="405" y="173" width="36" height="62" rx="2"></rect>
+        <text class="sv-ts" x="285" y="272">shrinks all, removes none</text>
+        <text class="sv-tb" x="530" y="45">Elastic Net</text>
+        <rect class="sv-good" x="540" y="180" width="36" height="55" rx="2"></rect>
+        <rect class="sv-good" x="595" y="180" width="36" height="55" rx="2"></rect>
+        <rect class="sv-good" x="650" y="180" width="36" height="55" rx="2"></rect>
+        <path class="sv-stroke-good" d="M540 168 L540 160 L686 160 L686 168" stroke-width="2"></path>
+        <text class="sv-ts" x="530" y="272">groups them: all stay or all go</text>
+        <line class="sv-line" x1="20" y1="235" x2="740" y2="235" stroke-width="1.5"></line>
+      </svg>
+      <figcaption>Notice that only Elastic Net treats the three correlated variables as one group.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">Step 1 — least squares</span><div class="math">$$ \text{SSR} \;=\; \sum_{i=1}^{n}\bigl(y_i-\hat{y}_i\bigr)^2 $$</div><p class="explain"><b>Symbols:</b> \(n\) is the number of data points, \(y_i\) the real measured value, \(\hat{y}_i\) the predicted value. SSR is the sum of the squared residuals. <b>What it tells you:</b> the plain fit quality that every method here starts from.</p></div>
+    <div class="formula"><span class="lbl">Step 2 — the two penalties</span><div class="math">$$ \lambda_1\sum_{j=1}^{p}\lvert \beta_j \rvert \qquad\text{and}\qquad \lambda_2\sum_{j=1}^{p}\beta_j^{\,2} $$</div><p class="explain"><b>Symbols:</b> \(\beta_j\) is the slope for variable \(j\), and \(p\) is the number of variables. \(\lambda_1\) scales the Lasso penalty, \(\lambda_2\) the Ridge penalty. <b>What it tells you:</b> the absolute value lets a slope reach zero, so a variable can leave. Squaring only shrinks, so every variable stays.</p></div>
+    <div class="formula"><span class="lbl">Elastic Net — the two together</span><div class="math">$$ \sum_{i=1}^{n}\bigl(y_i-\hat{y}_i\bigr)^2 \;+\; \lambda_1\sum_{j=1}^{p}\lvert \beta_j \rvert \;+\; \lambda_2\sum_{j=1}^{p}\beta_j^{\,2} $$</div><p class="explain"><b>Symbols:</b> the same symbols, with both lambdas present at once. <b>What it tells you:</b> Elastic Net minimises this one quantity, so it can shrink like Ridge and delete like Lasso in the same fit. Cross validation picks the best pair \((\lambda_1,\lambda_2)\).</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh predicts <b>size</b> from four variables: weight, high fat diet, astrological sign, and the air speed of a swallow. Weight and diet are useful. The other two are useless.</p>
+      <p>Elastic Net minimises this quantity:</p>
+      <div class="math">$$ \text{SSR} \;+\; \lambda_1\bigl(\lvert \beta_{\text{wt}}\rvert+\lvert \beta_{\text{diet}}\rvert+\lvert \beta_{\text{sign}}\rvert+\lvert \beta_{\text{swallow}}\rvert\bigr) \;+\; \lambda_2\bigl(\beta_{\text{wt}}^{2}+\beta_{\text{diet}}^{2}+\beta_{\text{sign}}^{2}+\beta_{\text{swallow}}^{2}\bigr) $$</div>
+      <p>Both lambdas at zero makes the penalties vanish, so you get the least squares estimates. Only \(\lambda_1&gt;0\) leaves the Lasso part, so the slopes for sign and swallow speed can reach zero. Only \(\lambda_2&gt;0\) leaves the Ridge part, so all four slopes shrink and stay.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Elastic Net has two lambdas, not one. You must search over combinations of \(\lambda_1\) and \(\lambda_2\). A single one dimensional search is not enough.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Elastic Net is not a new kind of model. It is still least squares with penalties added.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not expect Lasso to handle correlated variables well. It keeps one of them and drops the others, so the survivor looks uniquely important when it is not.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is Elastic Net Regression?</summary><div class="a">It is least squares with two penalties added at once. One is the Lasso penalty, the sum of the absolute slopes, scaled by lambda one. The other is the Ridge penalty, the sum of the squared slopes, scaled by lambda two. Cross validation tunes both.</div></details>
+    <details class="qa" open><summary>When would you choose Elastic Net over Lasso or Ridge?</summary><div class="a">When the model has far too many variables to judge one by one. Lasso suits mostly useless variables, Ridge mostly useful ones. If you cannot tell which case you face, Elastic Net lets the data decide.</div></details>
+    <details class="qa" open><summary>Why is Elastic Net better with correlated variables?</summary><div class="a">Lasso picks one variable from a correlated group and removes the rest. Ridge shrinks the whole group together but never removes anything. Elastic Net combines both, so it groups the correlated variables and keeps them all or removes them all together.</div></details>
+    <details class="qa" open><summary>What happens at the extreme lambda values?</summary><div class="a">Both lambdas at zero gives plain least squares. Lambda one positive with lambda two at zero is exactly Lasso. The reverse is exactly Ridge. Both positive gives the hybrid people mean by Elastic Net.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Lasso suits models with many useless variables, because it can set slopes to zero.</li>
+      <li>Ridge suits models where most variables are useful, because it only shrinks slopes.</li>
+      <li>With huge models you cannot know in advance which case applies to you.</li>
+      <li>Elastic Net starts with least squares and adds both penalties at once.</li>
+      <li>Cross validation over combinations of the two lambdas finds the best pair.</li>
+      <li>Setting one lambda to zero returns you to plain Lasso or plain Ridge.</li>
+      <li>Elastic Net also groups correlated variables and keeps or removes them together.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Elastic Net</span><span class="board-tag">both penalties, each with its own lambda</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 270" role="img" aria-label="A plane with lambda one across and lambda two up. The origin is least squares, the lambda one axis alone is Lasso, the lambda two axis alone is Ridge, and the inside, where both lambdas are above zero, is Elastic Net. Cross validation tries a grid of pairs and keeps the best one.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <line x1="70" y1="186" x2="362" y2="186" class="sv-stroke-key" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="70" y1="186" x2="70" y2="62" class="sv-stroke-acc" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <g class="sv-ink3">
+              <circle cx="150" cy="104" r="5"/><circle cx="210" cy="104" r="5"/><circle cx="270" cy="104" r="5"/>
+              <circle cx="150" cy="132" r="5"/><circle cx="210" cy="132" r="5"/>
+              <circle cx="150" cy="160" r="5"/><circle cx="210" cy="160" r="5"/><circle cx="270" cy="160" r="5"/>
+            </g>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="270" cy="132" r="8" class="sv-good"/>
+            </g>
+            <circle cx="70" cy="186" r="7" class="sv-ink"/>
+            <text x="88" y="44" class="sv-tb">Ridge</text>
+            <text x="88" y="70" class="sv-ts">λ₂ only</text>
+            <text x="362" y="44" text-anchor="end" class="sv-tb">Elastic Net</text>
+            <text x="362" y="70" text-anchor="end" class="sv-ts">both λ &gt; 0</text>
+            <text x="290" y="138" class="sv-ts">best pair</text>
+            <text x="22" y="218" class="sv-tb">least squares</text>
+            <text x="362" y="218" text-anchor="end" class="sv-tb">Lasso</text>
+            <text x="362" y="244" text-anchor="end" class="sv-ts">λ₁ only</text>
+          </svg>
+          <p>Elastic Net adds both penalties to least squares, each with its own lambda. Cross validation tries pairs of \(\lambda_1\) and \(\lambda_2\) and keeps the best. Both zero gives least squares; only \(\lambda_1\) gives Lasso, only \(\lambda_2\) Ridge.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Least squares</dt><dd>The fit with the smallest sum of squared residuals (SSR).</dd>
+            <dt>Lasso penalty</dt><dd>\(\lambda_1\) × sum of absolute slopes; can set slopes to zero.</dd>
+            <dt>Ridge penalty</dt><dd>\(\lambda_2\) × sum of squared slopes; only shrinks them.</dd>
+            <dt>Cross validation</dt><dd>Tries many \(\lambda_1, \lambda_2\) pairs; keeps the best predictor of new data.</dd>
+            <dt>Correlated group</dt><dd>Lasso keeps one; Elastic Net keeps or removes them all together.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Least squares</b>start from the SSR</li>
+            <li><b>Add Lasso</b>\(\lambda_1\) × sum of absolute slopes</li>
+            <li><b>Add Ridge</b>\(\lambda_2\) × sum of squared slopes</li>
+            <li><b>Cross validate</b>try lambda pairs, keep the best</li>
+            <li><b>Read corners</b>only \(\lambda_1\): Lasso; only \(\lambda_2\): Ridge</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{SSR}=\sum_{i=1}^{n}\bigl(y_i-\hat{y}_i\bigr)^2$$
+          $$\min\ \text{SSR}+\lambda_1\sum_{j=1}^{p}\lvert\beta_j\rvert+\lambda_2\sum_{j=1}^{p}\beta_j^{2}$$
+          <ul class="keys">
+            <li>\(y_i\) is real, \(\hat{y}_i\) predicted; \(\beta_j\) is the slope of variable \(j\).</li>
+            <li>\(\lambda_1\) scales the Lasso part, \(\lambda_2\) the Ridge part.</li>
+            <li>Absolute values can reach zero; squares only shrink.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>\(\lambda_1\)</th><th>\(\lambda_2\)</th><th>what you get</th></tr>
+            <tr><td>0</td><td>0</td><td>least squares estimates</td></tr>
+            <tr><td>&gt; 0</td><td>0</td><td>Lasso: sign, swallow can hit 0</td></tr>
+            <tr><td>0</td><td>&gt; 0</td><td>Ridge: all four shrink, stay</td></tr>
+            <tr class="final"><td>&gt; 0</td><td>&gt; 0</td><td>Elastic Net: shrink and delete</td></tr>
+          </table>
+          <p class="hand">Size from weight, diet, sign and swallow speed: only weight and diet are useful.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">There is one lambda to tune.</span><span class="yes">Search combinations of \(\lambda_1\) and \(\lambda_2\); a one dimensional search is not enough.</span></li>
+            <li><span class="no">Elastic Net is a new kind of model.</span><span class="yes">It is still least squares with penalties added.</span></li>
+            <li><span class="no">Lasso handles correlated variables well.</span><span class="yes">It keeps one, drops the rest; the survivor looks uniquely important when it is not.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="27-ridge-vs-lasso-regression-visualized.html"><small>Previous</small>Ridge vs Lasso Regression, Visualized</a> <a href="29-ridge-lasso-and-elastic-net-regression-in-r.html"><small>Next</small>Ridge, Lasso and Elastic-Net Regression in R</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

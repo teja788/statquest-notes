@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Confidence Intervals — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>35</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 35 · 6.7 min</div>
+    <h1>Confidence Intervals</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=TqOeMYtOc1w" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">A confidence interval is simply the range that covers 95% of the means you get when you bootstrap your sample. Once you see it that way, it stops being mysterious.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>You measure a small sample, such as 12 female mice. You bootstrap that sample many times and collect thousands of means. The interval that covers the middle 95% of those means is the 95% confidence interval. Anything outside it happens less than 5% of the time, so a confidence interval works as a statistical test you can do with your eyes.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh starts with a bootstrapping refresher, because that is what makes confidence intervals click. Bootstrapping means you draw a new sample of the same size from your original sample, at random. The same measurement may be picked more than once. That is called sampling with replacement.</p>
+    <p>Each bootstrapped sample gives you one mean. Repeat this many times, sometimes more than 10,000 times. You end up with a big pile of means. That pile shows which values are reasonable for the true mean of all female mice.</p>
+    <p>A confidence interval is just a bar drawn across that pile. A 95% interval covers 95% of the bootstrapped means. A 99% interval covers 99% of them, so it is wider. That is all it is.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 290" role="img" aria-label="Twelve mouse weights are resampled with replacement, each resample gives one mean, and the middle 95 percent of the collected means forms the confidence interval">
+        <defs>
+          <marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" class="sv-ink2"></path>
+          </marker>
+        </defs>
+
+        <text x="105" y="45" text-anchor="middle" class="sv-tb">Original sample</text>
+        <rect x="20" y="55" width="170" height="150" rx="6" class="sv-paper2"></rect>
+        <circle cx="50" cy="88" r="9" class="sv-acc-soft"></circle>
+        <circle cx="85" cy="88" r="9" class="sv-acc-soft"></circle>
+        <circle cx="120" cy="88" r="9" class="sv-acc-soft"></circle>
+        <circle cx="155" cy="88" r="9" class="sv-acc-soft"></circle>
+        <circle cx="50" cy="122" r="9" class="sv-acc-soft"></circle>
+        <circle cx="85" cy="122" r="9" class="sv-acc-soft"></circle>
+        <circle cx="120" cy="122" r="9" class="sv-acc-soft"></circle>
+        <circle cx="155" cy="122" r="9" class="sv-acc-soft"></circle>
+        <circle cx="50" cy="156" r="9" class="sv-acc-soft"></circle>
+        <circle cx="85" cy="156" r="9" class="sv-acc-soft"></circle>
+        <circle cx="120" cy="156" r="9" class="sv-acc-soft"></circle>
+        <circle cx="155" cy="156" r="9" class="sv-acc-soft"></circle>
+        <text x="105" y="192" text-anchor="middle" class="sv-ts">12 mouse weights</text>
+
+        <line x1="196" y1="130" x2="218" y2="130" class="sv-line" stroke-width="2" marker-end="url(#ar1)"></line>
+
+        <text x="310" y="45" text-anchor="middle" class="sv-tb">Bootstrapped sample</text>
+        <rect x="225" y="55" width="170" height="150" rx="6" class="sv-paper2"></rect>
+        <circle cx="255" cy="88" r="9" class="sv-key-soft"></circle>
+        <circle cx="290" cy="88" r="9" class="sv-key-soft"></circle>
+        <circle cx="325" cy="88" r="9" class="sv-acc-soft"></circle>
+        <circle cx="360" cy="88" r="9" class="sv-acc-soft"></circle>
+        <circle cx="255" cy="122" r="9" class="sv-acc-soft"></circle>
+        <circle cx="290" cy="122" r="9" class="sv-acc-soft"></circle>
+        <circle cx="325" cy="122" r="9" class="sv-key-soft"></circle>
+        <circle cx="360" cy="122" r="9" class="sv-acc-soft"></circle>
+        <circle cx="255" cy="156" r="9" class="sv-acc-soft"></circle>
+        <circle cx="290" cy="156" r="9" class="sv-key-soft"></circle>
+        <circle cx="325" cy="156" r="9" class="sv-acc-soft"></circle>
+        <circle cx="360" cy="156" r="9" class="sv-acc-soft"></circle>
+        <text x="310" y="192" text-anchor="middle" class="sv-ts">12 again, duplicates allowed</text>
+
+        <path d="M 310 205 L 310 232 L 105 232 L 105 208" class="sv-line" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ar1)"></path>
+        <text x="207" y="252" text-anchor="middle" class="sv-ts">repeat over 10,000 times</text>
+
+        <line x1="401" y1="130" x2="423" y2="130" class="sv-line" stroke-width="2" marker-end="url(#ar1)"></line>
+
+        <text x="576" y="45" text-anchor="middle" class="sv-tb">All the bootstrapped means</text>
+        <rect x="436" y="197" width="20" height="8" class="sv-paper2"></rect>
+        <rect x="456" y="189" width="20" height="16" class="sv-acc-soft"></rect>
+        <rect x="476" y="177" width="20" height="28" class="sv-acc-soft"></rect>
+        <rect x="496" y="160" width="20" height="45" class="sv-acc-soft"></rect>
+        <rect x="516" y="139" width="20" height="66" class="sv-acc-soft"></rect>
+        <rect x="536" y="117" width="20" height="88" class="sv-acc-soft"></rect>
+        <rect x="556" y="103" width="20" height="102" class="sv-acc-soft"></rect>
+        <rect x="576" y="105" width="20" height="100" class="sv-acc-soft"></rect>
+        <rect x="596" y="121" width="20" height="84" class="sv-acc-soft"></rect>
+        <rect x="616" y="145" width="20" height="60" class="sv-acc-soft"></rect>
+        <rect x="636" y="165" width="20" height="40" class="sv-acc-soft"></rect>
+        <rect x="656" y="180" width="20" height="25" class="sv-acc-soft"></rect>
+        <rect x="676" y="191" width="20" height="14" class="sv-acc-soft"></rect>
+        <rect x="696" y="198" width="20" height="7" class="sv-paper2"></rect>
+        <line x1="430" y1="205" x2="726" y2="205" class="sv-line" stroke-width="1.5"></line>
+        <rect x="456" y="214" width="240" height="9" rx="4" class="sv-ink"></rect>
+        <text x="576" y="242" text-anchor="middle" class="sv-ts">95% confidence interval</text>
+        <text x="576" y="260" text-anchor="middle" class="sv-ts">mean weight</text>
+      </svg>
+      <figcaption>Notice that the interval is drawn on the pile of bootstrapped means, not on the original 12 measurements.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Weigh your sample. Josh weighs 12 female mice, not every mouse on the planet.</li>
+      <li>Calculate the sample mean. It is only an estimate of the true mean.</li>
+      <li>Bootstrap once. Pick 12 weights at random from the original 12, with replacement, then take the mean.</li>
+      <li>Repeat step 3 many times. Josh mentions more than 10,000 repeats.</li>
+      <li>Draw the bar that covers 95% of those means. That is your 95% confidence interval.</li>
+    </ol>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>The video builds the interval by counting, not by algebra. These two lines write that rule down.</p>
+
+    <div class="formula"><span class="lbl">Bootstrap percentile interval</span>
+      <div class="math">$$ \text{CI}_{95\%} = \big[\; q_{2.5}(\bar{x}^{*}),\;\; q_{97.5}(\bar{x}^{*}) \;\big] $$</div>
+      <p class="explain"><b>Symbols:</b> \(\bar{x}^{*}\) is the pile of means from all the bootstrapped samples. \(q_{2.5}\) is the value below which 2.5% of them fall. \(q_{97.5}\) is the value below which 97.5% of them fall. <b>What it tells you:</b> drop the lowest 2.5% and the highest 2.5%, and the middle 95% is left.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">The usual formula you meet in the wild</span>
+      <div class="math">$$ \bar{x} \;\pm\; 1.96 \cdot \frac{s}{\sqrt{n}} $$</div>
+      <p class="explain"><b>Symbols:</b> \(\bar{x}\) is the sample mean, \(s\) is the sample standard deviation, and \(n\) is the sample size. The term \(s/\sqrt{n}\) is the standard error of the mean. <b>What it tells you:</b> Josh says intervals are usually built by a formula, not by bootstrapping. Both routes are read the same way.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh asks whether the true mean weight of all female mice could be less than 20. He draws the 95% confidence interval across the bootstrapped means from the 12 mice.</p>
+      <p>The region left of 20 sits outside the interval. The interval holds 95% of the means, so that outside region holds less than 5% of them. The probability that the true mean lands there is below 0.05.</p>
+      <p>So \(p &lt; 0.05\), and the true mean is significantly different from any value below 20. No test was calculated; the picture did the work.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+
+    <div class="pitfall"><span class="lbl">Watch out</span> Overlapping intervals do not mean "no difference". Josh is explicit here. The two means may still be significantly different, so you have to run the t-test.</div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span> The interval covers plausible values for the true mean, not the spread of individual mice. It is built from means, so it is narrow.</div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span> Wider is not better. A 99% interval is wider only because it must cover more of the means.</div>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 280" role="img" aria-label="Two panels comparing female and male mouse confidence intervals, one pair separated and one pair overlapping">
+        <rect x="20" y="25" width="350" height="240" rx="8" class="sv-paper2"></rect>
+        <text x="195" y="50" text-anchor="middle" class="sv-tb">Intervals do not overlap</text>
+        <text x="110" y="86" text-anchor="middle" class="sv-ts">female</text>
+        <rect x="60" y="95" width="100" height="11" rx="5" class="sv-acc"></rect>
+        <circle cx="110" cy="100" r="5" class="sv-ink"></circle>
+        <text x="280" y="136" text-anchor="middle" class="sv-ts">male</text>
+        <rect x="230" y="145" width="100" height="11" rx="5" class="sv-key"></rect>
+        <circle cx="280" cy="150" r="5" class="sv-ink"></circle>
+        <line x1="160" y1="100" x2="160" y2="190" class="sv-line" stroke-width="1.5" stroke-dasharray="4 4"></line>
+        <line x1="230" y1="150" x2="230" y2="190" class="sv-line" stroke-width="1.5" stroke-dasharray="4 4"></line>
+        <text x="195" y="182" text-anchor="middle" class="sv-ts">gap</text>
+        <line x1="40" y1="195" x2="350" y2="195" class="sv-line" stroke-width="1.5"></line>
+        <rect x="40" y="215" width="310" height="34" rx="6" class="sv-good-soft"></rect>
+        <text x="195" y="237" text-anchor="middle" class="sv-t">p &lt; 0.05, significantly different</text>
+
+        <rect x="390" y="25" width="350" height="240" rx="8" class="sv-paper2"></rect>
+        <text x="565" y="50" text-anchor="middle" class="sv-tb">Intervals overlap</text>
+        <rect x="520" y="88" width="30" height="75" class="sv-key-soft"></rect>
+        <text x="495" y="86" text-anchor="middle" class="sv-ts">female</text>
+        <rect x="440" y="95" width="110" height="11" rx="5" class="sv-acc"></rect>
+        <circle cx="495" cy="100" r="5" class="sv-ink"></circle>
+        <text x="575" y="136" text-anchor="middle" class="sv-ts">male</text>
+        <rect x="520" y="145" width="110" height="11" rx="5" class="sv-key"></rect>
+        <circle cx="575" cy="150" r="5" class="sv-ink"></circle>
+        <text x="535" y="180" text-anchor="middle" class="sv-ts">overlap</text>
+        <line x1="410" y1="195" x2="720" y2="195" class="sv-line" stroke-width="1.5"></line>
+        <rect x="410" y="215" width="310" height="34" rx="6" class="sv-key-soft"></rect>
+        <text x="565" y="237" text-anchor="middle" class="sv-t">unclear, run the t-test</text>
+      </svg>
+      <figcaption>Notice that only the left picture settles the question; the right one still needs a formal test.</figcaption>
+    </figure>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>What is a 95% confidence interval, in plain words?</summary><div class="a">If I bootstrap my sample thousands of times and record the mean each time, the 95% confidence interval is the range that covers 95% of those means. It tells me which values are reasonable for the true mean of the whole population. Values outside it turn up less than 5% of the time.</div></details>
+
+    <details class="qa" open><summary>How can a confidence interval act as a statistical test?</summary><div class="a">The interval covers 95% of the means, so anything outside it happens less than 5% of the time. If a value I care about falls outside, its p-value is below 0.05. I read significance straight off the plot.</div></details>
+
+    <details class="qa" open><summary>Two groups have overlapping confidence intervals. Are their means the same?</summary><div class="a">I cannot say that. Overlap only means the picture is not conclusive, so I would run a t-test. If the intervals do not overlap, the means are significantly different.</div></details>
+
+    <details class="qa" open><summary>Do you have to bootstrap to get a confidence interval?</summary><div class="a">No. Bootstrapping is one route, and it is the easiest one to picture. Most intervals come from a formula instead, and you read the result the same way.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap">
+      <ul>
+        <li>Bootstrapping means resampling your data with replacement and taking the mean each time.</li>
+        <li>Repeat it thousands of times and you get a large pile of plausible means.</li>
+        <li>A 95% confidence interval covers 95% of those means; a 99% interval covers 99% and is wider.</li>
+        <li>Anything outside a 95% interval happens less than 5% of the time, so its p-value is below 0.05.</li>
+        <li>That makes a confidence interval a statistical test you can perform by eye.</li>
+        <li>If two intervals do not overlap, the means are significantly different.</li>
+        <li>If they do overlap, the answer is still open, so run the t-test.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Confidence Intervals</span><span class="board-tag">a bar across the pile of means</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 270" role="img" aria-label="Twelve mouse weights are resampled with replacement over 10,000 times, giving a pile of means. A bar under the middle 95% of the pile is the 95% confidence interval. The value 20 lies left of the bar, where under 5% of the means fall, so p is below 0.05.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <text x="16" y="24" class="sv-ts">12 mice</text>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="24" cy="42" r="6" class="sv-acc-soft"/>
+              <circle cx="39" cy="42" r="6" class="sv-acc-soft"/>
+              <circle cx="54" cy="42" r="6" class="sv-acc-soft"/>
+              <circle cx="69" cy="42" r="6" class="sv-acc-soft"/>
+              <circle cx="84" cy="42" r="6" class="sv-acc-soft"/>
+              <circle cx="99" cy="42" r="6" class="sv-acc-soft"/>
+              <circle cx="24" cy="60" r="6" class="sv-acc-soft"/>
+              <circle cx="39" cy="60" r="6" class="sv-acc-soft"/>
+              <circle cx="54" cy="60" r="6" class="sv-acc-soft"/>
+              <circle cx="69" cy="60" r="6" class="sv-acc-soft"/>
+              <circle cx="84" cy="60" r="6" class="sv-acc-soft"/>
+              <circle cx="99" cy="60" r="6" class="sv-acc-soft"/>
+            </g>
+            <path d="M114 51 H230 V106" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#board-arr)"/>
+            <text x="122" y="40" class="sv-ts">resample with replacement</text>
+            <text x="242" y="86" class="sv-ts">10,000+ means</text>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <rect x="120" y="204" width="20" height="6" class="sv-paper2"/>
+              <rect x="140" y="194" width="20" height="16" class="sv-acc-soft"/>
+              <rect x="160" y="176" width="20" height="34" class="sv-acc-soft"/>
+              <rect x="180" y="152" width="20" height="58" class="sv-acc-soft"/>
+              <rect x="200" y="130" width="20" height="80" class="sv-acc-soft"/>
+              <rect x="220" y="118" width="20" height="92" class="sv-acc-soft"/>
+              <rect x="240" y="130" width="20" height="80" class="sv-acc-soft"/>
+              <rect x="260" y="152" width="20" height="58" class="sv-acc-soft"/>
+              <rect x="280" y="176" width="20" height="34" class="sv-acc-soft"/>
+              <rect x="300" y="194" width="20" height="16" class="sv-acc-soft"/>
+              <rect x="320" y="204" width="20" height="6" class="sv-paper2"/>
+            </g>
+            <line x1="20" y1="210" x2="380" y2="210" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="104" y1="130" x2="104" y2="216" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="5 5" stroke-linecap="round"/>
+            <text x="104" y="122" text-anchor="middle" class="sv-tb">20</text>
+            <text x="94" y="168" text-anchor="end" class="sv-ts">under 5%</text>
+            <text x="94" y="196" text-anchor="end" class="sv-tb">p &lt; 0.05</text>
+            <g class="sv-stroke-ink" stroke-width="2"><rect x="140" y="220" width="180" height="10" rx="5" class="sv-key"/></g>
+            <text x="230" y="254" text-anchor="middle" class="sv-tb">95% CI = middle 95%</text>
+          </svg>
+          <p>Resample the 12 mice with replacement and take the mean, over 10,000 times. The bar across the middle 95% of that pile is the 95% confidence interval. Anything outside it, like values below 20, turns up under 5% of the time: p &lt; 0.05.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Bootstrapping</dt><dd>Resample your data with replacement, taking the mean each time.</dd>
+            <dt>With replacement</dt><dd>The same measurement can be picked more than once.</dd>
+            <dt>True mean</dt><dd>The mean of all female mice; the sample only estimates it.</dd>
+            <dt>95% confidence interval</dt><dd>Covers 95% of the bootstrapped means. A 99% one is wider.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Weigh a sample</b>12 female mice</li>
+            <li><b>Sample mean</b>only estimates the true mean</li>
+            <li><b>Bootstrap once</b>pick 12 with replacement, take mean</li>
+            <li><b>Repeat</b>more than 10,000 times</li>
+            <li><b>Draw the bar</b>covering 95% of the means</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{CI}_{95\%}=\big[\,q_{2.5}(\bar{x}^{*}),\;q_{97.5}(\bar{x}^{*})\,\big]$$
+          $$\bar{x}\pm1.96\cdot\frac{s}{\sqrt{n}}$$
+          <ul class="keys">
+            <li>\(\bar{x}^{*}\) is the pile of bootstrapped means; cut 2.5% off each end.</li>
+            <li>\(\bar{x}\) sample mean, \(s\) standard deviation, \(n\) sample size; \(s/\sqrt{n}\) is the standard error.</li>
+            <li>Most intervals use the formula; read both the same way.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>step</th><th>result</th></tr>
+            <tr><td>question</td><td>true mean below 20?</td></tr>
+            <tr><td>bootstrap 12 mice</td><td>a pile of means</td></tr>
+            <tr><td>95% CI</td><td>covers 95% of them</td></tr>
+            <tr><td>below 20</td><td>outside: under 5%</td></tr>
+            <tr class="final"><td>p-value</td><td>p &lt; 0.05 ✓</td></tr>
+          </table>
+          <p class="hand">No test calculated: the true mean differs significantly from any value below 20.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Overlapping intervals mean no difference.</span><span class="yes">The means may still differ significantly. Run the t-test.</span></li>
+            <li><span class="no">The interval shows the spread of individual mice.</span><span class="yes">It covers plausible values for the true mean. Built from means, it is narrow.</span></li>
+            <li><span class="no">A wider interval is better.</span><span class="yes">A 99% interval is wider only because it covers more of the means.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="34-logs-logarithms.html"><small>Previous</small>Logs (logarithms)</a> <a href="36-r-squared.html"><small>Next</small>R-squared</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

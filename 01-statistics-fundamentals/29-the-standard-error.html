@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The standard error — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>29</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 29 · 11.7 min</div>
+    <h1>The standard error</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=XNgt7F6FqDU" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">The standard error tells you how much a sample mean would move if you repeated the same experiment many times. It is the standard deviation of the means, not of the raw data.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh starts with error bars, because a bar can show a standard deviation, a standard error, or a confidence interval. A standard deviation says how the data points spread around the mean. A standard error says how the means from repeated samples spread. You get it by taking many samples, computing each mean, then taking the standard deviation of those means. For the mean there is a shortcut formula. For every other statistic you can bootstrap it.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Imagine you measure three groups, A, B and C, and plot every point on a scatter plot. You then draw a green bar at the mean of each group. You can also draw a red bar one standard deviation above and below each mean. In papers and talks people often hide the raw points and show only these bars. Josh calls that a dynamite plot, because each column looks like the igniter on a stick of dynamite.</p>
+    <p>There are three common kinds of error bar. Standard deviation bars tell you how the <em>data</em> spread around the mean. Standard error bars tell you how the <em>means</em> spread. Confidence interval bars are built from standard errors. Most of the time you want standard deviation bars, because they describe the data you collected.</p>
+    <p>Now picture weighing mice. The weights follow a normal curve, so most mice sit close to the average. You cannot weigh every mouse, so you take a sample of five. That sample gives a mean of &minus;0.2 and a standard deviation of 1.923. Remember the rule of thumb: one standard deviation each side of the mean covers about 68% of the data, and two cover about 95%.</p>
+    <p>Now take a second sample of five, and a third. The individual measurements jump around a lot, but the three means stay close together. For a mean to land far from the centre, almost every point would have to be far out in the same direction. That is rare. Usually one point is extreme, and one extreme point barely moves the mean.</p>
+    <p>So you can compute a standard deviation of the three means themselves. That number is narrower than the standard deviation of the raw data. It has its own name: the standard error of the mean.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 340" role="img" aria-label="Three samples with wide standard deviation bars on the left, and their three means on the right with a much narrower standard error bar">
+        <defs>
+          <marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-ink"/></marker>
+        </defs>
+        <text x="30" y="28" class="sv-tb">Three samples, n = 5 each</text>
+        <text x="30" y="46" class="sv-ts">upright bar = 1 standard deviation of the data</text>
+        <line x1="70" y1="60" x2="70" y2="300" class="sv-line" stroke-width="1.5"/>
+        <text x="62" y="174" class="sv-ts" text-anchor="end">0</text>
+        <line x1="70" y1="170" x2="420" y2="170" class="sv-line" stroke-width="1.5" stroke-dasharray="4 4"/>
+
+        <circle cx="118" cy="132" r="4" class="sv-ink3"/><circle cx="142" cy="158" r="4" class="sv-ink3"/><circle cx="122" cy="186" r="4" class="sv-ink3"/><circle cx="144" cy="204" r="4" class="sv-ink3"/><circle cx="130" cy="168" r="4" class="sv-ink3"/>
+        <line x1="130" y1="132" x2="130" y2="208" class="sv-stroke-key" stroke-width="2"/>
+        <line x1="124" y1="132" x2="136" y2="132" class="sv-stroke-key" stroke-width="2"/>
+        <line x1="124" y1="208" x2="136" y2="208" class="sv-stroke-key" stroke-width="2"/>
+        <line x1="112" y1="170" x2="148" y2="170" class="sv-stroke-good" stroke-width="3.5"/>
+        <text x="130" y="318" class="sv-ts" text-anchor="middle">A</text>
+
+        <circle cx="218" cy="146" r="4" class="sv-ink3"/><circle cx="242" cy="162" r="4" class="sv-ink3"/><circle cx="222" cy="182" r="4" class="sv-ink3"/><circle cx="244" cy="198" r="4" class="sv-ink3"/><circle cx="230" cy="212" r="4" class="sv-ink3"/>
+        <line x1="230" y1="142" x2="230" y2="218" class="sv-stroke-key" stroke-width="2"/>
+        <line x1="224" y1="142" x2="236" y2="142" class="sv-stroke-key" stroke-width="2"/>
+        <line x1="224" y1="218" x2="236" y2="218" class="sv-stroke-key" stroke-width="2"/>
+        <line x1="212" y1="180" x2="248" y2="180" class="sv-stroke-good" stroke-width="3.5"/>
+        <text x="230" y="318" class="sv-ts" text-anchor="middle">B</text>
+
+        <circle cx="318" cy="112" r="4" class="sv-ink3"/><circle cx="342" cy="164" r="4" class="sv-ink3"/><circle cx="322" cy="176" r="4" class="sv-ink3"/><circle cx="344" cy="190" r="4" class="sv-ink3"/><circle cx="330" cy="200" r="4" class="sv-ink3"/>
+        <line x1="330" y1="130" x2="330" y2="206" class="sv-stroke-key" stroke-width="2"/>
+        <line x1="324" y1="130" x2="336" y2="130" class="sv-stroke-key" stroke-width="2"/>
+        <line x1="324" y1="206" x2="336" y2="206" class="sv-stroke-key" stroke-width="2"/>
+        <line x1="312" y1="168" x2="348" y2="168" class="sv-stroke-good" stroke-width="3.5"/>
+        <text x="330" y="318" class="sv-ts" text-anchor="middle">C</text>
+
+        <line x1="440" y1="20" x2="440" y2="320" class="sv-line" stroke-width="1.5"/>
+        <line x1="405" y1="250" x2="470" y2="250" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <rect x="375" y="256" width="132" height="20" rx="4" class="sv-paper"/>
+        <text x="441" y="270" class="sv-ts" text-anchor="middle">keep only the means</text>
+
+        <text x="470" y="28" class="sv-tb">The 3 means only</text>
+        <text x="470" y="46" class="sv-ts">upright bar = standard deviation of the means</text>
+        <line x1="470" y1="170" x2="740" y2="170" class="sv-line" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <line x1="494" y1="170" x2="526" y2="170" class="sv-stroke-good" stroke-width="3.5"/>
+        <line x1="544" y1="180" x2="576" y2="180" class="sv-stroke-good" stroke-width="3.5"/>
+        <line x1="594" y1="168" x2="626" y2="168" class="sv-stroke-good" stroke-width="3.5"/>
+        <line x1="665" y1="156" x2="665" y2="190" class="sv-stroke-ink" stroke-width="3"/>
+        <line x1="657" y1="156" x2="673" y2="156" class="sv-stroke-ink" stroke-width="3"/>
+        <line x1="657" y1="190" x2="673" y2="190" class="sv-stroke-ink" stroke-width="3"/>
+        <text x="665" y="144" class="sv-ts" text-anchor="middle">standard error</text>
+        <text x="665" y="208" class="sv-ts" text-anchor="middle">= 0.86</text>
+      </svg>
+      <figcaption>Notice the scale: the bar on the right is much shorter than the bars on the left, because means vary less than raw measurements.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Take several samples from the same population. Every sample must have the same number of measurements, <em>n</em>. In this video n = 5.</li>
+      <li>Compute the mean of each sample. You do not need each sample's standard deviation for this; the means are enough.</li>
+      <li>Compute the standard deviation of that list of means. That number is the standard error of the mean. Here it came out as 0.86.</li>
+      <li>The same recipe works for any statistic. Collect many medians and take their standard deviation, and you have the standard error of the median. The same goes for modes, percentiles, or even standard deviations.</li>
+    </ol>
+
+    <h3>Bootstrapping, when there is no formula</h3>
+    <p>Repeating an experiment many times costs time and money. For the mean there is a formula that estimates the standard error from one sample. For almost everything else there is no such formula. That is where bootstrapping helps, and a computer does the work easily.</p>
+    <ol class="steps">
+      <li>Start with the one sample you actually collected. Josh notes that bootstrapping works better with 10 or more measurements than with 5.</li>
+      <li>Pick one measurement at random from that sample and write it down. It is not a new measurement; it is a value you already have.</li>
+      <li>Repeat until you have written down n values. The same value may come up again, and that is fine. In the video 1.43 is picked twice.</li>
+      <li>Compute the statistic you care about from those n values. Here it is the mean.</li>
+      <li>Go back to step 2 and repeat many times, so you build up a long list of means.</li>
+      <li>Take the standard deviation of that list. That is your standard error.</li>
+    </ol>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 310" role="img" aria-label="Bootstrapping loop: draw five values with replacement from your sample, compute the mean, repeat many times, then take the standard deviation of all the means">
+        <defs>
+          <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-ink"/></marker>
+        </defs>
+        <text x="30" y="46" class="sv-ts">1. your one sample</text>
+        <rect x="30" y="60" width="180" height="80" rx="6" class="sv-paper2"/>
+        <rect x="30" y="60" width="180" height="80" rx="6" class="sv-line" stroke-width="1.5"/>
+        <circle cx="58" cy="100" r="6" class="sv-acc"/><circle cx="92" cy="100" r="6" class="sv-acc"/><circle cx="126" cy="100" r="6" class="sv-acc"/><circle cx="160" cy="100" r="6" class="sv-acc"/><circle cx="190" cy="100" r="6" class="sv-acc"/>
+        <line x1="215" y1="100" x2="245" y2="100" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar2)"/>
+
+        <text x="250" y="46" class="sv-ts">2. draw 5 again, with replacement</text>
+        <rect x="250" y="60" width="210" height="80" rx="6" class="sv-paper"/>
+        <rect x="250" y="60" width="210" height="80" rx="6" class="sv-line" stroke-width="1.5"/>
+        <text x="262" y="96" class="sv-tm">1.43   &minus;1.38   &minus;3.11</text>
+        <text x="262" y="122" class="sv-tm">1.43   &minus;0.10</text>
+        <text x="250" y="158" class="sv-ts">1.43 drawn twice</text>
+        <line x1="465" y1="100" x2="495" y2="100" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar2)"/>
+
+        <text x="510" y="46" class="sv-ts">3. compute the statistic</text>
+        <rect x="510" y="60" width="220" height="80" rx="6" class="sv-good-soft"/>
+        <rect x="510" y="60" width="220" height="80" rx="6" class="sv-line" stroke-width="1.5"/>
+        <text x="620" y="106" class="sv-tb" text-anchor="middle">mean = &minus;0.35</text>
+
+        <path d="M560,145 L560,180 L355,180 L355,148" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <text x="457" y="200" class="sv-ts" text-anchor="middle">repeat many times</text>
+
+        <path d="M700,145 L700,214" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <rect x="430" y="220" width="310" height="66" rx="6" class="sv-acc-soft"/>
+        <rect x="430" y="220" width="310" height="66" rx="6" class="sv-line" stroke-width="1.5"/>
+        <text x="585" y="248" class="sv-t" text-anchor="middle">standard deviation of all the means</text>
+        <text x="585" y="270" class="sv-tb" text-anchor="middle">= the standard error</text>
+      </svg>
+      <figcaption>Notice that bootstrapping never collects new data: it reuses one sample over and over to see how much the statistic wobbles.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Standard error, by definition</span>
+      <div class="math">$$ SE_{\bar{x}} \;=\; \sqrt{\frac{1}{M-1}\sum_{i=1}^{M}\left(\bar{x}_i-\bar{\bar{x}}\right)^{2}} $$</div>
+      <p class="explain"><b>Symbols:</b> \(M\) is how many samples you took; \(\bar{x}_i\) is the mean of sample \(i\); \(\bar{\bar{x}}\) is the mean of all those means; the square root and the sum are just the ordinary standard deviation formula. <b>What it tells you:</b> the standard error is nothing special — it is the plain standard deviation applied to a list of means instead of a list of measurements.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Shortcut for the mean</span>
+      <div class="math">$$ SE_{\bar{x}} \;=\; \frac{s}{\sqrt{n}} $$</div>
+      <p class="explain"><b>Symbols:</b> \(s\) is the standard deviation of the one sample you collected; \(n\) is how many measurements are in that sample. <b>What it tells you:</b> you can estimate the standard error from a single sample, without repeating the experiment, and it shrinks as the sample gets bigger. This shortcut exists for the mean; for most other statistics you bootstrap instead.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Rule of thumb for one standard deviation</span>
+      <div class="math">$$ \bar{x}\pm 1s \approx 68\%\ \text{of the data},\qquad \bar{x}\pm 2s \approx 95\%\ \text{of the data} $$</div>
+      <p class="explain"><b>Symbols:</b> \(\bar{x}\) is the mean; \(s\) is the standard deviation; the percentages are the share of values inside that range for a normal distribution. <b>What it tells you:</b> it fixes what a bar means, so you can read a graph and see that the bar around the means is far shorter than the bars around the data.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh weighs mice and records the difference from the average weight. One sample of five gives a mean of &minus;0.2 and a standard deviation of \(s = 1.923\). Taking the standard deviation of the sample means gives a standard error of 0.86.</p>
+      <p>The shortcut formula gives the same answer from that single sample:</p>
+      <div class="math">$$ SE_{\bar{x}}=\frac{1.923}{\sqrt{5}}=\frac{1.923}{2.236}=0.86 $$</div>
+      <p>Compare 1.923 with 0.86. The data spread more than twice as wide as the means do.</p>
+      <p>The bootstrap run uses the same sample. Josh draws 1.43, &minus;1.38, &minus;3.11, 1.43 and &minus;0.10, so 1.43 appears twice. The sum is &minus;1.73, so this bootstrap mean is \(-1.73/5=-0.35\). Repeat that many times, then take the standard deviation of all those means.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> An error bar on its own means nothing. The same drawing can show a standard deviation, a standard error, or a confidence interval. Always say in the caption which one you plotted.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not use the standard error to describe your data. It describes how a mean varies across repeated experiments. If a reader wants to see your data, show the standard deviation.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Because of the \(\sqrt{n}\), a bigger sample always shrinks the standard error. A tiny standard error may only mean you collected a lot of measurements.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Bootstrapping must draw <em>with</em> replacement. Without it, every bootstrap sample is your original sample reshuffled, and every mean is identical. Josh also warns that five measurements is thin; ten or more is better.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is the difference between a standard deviation and a standard error?</summary><div class="a">A standard deviation describes the spread of the measurements around their mean. A standard error describes the spread of a statistic, usually the mean, across repeated samples from the same population. Put simply, the standard error is the standard deviation of the means. That is why it is always the narrower bar.</div></details>
+    <details class="qa" open><summary>Why is the standard error smaller than the standard deviation?</summary><div class="a">Averaging cancels extremes. For a sample mean to land far out, nearly every point would have to be far out in the same direction. That is rare. The formula says the same thing: dividing by the square root of n shrinks the spread.</div></details>
+    <details class="qa" open><summary>How would you get the standard error of the median?</summary><div class="a">There is no simple formula for the median, so I would bootstrap it. I resample my data with replacement to the original size, take the median, and repeat many times. The standard deviation of those medians is the answer. The same recipe works for any statistic.</div></details>
+    <details class="qa" open><summary>Which error bars would you put on a chart for a stakeholder?</summary><div class="a">It depends on the question. If they want to understand the data I collected, I plot the standard deviation. If they want to know how reliable my estimate of the mean is, I plot the standard error. Either way I label the bars.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Error bars come in three common flavours: standard deviation, standard error, and confidence interval.</li>
+      <li>The standard deviation tells you how the data spread around the mean.</li>
+      <li>The standard error tells you how the means from repeated samples spread around the centre.</li>
+      <li>You get it by taking many equally sized samples, computing each mean, and taking the standard deviation of those means.</li>
+      <li>It is always narrower than the standard deviation of the data, because averaging cancels extreme values.</li>
+      <li>For the mean there is a shortcut: the sample standard deviation divided by the square root of the sample size.</li>
+      <li>For any other statistic, bootstrap it by resampling your data with replacement and taking the standard deviation of the results.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Standard error</span><span class="board-tag">the standard deviation of the means</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 250" role="img" aria-label="A wide bell of mouse weights with one standard deviation, s = 1.923, marked inside it. On the same axis, three sample means sit close together with a much narrower standard error of 0.86, which also equals 1.923 divided by the square root of 5. Other statistics are bootstrapped.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <text x="14" y="30" class="sv-t">mouse weights</text>
+            <polyline points="20,121 35,118 50,113.8 65,108.2 80,101 95,92.2 110,82.2 125,71.4 140,60.7 155,50.8 170,42.9 185,37.8 200,36 215,37.8 230,42.9 245,50.8 260,60.7 275,71.4 290,82.2 305,92.2 320,101 335,108.2 350,113.8 365,118 380,121" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="200" y="88" text-anchor="middle" class="sv-tb">s = 1.923</text>
+            <line x1="125" y1="104" x2="275" y2="104" class="sv-stroke-acc" stroke-width="3" stroke-linecap="round" marker-start="url(#board-arr)" marker-end="url(#board-arr)"/>
+            <line x1="14" y1="128" x2="386" y2="128" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="176" cy="128" r="7" class="sv-key"/>
+              <circle cx="196" cy="128" r="7" class="sv-key"/>
+              <circle cx="218" cy="128" r="7" class="sv-key"/>
+            </g>
+            <text x="154" y="158" text-anchor="end" class="sv-ts">3 sample means</text>
+            <line x1="167" y1="152" x2="233" y2="152" class="sv-stroke-key" stroke-width="3" stroke-linecap="round" marker-start="url(#board-arr)" marker-end="url(#board-arr)"/>
+            <text x="246" y="158" class="sv-tb">SE = 0.86</text>
+            <text x="246" y="184" class="sv-t">= 1.923 / √5</text>
+            <text x="200" y="230" text-anchor="middle" class="sv-ts">other statistics: bootstrap</text>
+          </svg>
+          <p>Raw measurements spread widely, but means of repeated samples stay close, because one extreme point barely moves a mean. The standard deviation of those means is the standard error.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Error bar</dt><dd>Can show a standard deviation, a standard error or a confidence interval.</dd>
+            <dt>Standard error</dt><dd>The standard deviation of the means from repeated samples.</dd>
+            <dt>Bootstrapping</dt><dd>Resampling your one sample when no formula exists.</dd>
+            <dt>With replacement</dt><dd>A value can be drawn again; 1.43 came up twice.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Take samples</b>several, each of size n = 5</li>
+            <li><b>Find each mean</b>the means are enough</li>
+            <li><b>Spread of means</b>their standard deviation: 0.86</li>
+            <li><b>Any statistic</b>medians, modes, percentiles work too</li>
+            <li><b>Resample</b>from one sample, with replacement</li>
+            <li><b>Compute it</b>the mean of n draws</li>
+          </ol>
+          <p class="loop">↺ repeat 5 and 6 many times, then take the standard deviation of the list</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$SE_{\bar{x}}=\sqrt{\frac{1}{M-1}\sum_{i=1}^{M}(\bar{x}_i-\bar{\bar{x}})^2}$$
+          $$SE_{\bar{x}}=\frac{s}{\sqrt{n}}$$
+          <ul class="keys">
+            <li>\(M\) samples with means \(\bar{x}_i\); \(\bar{\bar{x}}\) is the mean of those means.</li>
+            <li>\(s\) and \(n\) are the standard deviation and size of your one sample.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>step</th><th>working</th><th>value</th></tr>
+            <tr><td>one sample</td><td>n = 5, mean −0.2</td><td>\(s\) = 1.923</td></tr>
+            <tr><td>a bootstrap mean</td><td>1.43, −1.38, −3.11, 1.43, −0.10</td><td>−0.35</td></tr>
+            <tr class="final"><td>standard error</td><td>1.923 ÷ √5</td><td>0.86</td></tr>
+          </table>
+          <p class="hand">The standard deviation of the sample means also gave 0.86. The data spread more than twice as wide as the means.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">An error bar speaks for itself.</span><span class="yes">The same bar can be a standard deviation, a standard error or a confidence interval. Say which.</span></li>
+            <li><span class="no">Standard error bars describe my data.</span><span class="yes">They show how a mean varies across repeats. To show your data, plot the standard deviation.</span></li>
+            <li><span class="no">A tiny standard error means great data.</span><span class="yes">Because of the \(\sqrt{n}\), it may only mean you collected a lot of measurements.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="28-standard-deviation-vs-standard-error.html"><small>Previous</small>Standard Deviation vs Standard Error</a> <a href="30-bootstrapping-main-ideas.html"><small>Next</small>Bootstrapping Main Ideas</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

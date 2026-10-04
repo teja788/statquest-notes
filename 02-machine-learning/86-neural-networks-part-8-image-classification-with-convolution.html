@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Neural Networks Part 8: Image Classification with Convolutional Neural Networks (CNNs) — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>86</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 86 · 15.4 min</div>
+    <h1>Neural Networks Part 8: Image Classification with Convolutional Neural Networks (CNNs)</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=HGwBXDKFk9I" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: Neural Networks / Deep Learning (video 14)</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video shows how a convolutional neural network (CNN) classifies a small image. It follows one image of the letter O through every step, from raw pixels to the final answer.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>A normal neural network needs one weight per pixel for each hidden node. So it does not scale to big images. A CNN first slides a small learned filter over the image and adds a bias to make a feature map. It then runs the feature map through ReLU and keeps only the largest value in each region with max pooling. The few values that remain go into a normal neural network that makes the decision. This reduces the number of inputs, uses the correlation between nearby pixels, and tolerates small shifts in the image.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>StatSquatch plays tic-tac-toe against a computer and draws either an X or an O. The computer must decide which letter it is. Each drawing is a 6 by 6 grid of pixels, where 0 is a white pixel and 1 is a black pixel.</p>
+    <p>For an image this small, a normal neural network could work. You turn the 36 pixels into 36 input nodes and connect them to a hidden layer. But each hidden node then needs 36 weights, and a 100 by 100 image would need 10,000 weights per node. The network may also fail if the image moves by one pixel. It also cannot use the fact that nearby pixels tend to be similar, which Josh calls correlated pixels.</p>
+    <p>A CNN fixes all three problems. It reduces the number of input nodes, it tolerates small shifts, and it takes advantage of the correlation between neighbouring pixels. The figure below shows the full path for the letter O.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 220" role="img" aria-label="CNN pipeline: 6 by 6 image, 3 by 3 filter, 4 by 4 feature map, ReLU, 2 by 2 max pooling, four input nodes, one hidden node, two outputs">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker>
+        </defs>
+        <!-- stage titles -->
+        <text x="68" y="50" text-anchor="middle" class="sv-ts">6×6 image (O)</text>
+        <text x="164" y="50" text-anchor="middle" class="sv-ts">3×3 filter</text>
+        <text x="260" y="50" text-anchor="middle" class="sv-ts">feature map</text>
+        <text x="370" y="50" text-anchor="middle" class="sv-ts">after ReLU</text>
+        <text x="469" y="50" text-anchor="middle" class="sv-ts">max pool</text>
+        <text x="535" y="50" text-anchor="middle" class="sv-ts">inputs</text>
+        <text x="615" y="50" text-anchor="middle" class="sv-ts">hidden</text>
+        <text x="705" y="50" text-anchor="middle" class="sv-ts">output</text>
+
+        <!-- 6x6 image of the letter O -->
+        <rect x="20" y="70" width="96" height="96" class="sv-paper"/>
+        <rect x="52" y="70" width="16" height="16" class="sv-ink"/><rect x="68" y="70" width="16" height="16" class="sv-ink"/>
+        <rect x="36" y="86" width="16" height="16" class="sv-ink"/><rect x="84" y="86" width="16" height="16" class="sv-ink"/>
+        <rect x="20" y="102" width="16" height="16" class="sv-ink"/><rect x="100" y="102" width="16" height="16" class="sv-ink"/>
+        <rect x="20" y="118" width="16" height="16" class="sv-ink"/><rect x="100" y="118" width="16" height="16" class="sv-ink"/>
+        <rect x="36" y="134" width="16" height="16" class="sv-ink"/><rect x="84" y="134" width="16" height="16" class="sv-ink"/>
+        <rect x="52" y="150" width="16" height="16" class="sv-ink"/><rect x="68" y="150" width="16" height="16" class="sv-ink"/>
+        <path d="M36 70V166M52 70V166M68 70V166M84 70V166M100 70V166M20 86H116M20 102H116M20 118H116M20 134H116M20 150H116" class="sv-line" stroke-width="1"/>
+        <rect x="20" y="70" width="96" height="96" class="sv-stroke-ink" stroke-width="1.5"/>
+        <rect x="20" y="70" width="48" height="48" class="sv-stroke-key" stroke-width="2.5" stroke-dasharray="4 3"/>
+
+        <!-- 3x3 filter -->
+        <rect x="140" y="94" width="48" height="48" class="sv-paper"/>
+        <rect x="172" y="94" width="16" height="16" class="sv-acc"/>
+        <rect x="156" y="110" width="16" height="16" class="sv-acc"/>
+        <rect x="140" y="126" width="16" height="16" class="sv-acc"/>
+        <path d="M156 94V142M172 94V142M140 110H188M140 126H188" class="sv-line" stroke-width="1"/>
+        <rect x="140" y="94" width="48" height="48" class="sv-stroke-key" stroke-width="2"/>
+
+        <!-- 4x4 feature map -->
+        <rect x="220" y="78" width="80" height="80" class="sv-paper2"/>
+        <rect x="220" y="78" width="20" height="20" class="sv-acc-soft"/>
+        <rect x="280" y="138" width="20" height="20" class="sv-acc-soft"/>
+        <path d="M240 78V158M260 78V158M280 78V158M220 98H300M220 118H300M220 138H300" class="sv-line" stroke-width="1"/>
+        <rect x="220" y="78" width="80" height="80" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="260" y="190" text-anchor="middle" class="sv-ts">top-left = 3 + bias</text>
+
+        <!-- after ReLU, split into 2x2 pooling regions -->
+        <rect x="330" y="78" width="80" height="80" class="sv-paper"/>
+        <rect x="330" y="78" width="20" height="20" class="sv-good"/>
+        <rect x="390" y="138" width="20" height="20" class="sv-good"/>
+        <path d="M350 78V158M390 78V158M330 98H410M330 138H410" class="sv-line" stroke-width="1"/>
+        <path d="M370 78V158M330 118H410" class="sv-stroke-ink" stroke-width="2"/>
+        <rect x="330" y="78" width="80" height="80" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="370" y="190" text-anchor="middle" class="sv-ts">negatives → 0</text>
+
+        <!-- 2x2 pooled -->
+        <rect x="445" y="94" width="48" height="48" class="sv-paper"/>
+        <rect x="445" y="94" width="24" height="24" class="sv-good"/>
+        <rect x="469" y="118" width="24" height="24" class="sv-good"/>
+        <path d="M469 94V142M445 118H493" class="sv-line" stroke-width="1"/>
+        <rect x="445" y="94" width="48" height="48" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="469" y="190" text-anchor="middle" class="sv-ts">max of each 2×2</text>
+
+        <!-- arrows between stages -->
+        <path d="M118 118H136" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"/>
+        <path d="M190 118H216" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"/>
+        <path d="M302 118H326" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"/>
+        <path d="M412 118H441" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"/>
+        <path d="M495 118H521" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"/>
+
+        <!-- dense network connections -->
+        <path d="M545 76L597 118M545 104L597 118M545 132L597 118M545 160L597 118" class="sv-line" stroke-width="1.5"/>
+        <path d="M633 118L689 88M633 118L689 148" class="sv-line" stroke-width="1.5"/>
+
+        <!-- input nodes -->
+        <circle cx="535" cy="76" r="10" class="sv-good"/>
+        <circle cx="535" cy="104" r="10" class="sv-paper2"/>
+        <circle cx="535" cy="132" r="10" class="sv-paper2"/>
+        <circle cx="535" cy="160" r="10" class="sv-good"/>
+        <path d="M545 76a10 10 0 1 0 0 0.01M545 104a10 10 0 1 0 0 0.01M545 132a10 10 0 1 0 0 0.01M545 160a10 10 0 1 0 0 0.01" class="sv-stroke-ink" stroke-width="1"/>
+
+        <!-- hidden node -->
+        <circle cx="615" cy="118" r="18" class="sv-acc-soft"/>
+        <circle cx="615" cy="118" r="18" class="sv-stroke-acc" stroke-width="1.5"/>
+        <text x="615" y="122" text-anchor="middle" class="sv-tm">0.34</text>
+        <text x="615" y="190" text-anchor="middle" class="sv-ts">ReLU node</text>
+
+        <!-- outputs -->
+        <circle cx="705" cy="88" r="16" class="sv-good-soft"/>
+        <circle cx="705" cy="88" r="16" class="sv-stroke-good" stroke-width="2"/>
+        <text x="705" y="92" text-anchor="middle" class="sv-tm">1</text>
+        <text x="727" y="92" class="sv-tb">O</text>
+        <circle cx="705" cy="148" r="16" class="sv-paper2"/>
+        <circle cx="705" cy="148" r="16" class="sv-stroke-ink" stroke-width="1"/>
+        <text x="705" y="152" text-anchor="middle" class="sv-tm">0</text>
+        <text x="727" y="152" class="sv-tb">X</text>
+      </svg>
+      <figcaption>The filter matches the O's top-left corner exactly, and ReLU plus max pooling shrink 36 pixels to 4 inputs.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li><b>Pick a filter.</b> A filter is a small square, commonly 3 by 3 pixels. Its pixel values start random and are learned with backpropagation during training.</li>
+      <li><b>Overlay and multiply.</b> Place the filter on the top-left corner of the image, multiply each pair of overlapping pixels, and add the products. For the letter O this sum is 3. This sum of products is called a dot product, and the filter is said to be convolved with the input.</li>
+      <li><b>Add a bias and store it.</b> Add a bias term to the dot product and put the result into a new grid called the feature map.</li>
+      <li><b>Slide the filter.</b> Move the filter one pixel to the right and repeat. Other CNNs may move two or more pixels at a time. Keep sliding until the feature map is full. Each feature-map cell summarises a group of neighbouring pixels, which is how the CNN uses their correlation.</li>
+      <li><b>Apply ReLU.</b> Run every feature-map value through ReLU. Negative values become 0 and positive values stay the same. For the O, only two cells stay above zero.</li>
+      <li><b>Max pool.</b> Slide another filter over the feature map that simply keeps the largest value in each region. It usually moves so that it does not overlap itself. This keeps the spot where the filter matched the image best. Taking the average instead is called average or mean pooling.</li>
+      <li><b>Flatten.</b> Turn the pooled grid into a column of input nodes. Here the 6 by 6 image becomes just four inputs.</li>
+      <li><b>Use a normal neural network.</b> The four inputs feed one hidden node with ReLU, which connects to two outputs: one for O and one for X.</li>
+    </ol>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>Josh does not write these as equations, but each step he describes is a simple rule. The lines below put his words into symbols.</p>
+    <div class="formula"><span class="lbl">One feature-map cell</span><div class="math">$$ F_{r,c} = \sum_{i=1}^{3}\sum_{j=1}^{3} x_{r+i-1,\,c+j-1}\; w_{i,j} \;+\; b $$</div><p class="explain"><b>Symbols:</b> \(F_{r,c}\) is the feature-map value at row \(r\), column \(c\). \(x\) is an image pixel (0 for white, 1 for black). \(w_{i,j}\) is the filter pixel at row \(i\), column \(j\), learned by backpropagation. \(b\) is the bias term. <b>What it tells you:</b> each cell is a dot product between the filter and the patch under it, plus a bias; for the top-left patch of the O this is \(3 + b\).</p></div>
+    <div class="formula"><span class="lbl">ReLU activation</span><div class="math">$$ \text{ReLU}(z) = \max(0,\, z) $$</div><p class="explain"><b>Symbols:</b> \(z\) is any input value, such as a feature-map cell. <b>What it tells you:</b> negative values become 0 and positive values pass through unchanged.</p></div>
+    <div class="formula"><span class="lbl">Max pooling</span><div class="math">$$ P_k = \max\{\, F_{r,c} : (r,c) \in \text{region } k \,\} $$</div><p class="explain"><b>Symbols:</b> \(P_k\) is the pooled value for region \(k\). \(F_{r,c}\) are the values in that region after ReLU. <b>What it tells you:</b> each region keeps only the spot where the filter matched best. Replace max with the mean to get average pooling.</p></div>
+    <div class="formula"><span class="lbl">Hidden node for the O</span><div class="math">$$ h = \text{ReLU}\Big(\sum_{k=1}^{4} v_k P_k + b_h\Big) = \text{ReLU}(0.34) = 0.34 $$</div><p class="explain"><b>Symbols:</b> \(P_k\) are the four input nodes. \(v_k\) are their weights. \(b_h\) is the hidden node's bias. \(h\) is the hidden node's output. <b>What it tells you:</b> after pooling, the rest is an ordinary neural network with weighted sums, a bias, and ReLU.</p></div>
+    <div class="formula"><span class="lbl">Weights per hidden node without a CNN</span><div class="math">$$ 6 \times 6 = 36 \qquad 100 \times 100 = 10{,}000 $$</div><p class="explain"><b>Symbols:</b> each number is the pixel count, which equals the number of weights one hidden node needs when every pixel is an input. <b>What it tells you:</b> the plain approach grows with image size, which is why it does not scale.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p><b>The letter O.</b> The filter lands on the top-left corner, which matches the filter exactly. The dot product is 3, the highest possible value, and a bias is added. After sliding over the whole image, ReLU sets every cell to 0 except two. Max pooling keeps those two best matches, so the four input nodes hold two positive values and two zeros.</p>
+      <p>The weighted sum of the inputs plus the bias is 0.34. Since 0.34 is greater than 0, ReLU outputs 0.34. The connections to the outputs then give <b>1 for O</b> and <b>0 for X</b>. The CNN says the image is an O.</p>
+      <p><b>The letter X.</b> The filter, the pooling, and every weight and bias stay the same. Only the image changes. The same steps give <b>0 for O</b> and <b>1 for X</b>.</p>
+      <p><b>The X shifted one pixel right.</b> The output for X is 1.23 and the output for O is −0.2. Since 1.23 is much closer to 1, the CNN still says X. This shows the tolerance to small shifts.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> The filter values are not chosen by hand. They start random and are learned with backpropagation, just like the weights in the dense part of the network.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The pooling step does not compute a dot product. It simply selects the maximum, or the mean for average pooling, and it usually moves without overlapping itself. The convolution filter, in contrast, moved one pixel at a time here, and other CNNs may move further.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Raw outputs such as 1.23 and −0.2 are not probabilities. Josh notes that you can run them through softmax or argmax to make them easier to interpret.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> This is about as simple as a CNN gets. Fancier CNNs still rest on the same three parts: filters (convolution), an activation function on the filter output, and pooling.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>Why use a CNN instead of a plain neural network for images?</summary><div class="a">A plain network needs one weight per pixel for every hidden node. A 100 by 100 image means 10,000 weights per node. It may also fail when the image shifts by a pixel, and it ignores that nearby pixels are correlated. A CNN reduces the number of inputs, tolerates small shifts, and uses those correlations through its filters.</div></details>
+    <details class="qa" open><summary>What does a convolutional filter do?</summary><div class="a">It is a small grid, often 3 by 3, that slides over the image. At each position it takes the dot product with the pixels underneath and adds a bias, which fills one cell of the feature map. Its values are learned with backpropagation, so it becomes a detector for a useful pattern.</div></details>
+    <details class="qa" open><summary>What is max pooling, and how does it differ from average pooling?</summary><div class="a">Max pooling keeps the largest value in each region of the feature map, usually with regions that do not overlap. That keeps the spot where the filter matched the image best. Average pooling takes the mean of each region instead.</div></details>
+    <details class="qa" open><summary>How does a CNN cope with an image shifted by one pixel?</summary><div class="a">The filter still finds the same local pattern, just in a nearby position, and pooling keeps the strongest match in each region. In the video, an X shifted one pixel still gave 1.23 for X and −0.2 for O, so it was classified correctly.</div></details>
+    <details class="qa" open><summary>What are the core building blocks of any CNN?</summary><div class="a">Filters, which perform the convolution, then an activation function such as ReLU on the filter output, then pooling. The pooled values are flattened and passed to an ordinary neural network that makes the final decision.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Plain neural networks need too many weights for images and are sensitive to small shifts.</li>
+      <li>A CNN slides a small learned filter over the image, takes dot products, and adds a bias to build a feature map.</li>
+      <li>ReLU sets negative feature-map values to zero and keeps positive values.</li>
+      <li>Max pooling keeps the best match in each region; average pooling keeps the mean instead.</li>
+      <li>The pooled values are flattened into input nodes for a normal neural network.</li>
+      <li>In the video, 36 pixels shrink to 4 inputs, and the network outputs 1 for O and 0 for X.</li>
+      <li>A shifted X still scores 1.23 for X versus −0.2 for O, so the CNN tolerates small shifts.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Convolutional neural networks</span><span class="board-tag">filter, ReLU, pool, then a normal network</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 270" role="img" aria-label="A 3 by 3 filter on the top-left corner of a 6 by 6 image of an O gives 3 plus a bias in the feature map. ReLU and max pooling shrink the map to 4 inputs, which feed a hidden node of 0.34, and the O output wins.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <rect x="14" y="40" width="108" height="108" class="sv-paper"/>
+            <path d="M32 40V148M50 40V148M68 40V148M86 40V148M104 40V148M14 58H122M14 76H122M14 94H122M14 112H122M14 130H122" class="sv-line" stroke-width="1.5"/>
+            <path d="M50 40h36v18h-36z M32 58h18v18h-18z M86 58h18v18h-18z M14 76h18v36h-18z M104 76h18v36h-18z M32 112h18v18h-18z M86 112h18v18h-18z M50 130h36v18h-36z" class="sv-ink"/>
+            <rect x="14" y="40" width="108" height="108" class="sv-stroke-ink" stroke-width="2"/>
+            <rect x="14" y="40" width="54" height="54" class="sv-stroke-key" stroke-width="3.5" stroke-dasharray="7 4" stroke-linejoin="round"/>
+            <text x="14" y="28" class="sv-t">3×3 filter</text>
+            <path d="M128 67H158" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="176" y="47" text-anchor="middle" class="sv-tm">3 + bias</text>
+            <rect x="166" y="57" width="80" height="80" class="sv-paper"/>
+            <rect x="166" y="57" width="20" height="20" class="sv-key"/>
+            <rect x="226" y="117" width="20" height="20" class="sv-key"/>
+            <path d="M186 57V137M226 57V137M166 77H246M166 117H246" class="sv-line" stroke-width="1.5"/>
+            <path d="M206 57V137M166 97H246" class="sv-stroke-ink" stroke-width="3"/>
+            <rect x="166" y="57" width="80" height="80" class="sv-stroke-ink" stroke-width="2"/>
+            <text x="256" y="103" class="sv-t">feature map</text>
+            <path d="M206 143V174" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="220" y="164" class="sv-ts">ReLU, max pool</text>
+            <rect x="186" y="183" width="40" height="40" class="sv-paper"/>
+            <rect x="186" y="183" width="20" height="20" class="sv-good"/>
+            <rect x="206" y="203" width="20" height="20" class="sv-good"/>
+            <path d="M206 183V223M186 203H226" class="sv-line" stroke-width="1.5"/>
+            <rect x="186" y="183" width="40" height="40" class="sv-stroke-ink" stroke-width="2"/>
+            <path d="M232 203H259" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <path d="M313 195L347 182M313 211L347 224" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2.5"><circle cx="290" cy="203" r="24" class="sv-paper"/></g>
+            <text x="290" y="209" text-anchor="middle" class="sv-tm">0.34</text>
+            <g class="sv-stroke-good" stroke-width="3"><circle cx="362" cy="177" r="16" class="sv-good-soft"/></g>
+            <g class="sv-stroke-ink" stroke-width="2"><circle cx="362" cy="229" r="16" class="sv-paper2"/></g>
+            <text x="362" y="184" text-anchor="middle" class="sv-tb">O</text>
+            <text x="362" y="236" text-anchor="middle" class="sv-tb">X</text>
+            <text x="14" y="252" class="sv-tb">36 pixels → 4 inputs</text>
+          </svg>
+          <p>A small learned filter slides over the 6×6 image; each dot product plus a bias fills one feature-map cell. ReLU and max pooling keep the best matches, and the few values left go to a normal neural network that decides.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Filter</dt><dd>Small learned square, often 3 by 3.</dd>
+            <dt>Dot product</dt><dd>Multiply overlapping pixel pairs, then add.</dd>
+            <dt>Feature map</dt><dd>The grid of dot products, each plus a bias.</dd>
+            <dt>ReLU</dt><dd>Negative values become 0; positive values stay the same.</dd>
+            <dt>Max pooling</dt><dd>Keeps only the largest value in each region.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Pick a filter</b>often 3×3, values learned</li>
+            <li><b>Dot product</b>multiply, add, plus a bias</li>
+            <li><b>Slide</b>one pixel at a time</li>
+            <li><b>ReLU</b>negatives become 0</li>
+            <li><b>Max pool</b>keep the largest in each region</li>
+            <li><b>Flatten, classify</b>4 inputs into a normal network</li>
+          </ol>
+          <p class="loop">↺ repeat steps 2 and 3 until the feature map is full</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$F_{r,c}=\sum_{i,j}x_{r+i-1,\,c+j-1}\,w_{i,j}+b$$
+          $$\text{ReLU}(z)=\max(0,z)$$
+          $$P_k=\max_{(r,c)\in k}F_{r,c}$$
+          <ul class="keys">
+            <li>\(x\): a pixel (0 white, 1 black); \(w\): a filter value; \(b\): the bias.</li>
+            <li>\(P_k\): the largest value in region \(k\); the mean gives average pooling.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>letter O</th><th>value</th></tr>
+            <tr><td>top-left dot product</td><td>3</td></tr>
+            <tr><td>above 0 after ReLU</td><td>2 cells</td></tr>
+            <tr><td>after max pooling</td><td>4 inputs</td></tr>
+            <tr><td>hidden node</td><td>0.34</td></tr>
+            <tr class="final"><td>outputs O / X</td><td>1 / 0 ✓</td></tr>
+          </table>
+          <p class="hand">An X gives 0 for O, 1 for X. Shifted one pixel right: −0.2 for O, 1.23 for X, still X.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Filter values are picked by hand.</span><span class="yes">They start random and are learned with backpropagation.</span></li>
+            <li><span class="no">Pooling takes a dot product too.</span><span class="yes">It only keeps the max (or the mean), usually without overlapping.</span></li>
+            <li><span class="no">Outputs like 1.23 and −0.2 are probabilities.</span><span class="yes">They are raw scores; softmax or argmax makes them easier to interpret.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="85-neural-networks-part-7-cross-entropy-derivatives-and-backpro.html"><small>Previous</small>Neural Networks Part 7: Cross Entropy Derivatives and Backpropagation</a> <a href="87-recurrent-neural-networks-rnns.html"><small>Next</small>Recurrent Neural Networks (RNNs)</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

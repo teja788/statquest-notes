@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>How to calculate p-values — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>13</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 13 · 25.2 min</div>
+    <h1>How to calculate p-values</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=JQc3yx0-Q9E" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">A p-value is not the probability of the thing you saw. It is a sum of three probabilities. This video shows how to build that sum, first by counting coin flips and then by adding areas under a curve.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh flips a coin and gets two heads. The null hypothesis says the coin is still a normal coin. To test it, you add three parts: the chance of the observation, the chance of anything equally rare, and the chance of anything rarer or more extreme. For coins you count outcomes, and for continuous data like height you add areas under a distribution. If the total is below 0.05, you reject the null hypothesis.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>There are two kinds of p-value: one-sided and two-sided. Two-sided p-values are the common kind, and Josh calculates those all the way through. He returns to one-sided p-values at the end, to show why they are risky.</p>
+    <p>You want to know if your coin is special. Statistics asks the opposite question. The <strong>null hypothesis</strong> is the boring claim that your coin is no different from a normal coin. A small p-value tells you to reject that claim. Only then can you say the coin is special.</p>
+    <p>A p-value has three parts, and this is the core of the whole video. Part one is the probability that random chance alone gives your observation. Part two is the probability of seeing something else that is <em>equally</em> rare. Part three is the probability of seeing something <em>rarer</em> or more extreme. You add all three together.</p>
+    <p>Josh explains parts two and three with flowers. If you give someone the rarest flower of its species, it feels special. If you say many other flowers are equally rare, it feels much less special. If you say many flowers are rarer still, it feels ordinary. So equally rare things and rarer things both reduce how surprising your result is, and both belong in the p-value.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 340" role="img" aria-label="Bar chart of the 32 outcomes from five coin flips, with the bars that make up the p-value for four heads and one tails highlighted">
+        <rect x="60" y="22" width="13" height="13" class="sv-key"></rect>
+        <text x="79" y="33" class="sv-ts">Observed: 4H 1T</text>
+        <rect x="270" y="22" width="13" height="13" class="sv-key-soft"></rect>
+        <rect x="270" y="22" width="13" height="13" class="sv-stroke-key" stroke-width="1.4"></rect>
+        <text x="289" y="33" class="sv-ts">Equally rare: 1H 4T</text>
+        <rect x="500" y="22" width="13" height="13" class="sv-warn"></rect>
+        <text x="519" y="33" class="sv-ts">Rarer: 5H and 5T</text>
+
+        <rect x="56" y="238" width="68" height="14" class="sv-warn"></rect>
+        <rect x="166" y="182" width="68" height="70" class="sv-key"></rect>
+        <rect x="276" y="112" width="68" height="140" class="sv-paper2"></rect>
+        <rect x="276" y="112" width="68" height="140" class="sv-line" stroke-width="1.4"></rect>
+        <rect x="386" y="112" width="68" height="140" class="sv-paper2"></rect>
+        <rect x="386" y="112" width="68" height="140" class="sv-line" stroke-width="1.4"></rect>
+        <rect x="496" y="182" width="68" height="70" class="sv-key-soft"></rect>
+        <rect x="496" y="182" width="68" height="70" class="sv-stroke-key" stroke-width="1.4"></rect>
+        <rect x="606" y="238" width="68" height="14" class="sv-warn"></rect>
+
+        <line x1="40" y1="252" x2="720" y2="252" class="sv-stroke-ink" stroke-width="1.5"></line>
+
+        <text x="90" y="270" text-anchor="middle" class="sv-t">5H</text>
+        <text x="90" y="288" text-anchor="middle" class="sv-tm">1 way</text>
+        <text x="200" y="270" text-anchor="middle" class="sv-t">4H 1T</text>
+        <text x="200" y="288" text-anchor="middle" class="sv-tm">5 ways</text>
+        <text x="310" y="270" text-anchor="middle" class="sv-t">3H 2T</text>
+        <text x="310" y="288" text-anchor="middle" class="sv-tm">10 ways</text>
+        <text x="420" y="270" text-anchor="middle" class="sv-t">2H 3T</text>
+        <text x="420" y="288" text-anchor="middle" class="sv-tm">10 ways</text>
+        <text x="530" y="270" text-anchor="middle" class="sv-t">1H 4T</text>
+        <text x="530" y="288" text-anchor="middle" class="sv-tm">5 ways</text>
+        <text x="640" y="270" text-anchor="middle" class="sv-t">5T</text>
+        <text x="640" y="288" text-anchor="middle" class="sv-tm">1 way</text>
+
+        <text x="380" y="318" text-anchor="middle" class="sv-tm">p = 5/32 + 5/32 + 2/32 = 0.375</text>
+      </svg>
+      <figcaption>Five flips give 32 equally likely outcomes. Notice that the p-value uses four of the six bars: the observed one, the equally rare one, and the two rarer ones.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Write the null hypothesis. It always says the boring thing, for example "my coin is no different from a normal coin".</li>
+      <li>List every possible outcome and how likely each one is. Two flips give four outcomes. Five flips give 32 outcomes.</li>
+      <li>Take part one: the probability that random chance gives exactly what you observed.</li>
+      <li>Add part two: the probability of every other outcome that is equally rare.</li>
+      <li>Add part three: the probability of every outcome that is rarer or more extreme.</li>
+      <li>Compare the total with 0.05. If it is smaller, reject the null hypothesis. If not, you failed to reject it.</li>
+    </ol>
+    <p>Counting works for coins because the list of outcomes is short. Height does not work that way, since a person can be any value in a range. For continuous measurements you use a <strong>distribution</strong> instead, which is a curve whose area gives probability. Then part one, part two and part three become areas under that curve, and "more extreme" means "further from the mean".</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 316" role="img" aria-label="Normal curve of Brazilian women's heights with the two tails below 142 cm and above 169 cm shaded, each holding 2.5 percent of the area">
+        <text x="380" y="30" text-anchor="middle" class="sv-tb">Height of Brazilian women, 1996</text>
+        <path d="M 80,240 C 146,238.8 194,238.32 232.64,219.12 L 232.64,240 Z" class="sv-key"></path>
+        <path d="M 527.36,219.12 C 566,238.32 614,238.8 680,240 L 527.36,240 Z" class="sv-key"></path>
+        <path d="M 80,240 C 190,238 250,238 300,150 C 340,80 420,80 460,150 C 510,238 570,238 680,240" class="sv-stroke-acc" stroke-width="2.5"></path>
+        <line x1="380" y1="100" x2="380" y2="240" class="sv-line" stroke-width="1.5" stroke-dasharray="4 4"></line>
+        <line x1="60" y1="240" x2="700" y2="240" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <line x1="232.64" y1="240" x2="232.64" y2="249" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <line x1="527.36" y1="240" x2="527.36" y2="249" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <line x1="176" y1="204" x2="214" y2="231" class="sv-line" stroke-width="1.2"></line>
+        <line x1="584" y1="204" x2="546" y2="231" class="sv-line" stroke-width="1.2"></line>
+        <text x="168" y="198" text-anchor="middle" class="sv-tm">2.5%</text>
+        <text x="592" y="198" text-anchor="middle" class="sv-tm">2.5%</text>
+        <text x="232.64" y="266" text-anchor="middle" class="sv-t">142 cm</text>
+        <text x="527.36" y="266" text-anchor="middle" class="sv-t">169 cm</text>
+        <text x="380" y="266" text-anchor="middle" class="sv-ts">mean 155.7 cm</text>
+        <text x="380" y="292" text-anchor="middle" class="sv-tm">p = 0.025 + 0.025 = 0.05</text>
+      </svg>
+      <figcaption>For a measurement of 142 cm, both shaded tails count, because every height further from the mean than 142 cm is more extreme.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">The three parts of a p-value</span>
+      <div class="math">$$ p = P_{\text{observed}} + P_{\text{equally rare}} + P_{\text{rarer or more extreme}} $$</div>
+      <p class="explain"><b>Symbols:</b> \(p\) is the p-value. \(P_{\text{observed}}\) is the probability that random chance alone produces the result you saw. \(P_{\text{equally rare}}\) is the probability of any other result that is just as unlikely. \(P_{\text{rarer or more extreme}}\) is the probability of every result that is even less likely, or further from the mean. <b>What it tells you:</b> a p-value measures how ordinary your result is inside a crowd of equally surprising and more surprising results, not how likely your result is on its own.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Probability when all outcomes are equally likely</span>
+      <div class="math">$$ P(\text{outcome}) = \frac{\text{number of ways to get that outcome}}{\text{total number of outcomes}} $$</div>
+      <p class="explain"><b>Symbols:</b> the numerator counts the arrangements that give the result, and the denominator counts every arrangement that could happen. <b>What it tells you:</b> with coins you can get every probability by counting, because order does not change the chance of heads on the next flip, so all arrangements are equally likely.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">The decision rule</span>
+      <div class="math">$$ \text{reject the null hypothesis if } p &lt; 0.05 $$</div>
+      <p class="explain"><b>Symbols:</b> \(p\) is the p-value you calculated, and 0.05 is the usual threshold for calling a result significant. <b>What it tells you:</b> below the threshold you say the data are surprising enough to abandon the boring explanation. Above it you simply failed to reject that explanation.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+
+    <div class="example"><span class="lbl">Example</span>
+      <p>Flip a coin twice and get two heads. The four outcomes are HH, HT, TH and TT, so \(P(\text{two heads}) = 1/4 = 0.25\). Part one is 0.25. Two tails is equally rare, so part two is 0.25. Nothing is rarer than two heads or two tails, so part three is 0.</p>
+      <div class="math">$$ p = 0.25 + 0.25 + 0 = 0.5 $$</div>
+      <p>The p-value 0.5 is much larger than 0.25, and much larger than 0.05. Two heads in a row does not convince us the coin is special.</p>
+    </div>
+
+    <div class="example"><span class="lbl">Example</span>
+      <p>Now flip five times and get four heads and one tails. There are 32 outcomes in total. Five of them give four heads and one tails, five give one heads and four tails, and one each gives five heads or five tails.</p>
+      <div class="math">$$ p = \frac{5}{32} + \frac{5}{32} + \frac{2}{32} = \frac{12}{32} = 0.375 $$</div>
+      <p>Again 0.375 is above 0.05, so we fail to reject the null hypothesis.</p>
+    </div>
+
+    <div class="example"><span class="lbl">Example</span>
+      <p>Now use the height curve. You measure a woman who is 142 cm tall. You ask whether she could come from this Brazilian distribution, whose mean is 155.7 cm.</p>
+      <p>The area at or below 142 cm is 0.025. Every height at least as far from the mean counts too, so the area at or above 169 cm adds another 0.025.</p>
+      <div class="math">$$ p = 0.025 + 0.025 = 0.05 $$</div>
+      <p>That sits exactly on the threshold, so the data are inconclusive. At 141 cm each tail shrinks to 0.016, so \(p = 0.03\). Now you reject the null hypothesis, and some other distribution explains that height better.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+
+    <div class="pitfall"><span class="lbl">Watch out</span> The p-value is not the probability of your observation. Two heads has probability 0.25 but a p-value of 0.5. The extra comes from parts two and three, which people forget most often.</div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span> A large p-value does not prove the null hypothesis is true. You only failed to reject it. With 142 cm the p-value lands exactly on 0.05, and the honest answer is that the data are inconclusive.</div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span> A value close to the mean can have a tiny probability and still give a p-value of 1. A height between 155.4 and 156 cm has probability 0.04, but 48% of the curve lies on each side and is more extreme, so \(0.04 + 0.48 + 0.48 = 1\). Nothing unusual happened.</div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span> One-sided p-values only look for change in the direction you chose, so they are blind to harm in the other direction. Josh calls them tricky and says to avoid them unless you really know what you are doing. The figure below shows why.</div>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 268" role="img" aria-label="Two curves of recovery time. The two-sided p-value shades both tails and detects a drug that made recovery slower. The one-sided p-value shades everything to the left and misses it.">
+        <text x="190" y="24" text-anchor="middle" class="sv-tb">Two-sided</text>
+        <text x="570" y="24" text-anchor="middle" class="sv-tb">One-sided, looking left</text>
+        <line x1="380" y1="14" x2="380" y2="244" class="sv-line" stroke-width="1.2"></line>
+
+        <path d="M 40,180 C 81.25,179.25 101.69,178.5 119.88,159.19 L 119.88,180 Z" class="sv-key"></path>
+        <path d="M 260.12,159.19 C 278.31,178.5 298.75,179.25 340,180 L 260.12,180 Z" class="sv-key"></path>
+        <path d="M 40,180 C 95,179 113,178 138,133 C 158,98 222,98 242,133 C 267,178 285,179 340,180" class="sv-stroke-acc" stroke-width="2.5"></path>
+        <line x1="30" y1="180" x2="350" y2="180" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <line x1="260.12" y1="152" x2="260.12" y2="188" class="sv-stroke-ink" stroke-width="1.6"></line>
+        <text x="260.12" y="204" text-anchor="middle" class="sv-ts">15.5 days</text>
+        <text x="190" y="226" text-anchor="middle" class="sv-tm">p = 0.016 + 0.016 = 0.03</text>
+        <text x="190" y="245" text-anchor="middle" class="sv-ts">Detects the slower recovery</text>
+
+        <path d="M 420,180 C 475,179 493,178 518,133 C 538,98 602,98 622,133 C 628.25,144.25 634.06,152.75 640.12,159.19 L 640.12,180 Z" class="sv-key-soft"></path>
+        <path d="M 420,180 C 475,179 493,178 518,133 C 538,98 602,98 622,133 C 647,178 665,179 720,180" class="sv-stroke-acc" stroke-width="2.5"></path>
+        <line x1="410" y1="180" x2="730" y2="180" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <line x1="640.12" y1="152" x2="640.12" y2="188" class="sv-stroke-ink" stroke-width="1.6"></line>
+        <text x="640.12" y="204" text-anchor="middle" class="sv-ts">15.5 days</text>
+        <text x="570" y="226" text-anchor="middle" class="sv-tm">p = 0.98</text>
+        <text x="570" y="245" text-anchor="middle" class="sv-ts">Misses the slower recovery</text>
+      </svg>
+      <figcaption>The drug made recovery slower, not faster. The two-sided p-value catches it, while the one-sided p-value looking for shorter recovery reports 0.98 and sees nothing.</figcaption>
+    </figure>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>What exactly goes into a p-value?</summary><div class="a">Three probabilities added together. The probability of the observation itself, the probability of anything else equally rare, and the probability of anything rarer or more extreme. That is why the p-value is usually larger than the probability of the observation alone.</div></details>
+
+    <details class="qa" open><summary>Why do we include outcomes we did not observe?</summary><div class="a">Because a result only feels special when few things are as surprising as it. If many other outcomes are equally rare, or even rarer, then yours is not remarkable. Adding those probabilities is how we measure that.</div></details>
+
+    <details class="qa" open><summary>How does the calculation change for continuous data?</summary><div class="a">You cannot list every possible value, so you use a distribution and add areas under the curve instead of counting outcomes. More extreme now means further from the mean, on either side. The three parts are the same, just measured as area.</div></details>
+
+    <details class="qa" open><summary>Why avoid one-sided p-values?</summary><div class="a">A one-sided p-value only counts extreme values in the direction you hoped for. If the effect goes the other way, it can return a huge p-value and report nothing unusual. In the drug example the recovery time got worse, and the one-sided p-value was 0.98 while the two-sided one was 0.03.</div></details>
+
+    <details class="qa" open><summary>What does a p-value of 0.5 mean about your coin?</summary><div class="a">It means you failed to reject the null hypothesis, so the data are consistent with a normal coin. It does not prove the coin is fair. With only two flips there is simply not enough evidence either way.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap">
+      <ul>
+        <li>The null hypothesis is the boring claim, and a small p-value tells you to reject it.</li>
+        <li>A p-value adds three parts: the observation, anything equally rare, and anything rarer or more extreme.</li>
+        <li>Two heads in a row gives a p-value of 0.5, not 0.25, because of parts two and three.</li>
+        <li>Four heads and one tails out of five flips gives 5/32 + 5/32 + 2/32 = 0.375.</li>
+        <li>For continuous data you add areas under a distribution, and more extreme means further from the mean.</li>
+        <li>A height of 142 cm gives 0.025 + 0.025 = 0.05, which is inconclusive, while 141 cm gives 0.03 and is rejected.</li>
+        <li>A value near the mean can give a p-value of 1, so a small probability is not the same as a small p-value.</li>
+        <li>One-sided p-values ignore surprises in the other direction, so use two-sided p-values unless you are an expert.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Calculating p-values</span><span class="board-tag">observed + equally rare + rarer</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 266" role="img" aria-label="Five flips give 32 outcomes, drawn as six bars of 1, 5, 10, 10, 5 and 1 ways. The observed bar, 4 heads and 1 tails, the equally rare bar, 1 heads and 4 tails, and the two rarer end bars are added: p = 5/32 + 5/32 + 2/32 = 0.375.">
+            <text x="16" y="26" class="sv-tb">5 flips, 32 outcomes</text>
+            <line x1="28" y1="196" x2="372" y2="196" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <rect x="37" y="184" width="46" height="12" class="sv-warn"/>
+              <rect x="93" y="136" width="46" height="60" class="sv-key"/>
+              <rect x="149" y="76" width="46" height="120" class="sv-paper"/>
+              <rect x="205" y="76" width="46" height="120" class="sv-paper"/>
+              <rect x="261" y="136" width="46" height="60" class="sv-key-soft"/>
+              <rect x="317" y="184" width="46" height="12" class="sv-warn"/>
+            </g>
+            <text x="141" y="125" text-anchor="end" class="sv-t">observed</text>
+            <text x="259" y="125" class="sv-t">equally rare</text>
+            <text x="60" y="173" text-anchor="middle" class="sv-t">rarer</text>
+            <text x="340" y="173" text-anchor="middle" class="sv-t">rarer</text>
+            <text x="116" y="220" text-anchor="middle" class="sv-ts">4H 1T</text>
+            <text x="284" y="220" text-anchor="middle" class="sv-ts">1H 4T</text>
+            <text x="200" y="252" text-anchor="middle" class="sv-tm">p = 5/32 + 5/32 + 2/32 = 0.375</text>
+          </svg>
+          <p>A p-value adds three parts: the chance of what you saw, of anything equally rare, and of anything rarer. For heights the same parts are areas under a curve. Below 0.05, reject the null hypothesis.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Null hypothesis</dt><dd>The boring claim, such as "my coin is no different from a normal coin".</dd>
+            <dt>Equally rare</dt><dd>Any other outcome just as unlikely as yours, like two tails.</dd>
+            <dt>Rarer or more extreme</dt><dd>Even less likely outcomes; on a curve, further from the mean.</dd>
+            <dt>Distribution</dt><dd>A curve whose area gives probability, used for continuous data.</dd>
+            <dt>Two-sided p-value</dt><dd>Counts extremes in both directions; the common kind.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Null hypothesis</b>the boring claim: a normal coin</li>
+            <li><b>List outcomes</b>2 flips: 4; 5 flips: 32</li>
+            <li><b>Part one</b>chance of exactly what you saw</li>
+            <li><b>Part two</b>+ every equally rare outcome</li>
+            <li><b>Part three</b>+ everything rarer or more extreme</li>
+            <li><b>Compare to 0.05</b>below: reject; else failed to reject</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$p=P_{\text{obs}}+P_{\text{equal}}+P_{\text{rarer}}$$
+          $$P(\text{outcome})=\frac{\text{ways}}{\text{total outcomes}}$$
+          $$\text{reject the null if } p &lt; 0.05$$
+          <ul class="keys">
+            <li>obs: what you saw; equal: equally rare; rarer: rarer or more extreme.</li>
+            <li>Coins: count the ways. Heights: add areas under the curve.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>case</th><th>parts added</th><th>p</th></tr>
+            <tr><td>HH in 2 flips</td><td>0.25 + 0.25 + 0</td><td>0.5</td></tr>
+            <tr><td>4H 1T in 5</td><td>5/32+5/32+2/32</td><td>0.375</td></tr>
+            <tr><td>142 cm</td><td>0.025 + 0.025</td><td>0.05</td></tr>
+            <tr class="final"><td>141 cm</td><td>0.016 + 0.016</td><td>0.03</td></tr>
+          </table>
+          <p class="hand">Only 141 cm falls below 0.05, so reject. 142 cm sits exactly on 0.05: inconclusive.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">The p-value is the chance of what you saw.</span><span class="yes">Two heads has chance 0.25 but p = 0.5; parts two and three add the rest.</span></li>
+            <li><span class="no">A small probability means a small p-value.</span><span class="yes">155.4 to 156 cm has chance 0.04, yet 0.04 + 0.48 + 0.48 = 1.</span></li>
+            <li><span class="no">A one-sided p-value catches any change.</span><span class="yes">It is blind to the other direction: a slower recovery gave 0.98, two-sided gave 0.03.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="12-fisher-s-exact-test-and-the-hypergeometric-distribution.html"><small>Previous</small>Fisher&#x27;s Exact Test and the Hypergeometric Distribution</a> <a href="14-p-hacking-what-it-is-and-how-to-avoid-it.html"><small>Next</small>p-hacking: What it is and how to avoid it</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

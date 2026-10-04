@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Linear Discriminant Analysis (LDA) — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>35</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 35 · 15.2 min</div>
+    <h1>Linear Discriminant Analysis (LDA)</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=azXCzI57Yfc" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Linear discriminant analysis squeezes many measurements down to one or two new axes. It chooses those axes to push known groups as far apart as it can.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh starts with a cancer drug that helps some people and makes others feel worse. He asks whether gene expression can tell the two groups apart. One gene leaves a messy overlap in the middle, and more than three genes cannot be drawn at all. LDA builds a new axis out of all the genes at once, then projects the data onto it. It picks that axis so the category means land far apart while each category stays tight.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>The drug works well for some patients and makes others feel worse. Josh wants to know who should get it. He is a geneticist, so he looks at gene expression for an answer. With one gene, Gene X, he draws a plain number line. Green dots are people the drug helps, and red dots are people it harms. Low transcription of Gene X mostly means the drug works, and high transcription mostly means it does not. In the middle the two colours mix, so there is no obvious cut-off. One gene does an okay job, and no better.</p>
+    <p>Two genes do better. With Gene X and Gene Y on a scatter plot, a straight line can split most of the green from most of the red. Three genes need a flat plane, and a plane drawn on a flat screen is hard to judge. You would have to rotate the picture to trust it. With four genes, or ten thousand, you cannot draw the plot at all.</p>
+    <p>The same wall showed up with principal component analysis. PCA reduces dimensions by chasing the genes with the most variation. But variation is not what we want here. LDA also reduces dimensions, and it maximises the separation among the known categories.</p>
+    <p>Take the simplest case: two genes down to one number line. One bad option is to ignore Gene Y and drop every point onto the Gene X axis. That throws away the useful information Gene Y carries, and the two colours blur together. Ignoring Gene X is no better. LDA instead builds a brand new axis out of both genes. It then projects the data onto that new axis in the way that separates the two categories most.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 330" role="img" aria-label="Two panels. On the left, dropping the points straight onto the Gene X axis makes the green and red groups overlap. On the right, projecting the same points onto a new LDA axis splits them cleanly.">
+        <defs><marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker></defs>
+        <text x="62" y="24" class="sv-tb">A. Drop the data onto Gene X</text>
+        <text x="440" y="24" class="sv-tb">B. Drop the data onto the LDA axis</text>
+
+        <line x1="62" y1="46" x2="62" y2="250" class="sv-line" stroke-width="1.5"/>
+        <line x1="62" y1="250" x2="345" y2="250" class="sv-line" stroke-width="1.5"/>
+        <text x="66" y="42" class="sv-ts">Gene Y</text>
+        <text x="345" y="266" class="sv-ts" text-anchor="end">Gene X</text>
+
+        <line x1="85" y1="130" x2="85" y2="250" class="sv-line" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="100" y1="150" x2="100" y2="250" class="sv-line" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="115" y1="160" x2="115" y2="250" class="sv-line" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="130" y1="175" x2="130" y2="250" class="sv-line" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="145" y1="190" x2="145" y2="250" class="sv-line" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="160" y1="205" x2="160" y2="250" class="sv-line" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="175" y1="220" x2="175" y2="250" class="sv-line" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="130" y1="85" x2="130" y2="250" class="sv-line" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="145" y1="105" x2="145" y2="250" class="sv-line" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="160" y1="115" x2="160" y2="250" class="sv-line" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="175" y1="130" x2="175" y2="250" class="sv-line" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="190" y1="145" x2="190" y2="250" class="sv-line" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="205" y1="160" x2="205" y2="250" class="sv-line" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="220" y1="175" x2="220" y2="250" class="sv-line" stroke-width="1" stroke-dasharray="3 3"/>
+
+        <circle cx="85" cy="130" r="5" class="sv-good"/><circle cx="100" cy="150" r="5" class="sv-good"/><circle cx="115" cy="160" r="5" class="sv-good"/><circle cx="130" cy="175" r="5" class="sv-good"/><circle cx="145" cy="190" r="5" class="sv-good"/><circle cx="160" cy="205" r="5" class="sv-good"/><circle cx="175" cy="220" r="5" class="sv-good"/>
+        <circle cx="130" cy="85" r="5" class="sv-key"/><circle cx="145" cy="105" r="5" class="sv-key"/><circle cx="160" cy="115" r="5" class="sv-key"/><circle cx="175" cy="130" r="5" class="sv-key"/><circle cx="190" cy="145" r="5" class="sv-key"/><circle cx="205" cy="160" r="5" class="sv-key"/><circle cx="220" cy="175" r="5" class="sv-key"/>
+
+        <circle cx="85" cy="250" r="4" class="sv-good"/><circle cx="100" cy="250" r="4" class="sv-good"/><circle cx="115" cy="250" r="4" class="sv-good"/><circle cx="130" cy="250" r="4" class="sv-good"/><circle cx="145" cy="250" r="4" class="sv-good"/><circle cx="160" cy="250" r="4" class="sv-good"/><circle cx="175" cy="250" r="4" class="sv-good"/>
+        <circle cx="130" cy="250" r="4" class="sv-key"/><circle cx="145" cy="250" r="4" class="sv-key"/><circle cx="160" cy="250" r="4" class="sv-key"/><circle cx="175" cy="250" r="4" class="sv-key"/><circle cx="190" cy="250" r="4" class="sv-key"/><circle cx="205" cy="250" r="4" class="sv-key"/><circle cx="220" cy="250" r="4" class="sv-key"/>
+
+        <path d="M126,262 L126,270 L180,270 L180,262" class="sv-stroke-ink" stroke-width="1"/>
+        <text x="153" y="286" class="sv-ts" text-anchor="middle">overlap</text>
+
+        <line x1="440" y1="46" x2="440" y2="250" class="sv-line" stroke-width="1.5"/>
+        <line x1="440" y1="250" x2="723" y2="250" class="sv-line" stroke-width="1.5"/>
+        <text x="444" y="42" class="sv-ts">Gene Y</text>
+        <text x="723" y="266" class="sv-ts" text-anchor="end">Gene X</text>
+
+        <line x1="441" y1="228" x2="597" y2="72" class="sv-stroke-acc" stroke-width="2.5"/>
+        <text x="602" y="70" class="sv-ts">new LDA axis</text>
+
+        <line x1="450" y1="132" x2="493.5" y2="175.5" class="sv-line" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="465" y1="148" x2="493" y2="176" class="sv-line" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="482" y1="160" x2="495.5" y2="173.5" class="sv-line" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="495" y1="177" x2="493.5" y2="175.5" class="sv-line" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="512" y1="188" x2="496.5" y2="172.5" class="sv-line" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="525" y1="207" x2="493.5" y2="175.5" class="sv-line" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="541" y1="219" x2="495.5" y2="173.5" class="sv-line" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="495" y1="87" x2="538.5" y2="130.5" class="sv-line" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="510" y1="103" x2="538" y2="131" class="sv-line" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="527" y1="116" x2="540" y2="129" class="sv-line" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="540" y1="132" x2="538.5" y2="130.5" class="sv-line" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="556" y1="143" x2="541" y2="128" class="sv-line" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="570" y1="160" x2="539.5" y2="129.5" class="sv-line" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="586" y1="174" x2="540.5" y2="128.5" class="sv-line" stroke-width="1" stroke-dasharray="3 3"/>
+
+        <circle cx="450" cy="132" r="5" class="sv-good"/><circle cx="465" cy="148" r="5" class="sv-good"/><circle cx="482" cy="160" r="5" class="sv-good"/><circle cx="495" cy="177" r="5" class="sv-good"/><circle cx="512" cy="188" r="5" class="sv-good"/><circle cx="525" cy="207" r="5" class="sv-good"/><circle cx="541" cy="219" r="5" class="sv-good"/>
+        <circle cx="495" cy="87" r="5" class="sv-key"/><circle cx="510" cy="103" r="5" class="sv-key"/><circle cx="527" cy="116" r="5" class="sv-key"/><circle cx="540" cy="132" r="5" class="sv-key"/><circle cx="556" cy="143" r="5" class="sv-key"/><circle cx="570" cy="160" r="5" class="sv-key"/><circle cx="586" cy="174" r="5" class="sv-key"/>
+
+        <circle cx="493.5" cy="175.5" r="4" class="sv-good"/><circle cx="493" cy="176" r="4" class="sv-good"/><circle cx="495.5" cy="173.5" r="4" class="sv-good"/><circle cx="496.5" cy="172.5" r="4" class="sv-good"/>
+        <circle cx="538.5" cy="130.5" r="4" class="sv-key"/><circle cx="538" cy="131" r="4" class="sv-key"/><circle cx="540" cy="129" r="4" class="sv-key"/><circle cx="541" cy="128" r="4" class="sv-key"/><circle cx="539.5" cy="129.5" r="4" class="sv-key"/>
+
+        <line x1="520" y1="158" x2="600" y2="196" class="sv-stroke-ink" stroke-width="1"/>
+        <rect x="602" y="186" width="90" height="18" class="sv-paper"/>
+        <text x="604" y="200" class="sv-ts">no overlap</text>
+
+        <circle cx="250" cy="301" r="5" class="sv-good"/><text x="261" y="306" class="sv-ts">drug works</text>
+        <circle cx="378" cy="301" r="5" class="sv-key"/><text x="389" y="306" class="sv-ts">drug makes them worse</text>
+      </svg>
+      <figcaption>Notice the left panel: dropping the points straight onto Gene X mixes the two colours. The new axis on the right uses both genes, so the projected clusters never touch.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Start with data that is already labelled. LDA has to know which category every point belongs to, so it is a supervised method.</li>
+      <li>Look for a new axis. That axis is a blend of all the genes, not one gene picked out of the set.</li>
+      <li>First criterion: after the points land on the new axis, the two category means should sit far apart. Josh writes each mean with the Greek letter μ.</li>
+      <li>Second criterion: the spread inside each category should be small. The video calls this spread the scatter and writes it as s².</li>
+      <li>Judge both criteria at the same time with one ratio. The squared distance between the means goes on top, and the two scatter values go underneath.</li>
+      <li>Keep the axis that makes that ratio as large as possible. Then project every point onto it and read off the new positions.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 295" role="img" aria-label="Two number lines. The top one has far apart means but wide scatter, so the groups overlap. The bottom one has slightly closer means and tight scatter, so a clean gap appears.">
+        <defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker></defs>
+
+        <text x="30" y="22" class="sv-tb">1. Maximise the distance between the means only</text>
+        <line x1="261" y1="54" x2="470" y2="54" class="sv-stroke-ink" stroke-width="1.2" marker-start="url(#ah2)" marker-end="url(#ah2)"/>
+        <text x="365" y="46" class="sv-ts" text-anchor="middle">d = large</text>
+        <text x="261" y="78" class="sv-good" font-size="14" text-anchor="middle">&#956;</text>
+        <text x="470" y="78" class="sv-key" font-size="14" text-anchor="middle">&#956;</text>
+        <line x1="60" y1="96" x2="700" y2="96" class="sv-line" stroke-width="1.5"/>
+        <circle cx="150" cy="96" r="5" class="sv-good"/><circle cx="190" cy="96" r="5" class="sv-good"/><circle cx="225" cy="96" r="5" class="sv-good"/><circle cx="260" cy="96" r="5" class="sv-good"/><circle cx="300" cy="96" r="5" class="sv-good"/><circle cx="335" cy="96" r="5" class="sv-good"/><circle cx="370" cy="96" r="5" class="sv-good"/>
+        <circle cx="340" cy="96" r="5" class="sv-key"/><circle cx="385" cy="96" r="5" class="sv-key"/><circle cx="425" cy="96" r="5" class="sv-key"/><circle cx="470" cy="96" r="5" class="sv-key"/><circle cx="515" cy="96" r="5" class="sv-key"/><circle cx="555" cy="96" r="5" class="sv-key"/><circle cx="600" cy="96" r="5" class="sv-key"/>
+        <path d="M334,106 L334,114 L376,114 L376,106" class="sv-stroke-ink" stroke-width="1"/>
+        <text x="355" y="130" class="sv-ts" text-anchor="middle">the colours still mix here</text>
+
+        <text x="30" y="166" class="sv-tb">2. Maximise the distance and minimise the scatter</text>
+        <line x1="302" y1="198" x2="462" y2="198" class="sv-stroke-ink" stroke-width="1.2" marker-start="url(#ah2)" marker-end="url(#ah2)"/>
+        <text x="382" y="190" class="sv-ts" text-anchor="middle">d = a little smaller</text>
+        <text x="302" y="222" class="sv-good" font-size="14" text-anchor="middle">&#956;</text>
+        <text x="462" y="222" class="sv-key" font-size="14" text-anchor="middle">&#956;</text>
+        <line x1="60" y1="240" x2="700" y2="240" class="sv-line" stroke-width="1.5"/>
+        <circle cx="262" cy="240" r="5" class="sv-good"/><circle cx="278" cy="240" r="5" class="sv-good"/><circle cx="294" cy="240" r="5" class="sv-good"/><circle cx="310" cy="240" r="5" class="sv-good"/><circle cx="326" cy="240" r="5" class="sv-good"/><circle cx="342" cy="240" r="5" class="sv-good"/>
+        <circle cx="430" cy="240" r="5" class="sv-key"/><circle cx="446" cy="240" r="5" class="sv-key"/><circle cx="462" cy="240" r="5" class="sv-key"/><circle cx="478" cy="240" r="5" class="sv-key"/><circle cx="494" cy="240" r="5" class="sv-key"/>
+        <path d="M348,250 L348,258 L424,258 L424,250" class="sv-stroke-good" stroke-width="1.2"/>
+        <text x="386" y="274" class="sv-ts" text-anchor="middle">clean gap</text>
+      </svg>
+      <figcaption>Notice that the top line has the wider gap between the means, yet it separates worse. Small scatter is worth more than a few extra units of distance.</figcaption>
+    </figure>
+    <ol class="steps" start="7">
+      <li>With more genes nothing really changes. LDA still builds one new axis out of all of them, and still balances the same two criteria.</li>
+      <li>With three categories, first find the point at the centre of all the data. Then measure the distance from each category centre to that overall centre.</li>
+      <li>Three category centres define a plane, so LDA now creates two axes. LD1 carries the most separation between categories, and LD2 the second most.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 315" role="img" aria-label="Three coloured clusters on a scatter plot. A dark dot marks the centre of all the data, and three dashed arrows measure the distance from that centre to each category centre.">
+        <defs><marker id="ah3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker></defs>
+        <text x="30" y="22" class="sv-tb">Three categories: measure each centre against the overall centre</text>
+        <line x1="60" y1="40" x2="60" y2="262" class="sv-line" stroke-width="1.5"/>
+        <line x1="60" y1="262" x2="720" y2="262" class="sv-line" stroke-width="1.5"/>
+        <text x="64" y="38" class="sv-ts">Gene Y</text>
+        <text x="720" y="280" class="sv-ts" text-anchor="end">Gene X</text>
+
+        <circle cx="180" cy="95" r="5" class="sv-good"/><circle cx="212" cy="100" r="5" class="sv-good"/><circle cx="195" cy="122" r="5" class="sv-good"/><circle cx="224" cy="118" r="5" class="sv-good"/><circle cx="170" cy="116" r="5" class="sv-good"/>
+        <circle cx="540" cy="105" r="5" class="sv-key"/><circle cx="572" cy="110" r="5" class="sv-key"/><circle cx="555" cy="132" r="5" class="sv-key"/><circle cx="584" cy="126" r="5" class="sv-key"/><circle cx="549" cy="127" r="5" class="sv-key"/>
+        <circle cx="360" cy="222" r="5" class="sv-acc"/><circle cx="392" cy="228" r="5" class="sv-acc"/><circle cx="372" cy="248" r="5" class="sv-acc"/><circle cx="402" cy="242" r="5" class="sv-acc"/><circle cx="374" cy="235" r="5" class="sv-acc"/>
+
+        <line x1="371" y1="153" x2="208" y2="113" class="sv-stroke-ink" stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#ah3)"/>
+        <line x1="387" y1="153" x2="548" y2="122" class="sv-stroke-ink" stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#ah3)"/>
+        <line x1="379" y1="163" x2="380" y2="223" class="sv-stroke-ink" stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#ah3)"/>
+
+        <circle cx="196" cy="110" r="9" class="sv-good"/><circle cx="196" cy="110" r="3" class="sv-paper"/>
+        <circle cx="560" cy="120" r="9" class="sv-key"/><circle cx="560" cy="120" r="3" class="sv-paper"/>
+        <circle cx="380" cy="235" r="9" class="sv-acc"/><circle cx="380" cy="235" r="3" class="sv-paper"/>
+        <circle cx="379" cy="155" r="9" class="sv-ink"/><circle cx="379" cy="155" r="3" class="sv-paper"/>
+
+        <rect x="266" y="116" width="26" height="17" class="sv-paper"/>
+        <text x="279" y="129" class="sv-ts" text-anchor="middle">d&#8321;</text>
+        <rect x="454" y="122" width="26" height="17" class="sv-paper"/>
+        <text x="467" y="135" class="sv-ts" text-anchor="middle">d&#8322;</text>
+        <rect x="340" y="186" width="26" height="17" class="sv-paper"/>
+        <text x="353" y="199" class="sv-ts" text-anchor="middle">d&#8323;</text>
+        <rect x="390" y="170" width="104" height="18" class="sv-paper"/>
+        <text x="392" y="184" class="sv-ts">overall centre</text>
+
+        <circle cx="150" cy="288" r="5" class="sv-good"/><text x="161" y="293" class="sv-ts">category 1</text>
+        <circle cx="300" cy="288" r="5" class="sv-key"/><text x="311" y="293" class="sv-ts">category 2</text>
+        <circle cx="450" cy="288" r="5" class="sv-acc"/><text x="461" y="293" class="sv-ts">category 3</text>
+      </svg>
+      <figcaption>Notice that the distances are now measured from one shared centre outwards, not between a pair of means. Three centres define a plane, which is why LDA returns two axes here.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">The ratio LDA maximises, two categories</span>
+      <div class="math">$$ \frac{(\mu_{\text{green}} - \mu_{\text{red}})^2}{s_{\text{green}}^2 + s_{\text{red}}^2} $$</div>
+      <p class="explain"><b>Symbols:</b> \(\mu_{\text{green}}\) is the mean of the green points after they land on the new axis. \(\mu_{\text{red}}\) is the same for the red points. \(s_{\text{green}}^2\) is the scatter of the green points around their own mean, and scatter is the video's word for variation. \(s_{\text{red}}^2\) is the scatter for red. <b>What it tells you:</b> an axis is good when the two means are far apart and each group stays tight. The top is squared because Josh does not know which mean will be larger, and a negative gap would be meaningless.</p>
+    </div>
+    <div class="formula"><span class="lbl">The same ratio, written with d</span>
+      <div class="math">$$ \frac{d^2}{s_{\text{green}}^2 + s_{\text{red}}^2} $$</div>
+      <p class="explain"><b>Symbols:</b> \(d\) is short for the distance between the two means, so \(d = \mu_{\text{green}} - \mu_{\text{red}}\). The bottom is unchanged. <b>What it tells you:</b> exactly the same thing, in a shorter form. Josh switches to this version before he moves on to three categories.</p>
+    </div>
+    <div class="formula"><span class="lbl">Three categories</span>
+      <div class="math">$$ \frac{d_1^2 + d_2^2 + d_3^2}{s_1^2 + s_2^2 + s_3^2} $$</div>
+      <p class="explain"><b>Symbols:</b> \(d_1\), \(d_2\) and \(d_3\) are the distances from each category centre to the point at the centre of all the data. \(s_1^2\), \(s_2^2\) and \(s_3^2\) are the scatter values of each category around its own centre. <b>What it tells you:</b> the shape of the rule never changes. Each extra category simply adds one distance term on top and one scatter term underneath.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh first shows why the ratio needs both parts. He draws a data set with a little overlap on Gene Y and a wide spread along Gene X. If he chases \(d\) alone, the projected groups still mix in the middle. When he optimises both parts together, the means end up slightly closer, but the scatter drops a lot. That second axis gives the clean split.</p>
+      <p>He finishes with real data: three known categories and 10,000 genes. A raw plot would need 10,000 axes, which nobody can draw. LDA reduces that to two axes, and the three categories are easy to see. The separation is not perfect, but it is clearly three groups.</p>
+      <p>He then runs PCA on the same genes. That plot shows a lot of overlap between the black and the blue points. PCA is not failing here. It only looks for the genes with the most variation, and that direction does not split these groups.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> LDA is supervised and PCA is not. LDA needs the category labels before it starts. If those labels are wrong or noisy, the new axes are optimised for the wrong target.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A big gap between the means is not enough on its own. The video shows a data set where that choice still leaves the two groups mixed in the middle. The scatter in the denominator is what stops that from happening.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The number of new axes follows the categories, not the genes. Three category centres define a plane, so you get two axes. Ten thousand genes do not give you ten thousand LDA axes.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is LDA, and how is it different from PCA?</summary><div class="a">Both methods reduce dimensions by building new axes out of the original variables. PCA is unsupervised and picks the directions with the most variation. LDA is supervised and picks the directions that best separate categories you already know. So on labelled data LDA usually gives a much cleaner picture of the classes.</div></details>
+    <details class="qa" open><summary>What does LDA actually optimise?</summary><div class="a">It maximises a ratio. On top is the squared distance between the category means after projection. Underneath is the sum of the scatter, which is the variation inside each category. A good axis pushes the means apart and keeps each group tight at the same time.</div></details>
+    <details class="qa" open><summary>Why not just maximise the distance between the class means?</summary><div class="a">Because a wide group can still overlap another group even when its mean sits far away. The video shows exactly that case, where the means are far apart but the projected points mix in the middle. Putting the scatter in the denominator trades a little distance for a much tighter group, and that gives the cleaner split.</div></details>
+    <details class="qa" open><summary>How many discriminant axes do you get?</summary><div class="a">It depends on the number of categories, not the number of features. Two categories give one new axis. Three category centres define a plane, so you get two axes. The axes are ranked, so LD1 explains the most separation between categories and LD2 the next most.</div></details>
+    <details class="qa" open><summary>How do you tell which variables drive an LDA axis?</summary><div class="a">In much the same way as with PCA. With PCA you read the loading scores. With LDA you look at which variables correlate with the new axes. That tells you which measurements separate the groups.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>LDA reduces many variables down to a few new axes, just like PCA does.</li>
+      <li>Unlike PCA, LDA uses the known category labels and aims at separability.</li>
+      <li>It picks the axis that maximises the squared distance between the means divided by the sum of the within-category scatter.</li>
+      <li>Maximising the distance alone is not enough, because wide groups still overlap.</li>
+      <li>With three categories it measures each category centre against the centre of all the data, and returns two ranked axes.</li>
+      <li>The axes are ranked, so LD1 carries the most separation and LD2 the second most.</li>
+      <li>On Josh's real data, 10,000 genes collapse to two LDA axes with three visible groups.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Linear discriminant analysis</span><span class="board-tag">one new axis: means apart, groups tight</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 300" role="img" aria-label="Top: green and red points on Gene X and Gene Y overlap on either gene alone. A new axis built from both genes runs beside them, and each group is projected onto it. Bottom: on the new axis the two means sit far apart, distance d, and each group stays tight, with small scatter s squared.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <line x1="40" y1="24" x2="40" y2="160" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="40" y1="160" x2="214" y2="160" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <text x="48" y="26" class="sv-ts">Gene Y</text>
+            <text x="220" y="165" class="sv-ts">Gene X</text>
+            <line x1="116" y1="116" x2="140" y2="140" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="3 4"/>
+            <line x1="148" y1="83" x2="172.5" y2="107.5" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="3 4"/>
+            <line x1="133" y1="147" x2="205" y2="75" class="sv-stroke-acc" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="74" cy="78" r="6" class="sv-good"/>
+              <circle cx="88" cy="84" r="6" class="sv-good"/>
+              <circle cx="95" cy="97" r="6" class="sv-good"/>
+              <circle cx="107" cy="105" r="6" class="sv-good"/>
+              <circle cx="116" cy="116" r="6" class="sv-good"/>
+              <circle cx="106" cy="45" r="6" class="sv-key"/>
+              <circle cx="120" cy="51" r="6" class="sv-key"/>
+              <circle cx="127" cy="64" r="6" class="sv-key"/>
+              <circle cx="139" cy="72" r="6" class="sv-key"/>
+              <circle cx="148" cy="83" r="6" class="sv-key"/>
+              <circle cx="140" cy="140" r="5" class="sv-good"/>
+              <circle cx="172.5" cy="107.5" r="5" class="sv-key"/>
+            </g>
+            <text x="216" y="78" class="sv-t">new axis</text>
+            <path d="M300 72 Q 340 72 340 112 L 340 218" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#board-arr)"/>
+            <text x="328" y="128" text-anchor="end" class="sv-t">project</text>
+            <text x="200" y="196" text-anchor="middle" class="sv-t">d: means far apart</text>
+            <line x1="110" y1="206" x2="110" y2="230" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="3 3"/>
+            <line x1="290" y1="206" x2="290" y2="230" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="3 3"/>
+            <line x1="114" y1="212" x2="286" y2="212" class="sv-stroke-ink" stroke-width="2.5" marker-start="url(#board-arr)" marker-end="url(#board-arr)"/>
+            <line x1="30" y1="240" x2="370" y2="240" class="sv-stroke-acc" stroke-width="3" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="80" cy="240" r="6" class="sv-good"/>
+              <circle cx="95" cy="240" r="6" class="sv-good"/>
+              <circle cx="110" cy="240" r="6" class="sv-good"/>
+              <circle cx="125" cy="240" r="6" class="sv-good"/>
+              <circle cx="140" cy="240" r="6" class="sv-good"/>
+              <circle cx="260" cy="240" r="6" class="sv-key"/>
+              <circle cx="275" cy="240" r="6" class="sv-key"/>
+              <circle cx="290" cy="240" r="6" class="sv-key"/>
+              <circle cx="305" cy="240" r="6" class="sv-key"/>
+              <circle cx="320" cy="240" r="6" class="sv-key"/>
+            </g>
+            <path d="M74 254 L74 262 L146 262 L146 254" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M254 254 L254 262 L326 262 L326 254" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="110" y="286" text-anchor="middle" class="sv-t">s² small</text>
+            <text x="290" y="286" text-anchor="middle" class="sv-t">s² small</text>
+          </svg>
+          <p>Green dots are people the drug helps, red dots people it harms; on one gene they overlap. LDA builds a new axis from all the genes so that, once projected, the means land far apart and each group stays tight.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Supervised</dt><dd>Needs every point's category label first.</dd>
+            <dt>Project</dt><dd>Drop each point onto the new axis; read its new position.</dd>
+            <dt>Mean, μ</dt><dd>A category's centre once it lands on the new axis.</dd>
+            <dt>Scatter, s²</dt><dd>The video's word for variation inside one category.</dd>
+            <dt>LD1, LD2</dt><dd>Ranked axes: LD1 separates the categories most, LD2 next.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Labelled data</b>categories known; LDA is supervised</li>
+            <li><b>New axis</b>a blend of all the genes</li>
+            <li><b>Means apart</b>category means land far apart</li>
+            <li><b>Scatter small</b>each category stays tight</li>
+            <li><b>Max the ratio</b>d² over the scatters, then project</li>
+            <li><b>3 categories</b>distances to overall centre; LD1, LD2</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\frac{(\mu_g-\mu_r)^2}{s_g^2+s_r^2}=\frac{d^2}{s_g^2+s_r^2}$$
+          $$\frac{d_1^2+d_2^2+d_3^2}{s_1^2+s_2^2+s_3^2}$$
+          <ul class="keys">
+            <li>\(\mu_g\), \(\mu_r\): green and red means on the new axis; \(d\) is their gap.</li>
+            <li>\(s^2\): scatter inside one category. LDA keeps the axis with the biggest ratio.</li>
+            <li>\(d_1, d_2, d_3\): each category centre to the centre of all the data.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>data</th><th>method</th><th>result</th></tr>
+            <tr><td>toy</td><td>d only</td><td>groups still mix</td></tr>
+            <tr><td>toy</td><td>d and scatter</td><td>clean split</td></tr>
+            <tr><td>real</td><td>raw plot</td><td>10,000 axes</td></tr>
+            <tr><td>real</td><td>PCA</td><td>black, blue overlap</td></tr>
+            <tr class="final"><td>real</td><td>LDA</td><td>2 axes, 3 groups</td></tr>
+          </table>
+          <p class="hand">Real data: 10,000 genes, three categories. On toy data the means end slightly closer, but scatter drops a lot.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">LDA works without labels, like PCA.</span><span class="yes">It is supervised. Wrong or noisy labels optimise the axes for the wrong target.</span></li>
+            <li><span class="no">Far-apart means are enough.</span><span class="yes">Wide groups still mix in the middle; the scatter in the denominator stops that.</span></li>
+            <li><span class="no">10,000 genes give 10,000 LDA axes.</span><span class="yes">Axes follow the categories: three centres define a plane, so you get two.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="34-pca-in-python.html"><small>Previous</small>PCA in Python</a> <a href="37-mds-and-pcoa.html"><small>Next</small>MDS and PCoA</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

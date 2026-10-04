@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ridge, Lasso and Elastic-Net Regression in R — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>29</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 29 · 17.9 min</div>
+    <h1>Ridge, Lasso and Elastic-Net Regression in R</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=ctmNq7FgbvI" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video shows how to run ridge, lasso and elastic-net regression in R with the <code>glmnet</code> library. It also shows how to pick the best mix of the two penalties by testing many values and comparing the test error.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>The <code>glmnet</code> package does not use two lambdas. It uses one lambda for the size of the penalty and one alpha for the mix of lasso and ridge. Josh builds a fake data set with 1,000 samples and 5,000 parameters, where only 15 parameters really matter. He fits ridge, lasso and elastic net with cross-validation, then compares the mean squared error on held-out data. Lasso wins clearly, because most of the 5,000 parameters are pure noise and lasso can remove them.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>The name <code>glmnet</code> has two halves. The GLM part means generalized linear models, so the same tool works for linear regression, logistic regression and a few others. The net part comes from elastic net.</p>
+    <p>In the earlier video on elastic net, the lasso penalty and the ridge penalty each had their own lambda. The <code>glmnet</code> package does it differently. There is a single lambda, plus a parameter called alpha that runs from 0 to 1.</p>
+    <p>Alpha sets the mix. When alpha is 0, the lasso part disappears and you are left with plain ridge regression. When alpha is 1, the ridge part disappears and you are left with plain lasso regression. When alpha sits between 0 and 1, you get both penalties, which shrinks correlated variables better than either one alone.</p>
+    <p>Lambda sets how strong the whole penalty is. When lambda is 0, the penalty is gone and you are back to ordinary least squares, or to maximum likelihood for logistic regression. When lambda is above 0, the penalty starts to shrink the parameter estimates. So a full search means trying many values of both lambda and alpha.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Three stacked bars showing how alpha splits the penalty between ridge and lasso">
+        <defs>
+          <marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" class="sv-ink2"></path>
+          </marker>
+        </defs>
+        <text x="20" y="30" class="sv-tb">One lambda for strength, one alpha for the mix</text>
+
+        <rect x="110" y="60" width="110" height="130" class="sv-acc-soft"></rect>
+        <rect x="110" y="60" width="110" height="130" class="sv-stroke-acc" stroke-width="1.5"></rect>
+        <text x="165" y="130" text-anchor="middle" class="sv-t">ridge</text>
+
+        <rect x="325" y="60" width="110" height="65" class="sv-key-soft"></rect>
+        <rect x="325" y="125" width="110" height="65" class="sv-acc-soft"></rect>
+        <rect x="325" y="60" width="110" height="130" class="sv-stroke-ink" stroke-width="1.5"></rect>
+        <text x="380" y="98" text-anchor="middle" class="sv-t">lasso</text>
+        <text x="380" y="163" text-anchor="middle" class="sv-t">ridge</text>
+
+        <rect x="540" y="60" width="110" height="130" class="sv-key-soft"></rect>
+        <rect x="540" y="60" width="110" height="130" class="sv-stroke-key" stroke-width="1.5"></rect>
+        <text x="595" y="130" text-anchor="middle" class="sv-t">lasso</text>
+
+        <text x="165" y="212" text-anchor="middle" class="sv-tm">alpha = 0</text>
+        <text x="380" y="212" text-anchor="middle" class="sv-tm">alpha = 0.5</text>
+        <text x="595" y="212" text-anchor="middle" class="sv-tm">alpha = 1</text>
+        <text x="165" y="232" text-anchor="middle" class="sv-ts">ridge regression</text>
+        <text x="380" y="232" text-anchor="middle" class="sv-ts">elastic net</text>
+        <text x="595" y="232" text-anchor="middle" class="sv-ts">lasso regression</text>
+
+        <line x1="110" y1="256" x2="650" y2="256" class="sv-line" stroke-width="1.5" marker-end="url(#ar1)"></line>
+        <text x="380" y="276" text-anchor="middle" class="sv-ts">alpha moves the penalty from all ridge to all lasso</text>
+      </svg>
+      <figcaption>Notice that alpha only decides the recipe. Lambda, set by cross-validation, decides how much of that recipe is applied.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Load the library and fix the random seed, so the made-up data comes out the same every time.
+        <pre><code>library(glmnet)
+set.seed(42)</code></pre>
+      </li>
+
+      <li>Make a data set with 1,000 samples and 5,000 parameters, where only the first 15 parameters carry signal. The matrix <code>x</code> holds 5 million random values from a standard normal distribution. The vector <code>y</code> is the row sum of the first 15 columns plus a little noise.
+        <pre><code>n &lt;- 1000       # 1000 samples
+p &lt;- 5000       # 5000 parameters
+real_p &lt;- 15    # only 15 of them are useful
+
+x &lt;- matrix(rnorm(n*p), nrow=n, ncol=p)
+y &lt;- apply(x[, 1:real_p], 1, sum) + rnorm(n)</code></pre>
+        <p><b>Python equivalent</b></p>
+        <pre><code>import numpy as np
+rng = np.random.default_rng(42)
+n, p, real_p = 1000, 5000, 15
+X = rng.standard_normal((n, p))
+y = X[:, :real_p].sum(axis=1) + rng.standard_normal(n)</code></pre>
+      </li>
+
+      <li>Split the rows into a training set and a testing set. The <code>sample</code> function picks two thirds of the row numbers, and the minus sign selects everything that was not picked.
+        <pre><code>train_rows &lt;- sample(1:n, .66*n)
+x.train &lt;- x[train_rows, ]
+x.test  &lt;- x[-train_rows, ]
+y.train &lt;- y[train_rows]
+y.test  &lt;- y[-train_rows]</code></pre>
+        <p><b>Python equivalent</b></p>
+        <pre><code>from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, train_size=0.66, random_state=42)</code></pre>
+      </li>
+
+      <li>Fit ridge regression with <code>cv.glmnet</code>. The <code>cv</code> part means 10-fold cross-validation is used to find good values for lambda. Note that <code>cv.glmnet</code> does not take formula notation, so <code>x</code> and <code>y</code> go in separately.
+        <pre><code>alpha0.fit &lt;- cv.glmnet(x.train, y.train, type.measure="mse",
+                        alpha=0, family="gaussian")</code></pre>
+        <p>Here <code>type.measure="mse"</code> says to judge the folds by mean squared error, and <code>family="gaussian"</code> says this is linear regression. For logistic regression you would use <code>"deviance"</code> and <code>"binomial"</code>.</p>
+      </li>
+
+      <li>Predict on the testing data and measure the error. The <code>s</code> argument is the size of the penalty, and here it is set to <code>lambda.1se</code>, the simplest model within one standard error of the best one.
+        <pre><code>alpha0.predicted &lt;- predict(alpha0.fit, s=alpha0.fit$lambda.1se, newx=x.test)
+mean((y.test - alpha0.predicted)^2)
+# 14.47...</code></pre>
+      </li>
+
+      <li>Repeat the same two calls with <code>alpha=1</code> for lasso and <code>alpha=0.5</code> for elastic net. Everything else stays the same, so the three results can be compared fairly.
+        <pre><code>alpha1.fit &lt;- cv.glmnet(x.train, y.train, type.measure="mse",
+                        alpha=1, family="gaussian")
+alpha1.predicted &lt;- predict(alpha1.fit, s=alpha1.fit$lambda.1se, newx=x.test)
+mean((y.test - alpha1.predicted)^2)      # 1.19...
+
+alpha0.5.fit &lt;- cv.glmnet(x.train, y.train, type.measure="mse",
+                          alpha=0.5, family="gaussian")
+alpha0.5.predicted &lt;- predict(alpha0.5.fit, s=alpha0.5.fit$lambda.1se, newx=x.test)
+mean((y.test - alpha0.5.predicted)^2)    # 1.24...</code></pre>
+        <p><b>Python equivalent</b> (scikit-learn picks the penalty size by cross-validation too)</p>
+        <pre><code>from sklearn.linear_model import RidgeCV, LassoCV, ElasticNetCV
+from sklearn.metrics import mean_squared_error
+
+ridge = RidgeCV(alphas=np.logspace(-3, 3, 100), cv=10).fit(X_train, y_train)
+lasso = LassoCV(cv=10, random_state=42).fit(X_train, y_train)
+enet  = ElasticNetCV(l1_ratio=0.5, cv=10, random_state=42).fit(X_train, y_train)
+
+for name, m in [("ridge", ridge), ("lasso", lasso), ("elastic", enet)]:
+    print(name, mean_squared_error(y_test, m.predict(X_test)))</code></pre>
+      </li>
+
+      <li>Now test many values of alpha, not just three. A loop over the integers 0 to 10 gives alpha values of 0, 0.1, up to 1, and each fit is stored in a list under its own name.
+        <pre><code>list.of.fits &lt;- list()
+for (i in 0:10) {
+  fit.name &lt;- paste0("alpha", i/10)
+  list.of.fits[[fit.name]] &lt;- cv.glmnet(x.train, y.train,
+                                        type.measure="mse",
+                                        alpha=i/10, family="gaussian")
+}</code></pre>
+      </li>
+
+      <li>Loop a second time to predict with the testing data, compute each mean squared error, and stack the rows into a results table. Printing <code>results</code> shows alpha, the error, and the name of the fit.
+        <pre><code>results &lt;- data.frame()
+for (i in 0:10) {
+  fit.name &lt;- paste0("alpha", i/10)
+  predicted &lt;- predict(list.of.fits[[fit.name]],
+                       s=list.of.fits[[fit.name]]$lambda.1se, newx=x.test)
+  mse &lt;- mean((y.test - predicted)^2)
+  temp &lt;- data.frame(alpha=i/10, mse=mse, fit.name=fit.name)
+  results &lt;- rbind(results, temp)
+}
+results</code></pre>
+        <p><b>Python equivalent</b> (<code>l1_ratio</code> in scikit-learn plays the role of alpha in glmnet)</p>
+        <pre><code>ratios = np.linspace(0.01, 1.0, 11)
+enet_cv = ElasticNetCV(l1_ratio=list(ratios), cv=10,
+                       random_state=42).fit(X_train, y_train)
+print(enet_cv.l1_ratio_, enet_cv.alpha_,
+      mean_squared_error(y_test, enet_cv.predict(X_test)))</code></pre>
+      </li>
+    </ol>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">The glmnet penalty</span>
+      <div class="math">$$ \text{RSS} \;+\; \lambda\left[\;\frac{1-\alpha}{2}\sum_{j=1}^{p}\beta_j^{2}\;+\;\alpha\sum_{j=1}^{p}\left|\beta_j\right|\;\right] $$</div>
+      <p class="explain"><b>Symbols:</b> RSS is the sum of squared residuals, the usual least squares fit measure. \(\beta_j\) is the estimate for parameter \(j\), and \(p\) is the number of parameters. \(\lambda\) is the single penalty size. \(\alpha\) is the mix, from 0 to 1. <b>What it tells you:</b> alpha slides the weight between the squared ridge term and the absolute lasso term, and lambda decides how hard either term pushes.</p>
+    </div>
+    <div class="formula"><span class="lbl">Mean squared error</span>
+      <div class="math">$$ \text{MSE} = \frac{1}{m}\sum_{i=1}^{m}\left(y_i - \hat{y}_i\right)^{2} $$</div>
+      <p class="explain"><b>Symbols:</b> \(y_i\) is a true value in the testing set, \(\hat{y}_i\) is the predicted value, and \(m\) is the number of testing samples. <b>What it tells you:</b> it is the sum of the squared residuals divided by the sample size, and lower is better.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>The data has 1,000 samples and 5,000 parameters, but only the first 15 columns of <code>x</code> affect <code>y</code>. The other 4,985 columns are noise. Two thirds of the rows train the models, one third tests them.</p>
+      <p>Ridge with alpha 0 gives a test error of 14.47. Lasso with alpha 1 gives 1.19. Elastic net with alpha 0.5 gives 1.24. Lasso is far better here, and it stays the best when all eleven alpha values are compared in the loop.</p>
+    </div>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 280" role="img" aria-label="Bar chart of test mean squared error for ridge, elastic net and lasso">
+        <text x="20" y="28" class="sv-tb">Mean squared error on the testing data (lower is better)</text>
+
+        <text x="170" y="80" text-anchor="end" class="sv-ts">Ridge, alpha = 0</text>
+        <rect x="180" y="60" width="520" height="28" class="sv-acc"></rect>
+        <rect x="632" y="62" width="54" height="24" rx="3" class="sv-paper"></rect>
+        <text x="640" y="80" class="sv-tm">14.47</text>
+
+        <text x="170" y="130" text-anchor="end" class="sv-ts">Elastic net, alpha = 0.5</text>
+        <rect x="180" y="110" width="45" height="28" class="sv-good"></rect>
+        <text x="235" y="130" class="sv-tm">1.24</text>
+
+        <text x="170" y="180" text-anchor="end" class="sv-ts">Lasso, alpha = 1</text>
+        <rect x="180" y="160" width="43" height="28" class="sv-key"></rect>
+        <text x="233" y="180" class="sv-tm">1.19</text>
+
+        <line x1="180" y1="200" x2="720" y2="200" class="sv-line" stroke-width="1.5"></line>
+        <line x1="180" y1="200" x2="180" y2="207" class="sv-line" stroke-width="1.5"></line>
+        <line x1="360" y1="200" x2="360" y2="207" class="sv-line" stroke-width="1.5"></line>
+        <line x1="539" y1="200" x2="539" y2="207" class="sv-line" stroke-width="1.5"></line>
+        <line x1="719" y1="200" x2="719" y2="207" class="sv-line" stroke-width="1.5"></line>
+        <text x="180" y="222" text-anchor="middle" class="sv-ts">0</text>
+        <text x="360" y="222" text-anchor="middle" class="sv-ts">5</text>
+        <text x="539" y="222" text-anchor="middle" class="sv-ts">10</text>
+        <text x="719" y="222" text-anchor="middle" class="sv-ts">15</text>
+        <text x="380" y="252" text-anchor="middle" class="sv-ts">ridge keeps all 4,985 noise parameters, so its error stays large</text>
+      </svg>
+      <figcaption>Notice how far ridge sits from the other two. Lasso and elastic net are almost tied, with lasso slightly ahead.</figcaption>
+    </figure>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> <code>lambda.1se</code> and <code>lambda.min</code> are not the same. <code>lambda.min</code> gives the smallest cross-validation error. <code>lambda.1se</code> gives the simplest model within one standard error of that best value. Josh uses <code>lambda.1se</code> for all three fits so the comparison stays consistent.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Ridge regression never sets a parameter to exactly zero, so calling <code>lambda.1se</code> the model with the fewest non-zero parameters only really bites for lasso and elastic net. It is still a valid, more conservative choice of lambda for ridge.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> <code>cv.glmnet</code> does not accept formula notation like <code>lm</code> or <code>glm</code>. You must pass the matrix and the response vector separately. Also switch <code>type.measure</code> to <code>"deviance"</code> and <code>family</code> to <code>"binomial"</code> for logistic regression.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The numbers move a little between runs, because the starting parameter values are random. Always call <code>set.seed</code> before you compare results. Also mind the naming clash in Python: glmnet's alpha is scikit-learn's <code>l1_ratio</code>, and glmnet's lambda is scikit-learn's <code>alpha</code>.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>How does glmnet parameterise elastic net?</summary><div class="a">It uses one lambda and one alpha instead of two lambdas. Lambda controls the total strength of the penalty. Alpha, from 0 to 1, controls the mix, where 0 is pure ridge and 1 is pure lasso. Anything in between blends the two.</div></details>
+    <details class="qa" open><summary>What is lambda.1se and when would you use it?</summary><div class="a">It is the largest lambda whose cross-validation error is still within one standard error of the minimum. Statistically it is hard to tell apart from lambda.min, but it gives a simpler model with fewer non-zero parameters. I use it when I want a more stable, more interpretable fit, and lambda.min when raw predictive error is all that matters.</div></details>
+    <details class="qa" open><summary>Why did lasso clearly beat ridge in this example?</summary><div class="a">The data had 5,000 parameters but only 15 of them carried any signal. Lasso can drive the other 4,985 coefficients to exactly zero, so the noise is removed. Ridge only shrinks them, so thousands of small wrong contributions add up. The test error was about 14.5 for ridge against 1.19 for lasso.</div></details>
+    <details class="qa" open><summary>How do you choose alpha in practice?</summary><div class="a">You treat it as a hyperparameter and search over it. In the video a loop fits eleven models with alpha from 0 to 1 in steps of 0.1, each with its own cross-validated lambda. Then you score every fit on held-out data and keep the best. In scikit-learn the same search is a list of l1_ratio values passed to ElasticNetCV.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>The glmnet package fits ridge, lasso and elastic net with one lambda and one alpha.</li>
+      <li>Alpha equal to 0 is ridge, alpha equal to 1 is lasso, and values in between mix both penalties.</li>
+      <li>Lambda sets the strength of the penalty, and lambda equal to 0 returns plain least squares.</li>
+      <li>The function cv.glmnet uses 10-fold cross-validation to find good lambdas, and needs x and y passed separately.</li>
+      <li>The predict function applies a fit to the test data at a chosen lambda, usually lambda.1se here.</li>
+      <li>On the made-up data the errors were about 14.47 for ridge, 1.24 for elastic net and 1.19 for lasso.</li>
+      <li>Lasso won because only 15 of the 5,000 parameters mattered, and lasso can delete the rest.</li>
+      <li>To find the best alpha, loop over many values, score each one on the testing set, and compare.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Ridge, Lasso, Elastic Net</span><span class="board-tag">alpha picks the mix, lambda the strength</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 270" role="img" aria-label="A band shows alpha sliding the penalty from all ridge at alpha 0 to all lasso at alpha 1, with elastic net at 0.5 in between. Bars of test mean squared error stand above it: ridge 14.47, elastic net 1.24, lasso 1.19.">
+            <line x1="50" y1="192" x2="350" y2="192" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <rect x="60" y="57.4" width="40" height="134.6" class="sv-acc"/>
+              <rect x="180" y="180.5" width="40" height="11.5" class="sv-good"/>
+              <rect x="300" y="180.9" width="40" height="11.1" class="sv-key"/>
+              <polygon points="80,204 320,204 80,222" class="sv-acc"/>
+              <polygon points="320,204 320,222 80,222" class="sv-key"/>
+            </g>
+            <text x="80" y="42" text-anchor="middle" class="sv-tm">MSE 14.47</text>
+            <text x="200" y="168" text-anchor="middle" class="sv-tm">1.24</text>
+            <text x="320" y="168" text-anchor="middle" class="sv-tm">1.19</text>
+            <text x="68" y="219" text-anchor="end" class="sv-tm">α = 0</text>
+            <text x="332" y="219" class="sv-tm">α = 1</text>
+            <text x="80" y="250" text-anchor="middle" class="sv-t">ridge</text>
+            <text x="200" y="250" text-anchor="middle" class="sv-t">elastic net (0.5)</text>
+            <text x="320" y="250" text-anchor="middle" class="sv-t">lasso</text>
+          </svg>
+          <p><code>glmnet</code> uses one lambda for the penalty's strength and one alpha for the mix: 0 is ridge, 1 is lasso. Only 15 of 5,000 parameters matter here, so lasso, which can delete the noise, has the lowest test error.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Alpha</dt><dd>The mix, 0 to 1: ridge at 0, lasso at 1, both between.</dd>
+            <dt>Lambda</dt><dd>Strength of the whole penalty; 0 gives least squares.</dd>
+            <dt>cv.glmnet</dt><dd>Fits with 10-fold cross-validation to find good lambdas.</dd>
+            <dt>lambda.1se</dt><dd>Simplest model within one standard error of the best.</dd>
+            <dt>MSE</dt><dd>Mean squared error on the testing data; lower is better.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Load, seed</b>library(glmnet), set.seed(42)</li>
+            <li><b>Make data</b>1,000 samples, 5,000 parameters, 15 useful</li>
+            <li><b>Split rows</b>two thirds train, one third test</li>
+            <li><b>Fit</b>cv.glmnet picks lambda by 10-fold CV</li>
+            <li><b>Predict</b>test data at lambda.1se</li>
+            <li><b>Score</b>test MSE; lower is better</li>
+          </ol>
+          <p class="loop">↺ repeat steps 4 to 6 for alpha = 0, 0.1 … 1, then compare</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{RSS}+\lambda\Big[\tfrac{1-\alpha}{2}\sum_{j}\beta_j^{2}+\alpha\sum_{j}\lvert\beta_j\rvert\Big]$$
+          $$\text{MSE}=\frac{1}{m}\sum_{i=1}^{m}\left(y_i-\hat{y}_i\right)^{2}$$
+          <ul class="keys">
+            <li>RSS: sum of squared residuals; \(\beta_j\): estimate for parameter \(j\).</li>
+            <li>\(\alpha=0\) is ridge, \(\alpha=1\) is lasso; \(\lambda=0\) is least squares.</li>
+            <li>\(m\): number of testing samples.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>fit</th><th>alpha</th><th>test MSE</th></tr>
+            <tr><td>ridge</td><td>0</td><td>14.47</td></tr>
+            <tr><td>elastic net</td><td>0.5</td><td>1.24</td></tr>
+            <tr class="final"><td>lasso</td><td>1</td><td>1.19</td></tr>
+          </table>
+          <p class="hand">Deleting the 4,985 noise parameters wins; lasso stays best across all eleven alphas.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">lambda.1se and lambda.min are the same.</span><span class="yes">lambda.min gives the smallest cross-validation error; lambda.1se, the simplest model within one standard error.</span></li>
+            <li><span class="no">cv.glmnet takes formula notation like lm.</span><span class="yes">Pass the matrix and response vector separately; for logistic use "deviance" and "binomial".</span></li>
+            <li><span class="no">glmnet's alpha is scikit-learn's alpha.</span><span class="yes">glmnet's alpha is l1_ratio there, and glmnet's lambda is scikit-learn's alpha.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="28-regularization-part-3-elastic-net-regression.html"><small>Previous</small>Regularization Part 3: Elastic Net Regression</a> <a href="30-principal-component-analysis-pca-step-by-step.html"><small>Next</small>Principal Component Analysis (PCA), Step-by-Step</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

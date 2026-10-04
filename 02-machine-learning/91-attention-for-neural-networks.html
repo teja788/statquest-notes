@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Attention for Neural Networks — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>91</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 91 · 15.8 min</div>
+    <h1>Attention for Neural Networks</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=PSs6nxngL6k" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: Neural Networks / Deep Learning (video 19)</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video adds attention to an encoder-decoder model. Each decoding step can then look straight at every input word. It is a key step toward Transformers, the basis of models like ChatGPT.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>A basic encoder-decoder squeezes the whole input into one context vector. So early words in long sentences can be forgotten. Attention adds a new path from each input word to every decoder step. At each step, the model scores how similar each encoder output is to the decoder output. A SoftMax turns the scores into percentages, which blend the encoder outputs into attention values. These values and the decoder output feed a fully connected layer that picks the next word.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>A basic encoder-decoder uses LSTMs, or long short-term memory units, a type of recurrent network. Unrolling them in the encoder compresses the whole input into one context vector. A context vector is just a single list of numbers. This works for a short phrase like "Let's go". For a long sentence, words that come early can be lost. Josh's example is "Don't eat the delicious looking and smelling pizza". If the model forgets "Don't", the meaning flips completely.</p>
+    <p>LSTMs already give long-term and short-term memories separate paths. But with a lot of data, both paths carry a lot of information. So an early word can still get lost. Attention adds new paths from the encoder to the decoder, one per input value. Each decoder step can then directly access the input values.</p>
+    <p>The figure shows one decoding step from the video. The decoder has just been given the EOS token, and it must produce the first Spanish word.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 360" role="img" aria-label="One decoding step with attention: dot product scores, SoftMax, weighted sum, then a fully connected layer outputs Vamos">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker>
+        </defs>
+        <rect x="20" y="40" width="150" height="56" rx="8" class="sv-acc-soft"/>
+        <text x="95" y="63" text-anchor="middle" class="sv-t">Encoder: Let's</text>
+        <text x="95" y="83" text-anchor="middle" class="sv-tm">(−0.76, 0.75)</text>
+        <rect x="20" y="124" width="150" height="56" rx="8" class="sv-acc-soft"/>
+        <text x="95" y="157" text-anchor="middle" class="sv-t">Encoder: go</text>
+        <rect x="20" y="276" width="150" height="56" rx="8" class="sv-good-soft"/>
+        <text x="95" y="299" text-anchor="middle" class="sv-t">Decoder: EOS</text>
+        <text x="95" y="319" text-anchor="middle" class="sv-tm">(0.91, 0.38)</text>
+        <path d="M170,290 L200,290 L200,78 L218,78" class="sv-stroke-good" stroke-width="2" marker-end="url(#ah)"/>
+        <path d="M200,162 L218,162" class="sv-stroke-good" stroke-width="2" marker-end="url(#ah)"/>
+        <path d="M170,58 L218,58" class="sv-stroke-ink" stroke-width="2" marker-end="url(#ah)"/>
+        <path d="M170,142 L218,142" class="sv-stroke-ink" stroke-width="2" marker-end="url(#ah)"/>
+        <rect x="220" y="44" width="120" height="44" rx="6" class="sv-paper2"/>
+        <text x="280" y="71" text-anchor="middle" class="sv-tm">dot = −0.41</text>
+        <rect x="220" y="128" width="120" height="44" rx="6" class="sv-paper2"/>
+        <text x="280" y="155" text-anchor="middle" class="sv-tm">dot = 0.01</text>
+        <path d="M340,66 L378,66" class="sv-stroke-ink" stroke-width="2" marker-end="url(#ah)"/>
+        <path d="M340,150 L378,150" class="sv-stroke-ink" stroke-width="2" marker-end="url(#ah)"/>
+        <rect x="380" y="44" width="100" height="128" rx="8" class="sv-key-soft"/>
+        <text x="430" y="113" text-anchor="middle" class="sv-tb">SoftMax</text>
+        <path d="M480,66 L528,66" class="sv-stroke-key" stroke-width="2" marker-end="url(#ah)"/>
+        <path d="M480,150 L528,150" class="sv-stroke-key" stroke-width="2" marker-end="url(#ah)"/>
+        <text x="504" y="58" text-anchor="middle" class="sv-tm">0.4</text>
+        <text x="504" y="142" text-anchor="middle" class="sv-tm">0.6</text>
+        <rect x="530" y="44" width="210" height="128" rx="8" class="sv-paper2"/>
+        <text x="635" y="72" text-anchor="middle" class="sv-tb">Weighted sum</text>
+        <text x="635" y="100" text-anchor="middle" class="sv-tm">0.4 × Let's values</text>
+        <text x="635" y="120" text-anchor="middle" class="sv-tm">+ 0.6 × go values</text>
+        <text x="635" y="152" text-anchor="middle" class="sv-t">= attention values</text>
+        <path d="M635,172 L635,274" class="sv-stroke-ink" stroke-width="2" marker-end="url(#ah)"/>
+        <path d="M170,318 L528,318" class="sv-stroke-good" stroke-width="2" marker-end="url(#ah)"/>
+        <text x="350" y="308" text-anchor="middle" class="sv-ts">EOS decoder outputs</text>
+        <rect x="530" y="276" width="140" height="56" rx="8" class="sv-key-soft"/>
+        <text x="600" y="299" text-anchor="middle" class="sv-t">Fully connected</text>
+        <text x="600" y="319" text-anchor="middle" class="sv-t">+ SoftMax</text>
+        <path d="M670,304 L686,304" class="sv-stroke-ink" stroke-width="2" marker-end="url(#ah)"/>
+        <rect x="688" y="284" width="52" height="40" rx="6" class="sv-good-soft"/>
+        <text x="714" y="309" text-anchor="middle" class="sv-t">Vamos</text>
+      </svg>
+      <figcaption>Notice that the decoder output is used twice: once to score each input word, and again as an input to the final fully connected layer.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Build the encoder as before: an embedding layer and two LSTM cells per step, with cell and hidden states set to zero. Feed in "Let's", unroll, then feed in "go".</li>
+      <li>The final encoder states form the context vector, which initializes a separate set of LSTM cells in the decoder. Without attention, all of the input is jammed into this one vector.</li>
+      <li>Start decoding by feeding the EOS (end of sentence) token into the decoder's embedding layer. Some manuscripts start with SOS (start of sentence) instead.</li>
+      <li>Score how similar the decoder's LSTM outputs are to the encoder's outputs at each input step. These outputs are the short-term memories, also called hidden states.</li>
+      <li>Run the scores through SoftMax. This gives the percentage of each encoded input word to use for this step.</li>
+      <li>Scale each encoder output by its percentage and add them up. The sums are the attention values for this decoding step.</li>
+      <li>Feed the attention values and the decoder's EOS outputs into a fully connected layer, where every input connects to every output. Run its output through SoftMax to pick the first word, "Vamos".</li>
+      <li>Since the output is not EOS, unroll the decoder and feed in "Vamos". Repeat the same math. The second output is EOS, so decoding stops.</li>
+    </ol>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">Cosine similarity</span><div class="math">$$ \text{cos sim}(\mathbf{a},\mathbf{b}) = \frac{\sum_{i=1}^{n} a_i b_i}{\sqrt{\sum_{i=1}^{n} a_i^2}\,\sqrt{\sum_{i=1}^{n} b_i^2}} $$</div><p class="explain"><b>Symbols:</b> \(\mathbf{a}\) is the list of LSTM output values from one encoder step. \(\mathbf{b}\) is the list of LSTM output values from the current decoder step. \(a_i\) and \(b_i\) are their \(i\)-th values. \(n\) is the number of LSTM cells, which is 2 in the video. <b>What it tells you:</b> the numerator measures how similar the two lists are, and the denominator scales that value to lie between −1 and 1.</p></div>
+    <div class="formula"><span class="lbl">Dot product (the usual attention score)</span><div class="math">$$ \text{score}(\mathbf{a},\mathbf{b}) = \sum_{i=1}^{n} a_i b_i $$</div><p class="explain"><b>Symbols:</b> the same as above. It is just the numerator of the cosine similarity. <b>What it tells you:</b> large positive numbers mean more similar, and large negative numbers mean more completely backwards. Multiply each pair of output values and add them up.</p></div>
+    <div class="formula"><span class="lbl">SoftMax</span><div class="math">$$ w_j = \frac{e^{s_j}}{\sum_{k=1}^{m} e^{s_k}} $$</div><p class="explain"><b>Symbols:</b> \(s_j\) is the similarity score for input word \(j\). \(m\) is the number of input words. \(e\) is Euler's number, about 2.718. \(w_j\) is the weight for input word \(j\). <b>What it tells you:</b> every weight is between 0 and 1, and the weights add up to 1, so each one is a percentage of that encoded word to use.</p></div>
+    <div class="formula"><span class="lbl">Attention values</span><div class="math">$$ \text{attention} = \sum_{j=1}^{m} w_j\,\mathbf{h}_j $$</div><p class="explain"><b>Symbols:</b> \(\mathbf{h}_j\) is the list of encoder LSTM output values for input word \(j\). \(w_j\) is its SoftMax weight. <b>What it tells you:</b> the attention values are a blend of all the input encodings, with more similar words having more influence.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>We translate "Let's go" into Spanish. Each step has two LSTM cells, so each output is two numbers. The encoder outputs for "Let's" are (−0.76, 0.75). The decoder outputs for EOS are (0.91, 0.38).</p>
+      <p><b>Cosine similarity.</b> Plugging these into the full formula gives −0.39.</p>
+      $$ \frac{(-0.76)(0.91) + (0.75)(0.38)}{\sqrt{(-0.76)^2+0.75^2}\,\sqrt{0.91^2+0.38^2}} \approx -0.39 $$
+      <p><b>Dot product.</b> Keep only the numerator.</p>
+      $$ (-0.76)(0.91) + (0.75)(0.38) = -0.692 + 0.285 \approx -0.41 $$
+      <p>The same dot product between "go" and EOS gives 0.01. Since 0.01 is higher than −0.41, "go" should have more influence on the first output word.</p>
+      <p><b>SoftMax.</b> Running −0.41 and 0.01 through SoftMax gives about 0.4 for "Let's" and 0.6 for "go".</p>
+      $$ \frac{e^{-0.41}}{e^{-0.41}+e^{0.01}} \approx 0.4, \qquad \frac{e^{0.01}}{e^{-0.41}+e^{0.01}} \approx 0.6 $$
+      <p><b>Attention values.</b> Scale the values for "Let's" by 0.4 and the values for "go" by 0.6, then add them. These sums are the attention values for EOS. They go into a fully connected layer along with the EOS decoder outputs. A SoftMax then selects "Vamos". Feeding "Vamos" back in produces EOS, so the translation is "Vamos".</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> There are conventions but no rules for adding attention. Each manuscript does it a little differently, and the video shows just one example. The constant part is the main idea: an extra path from each input value to every decoder step.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The dot product is not scaled to −1 to 1. The cosine denominator only removes magnitude, which helps when comparing scores built from different numbers of LSTM cells. Here the number of cells never changes, and the dot product works well in practice.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> SoftMax does not pick one input word. It blends them. Even though "go" scores higher, 40% of "Let's" is still used.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The attention values are not the only input to the fully connected layer. The decoder's own outputs for the current token go in as well.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What problem does attention solve in an encoder-decoder model?</summary><div class="a">A basic encoder-decoder compresses the whole input sentence into one context vector. For long sentences, early words can be forgotten, even with LSTMs. Attention adds a direct path from each input word to every decoder step, so the decoder can look back at any input it needs.</div></details>
+    <details class="qa" open><summary>How are the attention weights computed?</summary><div class="a">At each decoder step, I compute a similarity score between the decoder's LSTM outputs and each encoder step's LSTM outputs, usually with a dot product. I run those scores through SoftMax, which gives weights between 0 and 1 that add up to 1. Each weight is the share of that encoded word to use.</div></details>
+    <details class="qa" open><summary>Why use the dot product instead of cosine similarity?</summary><div class="a">The dot product is just the numerator of the cosine similarity, so it is easier to calculate. The denominator only scales the score to lie between −1 and 1. That matters when comparing scores built from different numbers of cells, but here the count is fixed, and the dot product works well in practice.</div></details>
+    <details class="qa" open><summary>What goes into the layer that predicts the next word?</summary><div class="a">Two things go in: the attention values, which are the weighted sum of the encoder outputs, and the decoder's own outputs for the current token. A fully connected layer combines them, and a SoftMax picks the output word. In the example this gives "Vamos" first, then EOS.</div></details>
+    <details class="qa" open><summary>Do we still need LSTMs once we have attention?</summary><div class="a">Josh says it turns out we don't. That observation leads to Transformers, which are covered in later videos.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>A basic encoder-decoder packs the whole input into one context vector, so early words in long sentences can be lost.</li>
+      <li>Attention adds a path from each input word to every step of the decoder.</li>
+      <li>At each decoder step, we score each encoder output against the decoder output, usually with a dot product.</li>
+      <li>In the example, "Let's" scores −0.41 and "go" scores 0.01 against EOS.</li>
+      <li>SoftMax turns the scores into weights of 0.4 and 0.6, and the weighted sum of encoder outputs gives the attention values.</li>
+      <li>The attention values and the decoder outputs go into a fully connected layer and a SoftMax, which outputs "Vamos".</li>
+      <li>Attention makes the LSTMs unnecessary, which is the starting point for Transformers.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Attention</span><span class="board-tag">score each input word, then blend them</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 244" role="img" aria-label="Encoder steps Let's and go lead through a context vector to the decoder step fed EOS, which outputs Vamos. New attention paths run from each input word into a blend: Let's scores −0.41 and gets weight 0.4, go scores 0.01 and gets weight 0.6, drawn thicker. The blend, the attention values, feeds the decoder step.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <path d="M126 88 V122 Q126 136 140 136 H254" class="sv-stroke-key" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#board-arr)"/>
+            <path d="M46 88 V166 Q46 180 60 180 H254" class="sv-stroke-key" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round">
+              <line x1="62" y1="72" x2="108" y2="72" marker-end="url(#board-arr)"/>
+              <line x1="142" y1="72" x2="188" y2="72" marker-end="url(#board-arr)"/>
+              <line x1="222" y1="72" x2="256" y2="72" marker-end="url(#board-arr)"/>
+              <line x1="294" y1="72" x2="316" y2="72" marker-end="url(#board-arr)"/>
+              <line x1="276" y1="118" x2="276" y2="92" marker-end="url(#board-arr)"/>
+            </g>
+            <g class="sv-stroke-ink" stroke-width="2.5" stroke-linejoin="round">
+              <circle cx="46" cy="72" r="14" class="sv-acc"/>
+              <circle cx="126" cy="72" r="14" class="sv-acc"/>
+              <rect x="192" y="58" width="28" height="28" rx="5" class="sv-paper2"/>
+              <circle cx="276" cy="72" r="16" class="sv-good"/>
+              <rect x="258" y="120" width="36" height="76" rx="8" class="sv-key-soft"/>
+            </g>
+            <text x="46" y="42" text-anchor="middle" class="sv-t">Let's</text>
+            <text x="126" y="42" text-anchor="middle" class="sv-t">go</text>
+            <text x="206" y="42" text-anchor="middle" class="sv-ts">context</text>
+            <text x="276" y="42" text-anchor="middle" class="sv-t">EOS</text>
+            <text x="388" y="79" text-anchor="end" class="sv-tb">Vamos</text>
+            <text x="140" y="124" class="sv-tm">0.01 → 0.6</text>
+            <text x="70" y="168" class="sv-tm">−0.41 → 0.4</text>
+            <text x="276" y="224" text-anchor="middle" class="sv-t">attention values</text>
+          </svg>
+          <p>Without attention, the whole input squeezes through one context vector, so early words can be lost. Attention adds a path from each input word. Dot products with the decoder's EOS output score them, SoftMax turns −0.41 and 0.01 into 0.4 and 0.6, and the weighted sum helps pick Vamos.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Context vector</dt><dd>One list of numbers holding the whole input.</dd>
+            <dt>Attention</dt><dd>New paths from each input word to every decoder step.</dd>
+            <dt>Dot product</dt><dd>Multiply paired output values and add. The usual score.</dd>
+            <dt>SoftMax</dt><dd>Turns scores into weights between 0 and 1 that add up to 1.</dd>
+            <dt>Attention values</dt><dd>The weighted sum of encoder outputs at one decoder step.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Encode</b>Let's, then go → context vector</li>
+            <li><b>Start decoding</b>feed EOS into the decoder</li>
+            <li><b>Score</b>dot product with each encoder output</li>
+            <li><b>SoftMax</b>scores become percentages</li>
+            <li><b>Blend</b>weighted sum = attention values</li>
+            <li><b>Pick a word</b>attention + decoder output → fully connected → SoftMax</li>
+          </ol>
+          <p class="loop">↺ feed Vamos back in and repeat steps 3 to 6; the next output is EOS, so stop</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{score}(\mathbf{a},\mathbf{b})=\sum_{i=1}^{n}a_i b_i$$
+          $$w_j=\frac{e^{s_j}}{\sum_{k=1}^{m}e^{s_k}}$$
+          $$\text{attention}=\sum_{j=1}^{m}w_j\,\mathbf{h}_j$$
+          <ul class="keys">
+            <li>\(\mathbf{a}\), \(\mathbf{b}\): encoder and decoder LSTM outputs; \(n=2\) cells.</li>
+            <li>\(s_j\), \(w_j\), \(\mathbf{h}_j\): score, weight and encoder outputs of input word \(j\); \(m\) words.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>step</th><th>value</th></tr>
+            <tr><td>Let's · EOS</td><td>−0.692 + 0.285 ≈ −0.41</td></tr>
+            <tr><td>go · EOS</td><td>0.01</td></tr>
+            <tr><td>SoftMax</td><td>0.4 and 0.6</td></tr>
+            <tr><td>attention</td><td>0.4 × Let's + 0.6 × go</td></tr>
+            <tr class="final"><td>output</td><td>Vamos, then EOS</td></tr>
+          </table>
+          <p class="hand">"Let's" outputs (−0.76, 0.75) and EOS outputs (0.91, 0.38). "go" scores higher, so it has more influence on the first word.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">SoftMax picks the single best input word.</span><span class="yes">It blends them. "go" scores higher, but 40% of "Let's" is still used.</span></li>
+            <li><span class="no">Only attention values feed the final layer.</span><span class="yes">The decoder's own outputs for the current token go in too.</span></li>
+            <li><span class="no">The dot product is scaled to −1 to 1.</span><span class="yes">Only cosine similarity is. With a fixed cell count, the dot product works well.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="90-sequence-to-sequence-seq2seq-encoder-decoder-neural-networks.html"><small>Previous</small>Sequence-to-Sequence (seq2seq) Encoder-Decoder Neural Networks</a> <a href="92-transformer-neural-networks-chatgpt-s-foundation.html"><small>Next</small>Transformer Neural Networks, ChatGPT&#x27;s foundation</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

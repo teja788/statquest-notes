@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Multiple Regression in R, Step-by-Step — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>43</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 43 · 7.7 min</div>
+    <h1>Multiple Regression in R, Step-by-Step</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=hokALdIst8k" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Picks up from the StatQuest on multiple regression</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Josh runs the same mice through R twice: a simple regression with one predictor, then a multiple regression with two.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Step one is always to plot the data. Step two is <code>lm()</code>, and the only change for multiple regression is a plus sign in the formula. Read plain R-squared for one predictor and adjusted R-squared for several. Then read the p-value on each coefficient row, because it says whether that term is worth keeping beside the others.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Simple regression fits a straight line through a cloud of points. Multiple regression adds a second predictor, so the fit becomes a flat plane. In R that difference is one plus sign.</p>
+    <p>The real work is deciding whether the second predictor earns its place. Both weight and tail length are related to size, so both are reasonable predictors. But weight and tail are also related to each other, so they carry similar information. We may not need both.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Left panel shows a line fitted to size against weight; right panel shows a plane fitted to size against weight and tail">
+        <rect x="0" y="0" width="760" height="300" class="sv-paper"></rect>
+        <text x="20" y="24" class="sv-tb">one predictor: a line</text>
+        <text x="430" y="24" class="sv-tb">two predictors: a plane</text>
+        <line x1="60" y1="250" x2="350" y2="250" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <line x1="60" y1="55" x2="60" y2="250" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <text x="205" y="278" text-anchor="middle" class="sv-ts">weight</text>
+        <text x="24" y="150" class="sv-ts">size</text>
+        <line x1="75" y1="231" x2="330" y2="96" class="sv-stroke-acc" stroke-width="2.5"></line>
+        <circle cx="75" cy="227" r="4.5" class="sv-ink"></circle>
+        <circle cx="118" cy="189" r="4.5" class="sv-ink"></circle>
+        <circle cx="146" cy="240" r="4.5" class="sv-ink"></circle>
+        <circle cx="198" cy="153" r="4.5" class="sv-ink"></circle>
+        <circle cx="217" cy="96" r="4.5" class="sv-ink"></circle>
+        <circle cx="240" cy="169" r="4.5" class="sv-ink"></circle>
+        <circle cx="273" cy="176" r="4.5" class="sv-ink"></circle>
+        <circle cx="297" cy="115" r="4.5" class="sv-ink"></circle>
+        <circle cx="330" cy="70" r="4.5" class="sv-ink"></circle>
+        <rect x="72" y="42" width="176" height="22" rx="4" class="sv-paper2"></rect>
+        <text x="80" y="58" class="sv-tm">lm(size ~ weight)</text>
+        <line x1="450" y1="255" x2="700" y2="255" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <line x1="450" y1="60" x2="450" y2="255" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <line x1="450" y1="255" x2="512" y2="199" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <text x="600" y="280" text-anchor="middle" class="sv-ts">weight</text>
+        <text x="516" y="196" class="sv-ts">tail</text>
+        <text x="414" y="152" class="sv-ts">size</text>
+        <polygon points="465,222 685,160 735,116 515,178" class="sv-acc-soft"></polygon>
+        <polygon points="465,222 685,160 735,116 515,178" class="sv-stroke-acc" stroke-width="2"></polygon>
+        <line x1="540" y1="176" x2="540" y2="196" class="sv-stroke-key" stroke-width="2" stroke-dasharray="4 3"></line>
+        <circle cx="540" cy="196" r="4.5" class="sv-ink"></circle>
+        <line x1="620" y1="152" x2="620" y2="130" class="sv-stroke-key" stroke-width="2" stroke-dasharray="4 3"></line>
+        <circle cx="620" cy="130" r="4.5" class="sv-ink"></circle>
+        <line x1="680" y1="141" x2="680" y2="160" class="sv-stroke-key" stroke-width="2" stroke-dasharray="4 3"></line>
+        <circle cx="680" cy="160" r="4.5" class="sv-ink"></circle>
+        <rect x="452" y="42" width="252" height="22" rx="4" class="sv-paper2"></rect>
+        <text x="460" y="58" class="sv-tm">lm(size ~ weight + tail)</text>
+      </svg>
+      <figcaption>Only the formula changes: least squares still shrinks the squared dashed distances, but now to a plane.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>
+        <p>Put the three measurements in a data frame.</p>
+        <pre><code>mouse.data &lt;- data.frame(
+  size   = c(1.4, 2.6, 1.0, 3.7, 5.5, 3.2, 3.0, 4.9, 6.3),
+  weight = c(0.9, 1.8, 2.4, 3.5, 3.9, 4.4, 5.1, 5.6, 6.3),
+  tail   = c(0.7, 1.3, 0.7, 2.0, 3.6, 3.0, 2.9, 3.9, 4.0))
+mouse.data</code></pre>
+        <p><b>Python equivalent</b></p>
+        <pre><code>import pandas as pd
+mouse = pd.DataFrame({"size":   [1.4,2.6,1.0,3.7,5.5,3.2,3.0,4.9,6.3],
+                      "weight": [0.9,1.8,2.4,3.5,3.9,4.4,5.1,5.6,6.3],
+                      "tail":   [0.7,1.3,0.7,2.0,3.6,3.0,2.9,3.9,4.0]})</code></pre>
+      </li>
+      <li>
+        <p>Always plot your data first. It shows whether a line is sensible. Here we can see a relationship.</p>
+        <pre><code>plot(mouse.data$weight, mouse.data$size)</code></pre>
+        <p><b>Python equivalent</b></p>
+        <pre><code>import matplotlib.pyplot as plt
+plt.scatter(mouse["weight"], mouse["size"])</code></pre>
+      </li>
+      <li>
+        <p>Fit the line with <code>lm()</code>, which stands for linear model. The tilde reads as "is predicted by". R adds the intercept and the slope for you.</p>
+        <pre><code>simple.regression &lt;- lm(size ~ weight, data = mouse.data)
+summary(simple.regression)</code></pre>
+        <p><b>Python equivalent</b> (statsmodels uses the same formula style)</p>
+        <pre><code>import statsmodels.formula.api as smf
+simple = smf.ols("size ~ weight", data=mouse).fit()
+print(simple.summary())</code></pre>
+      </li>
+      <li>
+        <p>The summary prints a big pile of output. For one predictor, read Multiple R-squared and the p-value. Then draw the fitted line.</p>
+        <pre><code>abline(simple.regression, col = "blue", lwd = 2)</code></pre>
+        <p><b>Python equivalent</b></p>
+        <pre><code>plt.plot(mouse["weight"], simple.fittedvalues, color="blue")</code></pre>
+      </li>
+      <li>
+        <p>Now start the multiple regression, and again plot first. Give <code>plot()</code> the whole data frame. R draws every column against every other column.</p>
+        <pre><code>plot(mouse.data)</code></pre>
+        <p><b>Python equivalent</b></p>
+        <pre><code>pd.plotting.scatter_matrix(mouse)   # or seaborn.pairplot(mouse)</code></pre>
+      </li>
+      <li>
+        <p>Fit the plane by adding the second predictor with a plus sign. This time read the adjusted R-squared, then the p-value on each coefficient row.</p>
+        <pre><code>multiple.regression &lt;- lm(size ~ weight + tail, data = mouse.data)
+summary(multiple.regression)</code></pre>
+        <p><b>Python equivalent</b></p>
+        <pre><code>multi = smf.ols("size ~ weight + tail", data=mouse).fit()
+print(multi.summary())
+multi.rsquared_adj, multi.pvalues
+
+# explicit nested comparison of the two models
+from statsmodels.stats.anova import anova_lm
+anova_lm(simple, multi)</code></pre>
+      </li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 320" role="img" aria-label="A three by three grid of paired scatter plots for size, weight and tail, with notes on two of the panels">
+        <rect x="0" y="0" width="760" height="320" class="sv-paper"></rect>
+        <text x="20" y="24" class="sv-tb">plot(mouse.data)</text>
+        <rect x="150" y="40" width="130" height="80" rx="4" class="sv-paper2"></rect>
+        <text x="215" y="86" text-anchor="middle" class="sv-tm">size</text>
+        <rect x="290" y="130" width="130" height="80" rx="4" class="sv-paper2"></rect>
+        <text x="355" y="176" text-anchor="middle" class="sv-tm">weight</text>
+        <rect x="430" y="220" width="130" height="80" rx="4" class="sv-paper2"></rect>
+        <text x="495" y="266" text-anchor="middle" class="sv-tm">tail</text>
+        <rect x="290" y="40" width="130" height="80" rx="4" class="sv-acc-soft"></rect>
+        <circle cx="308" cy="106" r="3" class="sv-ink"></circle><circle cx="330" cy="92" r="3" class="sv-ink"></circle><circle cx="345" cy="98" r="3" class="sv-ink"></circle><circle cx="362" cy="76" r="3" class="sv-ink"></circle><circle cx="378" cy="62" r="3" class="sv-ink"></circle><circle cx="398" cy="52" r="3" class="sv-ink"></circle>
+        <rect x="430" y="40" width="130" height="80" rx="4" class="sv-acc-soft"></rect>
+        <circle cx="448" cy="104" r="3" class="sv-ink"></circle><circle cx="468" cy="96" r="3" class="sv-ink"></circle><circle cx="486" cy="86" r="3" class="sv-ink"></circle><circle cx="504" cy="78" r="3" class="sv-ink"></circle><circle cx="522" cy="60" r="3" class="sv-ink"></circle><circle cx="540" cy="54" r="3" class="sv-ink"></circle>
+        <rect x="150" y="130" width="130" height="80" rx="4" class="sv-paper"></rect>
+        <rect x="150" y="130" width="130" height="80" rx="4" class="sv-line" stroke-width="1"></rect>
+        <circle cx="168" cy="196" r="3" class="sv-ink3"></circle><circle cx="190" cy="182" r="3" class="sv-ink3"></circle><circle cx="205" cy="188" r="3" class="sv-ink3"></circle><circle cx="222" cy="166" r="3" class="sv-ink3"></circle><circle cx="238" cy="152" r="3" class="sv-ink3"></circle><circle cx="258" cy="142" r="3" class="sv-ink3"></circle>
+        <rect x="430" y="130" width="130" height="80" rx="4" class="sv-good-soft"></rect>
+        <circle cx="448" cy="194" r="3" class="sv-ink"></circle><circle cx="468" cy="188" r="3" class="sv-ink"></circle><circle cx="486" cy="176" r="3" class="sv-ink"></circle><circle cx="504" cy="166" r="3" class="sv-ink"></circle><circle cx="522" cy="152" r="3" class="sv-ink"></circle><circle cx="540" cy="144" r="3" class="sv-ink"></circle>
+        <rect x="150" y="220" width="130" height="80" rx="4" class="sv-paper"></rect>
+        <rect x="150" y="220" width="130" height="80" rx="4" class="sv-line" stroke-width="1"></rect>
+        <circle cx="168" cy="286" r="3" class="sv-ink3"></circle><circle cx="190" cy="278" r="3" class="sv-ink3"></circle><circle cx="205" cy="270" r="3" class="sv-ink3"></circle><circle cx="222" cy="260" r="3" class="sv-ink3"></circle><circle cx="238" cy="244" r="3" class="sv-ink3"></circle><circle cx="258" cy="236" r="3" class="sv-ink3"></circle>
+        <rect x="290" y="220" width="130" height="80" rx="4" class="sv-paper"></rect>
+        <rect x="290" y="220" width="130" height="80" rx="4" class="sv-line" stroke-width="1"></rect>
+        <circle cx="308" cy="286" r="3" class="sv-ink3"></circle><circle cx="330" cy="278" r="3" class="sv-ink3"></circle><circle cx="345" cy="266" r="3" class="sv-ink3"></circle><circle cx="362" cy="258" r="3" class="sv-ink3"></circle><circle cx="378" cy="244" r="3" class="sv-ink3"></circle><circle cx="398" cy="236" r="3" class="sv-ink3"></circle>
+        <defs>
+          <marker id="ap" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" class="sv-acc"></path>
+          </marker>
+        </defs>
+        <line x1="594" y1="80" x2="566" y2="80" class="sv-stroke-acc" stroke-width="2" marker-end="url(#ap)"></line>
+        <text x="600" y="70" class="sv-ts">both track size,</text>
+        <text x="600" y="88" class="sv-ts">so both are useful</text>
+        <line x1="594" y1="170" x2="566" y2="170" class="sv-stroke-acc" stroke-width="2" marker-end="url(#ap)"></line>
+        <text x="600" y="160" class="sv-ts">weight tracks tail,</text>
+        <text x="600" y="178" class="sv-ts">so they overlap</text>
+        <text x="20" y="252" class="sv-ts">lower panels are</text>
+        <text x="20" y="268" class="sv-ts">the same plots,</text>
+        <text x="20" y="284" class="sv-ts">axes flipped</text>
+      </svg>
+      <figcaption>The panel that decides the story is weight against tail: correlated predictors mean you may need only one of them.</figcaption>
+    </figure>
+    <figure class="info">
+      <svg viewBox="0 0 760 264" role="img" aria-label="Diagram showing the full two-predictor model compared against the weight-only model and the tail-only model">
+        <rect x="0" y="0" width="760" height="264" class="sv-paper"></rect>
+        <defs>
+          <marker id="am" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" class="sv-acc"></path>
+          </marker>
+        </defs>
+        <rect x="270" y="24" width="230" height="44" rx="6" class="sv-acc-soft"></rect>
+        <text x="385" y="52" text-anchor="middle" class="sv-tm">size ~ weight + tail</text>
+        <rect x="30" y="170" width="230" height="44" rx="6" class="sv-paper2"></rect>
+        <text x="145" y="198" text-anchor="middle" class="sv-tm">size ~ weight</text>
+        <rect x="500" y="170" width="230" height="44" rx="6" class="sv-good-soft"></rect>
+        <text x="615" y="198" text-anchor="middle" class="sv-tm">size ~ tail</text>
+        <line x1="180" y1="168" x2="288" y2="72" class="sv-stroke-acc" stroke-width="2" marker-end="url(#am)"></line>
+        <line x1="580" y1="168" x2="482" y2="72" class="sv-stroke-acc" stroke-width="2" marker-end="url(#am)"></line>
+        <rect x="126" y="96" width="176" height="40" rx="4" class="sv-paper"></rect>
+        <text x="134" y="112" class="sv-ts">p-value on the tail row:</text>
+        <text x="134" y="130" class="sv-ts">small, so tail adds value</text>
+        <rect x="470" y="96" width="200" height="40" rx="4" class="sv-paper"></rect>
+        <text x="478" y="112" class="sv-ts">p-value on the weight row:</text>
+        <text x="478" y="130" class="sv-ts">large, so weight adds little</text>
+        <text x="30" y="240" class="sv-ts">Conclusion: tail alone predicts size about as well as weight and tail together.</text>
+      </svg>
+      <figcaption>Each coefficient p-value compares the full model with the model that drops just that one term.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">The two models R fits</span>
+      <div class="math">$$ \text{size} = \beta_0 + \beta_1\,\text{weight} $$</div>
+      <div class="math">$$ \text{size} = \beta_0 + \beta_1\,\text{weight} + \beta_2\,\text{tail} $$</div>
+      <p class="explain"><b>Symbols:</b> \(\beta_0\) is the y-intercept, \(\beta_1\) and \(\beta_2\) are the slopes. R adds them all by default. <b>What it tells you:</b> the first draws a line, the second a plane.</p>
+    </div>
+    <div class="formula"><span class="lbl">Adjusted R-squared</span>
+      <div class="math">$$ R^2_{adj} = 1 - (1 - R^2)\,\frac{n-1}{n-p-1} $$</div>
+      <p class="explain"><b>Symbols:</b> \(R^2\) is what R calls Multiple R-squared, \(n\) is the number of data points, \(p\) is the number of predictors. <b>What it tells you:</b> the share of explained variation, with a penalty per predictor, so a useless term pushes it down.</p>
+    </div>
+    <div class="formula"><span class="lbl">The p-value on a coefficient row</span>
+      <div class="math">$$ t = \frac{\hat{\beta_j}}{SE(\hat{\beta_j})} $$</div>
+      <p class="explain"><b>Symbols:</b> \(\hat{\beta_j}\) is the estimated slope for one predictor and \(SE\) is its standard error. <b>What it tells you:</b> whether that slope could be zero once the other predictors are in the model.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>For the simple regression, R-squared is 0.613 and the p-value is 0.012. Together they say weight predicts size fairly well.</p>
+      <p>For the multiple regression, all three headline numbers look good. With two predictors, quote the adjusted R-squared.</p>
+      <p>The two coefficient rows are the interesting part. The weight row compares the full model against tail alone. Its p-value is large, so the pair is <b>not</b> better than tail alone. The tail row compares the full model against weight alone. Its p-value is small, so the pair <b>is</b> better than weight alone.</p>
+      <p>Both predictors work, but tail alone does the job. You can skip weighing the mice.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Plain R-squared can only rise when you add a term, even a worthless one. So use adjusted R-squared to compare models of different sizes.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A coefficient p-value is not a standalone verdict on that variable. It always means "given everything else in the model". Drop a term and the other p-values can change.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Correlated predictors are why weight looked useful alone but weak beside tail. The pairs plot shows this overlap before you fit anything.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>Why report adjusted R-squared for multiple regression?</summary><div class="a">Plain R-squared never falls when you add a predictor, so it always favours the bigger model. Adjusted R-squared subtracts a penalty per parameter, so it can fall when a term adds nothing.</div></details>
+    <details class="qa" open><summary>What does the p-value beside one coefficient test?</summary><div class="a">It tests whether that slope is zero while the other predictors stay in the model. In effect it compares the full model with the model that drops only that term.</div></details>
+    <details class="qa" open><summary>Both predictors correlate with the outcome, but one is unnecessary. Why?</summary><div class="a">The predictors also correlate with each other, so they carry overlapping information. Once tail is in the model, weight has little new to add, and its p-value gets large. I keep whichever variable is cheaper to measure.</div></details>
+    <details class="qa" open><summary>How would you do this in Python?</summary><div class="a">I use statsmodels. <code>smf.ols("size ~ weight + tail", data=df).fit().summary()</code> prints the same table as R.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Plot the data first; <code>plot(mouse.data)</code> draws every pair of columns at once.</li>
+      <li>Fit with <code>lm(size ~ weight)</code>, and add a predictor with a plus sign.</li>
+      <li>One predictor gives a line, two give a plane. Least squares fits both.</li>
+      <li>For simple regression read Multiple R-squared: here 0.613, p-value 0.012.</li>
+      <li>For multiple regression read adjusted R-squared, which penalises extra terms.</li>
+      <li>Each coefficient p-value compares the full model against the model without that term.</li>
+      <li>Weight adds nothing beside tail, so tail lengths alone are enough.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Multiple regression</span><span class="board-tag">plot first, add a plus, check each row</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 286" role="img" aria-label="A line fitted with one predictor, R-squared 0.613, becomes a plane when tail is added, and the large p-value on the weight row and small one on the tail row show that tail alone is enough.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <text x="24" y="30" class="sv-tm">size ~ weight</text>
+            <path d="M24 42 L24 130 L150 130" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="32" y1="122" x2="146" y2="64" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round"/>
+            <g class="sv-ink"><circle cx="42" cy="110" r="5"/><circle cx="58" cy="118" r="5"/><circle cx="76" cy="94" r="5"/><circle cx="94" cy="102" r="5"/><circle cx="110" cy="76" r="5"/><circle cx="126" cy="86" r="5"/><circle cx="140" cy="60" r="5"/></g>
+            <text x="32" y="60" class="sv-ts">R² 0.613</text>
+            <text x="87" y="152" text-anchor="middle" class="sv-ts">line</text>
+            <line x1="162" y1="92" x2="234" y2="92" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="198" y="78" text-anchor="middle" class="sv-tb">+ tail</text>
+            <g class="sv-stroke-acc" stroke-width="3" stroke-linejoin="round"><polygon points="240,124 340,112 384,68 284,80" class="sv-paper"/></g>
+            <path d="M280 105 L280 100 M321 91 L321 98 M357 77 L357 66" class="sv-stroke-key" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 3"/>
+            <g class="sv-ink"><circle cx="280" cy="94" r="5"/><circle cx="321" cy="104" r="5"/><circle cx="357" cy="60" r="5"/></g>
+            <text x="312" y="152" text-anchor="middle" class="sv-ts">plane</text>
+            <g class="sv-stroke-ink" stroke-width="2"><rect x="70" y="168" width="260" height="34" rx="10" class="sv-key-soft"/><rect x="70" y="210" width="260" height="34" rx="10" class="sv-good-soft"/></g>
+            <path d="M92 179 L104 191 M104 179 L92 191" class="sv-stroke-key" stroke-width="3" stroke-linecap="round"/>
+            <path d="M91 227 L97 234 L107 220" class="sv-stroke-good" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="116" y="191" class="sv-t">weight row: p large</text>
+            <text x="116" y="233" class="sv-t">tail row: p small</text>
+            <text x="200" y="272" text-anchor="middle" class="sv-tb">tail alone is enough</text>
+          </svg>
+          <p>One plus sign turns the line into a plane. Then each coefficient row's p-value asks: is the full model better than the one without this term?</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>lm()</dt><dd>Linear model. The tilde reads "is predicted by".</dd>
+            <dt>Adjusted R-squared</dt><dd>R-squared with a penalty per predictor. Read it for several.</dd>
+            <dt>Coefficient p-value</dt><dd>Compares the full model with the model that drops that one term.</dd>
+            <dt>Correlated predictors</dt><dd>Related to each other, so they carry similar information.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Data frame</b>size, weight and tail</li>
+            <li><b>Plot first</b>is a line sensible?</li>
+            <li><b>Fit a line</b>lm(size ~ weight)</li>
+            <li><b>Read it</b>Multiple R-squared, p-value</li>
+            <li><b>Plot all pairs</b>plot(mouse.data)</li>
+            <li><b>Fit a plane</b>+ tail; adjusted R², row p-values</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{size}=\beta_0+\beta_1\,\text{weight}+\beta_2\,\text{tail}$$
+          $$R^2_{adj}=1-(1-R^2)\,\frac{n-1}{n-p-1}$$
+          $$t=\frac{\hat{\beta_j}}{SE(\hat{\beta_j})}$$
+          <ul class="keys">
+            <li>\(\beta_0\) is the intercept; \(\beta_1\), \(\beta_2\) are the slopes.</li>
+            <li>\(R^2\) is Multiple R-squared, \(n\) the data points, \(p\) the predictors.</li>
+            <li>\(t\) asks if a slope could be zero; \(SE\) is its standard error.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>fit / row</th><th>read</th><th>result</th></tr>
+            <tr><td>size ~ weight</td><td>R², p</td><td>0.613, 0.012</td></tr>
+            <tr><td>weight + tail</td><td>adj. R²</td><td>looks good</td></tr>
+            <tr><td>weight row</td><td>p-value</td><td>large ✗</td></tr>
+            <tr><td>tail row</td><td>p-value</td><td>small ✓</td></tr>
+            <tr class="final"><td>tail alone</td><td>verdict</td><td>does the job ✓</td></tr>
+          </table>
+          <p class="hand">Weight predicts size fairly well alone, but adds little beside tail. Tail alone does the job.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Plain R-squared compares models of any size.</span><span class="yes">It can only rise when you add a term, even a worthless one. Use adjusted R-squared.</span></li>
+            <li><span class="no">A coefficient p-value judges that variable alone.</span><span class="yes">It means "given everything else in the model". Drop a term and others can change.</span></li>
+            <li><span class="no">Weight is useful alone, so keep it beside tail.</span><span class="yes">Correlated predictors overlap. The pairs plot shows this before you fit anything.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="42-multiple-regression.html"><small>Previous</small>Multiple Regression</a> <a href="44-using-linear-models-for-t-tests-and-anova.html"><small>Next</small>Using Linear Models for t-tests and ANOVA</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

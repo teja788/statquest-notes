@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Long Short-Term Memory with PyTorch + Lightning — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>100</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 100 · 33.4 min</div>
+    <h1>Long Short-Term Memory with PyTorch + Lightning</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=RHGiXPuo_pI" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: Neural Networks / Deep Learning (video 31)</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Josh codes a long short-term memory (LSTM) unit by hand in PyTorch and trains it with Lightning. Then he rebuilds the same model in a few lines with <code>nn.LSTM</code>. Along the way he shows how to log training, graph it in TensorBoard, and add more epochs without starting over.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>The task is to predict day 5 of two companies' stock prices from days 1 to 4. The only clue is day 1, so the LSTM must remember it. Josh codes the weights, the three LSTM stages and the forward pass inside one Lightning class. He trains it for 2,000 epochs, then resumes up to 3,000 and finally 5,000. TensorBoard graphs of the loss and the two predictions tell him when the curves flatten and training can stop. Finally, <code>nn.LSTM</code> with a larger learning rate solves the same problem in only 300 epochs.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>The data comes from the earlier LSTM video. Company A and Company B have the same stock values on days 2, 3 and 4. They differ only on day 1 and day 5. Company A is 0 on both days, and Company B is 1 on both days. So the LSTM has to carry the day 1 value through its memory to predict day 5.</p>
+    <p>An LSTM unit keeps two memories. The long-term memory is a running value that passes through with few changes. The short-term memory is the unit's output at each step. Each step has three stages, and every stage uses its own weights and bias on the short-term memory and the current input.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 390" role="img" aria-label="Diagram of one hand-built LSTM unit with three stages">
+        <defs><marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker></defs>
+        <rect x="120" y="35" width="180" height="345" rx="10" class="sv-paper2"/>
+        <rect x="305" y="35" width="265" height="345" rx="10" class="sv-paper2"/>
+        <rect x="575" y="35" width="165" height="345" rx="10" class="sv-paper2"/>
+        <line x1="30" y1="70" x2="738" y2="70" class="sv-stroke-key" stroke-width="3" marker-end="url(#ah1)"/>
+        <text x="30" y="58" class="sv-t">long memory</text>
+        <text x="738" y="58" text-anchor="end" class="sv-t">updated long memory</text>
+        <circle cx="210" cy="70" r="14" class="sv-paper"/><circle cx="210" cy="70" r="14" class="sv-stroke-ink" stroke-width="1.5"/><text x="210" y="75" text-anchor="middle" class="sv-tb">×</text>
+        <circle cx="435" cy="70" r="14" class="sv-paper"/><circle cx="435" cy="70" r="14" class="sv-stroke-ink" stroke-width="1.5"/><text x="435" y="75" text-anchor="middle" class="sv-tb">+</text>
+        <rect x="130" y="170" width="160" height="45" rx="6" class="sv-acc-soft"/>
+        <text x="210" y="188" text-anchor="middle" class="sv-tb">σ</text><text x="210" y="206" text-anchor="middle" class="sv-ts">% long memory to keep</text>
+        <line x1="210" y1="170" x2="210" y2="86" class="sv-stroke-acc" stroke-width="2" marker-end="url(#ah1)"/>
+        <rect x="315" y="170" width="115" height="45" rx="6" class="sv-acc-soft"/>
+        <text x="372" y="188" text-anchor="middle" class="sv-tb">σ</text><text x="372" y="206" text-anchor="middle" class="sv-ts">% to add</text>
+        <rect x="440" y="170" width="120" height="45" rx="6" class="sv-good-soft"/>
+        <text x="500" y="188" text-anchor="middle" class="sv-tb">tanh</text><text x="500" y="206" text-anchor="middle" class="sv-ts">potential memory</text>
+        <line x1="372" y1="170" x2="427" y2="133" class="sv-stroke-acc" stroke-width="2" marker-end="url(#ah1)"/>
+        <line x1="500" y1="170" x2="443" y2="133" class="sv-stroke-good" stroke-width="2" marker-end="url(#ah1)"/>
+        <circle cx="435" cy="122" r="12" class="sv-paper"/><circle cx="435" cy="122" r="12" class="sv-stroke-ink" stroke-width="1.5"/><text x="435" y="127" text-anchor="middle" class="sv-tb">×</text>
+        <line x1="435" y1="110" x2="435" y2="86" class="sv-stroke-ink" stroke-width="2" marker-end="url(#ah1)"/>
+        <line x1="650" y1="70" x2="650" y2="103" class="sv-stroke-key" stroke-width="2" marker-end="url(#ah1)"/>
+        <rect x="620" y="105" width="60" height="30" rx="6" class="sv-good-soft"/><text x="650" y="125" text-anchor="middle" class="sv-tb">tanh</text>
+        <line x1="650" y1="135" x2="650" y2="171" class="sv-stroke-good" stroke-width="2" marker-end="url(#ah1)"/>
+        <circle cx="650" cy="185" r="12" class="sv-paper"/><circle cx="650" cy="185" r="12" class="sv-stroke-ink" stroke-width="1.5"/><text x="650" y="190" text-anchor="middle" class="sv-tb">×</text>
+        <rect x="590" y="240" width="120" height="45" rx="6" class="sv-acc-soft"/>
+        <text x="650" y="258" text-anchor="middle" class="sv-tb">σ</text><text x="650" y="276" text-anchor="middle" class="sv-ts">% to output</text>
+        <line x1="650" y1="240" x2="650" y2="199" class="sv-stroke-acc" stroke-width="2" marker-end="url(#ah1)"/>
+        <line x1="662" y1="185" x2="736" y2="185" class="sv-stroke-ink" stroke-width="2.5" marker-end="url(#ah1)"/>
+        <text x="738" y="212" text-anchor="end" class="sv-ts">new short</text><text x="738" y="226" text-anchor="end" class="sv-ts">memory</text>
+        <line x1="30" y1="320" x2="650" y2="320" class="sv-stroke-ink" stroke-width="2"/>
+        <line x1="210" y1="320" x2="210" y2="218" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah1)"/>
+        <line x1="372" y1="320" x2="372" y2="218" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah1)"/>
+        <line x1="500" y1="320" x2="500" y2="218" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah1)"/>
+        <line x1="650" y1="320" x2="650" y2="288" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah1)"/>
+        <text x="30" y="342" class="sv-tm">short_memory, input_value</text>
+        <text x="210" y="370" text-anchor="middle" class="sv-ts">Stage 1</text>
+        <text x="435" y="370" text-anchor="middle" class="sv-ts">Stage 2</text>
+        <text x="650" y="370" text-anchor="middle" class="sv-ts">Stage 3</text>
+      </svg>
+      <figcaption>Every gate box (σ or tanh) gets the short-term memory and the input, each times its own weight, plus a bias; this is exactly what <code>lstm_unit()</code> codes.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li><b>Imports.</b> Josh imports <code>torch</code>, <code>torch.nn</code>, <code>torch.nn.functional</code>, the <code>Adam</code> optimizer, <code>lightning as L</code>, and <code>TensorDataset</code> and <code>DataLoader</code>. Adam is a lot like SGD but not quite as stochastic, so it tends to find the optimal values faster.</li>
+      <li><b>Class plan.</b> The class <code>LSTMbyHand</code> inherits from <code>L.LightningModule</code>. It has five methods: <code>__init__</code>, <code>lstm_unit</code>, <code>forward</code>, <code>configure_optimizers</code> and <code>training_step</code>.</li>
+      <li><b>Initialise parameters.</b> Each weight starts as a random draw from a normal distribution with mean 0 and standard deviation 1. In Josh's run the first two weights came out as 0.34 and 0.13. Every bias starts at 0, and all of them have <code>requires_grad=True</code> so they get optimised.</li>
+      <li><b>Code the LSTM math.</b> <code>lstm_unit</code> takes an input value, the long-term memory and the short-term memory. It runs the three stages in the figure and returns the updated long and short memories.</li>
+      <li><b>Unroll in forward.</b> <code>forward</code> sets both memories to 0, splits the four days into variables, and calls <code>lstm_unit</code> once per day. This is called unrolling: the same unit, with the same weights, is reused for each day. It returns the final short-term memory as the prediction.</li>
+      <li><b>Optimizer and loss.</b> <code>configure_optimizers</code> returns Adam. <code>training_step</code> predicts, computes the squared residual, and logs it as <code>train_loss</code>. It also logs the prediction as <code>out_0</code> for Company A or <code>out_1</code> for Company B.</li>
+      <li><b>Train and check.</b> A <code>Trainer</code> with <code>max_epochs=2000</code> fits the model. An epoch is one pass through both companies. TensorBoard, a tool that graphs the log files, shows whether the loss and predictions have flattened out.</li>
+      <li><b>Resume from a checkpoint.</b> A checkpoint is a saved copy of the model during training. Lightning saves them, so Josh adds epochs without starting over: first up to 3,000, then up to 5,000. After that the curves flatten.</li>
+      <li><b>Use nn.LSTM.</b> A second class, <code>LightningLSTM</code>, replaces all the hand-written math with one call to <code>nn.LSTM</code>. With a learning rate of 0.1 it trains well in 300 epochs.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 260" role="img" aria-label="forward unrolls lstm_unit over four days">
+        <defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker></defs>
+        <text x="380" y="45" text-anchor="middle" class="sv-tb">forward(): one lstm_unit() call per day</text>
+        <text x="20" y="114" class="sv-ts">long 0</text>
+        <text x="20" y="154" class="sv-ts">short 0</text>
+        <line x1="66" y1="110" x2="108" y2="110" class="sv-stroke-key" stroke-width="2" marker-end="url(#ah2)"/>
+        <line x1="66" y1="150" x2="108" y2="150" class="sv-stroke-acc" stroke-width="2" marker-end="url(#ah2)"/>
+        <rect x="110" y="90" width="110" height="80" rx="8" class="sv-key-soft"/><text x="165" y="135" text-anchor="middle" class="sv-tm">lstm_unit()</text>
+        <rect x="260" y="90" width="110" height="80" rx="8" class="sv-key-soft"/><text x="315" y="135" text-anchor="middle" class="sv-tm">lstm_unit()</text>
+        <rect x="410" y="90" width="110" height="80" rx="8" class="sv-key-soft"/><text x="465" y="135" text-anchor="middle" class="sv-tm">lstm_unit()</text>
+        <rect x="560" y="90" width="110" height="80" rx="8" class="sv-key-soft"/><text x="615" y="135" text-anchor="middle" class="sv-tm">lstm_unit()</text>
+        <line x1="220" y1="110" x2="258" y2="110" class="sv-stroke-key" stroke-width="2" marker-end="url(#ah2)"/>
+        <line x1="220" y1="150" x2="258" y2="150" class="sv-stroke-acc" stroke-width="2" marker-end="url(#ah2)"/>
+        <line x1="370" y1="110" x2="408" y2="110" class="sv-stroke-key" stroke-width="2" marker-end="url(#ah2)"/>
+        <line x1="370" y1="150" x2="408" y2="150" class="sv-stroke-acc" stroke-width="2" marker-end="url(#ah2)"/>
+        <line x1="520" y1="110" x2="558" y2="110" class="sv-stroke-key" stroke-width="2" marker-end="url(#ah2)"/>
+        <line x1="520" y1="150" x2="558" y2="150" class="sv-stroke-acc" stroke-width="2" marker-end="url(#ah2)"/>
+        <line x1="670" y1="150" x2="738" y2="150" class="sv-stroke-acc" stroke-width="2.5" marker-end="url(#ah2)"/>
+        <text x="740" y="135" text-anchor="end" class="sv-tb">day 5</text>
+        <text x="740" y="180" text-anchor="end" class="sv-ts">A 0 · B 1</text>
+        <line x1="165" y1="205" x2="165" y2="173" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah2)"/>
+        <line x1="315" y1="205" x2="315" y2="173" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah2)"/>
+        <line x1="465" y1="205" x2="465" y2="173" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah2)"/>
+        <line x1="615" y1="205" x2="615" y2="173" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah2)"/>
+        <text x="165" y="222" text-anchor="middle" class="sv-t">day 1: A 0 · B 1</text>
+        <text x="315" y="222" text-anchor="middle" class="sv-t">day 2: 0.5</text>
+        <text x="465" y="222" text-anchor="middle" class="sv-t">day 3: 0.25</text>
+        <text x="615" y="222" text-anchor="middle" class="sv-t">day 4: 1</text>
+      </svg>
+      <figcaption>The same unit, with the same weights, is reused four times; only day 1 differs between the companies, so the memories must carry it to the final short-term memory.</figcaption>
+    </figure>
+    <p>Here is the start of <code>__init__</code>. The other weights and biases follow the same pattern.</p>
+<pre><code>class LSTMbyHand(L.LightningModule):
+    def __init__(self):
+        super().__init__()
+        mean = torch.tensor(0.0)
+        std = torch.tensor(1.0)
+        self.wlr1 = nn.Parameter(torch.normal(mean=mean, std=std), requires_grad=True)
+        self.wlr2 = nn.Parameter(torch.normal(mean=mean, std=std), requires_grad=True)
+        self.blr1 = nn.Parameter(torch.tensor(0.), requires_grad=True)
+        # ... same for the other weights and biases</code></pre>
+    <p>This is the LSTM math. Each line matches one box in the first figure.</p>
+<pre><code>    def lstm_unit(self, input_value, long_memory, short_memory):
+        long_remember_percent = torch.sigmoid((short_memory * self.wlr1) + (input_value * self.wlr2) + self.blr1)
+        potential_remember_percent = torch.sigmoid((short_memory * self.wpr1) + (input_value * self.wpr2) + self.bpr1)
+        potential_memory = torch.tanh((short_memory * self.wp1) + (input_value * self.wp2) + self.bp1)
+        updated_long_memory = (long_memory * long_remember_percent) + (potential_remember_percent * potential_memory)
+        output_percent = torch.sigmoid((short_memory * self.wo1) + (input_value * self.wo2) + self.bo1)
+        updated_short_memory = torch.tanh(updated_long_memory) * output_percent
+        return [updated_long_memory, updated_short_memory]</code></pre>
+    <p>The forward pass unrolls the unit over four days. The other two methods set the optimizer and the logged loss.</p>
+<pre><code>    def forward(self, input):
+        long_memory = 0
+        short_memory = 0
+        day1, day2, day3, day4 = input[0], input[1], input[2], input[3]
+        long_memory, short_memory = self.lstm_unit(day1, long_memory, short_memory)
+        long_memory, short_memory = self.lstm_unit(day2, long_memory, short_memory)
+        long_memory, short_memory = self.lstm_unit(day3, long_memory, short_memory)
+        long_memory, short_memory = self.lstm_unit(day4, long_memory, short_memory)
+        return short_memory
+
+    def configure_optimizers(self):
+        return Adam(self.parameters())
+
+    def training_step(self, batch, batch_idx):
+        input_i, label_i = batch
+        output_i = self.forward(input_i[0])
+        loss = (output_i - label_i)**2
+        self.log("train_loss", loss)
+        if label_i == 0:
+            self.log("out_0", output_i)
+        else:
+            self.log("out_1", output_i)
+        return loss</code></pre>
+    <p>The training data is one row of four days per company, with the day 5 values as labels.</p>
+<pre><code>inputs = torch.tensor([[0., 0.5, 0.25, 1.], [1., 0.5, 0.25, 1.]])
+labels = torch.tensor([0., 1.])
+dataset = TensorDataset(inputs, labels)
+dataloader = DataLoader(dataset)
+
+model = LSTMbyHand()
+trainer = L.Trainer(max_epochs=2000)
+trainer.fit(model, train_dataloaders=dataloader)</code></pre>
+    <p>To add more epochs, take the latest checkpoint path, make a new trainer with the new total, and pass the path to <code>fit</code>.</p>
+<pre><code>path_to_best_checkpoint = trainer.checkpoint_callback.best_model_path
+trainer = L.Trainer(max_epochs=3000)   # 2000 done + 1000 more
+trainer.fit(model, train_dataloaders=dataloader, ckpt_path=path_to_best_checkpoint)</code></pre>
+    <p>The <code>log</code> calls write files into a folder called <code>lightning_logs</code>. From a terminal in the folder that holds it, run this command and open the URL it prints.</p>
+<pre><code>tensorboard --logdir=lightning_logs</code></pre>
+    <p>With <code>nn.LSTM</code>, the class becomes much shorter. <code>input_size</code> is the number of features, here 1. <code>hidden_size</code> is the number of output values, here 1.</p>
+<pre><code>class LightningLSTM(L.LightningModule):
+    def __init__(self):
+        super().__init__()
+        self.lstm = nn.LSTM(input_size=1, hidden_size=1)
+
+    def forward(self, input):
+        input_trans = input.view(len(input), 1)
+        lstm_out, temp = self.lstm(input_trans)
+        prediction = lstm_out[-1]
+        return prediction
+
+    def configure_optimizers(self):
+        return Adam(self.parameters(), lr=0.1)
+    # training_step is the same as before
+
+trainer = L.Trainer(max_epochs=300, log_every_n_steps=2)</code></pre>
+    <figure class="info">
+      <svg viewBox="0 0 760 230" role="img" aria-label="Data flow through the nn.LSTM forward method">
+        <defs><marker id="ah3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker></defs>
+        <rect x="20" y="95" width="120" height="40" rx="6" class="sv-paper2"/><text x="80" y="120" text-anchor="middle" class="sv-tm">[d1 d2 d3 d4]</text>
+        <text x="80" y="160" text-anchor="middle" class="sv-ts">one row</text>
+        <line x1="140" y1="115" x2="188" y2="115" class="sv-stroke-ink" stroke-width="2" marker-end="url(#ah3)"/>
+        <text x="165" y="80" text-anchor="middle" class="sv-tm">view</text>
+        <rect x="190" y="40" width="40" height="150" rx="6" class="sv-paper2"/>
+        <text x="210" y="75" text-anchor="middle" class="sv-tm">d1</text><text x="210" y="108" text-anchor="middle" class="sv-tm">d2</text><text x="210" y="141" text-anchor="middle" class="sv-tm">d3</text><text x="210" y="174" text-anchor="middle" class="sv-tm">d4</text>
+        <line x1="230" y1="115" x2="278" y2="115" class="sv-stroke-ink" stroke-width="2" marker-end="url(#ah3)"/>
+        <rect x="280" y="80" width="200" height="70" rx="8" class="sv-key-soft"/>
+        <text x="380" y="110" text-anchor="middle" class="sv-tm">nn.LSTM(input_size=1,</text><text x="380" y="130" text-anchor="middle" class="sv-tm">hidden_size=1)</text>
+        <line x1="480" y1="115" x2="528" y2="115" class="sv-stroke-ink" stroke-width="2" marker-end="url(#ah3)"/>
+        <rect x="530" y="40" width="40" height="150" rx="6" class="sv-acc-soft"/>
+        <text x="550" y="207" text-anchor="middle" class="sv-tm">lstm_out</text>
+        <rect x="534" y="157" width="32" height="28" rx="4" class="sv-acc"/>
+        <line x1="570" y1="171" x2="640" y2="171" class="sv-stroke-acc" stroke-width="2.5" marker-end="url(#ah3)"/>
+        <text x="605" y="160" text-anchor="middle" class="sv-tm">[-1]</text>
+        <text x="645" y="166" class="sv-tb">prediction</text>
+        <text x="645" y="186" class="sv-ts">for day 5</text>
+        <text x="582" y="75" class="sv-ts">one short memory</text><text x="582" y="91" class="sv-ts">per unrolled unit</text>
+      </svg>
+      <figcaption><code>nn.LSTM</code> unrolls itself once per row, returns four short-term memories, and the last one is the prediction.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">Weight initialisation</span><div class="math">$$ w \sim \mathcal{N}(0,\,1), \qquad b = 0 $$</div><p class="explain"><b>Symbols:</b> \(w\) is any weight, \(\mathcal{N}(0,1)\) is a normal distribution with mean 0 and standard deviation 1, and \(b\) is any bias. <b>What it tells you:</b> weights start as random numbers that are most likely close to 0, and biases start at exactly 0.</p></div>
+    <div class="formula"><span class="lbl">Stage 1: how much long memory to keep</span><div class="math">$$ r_{\text{long}} = \sigma\big(w_{lr1}\,s + w_{lr2}\,x + b_{lr1}\big) $$</div><p class="explain"><b>Symbols:</b> \(s\) is the short-term memory, \(x\) is the input value, the \(w\) and \(b\) terms are this stage's weights and bias, and \(\sigma\) is the sigmoid function, which squashes any number to between 0 and 1. <b>What it tells you:</b> \(r_{\text{long}}\) is the percentage of the long-term memory to remember.</p></div>
+    <div class="formula"><span class="lbl">Stage 2: new long-term memory</span><div class="math">$$ r_{\text{pot}} = \sigma\big(w_{pr1}\,s + w_{pr2}\,x + b_{pr1}\big), \qquad p = \tanh\big(w_{p1}\,s + w_{p2}\,x + b_{p1}\big) $$ $$ \ell_{\text{new}} = \ell \cdot r_{\text{long}} + r_{\text{pot}} \cdot p $$</div><p class="explain"><b>Symbols:</b> \(p\) is the potential long-term memory, \(\tanh\) squashes a number to between −1 and 1, \(r_{\text{pot}}\) is the percentage of \(p\) to remember, \(\ell\) is the current long-term memory and \(\ell_{\text{new}}\) is the updated one. <b>What it tells you:</b> the new long-term memory is a scaled copy of the old one plus a scaled piece of the new candidate.</p></div>
+    <div class="formula"><span class="lbl">Stage 3: new short-term memory</span><div class="math">$$ r_{\text{out}} = \sigma\big(w_{o1}\,s + w_{o2}\,x + b_{o1}\big), \qquad s_{\text{new}} = \tanh(\ell_{\text{new}}) \cdot r_{\text{out}} $$</div><p class="explain"><b>Symbols:</b> \(r_{\text{out}}\) is the percentage to output, \(\tanh(\ell_{\text{new}})\) is the potential short-term memory, and \(s_{\text{new}}\) is the new short-term memory. <b>What it tells you:</b> the unit's output is a percentage of the squashed long-term memory.</p></div>
+    <div class="formula"><span class="lbl">Loss in training_step</span><div class="math">$$ \text{loss} = (\text{output}_i - \text{label}_i)^2 $$</div><p class="explain"><b>Symbols:</b> \(\text{output}_i\) is the predicted day 5 value for one company, and \(\text{label}_i\) is the observed day 5 value (0 or 1). <b>What it tells you:</b> this is the squared residual for one company; each epoch has two such steps, one per company.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Company A has days 1 to 4 of 0, 0.5, 0.25 and 1, and its day 5 value is 0. Company B has 1, 0.5, 0.25 and 1, and its day 5 value is 1. The pre-trained LSTM from the earlier video outputs 0.0 for A and 1.0 for B, which is exactly right.</p>
+      <p><b>Before training.</b> With random weights, the hand-built model predicts −0.04 for Company A. That is close to the target of 0. It also predicts −0.04 for Company B, which is far from the target of 1. To print these values, Josh calls <code>model(torch.tensor([0., 0.5, 0.25, 1.])).detach()</code>.</p>
+      <p><b>After 2,000 epochs.</b> Company A is now 0.43, which is worse than at the start. Company B is a little better but still not good. In TensorBoard, the loss is still going down, and Company A's prediction got bad around step 1,000 but has improved since. None of the curves has flattened, so more training should help.</p>
+      <p><b>Up to 3,000 epochs.</b> Company A moves closer to 0 and Company B moves closer to 1. The curves still have not flattened.</p>
+      <p><b>Up to 5,000 epochs.</b> Company A is really close to 0 and Company B is really close to 1. Every curve in TensorBoard is now flat, so training is done.</p>
+      <p><b>nn.LSTM.</b> The starting predictions are far from ideal. With a learning rate of 0.1 instead of the default 0.001, 300 epochs are enough. Company A ends super close to 0 and Company B ends close to 1, and the curves flatten.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> A prediction can get worse before it gets better. After 2,000 epochs Company A went from −0.04 to 0.43. Judge training by whether the TensorBoard curves have flattened, not by one snapshot.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> When you resume, <code>max_epochs</code> is the new total, not the extra amount. To add 1,000 epochs after 2,000, set it to 3,000 and pass the checkpoint path to <code>fit</code>.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> <code>nn.LSTM</code> wants the input as a column, one row per time step. Use <code>view(len(input), 1)</code> so it works for any number of days. Its output holds the short-term memory from every unrolled unit, so take the last one with <code>[-1]</code>.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Lightning writes logs every 50 steps by default. With 300 epochs of 2 steps each, you get only 12 points, so Josh sets <code>log_every_n_steps=2</code>. When comparing runs in TensorBoard, show only the newest version folder so the x-axis is scaled properly.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>Walk me through what one LSTM unit computes.</summary><div class="a">There are three stages. First, a sigmoid of the short-term memory and input decides what percentage of the long-term memory to keep. Second, a sigmoid and a tanh create a potential memory and decide how much of it to add, which updates the long-term memory. Third, another sigmoid decides what percentage of the tanh of the new long-term memory becomes the new short-term memory.</div></details>
+    <details class="qa" open><summary>What does "unrolling" an LSTM mean in code?</summary><div class="a">It means calling the same unit once per time step, with the same weights each time. In the hand-built version, the forward method starts both memories at zero and calls the unit for days one to four. The final short-term memory is the prediction.</div></details>
+    <details class="qa" open><summary>In nn.LSTM, what are input_size and hidden_size?</summary><div class="a">Input size is the number of features at each time step, which is one here. Hidden size is the number of output values. If you fed the LSTM into another network with three inputs, you would set hidden size to three, and PyTorch would add the extra weights and biases.</div></details>
+    <details class="qa" open><summary>How do you know when to stop training, and how do you continue if you have not?</summary><div class="a">I log the loss and the predictions, then look at them in TensorBoard. If the curves are still moving, I keep training. With Lightning, I take the best model path from the trainer's checkpoint, create a new trainer with a higher max epochs, and pass that path to fit so it continues where it left off.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>The LSTM must remember day 1 to predict day 5, because that is the only difference between Company A and Company B.</li>
+      <li>The hand-built model is a LightningModule with <code>__init__</code>, <code>lstm_unit</code>, <code>forward</code>, <code>configure_optimizers</code> and <code>training_step</code>.</li>
+      <li>Weights start from a normal distribution with mean 0 and standard deviation 1, and biases start at 0.</li>
+      <li>The <code>forward</code> method starts both memories at 0 and calls <code>lstm_unit</code> once per day, returning the last short-term memory.</li>
+      <li>Logging the loss and predictions lets TensorBoard show when the curves flatten.</li>
+      <li>Lightning checkpoints let you raise <code>max_epochs</code> and resume, here from 2,000 to 3,000 to 5,000 epochs.</li>
+      <li><code>nn.LSTM(input_size=1, hidden_size=1)</code> with Adam at a learning rate of 0.1 solves the same task in 300 epochs.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">LSTM with Lightning</span><span class="board-tag">remember day 1 to predict day 5</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 272" role="img" aria-label="Stock values over five days: Company A starts and ends at 0, Company B starts and ends at 1, and both match on days 2 to 4. Below, a memory line runs through the same lstm_unit once per day for days 1 to 4 and points up to day 5, so day 1 is carried to the day 5 prediction.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-good"/></marker></defs>
+            <line x1="70" y1="126" x2="140" y2="81" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round"/>
+            <line x1="70" y1="36" x2="140" y2="81" class="sv-stroke-key" stroke-width="4" stroke-linecap="round"/>
+            <polyline points="140,81 210,103.5 280,36" class="sv-stroke-ink" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="280" y1="36" x2="350" y2="126" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round" stroke-dasharray="6 9"/>
+            <line x1="280" y1="36" x2="350" y2="36" class="sv-stroke-key" stroke-width="4" stroke-linecap="round" stroke-dasharray="6 9"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="70" cy="36" r="7" class="sv-key"/>
+              <circle cx="70" cy="126" r="7" class="sv-acc"/>
+              <circle cx="140" cy="81" r="5" class="sv-ink"/>
+              <circle cx="210" cy="103.5" r="5" class="sv-ink"/>
+              <circle cx="280" cy="36" r="5" class="sv-ink"/>
+            </g>
+            <g class="sv-stroke-key" stroke-width="3"><circle cx="350" cy="36" r="7" class="sv-paper"/></g>
+            <g class="sv-stroke-acc" stroke-width="3"><circle cx="350" cy="126" r="7" class="sv-paper"/></g>
+            <text x="56" y="42" text-anchor="end" class="sv-tb">B: 1</text>
+            <text x="56" y="132" text-anchor="end" class="sv-tb">A: 0</text>
+            <text x="210" y="132" text-anchor="middle" class="sv-ts">same days 2–4</text>
+            <text x="70" y="158" text-anchor="middle" class="sv-ts">day 1</text>
+            <text x="350" y="158" text-anchor="middle" class="sv-ts">day 5</text>
+            <path d="M40 194 H350 V174" class="sv-stroke-good" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <rect x="58" y="182" width="24" height="24" rx="5" class="sv-paper"/>
+              <rect x="128" y="182" width="24" height="24" rx="5" class="sv-paper"/>
+              <rect x="198" y="182" width="24" height="24" rx="5" class="sv-paper"/>
+              <rect x="268" y="182" width="24" height="24" rx="5" class="sv-paper"/>
+            </g>
+            <text x="200" y="232" text-anchor="middle" class="sv-t">memory carries day 1</text>
+            <text x="200" y="256" text-anchor="middle" class="sv-ts">same lstm_unit() each day</text>
+          </svg>
+          <p>Companies A and B match on days 2 to 4, so only day 1 tells them apart. <code>forward</code> starts both memories at 0 and calls the same <code>lstm_unit</code> once per day; the last short-term memory is the day 5 prediction.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Unrolling</dt><dd>Reusing one unit, with the same weights, once per day.</dd>
+            <dt>Epoch</dt><dd>One pass through both companies.</dd>
+            <dt>Checkpoint</dt><dd>A saved copy of the model, so training can resume.</dd>
+            <dt>TensorBoard</dt><dd>Graphs the logged loss and predictions, to see when they flatten.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Set up</b>LightningModule, five methods</li>
+            <li><b>Init weights</b>weights from N(0, 1), biases 0</li>
+            <li><b>LSTM math</b>three stages, unrolled over 4 days</li>
+            <li><b>Train</b>Adam, squared residual, 2,000 epochs</li>
+            <li><b>Resume</b>checkpoint, up to 3,000 then 5,000</li>
+            <li><b>Use nn.LSTM</b>learning rate 0.1, 300 epochs</li>
+          </ol>
+          <p class="loop">↺ after each run, check TensorBoard; resume until every curve is flat</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\ell_{\text{new}}=\ell\cdot r_{\text{long}}+r_{\text{pot}}\cdot p$$
+          $$s_{\text{new}}=\tanh(\ell_{\text{new}})\cdot r_{\text{out}}$$
+          $$\text{loss}=(\text{output}_i-\text{label}_i)^2$$
+          <ul class="keys">
+            <li>\(\ell\), \(s\): long- and short-term memory; each \(r\) is a sigmoid percentage.</li>
+            <li>\(p\) is the tanh potential memory.</li>
+            <li>One loss per company; two steps per epoch.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>epochs</th><th>A (target 0)</th><th>B (target 1)</th></tr>
+            <tr><td>start</td><td>−0.04</td><td>−0.04</td></tr>
+            <tr><td>2,000</td><td>0.43, worse</td><td>a bit better</td></tr>
+            <tr><td>3,000</td><td>closer</td><td>closer</td></tr>
+            <tr class="final"><td>5,000</td><td>≈ 0</td><td>≈ 1</td></tr>
+          </table>
+          <p class="hand">Curves are flat at 5,000, so stop. nn.LSTM, at learning rate 0.1, needs only 300 epochs.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">A worse prediction means training failed.</span><span class="yes">A went from −0.04 to 0.43 at 2,000 epochs, then got better. Judge by flat curves.</span></li>
+            <li><span class="no"><code>max_epochs</code> counts the extra epochs.</span><span class="yes">It is the new total: to add 1,000 after 2,000, set 3,000.</span></li>
+            <li><span class="no">nn.LSTM takes the row as it is.</span><span class="yes">Reshape it with <code>view(len(input), 1)</code>; the output holds every unrolled unit's short-term memory, so take <code>[-1]</code>.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="99-introduction-to-coding-neural-networks-with-pytorch-and-ligh.html"><small>Previous</small>Introduction to Coding Neural Networks with PyTorch and Lightning</a> <a href="index.html"><small>Next</small>Back to Machine Learning</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

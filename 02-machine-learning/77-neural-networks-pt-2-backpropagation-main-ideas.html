@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Neural Networks Pt. 2: Backpropagation Main Ideas — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>77</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 77 · 17.6 min</div>
+    <h1>Neural Networks Pt. 2: Backpropagation Main Ideas</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=IN2XmBhILt4" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: Neural Networks / Deep Learning (video 5)</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video shows how a neural network learns one of its parameters. The chain rule gives a derivative, which is the slope of the error. Gradient descent then uses that slope to improve the parameter.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh reuses the drug dosage network from Part 1 and names its weights w1 to w4 and biases b1 to b3. He assumes every parameter is already optimal except the last bias, b3. He measures fit with the sum of the squared residuals and links it to b3 through the predicted values. The chain rule gives the derivative of that sum with respect to b3. Gradient descent then moves b3 from 0 to its best value, 2.61.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Backpropagation is the method that finds good values for the weights and biases. A weight scales a value on a connection, and a bias is a number added to it. Conceptually, backpropagation starts with the last parameter and works backwards to the others.</p>
+    <p>Josh explains all the main ideas with one parameter: the final bias, b3. The network output, called the green squiggle, is the blue curve plus the orange curve plus b3. Changing b3 shifts the whole squiggle up or down. So there is one value of b3 that makes the squiggle fit the data best.</p>
+    <p>To find that value, Josh plots the sum of the squared residuals against b3. A residual is the observed value minus the predicted value. The result is a pink curve with a lowest point. Gradient descent is a method that uses the slope to step downhill toward that point. It gets there in a few steps, instead of testing many values by hand.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 380" role="img" aria-label="Sum of squared residuals as a function of b3, with gradient descent steps from 0 to 2.61">
+        <defs>
+          <marker id="arrK" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-key"/></marker>
+        </defs>
+        <rect x="0" y="0" width="760" height="380" class="sv-paper"/>
+        <line x1="80" y1="320" x2="720" y2="320" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="80" y1="30" x2="80" y2="320" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="260" y1="320" x2="260" y2="326" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="440" y1="320" x2="440" y2="326" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="620" y1="320" x2="620" y2="326" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="74" y1="65.5" x2="80" y2="65.5" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="80" y="342" text-anchor="middle" class="sv-ts">0</text>
+        <text x="260" y="342" text-anchor="middle" class="sv-ts">1</text>
+        <text x="440" y="342" text-anchor="middle" class="sv-ts">2</text>
+        <text x="620" y="342" text-anchor="middle" class="sv-ts">3</text>
+        <text x="68" y="324" text-anchor="end" class="sv-ts">0</text>
+        <text x="68" y="70" text-anchor="end" class="sv-ts">20</text>
+        <text x="400" y="366" text-anchor="middle" class="sv-t">final bias b3</text>
+        <text x="34" y="175" text-anchor="middle" transform="rotate(-90 34 175)" class="sv-t">sum of squared residuals</text>
+        <path d="M80 60.6 L125 108 L170 150.6 L215 188.4 L260 221.5 L305 249.7 L350 273.2 L395 292 L440 306 L485 315.1 L530 319.6 L550 320 L575 319.2 L620 314.1 L665 304.2 L710 289.5" class="sv-stroke-key" stroke-width="2.5" stroke-linejoin="round"/>
+        <circle cx="260" cy="221.5" r="4" class="sv-ink3"/>
+        <circle cx="440" cy="306" r="4" class="sv-ink3"/>
+        <circle cx="620" cy="314.1" r="4" class="sv-ink3"/>
+        <line x1="80" y1="60.6" x2="135" y2="121.7" class="sv-stroke-acc" stroke-width="2" stroke-dasharray="5 4"/>
+        <text x="90" y="182" class="sv-ts">slope = −15.7</text>
+        <path d="M86 64 L356 274" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#arrK)"/>
+        <path d="M368 282 L468 310" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#arrK)"/>
+        <path d="M480 315 L543 319" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#arrK)"/>
+        <circle cx="80" cy="60.6" r="6" class="sv-acc"/>
+        <circle cx="362.6" cy="279" r="6" class="sv-acc"/>
+        <circle cx="474.2" cy="313.4" r="6" class="sv-acc"/>
+        <circle cx="549.8" cy="320" r="7" class="sv-good"/>
+        <text x="96" y="48" class="sv-tm">start: b3 = 0, SSR = 20.4</text>
+        <text x="372" y="262" class="sv-tm">step 1: b3 = 1.57</text>
+        <text x="484" y="296" class="sv-tm">step 2: b3 = 2.19</text>
+        <text x="640" y="280" text-anchor="middle" class="sv-tb">stop: b3 = 2.61</text>
+      </svg>
+      <figcaption>The curve (pink in the video) is the sum of squared residuals for each b3; notice how the steps shrink as the slope flattens near the lowest point (grey dots are the values b3 = 1, 2, 3 that Josh tried by hand).</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Name the parameters: weights w1, w2, w3, w4 and biases b1, b2, b3. Assume all are already optimal except b3. Dosages run from 0 (low) to 1 (high).</li>
+      <li>Run the dosages through the top hidden node. The softplus activation function gives the blue curve, which is then multiplied by −1.22.</li>
+      <li>Run the dosages through the bottom hidden node. Softplus gives the orange curve, which is multiplied by −2.3. Add the blue and orange curves to get the green squiggle.</li>
+      <li>Give b3 a starting value. Bias terms are often set to 0 at the start, so b3 = 0. Adding 0 leaves the squiggle far below the data.</li>
+      <li>Measure the fit with the sum of the squared residuals. At b3 = 0 it is 20.4. Trying b3 = 1, 2 and 3 gives 7.8, 1.11 and 0.46.</li>
+      <li>Use the chain rule to find the derivative of the sum of squared residuals with respect to b3. The link between them is the predicted values.</li>
+      <li>Plug the derivative into gradient descent. Take steps until the step size is close to zero.</li>
+    </ol>
+    <p>The chain rule is a way to take the derivative of a function that sits inside another function. The figure below shows why it fits here. b3 changes the predicted values, and the predicted values change the sum of squared residuals. The derivative travels back along this chain.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 230" role="img" aria-label="Chain from b3 to predicted values to sum of squared residuals, with the derivative passed backwards">
+        <defs>
+          <marker id="arrI" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker>
+          <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-good"/></marker>
+        </defs>
+        <rect x="0" y="0" width="760" height="230" class="sv-paper"/>
+        <rect x="20" y="70" width="80" height="60" rx="8" class="sv-key-soft"/>
+        <text x="60" y="105" text-anchor="middle" class="sv-tb">b3</text>
+        <rect x="250" y="70" width="230" height="60" rx="8" class="sv-acc-soft"/>
+        <text x="365" y="96" text-anchor="middle" class="sv-tb">Predicted</text>
+        <text x="365" y="116" text-anchor="middle" class="sv-ts">blue + orange + b3</text>
+        <rect x="600" y="70" width="140" height="60" rx="8" class="sv-paper2"/>
+        <text x="670" y="96" text-anchor="middle" class="sv-tb">SSR</text>
+        <text x="670" y="116" text-anchor="middle" class="sv-ts">Σ (Obs − Pred)²</text>
+        <line x1="102" y1="100" x2="246" y2="100" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#arrI)"/>
+        <line x1="482" y1="100" x2="596" y2="100" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#arrI)"/>
+        <text x="175" y="60" text-anchor="middle" class="sv-tm">dPred/db3 = 1</text>
+        <text x="540" y="42" text-anchor="middle" class="sv-ts">dSSR/dPred =</text>
+        <text x="540" y="60" text-anchor="middle" class="sv-ts">Σ −2(Obs − Pred)</text>
+        <path d="M670 132 V170 H60 V136" class="sv-stroke-good" stroke-width="2" marker-end="url(#arrG)"/>
+        <text x="365" y="196" text-anchor="middle" class="sv-t">chain rule: dSSR/db3 = dSSR/dPred × dPred/db3</text>
+      </svg>
+      <figcaption>b3 affects the error only through the predicted values, so the derivative is the product of the two links, passed from the back to the front.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">Sum of squared residuals</span>
+      <div class="math">$$\text{SSR} = \sum_{i=1}^{n} \left(\text{Observed}_i - \text{Predicted}_i\right)^2$$</div>
+      <p class="explain"><b>Symbols:</b> \(\Sigma\) means add things together. \(i\) is an index for each data point, starting at 1. \(n\) is the number of data points, here 3. \(\text{Observed}_i\) is the measured value and \(\text{Predicted}_i\) is the green squiggle's value at that dosage. <b>What it tells you:</b> one number for how badly the squiggle fits; smaller is better.</p>
+    </div>
+    <div class="formula"><span class="lbl">Predicted value</span>
+      <div class="math">$$\text{Predicted}_i = \text{blue}_i + \text{orange}_i + b_3$$</div>
+      <p class="explain"><b>Symbols:</b> \(\text{blue}_i\) and \(\text{orange}_i\) are the y-values of the two scaled curves at dosage \(i\). \(b_3\) is the final bias. <b>What it tells you:</b> b3 shifts every predicted value by the same amount.</p>
+    </div>
+    <div class="formula"><span class="lbl">Chain rule for b3</span>
+      <div class="math">$$\frac{d\,\text{SSR}}{d\,b_3} = \frac{d\,\text{SSR}}{d\,\text{Predicted}} \times \frac{d\,\text{Predicted}}{d\,b_3}$$</div>
+      <p class="explain">The error depends on b3 only through the predicted values, so we multiply two simpler derivatives.</p>
+      <div class="math">$$\frac{d\,\text{SSR}}{d\,\text{Predicted}} = \sum_{i=1}^{n} 2\left(\text{Observed}_i - \text{Predicted}_i\right)\times(-1)$$</div>
+      <p class="explain">We use the chain rule again on each squared term. The power 2 moves to the front, then we multiply by the inside's derivative, −1, because Predicted has a minus sign.</p>
+      <div class="math">$$\frac{d\,\text{Predicted}}{d\,b_3} = 0 + 0 + 1 = 1$$</div>
+      <p class="explain">The blue and orange curves were made before b3, so their derivatives are 0. The derivative of b3 with respect to itself is 1.</p>
+      <div class="math">$$\frac{d\,\text{SSR}}{d\,b_3} = \sum_{i=1}^{n} -2\left(\text{Observed}_i - \text{Predicted}_i\right)\times 1$$</div>
+      <p class="explain">We multiply the two parts to get the slope for any b3. The "× 1" changes nothing, but it reminds us the answer has two parts.</p>
+    </div>
+    <div class="formula"><span class="lbl">Gradient descent update</span>
+      <div class="math">$$\text{Step size} = \text{slope} \times \text{learning rate}, \qquad b_3^{\text{new}} = b_3^{\text{old}} - \text{Step size}$$</div>
+      <p class="explain"><b>Symbols:</b> the slope is \(d\,\text{SSR}/d\,b_3\) at the current b3. The learning rate is a small number, 0.1 in the video. <b>What it tells you:</b> a steep slope gives a big step, and a flat slope gives a small step.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p><b>Start at b3 = 0.</b> The three observed values are 0, 1 and 0. The squiggle predicts −2.6, −1.61 and −2.61. The residuals are 0 − (−2.6) = 2.6, 1 − (−1.61) = 2.61 and 0 − (−2.61) = 2.61. Squared and added, they give 20.4.</p>
+      <p><b>Slope at b3 = 0.</b> Plug into the derivative: −2(2.6) − 2(2.61) − 2(2.61) = −15.64. The video shows −15.7, likely from unrounded predictions. With learning rate 0.1, the step size is −15.7 × 0.1 = −1.57. The new b3 is 0 − (−1.57) = 1.57.</p>
+      <p><b>Second step.</b> At b3 = 1.57 the squiggle moves up and the residuals shrink. The slope is now −6.26, so the step size is −6.26 × 0.1 ≈ −0.63. Josh reports the new b3 as 2.19.</p>
+      <p><b>Stop.</b> Josh keeps stepping until the step size is close to zero. That happens at b3 = 2.61, so 2.61 is the optimal value.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> This video optimizes only b3. All other parameters are assumed already optimal. Optimizing all of them together is the topic of the next parts.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The −2 comes from two places: the power 2 and the −1 from the inside of the square. The sign matters. A negative slope gives a negative step size, and subtracting it makes b3 larger.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The derivative of Predicted with respect to b3 is 1 because the blue and orange curves do not depend on b3. The "× 1" does nothing numerically, but it shows the two-part structure of the chain rule.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Gradient descent stops when the step size is close to zero, not after a fixed guess. Plugging in many b3 values would also find the minimum, but gradient descent gets there much faster.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What are the main ideas of backpropagation?</summary><div class="a">There are two. First, use the chain rule to get the derivative of the loss, here the sum of squared residuals, with respect to an unknown parameter. Second, start the parameter at some value and plug that derivative into gradient descent to optimize it.</div></details>
+    <details class="qa" open><summary>Why do we need the chain rule to optimize the final bias?</summary><div class="a">The sum of squared residuals does not contain b3 directly. It depends on the predicted values, and the predicted values depend on b3. So the derivative is the derivative of the loss with respect to the predictions, times the derivative of the predictions with respect to b3.</div></details>
+    <details class="qa" open><summary>Why is the derivative of the prediction with respect to b3 equal to 1?</summary><div class="a">The prediction is the blue curve plus the orange curve plus b3. The two curves are computed before b3 and do not change with it, so their derivatives are 0. The derivative of b3 with respect to itself is 1.</div></details>
+    <details class="qa" open><summary>Walk me through one gradient descent step for b3.</summary><div class="a">At b3 = 0 the slope is about −15.7. With a learning rate of 0.1 the step size is −1.57. We subtract the step size from the old value, so b3 becomes 1.57, and we repeat until the step size is close to zero.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Backpropagation finds the weights and biases, working from the last parameter backwards.</li>
+      <li>The network output is the blue curve plus the orange curve plus the final bias b3.</li>
+      <li>The fit is measured with the sum of squared residuals, which is 20.4 when b3 = 0.</li>
+      <li>The chain rule links the loss to b3 through the predicted values.</li>
+      <li>The derivative is the sum of −2 times each residual, times 1.</li>
+      <li>Gradient descent with learning rate 0.1 moves b3 from 0 to 1.57, then 2.19, and stops at 2.61.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Backpropagation main ideas</span><span class="board-tag">chain rule finds the slope, then step downhill</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 256" role="img" aria-label="b3 feeds the predicted values, which feed the sum of squared residuals (SSR). The chain rule sends the slope back to b3. Gradient descent then moves b3 from 0 to 1.57, 2.19 and 2.61, in smaller and smaller steps.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <rect x="12" y="14" width="72" height="44" rx="8" class="sv-key-soft"/>
+              <rect x="146" y="14" width="118" height="44" rx="8" class="sv-paper"/>
+              <rect x="316" y="14" width="72" height="44" rx="8" class="sv-paper"/>
+            </g>
+            <line x1="88" y1="36" x2="140" y2="36" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="268" y1="36" x2="310" y2="36" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <path d="M352 62 V82 H48 V64" class="sv-stroke-good" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#board-arr)"/>
+            <line x1="30" y1="206" x2="388" y2="206" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <path d="M56 198 Q 145 120 228 197" class="sv-stroke-key" stroke-width="2.5" stroke-dasharray="6 5" marker-end="url(#board-arr)"/>
+            <path d="M244 199 Q 273 162 301 198" class="sv-stroke-key" stroke-width="2.5" stroke-dasharray="5 4" marker-end="url(#board-arr)"/>
+            <path d="M318 199 Q 336 178 350 197" class="sv-stroke-key" stroke-width="2.5" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="48" cy="206" r="7" class="sv-key"/>
+              <circle cx="235.7" cy="206" r="6" class="sv-key"/>
+              <circle cx="309.8" cy="206" r="6" class="sv-key"/>
+              <circle cx="360" cy="206" r="8" class="sv-good"/>
+            </g>
+            <text x="48" y="43" text-anchor="middle" class="sv-tb">b3</text>
+            <text x="205" y="42" text-anchor="middle" class="sv-t">predicted</text>
+            <text x="352" y="43" text-anchor="middle" class="sv-tb">SSR</text>
+            <text x="200" y="106" text-anchor="middle" class="sv-t">chain rule: slope back</text>
+            <text x="142" y="146" text-anchor="middle" class="sv-tm">step = −15.7 × 0.1</text>
+            <text x="48" y="236" text-anchor="middle" class="sv-ts">b3 = 0</text>
+            <text x="236" y="236" text-anchor="middle" class="sv-ts">1.57</text>
+            <text x="310" y="236" text-anchor="middle" class="sv-ts">2.19</text>
+            <text x="360" y="236" text-anchor="middle" class="sv-tb">2.61</text>
+          </svg>
+          <p>b3 shifts every prediction, and the predictions set the SSR. The chain rule multiplies these two links to get the slope. Gradient descent then steps b3 downhill until the step is close to zero.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Backpropagation</dt><dd>Finds the weights and biases, working backwards from the last parameter.</dd>
+            <dt>Residual</dt><dd>Observed value minus predicted value.</dd>
+            <dt>SSR</dt><dd>Sum of the squared residuals: how badly the squiggle fits.</dd>
+            <dt>Chain rule</dt><dd>Takes the derivative of a function that sits inside another.</dd>
+            <dt>Learning rate</dt><dd>A small number that scales each step; 0.1 here.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Name parameters</b>w1–w4, b1–b3; optimize only b3</li>
+            <li><b>Build squiggle</b>blue (×−1.22) + orange (×−2.3)</li>
+            <li><b>Start b3</b>b3 = 0 gives SSR 20.4</li>
+            <li><b>Chain rule</b>dSSR/db3 through the predictions</li>
+            <li><b>Gradient descent</b>step = slope × 0.1</li>
+            <li><b>Stop</b>step ≈ 0 at b3 = 2.61</li>
+          </ol>
+          <p class="loop">↺ repeat step 5 with each new b3 until the step is close to zero</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\frac{d\,\text{SSR}}{d\,b_3}=\frac{d\,\text{SSR}}{d\,\text{Pred}}\times\frac{d\,\text{Pred}}{d\,b_3}$$
+          $$\frac{d\,\text{SSR}}{d\,b_3}=\sum_{i=1}^{n}-2\left(\text{Obs}_i-\text{Pred}_i\right)\times 1$$
+          $$b_3^{\text{new}}=b_3^{\text{old}}-\text{slope}\times 0.1$$
+          <ul class="keys">
+            <li>\(\text{Pred}_i=\text{blue}_i+\text{orange}_i+b_3\), so \(d\,\text{Pred}/d\,b_3=0+0+1=1\).</li>
+            <li>The \(-2\) comes from the power 2 and the \(-1\) inside the square.</li>
+            <li>Obs and Pred are observed and predicted values; 0.1 is the learning rate.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>b3</th><th>slope</th><th>step (× 0.1)</th></tr>
+            <tr><td>0</td><td>−15.7</td><td>−1.57</td></tr>
+            <tr><td>1.57</td><td>−6.26</td><td>−0.63</td></tr>
+            <tr><td>2.19</td><td>…</td><td>…</td></tr>
+            <tr class="final"><td>2.61 ✓</td><td>…</td><td>≈ 0, stop</td></tr>
+          </table>
+          <p class="hand">At b3 = 0 the residuals 2.6, 2.61 and 2.61 give an SSR of 20.4. Steps shrink as the slope flattens.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">This fits every parameter at once.</span><span class="yes">Only b3 is optimized; the rest are assumed already optimal. Fitting all together comes in the next parts.</span></li>
+            <li><span class="no">A negative slope makes b3 smaller.</span><span class="yes">It gives a negative step, and subtracting that makes b3 larger.</span></li>
+            <li><span class="no">The "× 1" in the slope is pointless.</span><span class="yes">It changes nothing numerically, but shows the two parts of the chain rule.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="76-the-essential-main-ideas-of-neural-networks.html"><small>Previous</small>The Essential Main Ideas of Neural Networks</a> <a href="78-backpropagation-details-pt-1-optimizing-3-parameters-simulta.html"><small>Next</small>Backpropagation Details Pt. 1: Optimizing 3 parameters simultaneously.</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

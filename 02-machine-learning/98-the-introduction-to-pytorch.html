@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Introduction to PyTorch — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>98</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 98 · 23.4 min</div>
+    <h1>The Introduction to PyTorch</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=FHdlXe1bSe4" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: Neural Networks / Deep Learning (video 29)</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Josh codes a small neural network in PyTorch, checks that it works, and then trains one of its parameters with backpropagation. It is the basic pattern behind almost every PyTorch model.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>A neural network in PyTorch is a class that inherits from <code>nn.Module</code>. Its <code>__init__</code> method stores each weight and bias as a tensor wrapped in <code>nn.Parameter</code>. Its <code>forward</code> method turns an input into an output. Josh rebuilds the drug dosage network from an earlier video and graphs its output to confirm it works. He then sets the final bias to 0 and lets stochastic gradient descent find its best value again. After 34 steps the bias reaches -16.0019, very close to the original -16.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>The data come from the earlier video on the ReLU activation function. Low and high drug doses were not effective against a virus, but a medium dose was. A small network with two ReLU nodes bends its output into a pointy shape that fits these three points.</p>
+    <p>To code this network, Josh creates a class called <code>BasicNN</code> that inherits from <code>nn.Module</code>. The <code>__init__</code> method creates every weight and bias as a parameter. A parameter is a value the network owns and can optionally optimize. The <code>forward</code> method connects the input, the weights, the biases and the activation functions to compute the output. This is called a forward pass.</p>
+    <p>Each value is stored as a tensor. Tensors give the network fast arithmetic and automatic differentiation, which means PyTorch can work out derivatives for us. The flag <code>requires_grad</code>, short for "requires gradient", decides whether a parameter will be optimized.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 340" role="img" aria-label="The dosage network and how its parts map to the BasicNN class">
+        <defs><marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker></defs>
+        <rect x="20" y="20" width="460" height="300" rx="8" class="sv-paper2"/>
+        <text x="36" y="44" class="sv-tb">forward(): data flows left to right</text>
+        <circle cx="66" cy="180" r="28" class="sv-key-soft"/>
+        <text x="66" y="185" text-anchor="middle" class="sv-t">Dose</text>
+        <rect x="160" y="80" width="80" height="44" rx="6" class="sv-acc-soft"/>
+        <text x="200" y="107" text-anchor="middle" class="sv-t">ReLU</text>
+        <rect x="160" y="236" width="80" height="44" rx="6" class="sv-acc-soft"/>
+        <text x="200" y="263" text-anchor="middle" class="sv-t">ReLU</text>
+        <rect x="300" y="150" width="110" height="60" rx="6" class="sv-good-soft"/>
+        <text x="355" y="175" text-anchor="middle" class="sv-tm">+ final_bias</text>
+        <text x="355" y="196" text-anchor="middle" class="sv-t">ReLU</text>
+        <line x1="92" y1="168" x2="158" y2="108" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <line x1="92" y1="192" x2="158" y2="252" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <line x1="240" y1="102" x2="298" y2="162" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <line x1="240" y1="258" x2="298" y2="198" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <line x1="410" y1="180" x2="462" y2="180" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <rect x="70" y="112" width="74" height="20" rx="3" class="sv-paper"/>
+        <text x="107" y="127" text-anchor="middle" class="sv-tm">w00, b00</text>
+        <rect x="70" y="228" width="74" height="20" rx="3" class="sv-paper"/>
+        <text x="107" y="243" text-anchor="middle" class="sv-tm">w10, b10</text>
+        <rect x="246" y="118" width="40" height="20" rx="3" class="sv-paper"/>
+        <text x="266" y="133" text-anchor="middle" class="sv-tm">w01</text>
+        <rect x="246" y="222" width="40" height="20" rx="3" class="sv-paper"/>
+        <text x="266" y="237" text-anchor="middle" class="sv-tm">w11</text>
+        <text x="420" y="168" class="sv-ts">output</text>
+        <rect x="500" y="20" width="240" height="300" rx="8" class="sv-paper2"/>
+        <rect x="500" y="20" width="240" height="44" rx="8" class="sv-key-soft"/>
+        <text x="620" y="47" text-anchor="middle" class="sv-tm">BasicNN(nn.Module)</text>
+        <text x="516" y="96" class="sv-tb">__init__()</text>
+        <text x="516" y="120" class="sv-ts">every weight and bias becomes</text>
+        <text x="516" y="140" class="sv-tm">nn.Parameter(tensor,</text>
+        <text x="516" y="158" class="sv-tm">  requires_grad=...)</text>
+        <text x="516" y="214" class="sv-tb">forward(input)</text>
+        <text x="516" y="238" class="sv-ts">input × weight + bias, ReLU,</text>
+        <text x="516" y="258" class="sv-ts">scale, add, final ReLU</text>
+        <text x="516" y="278" class="sv-ts">→ returns output</text>
+      </svg>
+      <figcaption>Notice the split: <code>__init__</code> owns the labelled weights and biases, and <code>forward</code> owns the arrows that carry a dose to an output.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Import the modules. <code>torch</code> creates tensors, and <code>torch.nn</code> makes weights and biases part of the network. <code>torch.nn.functional</code> gives the activation functions, and <code>SGD</code> (stochastic gradient descent) fits the network. Matplotlib and seaborn only draw graphs.</li>
+      <li>Create <code>BasicNN</code>, inheriting from <code>nn.Module</code>. In <code>__init__</code>, first call the parent's initialization method, then create each weight and bias as a parameter with <code>requires_grad=False</code>, since none need optimizing yet.</li>
+      <li>Write <code>forward</code>. Multiply the input by a weight, add a bias, pass it through <code>F.relu</code>, and scale the result. Do this for the top and bottom nodes, add both to the final bias, and pass the sum through a last ReLU.</li>
+      <li>Test the network. Use <code>torch.linspace</code> to make 11 doses from 0 to 1, pass them to the model, and draw the outputs. The bent shape matches the earlier video.</li>
+      <li>Copy the class to <code>BasicNN_train</code>. Set the final bias to 0.0 with <code>requires_grad=True</code>. This tells PyTorch that this parameter should be optimized.</li>
+      <li>Create the training data, then an <code>SGD</code> optimizer on <code>model.parameters()</code> with a learning rate of 0.1.</li>
+      <li>Run the training loop: for each epoch, run every point through the model, compute the loss, call <code>loss.backward()</code>, then step and zero the derivatives. Stop early when the total loss is tiny.</li>
+    </ol>
+    <p>The code below matches the class Josh writes. The weight values come from the earlier ReLU video.</p>
+<pre><code>import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torch.optim import SGD
+
+class BasicNN(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.w00 = nn.Parameter(torch.tensor(1.7), requires_grad=False)
+        self.b00 = nn.Parameter(torch.tensor(-0.85), requires_grad=False)
+        self.w01 = nn.Parameter(torch.tensor(-40.8), requires_grad=False)
+        self.w10 = nn.Parameter(torch.tensor(12.6), requires_grad=False)
+        self.b10 = nn.Parameter(torch.tensor(0.0), requires_grad=False)
+        self.w11 = nn.Parameter(torch.tensor(2.7), requires_grad=False)
+        self.final_bias = nn.Parameter(torch.tensor(-16.), requires_grad=False)
+
+    def forward(self, input):
+        input_to_top_relu = input * self.w00 + self.b00
+        top_relu_output = F.relu(input_to_top_relu)
+        scaled_top_relu_output = top_relu_output * self.w01
+
+        input_to_bottom_relu = input * self.w10 + self.b10
+        bottom_relu_output = F.relu(input_to_bottom_relu)
+        scaled_bottom_relu_output = bottom_relu_output * self.w11
+
+        input_to_final_relu = (scaled_top_relu_output
+                               + scaled_bottom_relu_output
+                               + self.final_bias)
+        output = F.relu(input_to_final_relu)
+        return output</code></pre>
+    <p>Calling the model on a tensor runs <code>forward</code> by default.</p>
+<pre><code>input_doses = torch.linspace(start=0, end=1, steps=11)
+model = BasicNN()
+output_values = model(input_doses)</code></pre>
+    <p>For the trainable copy, only the final bias changes. Because its output now carries a gradient, Josh calls <code>.detach()</code> before plotting, since seaborn does not know what to do with the gradient.</p>
+<pre><code>self.final_bias = nn.Parameter(torch.tensor(0.), requires_grad=True)
+...
+sns.lineplot(x=input_doses, y=output_values.detach(), color='green', linewidth=2.5)</code></pre>
+    <p>This is the training loop. The second figure shows the same flow as a picture.</p>
+<pre><code>inputs = torch.tensor([0., 0.5, 1.])
+labels = torch.tensor([0., 1., 0.])
+
+model = BasicNN_train()
+optimizer = SGD(model.parameters(), lr=0.1)
+print("Final bias, before optimization: " + str(model.final_bias.data))
+
+for epoch in range(100):
+    total_loss = 0
+    for iteration in range(len(inputs)):
+        input_i = inputs[iteration]
+        label_i = labels[iteration]
+        output_i = model(input_i)
+        loss = (output_i - label_i)**2   # squared residual
+        loss.backward()                  # adds to stored derivatives
+        total_loss += float(loss)
+    if total_loss &lt; 0.0001:
+        print("Num steps: " + str(epoch))
+        break
+    optimizer.step()
+    optimizer.zero_grad()
+    print("Step: " + str(epoch) + " Final Bias: " + str(model.final_bias.data))
+
+print("Final bias, after optimization: " + str(model.final_bias.data))</code></pre>
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="The PyTorch training loop with an inner loop over training points">
+        <defs><marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker></defs>
+        <text x="20" y="33" class="sv-tm">for epoch in range(100):</text>
+        <rect x="20" y="40" width="720" height="100" rx="8" class="sv-paper2"/>
+        <text x="34" y="60" class="sv-ts">for each of the 3 training points</text>
+        <rect x="40" y="72" width="140" height="54" rx="6" class="sv-key-soft"/>
+        <text x="110" y="96" text-anchor="middle" class="sv-tm">model(dose)</text>
+        <text x="110" y="115" text-anchor="middle" class="sv-ts">forward pass</text>
+        <rect x="210" y="72" width="150" height="54" rx="6" class="sv-key-soft"/>
+        <text x="285" y="96" text-anchor="middle" class="sv-t">squared residual</text>
+        <text x="285" y="115" text-anchor="middle" class="sv-ts">(output − label)²</text>
+        <rect x="390" y="72" width="180" height="54" rx="6" class="sv-acc-soft"/>
+        <text x="480" y="96" text-anchor="middle" class="sv-tm">loss.backward()</text>
+        <text x="480" y="115" text-anchor="middle" class="sv-ts">adds to stored derivatives</text>
+        <rect x="600" y="72" width="126" height="54" rx="6" class="sv-key-soft"/>
+        <text x="663" y="96" text-anchor="middle" class="sv-tm">total_loss</text>
+        <text x="663" y="115" text-anchor="middle" class="sv-ts">+= loss</text>
+        <line x1="180" y1="99" x2="208" y2="99" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <line x1="360" y1="99" x2="388" y2="99" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <line x1="570" y1="99" x2="598" y2="99" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <rect x="40" y="172" width="170" height="50" rx="6" class="sv-paper2"/>
+        <text x="125" y="202" text-anchor="middle" class="sv-t">total_loss tiny?</text>
+        <rect x="290" y="172" width="170" height="50" rx="6" class="sv-good-soft"/>
+        <text x="375" y="202" text-anchor="middle" class="sv-tm">optimizer.step()</text>
+        <rect x="510" y="172" width="210" height="50" rx="6" class="sv-good-soft"/>
+        <text x="615" y="202" text-anchor="middle" class="sv-tm">optimizer.zero_grad()</text>
+        <line x1="125" y1="140" x2="125" y2="170" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <line x1="210" y1="197" x2="288" y2="197" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <text x="249" y="190" text-anchor="middle" class="sv-ts">no</text>
+        <line x1="460" y1="197" x2="508" y2="197" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <line x1="615" y1="172" x2="615" y2="142" class="sv-stroke-acc" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <text x="625" y="162" class="sv-ts">next epoch</text>
+        <line x1="125" y1="222" x2="125" y2="252" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <text x="137" y="242" class="sv-ts">yes</text>
+        <text x="125" y="272" text-anchor="middle" class="sv-tb">break: stop</text>
+      </svg>
+      <figcaption>Notice that <code>loss.backward()</code> runs once per point and adds up derivatives, while <code>step</code> and <code>zero_grad</code> run once per epoch.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">Forward pass</span><div class="math">$$ \hat{y} = \text{ReLU}\big(w_{01}\,\text{ReLU}(x\,w_{00}+b_{00}) + w_{11}\,\text{ReLU}(x\,w_{10}+b_{10}) + b_{\text{final}}\big) $$</div><p class="explain"><b>Symbols:</b> \(x\) is the dose. \(w\) values are weights and \(b\) values are biases. ReLU outputs its input when positive and 0 otherwise. \(\hat{y}\) is the predicted effectiveness. <b>What it tells you:</b> this is exactly what <code>forward</code> computes, one line per arrow in the first figure.</p></div>
+    <div class="formula"><span class="lbl">Total loss for one epoch</span><div class="math">$$ \text{total loss} = \sum_{i=1}^{3} (\hat{y}_i - y_i)^2 $$</div><p class="explain"><b>Symbols:</b> \(\hat{y}_i\) is the model's output for point \(i\). \(y_i\) is its known label. Each term is a squared residual, the squared difference between prediction and truth. <b>What it tells you:</b> a large value means a poor fit and a small value means a good fit.</p></div>
+    <div class="formula"><span class="lbl">What loss.backward() accumulates</span><div class="math">$$ \frac{\partial\,\text{total loss}}{\partial b_{\text{final}}} = \sum_{i=1}^{3} \frac{\partial (\hat{y}_i - y_i)^2}{\partial b_{\text{final}}} $$</div><p class="explain"><b>Symbols:</b> \(\partial / \partial b_{\text{final}}\) is the derivative with respect to the final bias. <b>What it tells you:</b> each call to <code>loss.backward()</code> adds one term of this sum. <code>optimizer.step()</code> then uses the summed derivative, scaled by the learning rate of 0.1, to take a small step toward a better final bias.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p><b>Training data.</b> Inputs are the doses 0, 0.5 and 1. Labels are the observed effectiveness 0, 1 and 0.</p>
+      <p><b>The trained network.</b> With the final bias at -16, the dose 0.5 gives an effectiveness of 1, which is correct. Here is why, using the weights in the code: the top node gets \(0.5 \times 1.7 - 0.85 = 0\), so it contributes 0. The bottom node gets \(0.5 \times 12.6 + 0 = 6.3\), scaled by 2.7 gives about 17. Adding -16 gives about 1.</p>
+      <p><b>Breaking it.</b> Set the final bias to 0. The same dose now gives an effectiveness of about 17, which is way too high. So the network needs training.</p>
+      <p><b>One pass of the inner loop.</b> For the first point, the dose is 0 and the label is 0. The prediction is also 0, so the squared residual is \((0-0)^2 = 0\). The second and third points add their own squared residuals and derivatives.</p>
+      <p><b>Result.</b> The printout starts with a final bias of 0. After 34 steps the total loss is tiny and the final bias is -16.0019, very close to -16. Graphing the trained model shows it fits the three points again.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> <code>loss.backward()</code> accumulates derivatives. Each call adds to the ones already stored in the model, even though <code>loss</code> is a brand new variable each time. This works because the loss is built from the model's output, and the model keeps track of the derivatives.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Forgetting <code>optimizer.zero_grad()</code> is a bug. Without it, the next epoch's derivatives are added to the old ones from the previous step, and the steps go wrong.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> <code>total_loss</code> does not accumulate on its own. You must add each squared residual to it yourself.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A tensor that carries a gradient cannot go straight into seaborn. Call <code>.detach()</code> to get a new tensor with only the values.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>How do you define a neural network in PyTorch?</summary><div class="a">I write a class that inherits from <code>nn.Module</code>. In <code>__init__</code> I call the parent's initializer and create the weights and biases as <code>nn.Parameter</code> tensors. In <code>forward</code> I compute the output from the input. Calling the model on data runs <code>forward</code> for me.</div></details>
+    <details class="qa" open><summary>What does requires_grad control?</summary><div class="a">It tells PyTorch whether a parameter should be optimized. When it is true, PyTorch tracks derivatives for that parameter, and the optimizer will update it. In the dosage example only the final bias had it set to true, so SGD changed only that value.</div></details>
+    <details class="qa" open><summary>Why do we call optimizer.zero_grad()?</summary><div class="a">Because <code>loss.backward()</code> adds new derivatives to the ones already stored. That is useful within one epoch, where we want the sum over all points. But after <code>optimizer.step()</code> we must clear them, or the next epoch would mix in old derivatives.</div></details>
+    <details class="qa" open><summary>Walk me through one epoch of the training loop.</summary><div class="a">For each training point I run the input through the model, compute the loss, call <code>loss.backward()</code>, and add the loss to a running total. If the total loss is tiny, I stop. Otherwise I call <code>optimizer.step()</code> to move the parameters a small step, then <code>optimizer.zero_grad()</code> to reset the derivatives.</div></details>
+    <details class="qa" open><summary>What is an epoch?</summary><div class="a">An epoch is one full pass of the optimization code over all of the training data. In the video that means running all three dosage points through the model once. Training was allowed up to 100 epochs but stopped early after 34 steps.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>A PyTorch network is a class that inherits from <code>nn.Module</code>.</li>
+      <li><code>__init__</code> creates weights and biases as <code>nn.Parameter</code> tensors, and <code>forward</code> computes the output.</li>
+      <li>Setting <code>requires_grad=True</code> marks a parameter for optimization.</li>
+      <li>The SGD optimizer receives <code>model.parameters()</code> and a learning rate, here 0.1.</li>
+      <li>Each epoch runs every point through the model, computes the loss, and calls <code>loss.backward()</code>, which adds up derivatives.</li>
+      <li>Then <code>optimizer.step()</code> updates the parameters and <code>optimizer.zero_grad()</code> clears the stored derivatives.</li>
+      <li>Starting from 0, the final bias reached -16.0019 after 34 steps, close to the true -16.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Introduction to PyTorch</span><span class="board-tag">build it, test it, train one bias</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 270" role="img" aria-label="The BasicNN_train class holds its weights and biases, and only the final bias is trainable. The forward pass feeds the squared residual, then loss.backward() and optimizer.step() carry the update back into the class; over 34 steps the final bias goes from 0 to −16.0019.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <path d="M176 62 H360 V87" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#board-arr)"/>
+            <path d="M360 142 V228 H94 V205" class="sv-stroke-key" stroke-width="2.5" stroke-dasharray="7 6" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2.5">
+              <rect x="14" y="30" width="160" height="170" rx="14" class="sv-paper"/>
+              <rect x="212" y="92" width="176" height="48" rx="24" class="sv-key-soft"/>
+            </g>
+            <circle cx="38" cy="92" r="7" class="sv-ink3"/>
+            <circle cx="60" cy="92" r="7" class="sv-ink3"/>
+            <circle cx="82" cy="92" r="7" class="sv-ink3"/>
+            <circle cx="104" cy="92" r="7" class="sv-ink3"/>
+            <circle cx="126" cy="92" r="7" class="sv-ink3"/>
+            <circle cx="148" cy="92" r="7" class="sv-ink3"/>
+            <g class="sv-stroke-ink" stroke-width="2"><circle cx="40" cy="130" r="12" class="sv-key"/></g>
+            <text x="94" y="58" text-anchor="middle" class="sv-tm">BasicNN_train</text>
+            <text x="62" y="136" class="sv-tm">final_bias</text>
+            <text x="94" y="178" text-anchor="middle" class="sv-tb">0 → −16.0019</text>
+            <text x="268" y="50" text-anchor="middle" class="sv-ts">forward pass</text>
+            <text x="300" y="122" text-anchor="middle" class="sv-t">(output − label)²</text>
+            <text x="350" y="178" text-anchor="end" class="sv-tm">loss.backward()</text>
+            <text x="268" y="212" text-anchor="middle" class="sv-tb">34 steps</text>
+            <text x="227" y="254" text-anchor="middle" class="sv-tm">optimizer.step()</text>
+          </svg>
+          <p>A PyTorch network is a class that inherits from <code>nn.Module</code>: <code>__init__</code> holds its weights and biases as parameters, and <code>forward</code> turns a dose into an output. Training changes only parameters with <code>requires_grad=True</code>, here just the final bias.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt><code>nn.Module</code></dt><dd>The class a PyTorch network inherits from.</dd>
+            <dt><code>nn.Parameter</code></dt><dd>A weight or bias the network owns and can optimize.</dd>
+            <dt>Tensor</dt><dd>Holds each value, with fast arithmetic and automatic differentiation.</dd>
+            <dt><code>requires_grad</code></dt><dd>True means the parameter will be optimized.</dd>
+            <dt>Epoch</dt><dd>One full pass over all the training data.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Import</b>torch, nn, F and SGD</li>
+            <li><b>Build the class</b>nn.Module, parameters in __init__</li>
+            <li><b>Write forward</b>two ReLUs, final bias, last ReLU</li>
+            <li><b>Test it</b>graph 11 doses, 0 to 1</li>
+            <li><b>Trainable copy</b>final bias 0, to be optimized</li>
+            <li><b>Train with SGD</b>rate 0.1, up to 100 epochs</li>
+          </ol>
+          <p class="loop">↺ each epoch: forward, loss and backward per point, then step and zero_grad, until total loss is below 0.0001</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\hat{y}=\text{ReLU}\big(w_{01}\,h_{\text{top}}+w_{11}\,h_{\text{bot}}+b_f\big)$$
+          $$\text{total loss}=\sum_{i=1}^{3}(\hat{y}_i-y_i)^2$$
+          $$\frac{\partial\,\text{total loss}}{\partial b_f}=\sum_{i=1}^{3}\frac{\partial(\hat{y}_i-y_i)^2}{\partial b_f}$$
+          <ul class="keys">
+            <li>\(h_{\text{top}}=\text{ReLU}(x\,w_{00}+b_{00})\) for dose \(x\); \(h_{\text{bot}}\) uses \(w_{10}, b_{10}\).</li>
+            <li>\(b_f\) is the final bias; \(y_i\) is the label of point \(i\).</li>
+            <li>Each <code>loss.backward()</code> adds one term of the last sum.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>dose 0.5</th><th>math</th><th>result</th></tr>
+            <tr><td>top node</td><td>0.5×1.7−0.85</td><td>0</td></tr>
+            <tr><td>bottom node</td><td>0.5×12.6×2.7</td><td>≈ 17</td></tr>
+            <tr><td>bias −16</td><td>17 − 16</td><td>≈ 1 ✓</td></tr>
+            <tr><td>bias 0</td><td>17 + 0</td><td>≈ 17 ✗</td></tr>
+            <tr class="final"><td>bias −16.0019</td><td>34 steps</td><td>fits again</td></tr>
+          </table>
+          <p class="hand">Doses 0, 0.5, 1 have labels 0, 1, 0. SGD took the bias from 0 to −16.0019, close to −16.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">A new loss variable means fresh derivatives.</span><span class="yes"><code>loss.backward()</code> adds to the derivatives already stored in the model.</span></li>
+            <li><span class="no"><code>optimizer.zero_grad()</code> is optional.</span><span class="yes">Without it, the next epoch's derivatives add to the old ones, and the steps go wrong.</span></li>
+            <li><span class="no">A tensor with a gradient can go straight into seaborn.</span><span class="yes">Call <code>.detach()</code> for a new tensor with only the values.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="97-the-matrix-math-behind-transformer-neural-networks-one-step.html"><small>Previous</small>The matrix math behind transformer neural networks, one step at a time</a> <a href="99-introduction-to-coding-neural-networks-with-pytorch-and-ligh.html"><small>Next</small>Introduction to Coding Neural Networks with PyTorch and Lightning</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

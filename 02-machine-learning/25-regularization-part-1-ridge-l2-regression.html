@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Regularization Part 1: Ridge (L2) Regression — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>25</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 25 · 20.4 min</div>
+    <h1>Regularization Part 1: Ridge (L2) Regression</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=Q81RR3yKn30" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Ridge regression adds a penalty to least squares, so the fitted line reacts less to the training data. You accept a small amount of bias and get a large drop in variance.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Least squares fits the training data as closely as it can, so with few data points it overfits. Ridge regression instead minimises the sum of squared residuals plus lambda times the squared parameters. That penalty pulls slopes toward zero, so predictions become less sensitive to the inputs. You choose lambda by trying many values with cross-validation, usually 10-fold. Ridge can even fit a model when there are fewer data points than parameters, where least squares has no single answer.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh measures the weight and the size of a group of mice. The points look linear, so he fits a straight line with least squares. Least squares picks the line with the smallest sum of squared residuals. A residual is the vertical gap between a data point and the line.</p>
+    <p>Now suppose you only have two measurements. The least squares line passes straight through both points, so the sum of squared residuals is exactly zero. Call those two points the training data and the other points the testing data. On the testing data this line is badly wrong. Its residuals there are large, so the line has high variance. In machine learning words, it is overfit.</p>
+    <p>Ridge regression looks for a line that fits the training points a bit worse on purpose. It adds a penalty, lambda times the squared slope, to the quantity it minimises. A steep slope now costs something, so the fitted line comes out flatter. Think of the slope as the sensitivity of the prediction. A steep slope means one extra unit of weight changes predicted size a lot. A small slope means the prediction barely moves. So a flatter line predicts new mice better.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 360" role="img" aria-label="Two training points fitted by a steep least squares line and a flatter ridge line, with the penalty arithmetic beside them">
+        <path class="sv-line" stroke-width="1.5" d="M70 45 L70 300 L415 300"/>
+        <text class="sv-ts" x="145" y="316" text-anchor="middle">1</text>
+        <text class="sv-ts" x="220" y="316" text-anchor="middle">2</text>
+        <text class="sv-ts" x="295" y="316" text-anchor="middle">3</text>
+        <text class="sv-ts" x="370" y="316" text-anchor="middle">4</text>
+        <text class="sv-ts" x="242" y="334" text-anchor="middle">weight</text>
+        <text class="sv-ts" x="62" y="292" text-anchor="end">1</text>
+        <text class="sv-ts" x="62" y="234" text-anchor="end">2</text>
+        <text class="sv-ts" x="62" y="176" text-anchor="end">3</text>
+        <text class="sv-ts" x="62" y="118" text-anchor="end">4</text>
+        <text class="sv-ts" x="62" y="60" text-anchor="end">5</text>
+        <text class="sv-ts" x="30" y="175" text-anchor="middle" transform="rotate(-90 30 175)">size</text>
+
+        <line x1="85" y1="52" x2="115" y2="52" class="sv-stroke-key" stroke-width="2.5"/>
+        <text class="sv-ts" x="121" y="56">least squares line</text>
+        <line x1="85" y1="72" x2="115" y2="72" class="sv-stroke-acc" stroke-width="2.5"/>
+        <text class="sv-ts" x="121" y="76">ridge line</text>
+        <circle cx="252" cy="48" r="4.5" class="sv-ink"/>
+        <text class="sv-ts" x="262" y="52">training (2 points)</text>
+        <circle cx="252" cy="68" r="4.5" class="sv-good"/>
+        <text class="sv-ts" x="262" y="72">testing</text>
+
+        <line x1="145" y1="291" x2="340" y2="95" class="sv-stroke-key" stroke-width="2.5"/>
+        <line x1="145" y1="257" x2="340" y2="136" class="sv-stroke-acc" stroke-width="2.5"/>
+
+        <circle cx="138" cy="265" r="4.5" class="sv-good"/>
+        <circle cx="160" cy="259" r="4.5" class="sv-good"/>
+        <circle cx="220" cy="201" r="4.5" class="sv-good"/>
+        <circle cx="295" cy="172" r="4.5" class="sv-good"/>
+        <circle cx="340" cy="126" r="4.5" class="sv-good"/>
+        <circle cx="385" cy="114" r="4.5" class="sv-good"/>
+
+        <line x1="190" y1="246" x2="190" y2="229" class="sv-stroke-ink" stroke-width="2.5"/>
+        <line x1="250" y1="186" x2="250" y2="192" class="sv-stroke-ink" stroke-width="2.5"/>
+        <circle cx="190" cy="246" r="5.5" class="sv-ink"/>
+        <circle cx="250" cy="186" r="5.5" class="sv-ink"/>
+
+        <rect x="152" y="212" width="30" height="17" rx="3" class="sv-paper"/>
+        <text class="sv-ts" x="178" y="225" text-anchor="end">0.3</text>
+        <rect x="258" y="150" width="30" height="17" rx="3" class="sv-paper"/>
+        <text class="sv-ts" x="262" y="163">0.1</text>
+        <line x1="259" y1="167" x2="252" y2="186" class="sv-line" stroke-width="1"/>
+
+        <text class="sv-tb" x="445" y="52">Total to minimise, with λ = 1</text>
+        <rect x="445" y="70" width="290" height="88" rx="6" class="sv-key-soft"/>
+        <text class="sv-tb" x="459" y="94">Least squares line</text>
+        <text class="sv-tm" x="459" y="118">0 + 1 × 1.3² </text>
+        <text class="sv-tm" x="459" y="142">= 1.69</text>
+        <rect x="445" y="176" width="290" height="112" rx="6" class="sv-acc-soft"/>
+        <text class="sv-tb" x="459" y="200">Ridge line</text>
+        <text class="sv-tm" x="459" y="224">0.3² + 0.1² + 1 × 0.8²</text>
+        <text class="sv-tm" x="459" y="248">= 0.74</text>
+        <text class="sv-ts" x="459" y="274">lower total, so ridge wins</text>
+      </svg>
+      <figcaption>The least squares line goes exactly through both black training points, but misses the green testing points. The ridge line accepts small residuals of 0.3 and 0.1 and gets a lower penalised total.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Fit least squares to the two training points. The line touches both points, so the training sum of squared residuals is zero. The testing residuals are large, which means high variance.</li>
+      <li>Change what you minimise. Keep the sum of squared residuals, then add lambda times the squared slope on top of it.</li>
+      <li>Compare candidate lines using this new total instead of the residuals alone. A slightly worse fit with a much smaller slope can now win.</li>
+      <li>Read the slope as sensitivity. A steep slope makes the prediction jump when weight changes a little. Shrinking the slope makes predictions calmer.</li>
+      <li>Turn the lambda dial. At lambda equal to zero you get the least squares line back. As lambda grows the slope keeps shrinking and moves asymptotically close to zero, but never reaches it.</li>
+      <li>Pick lambda by trying many values and scoring each one with cross-validation, typically 10-fold. Keep the value that gives the lowest variance on held-out data.</li>
+      <li>Apply the same idea to bigger models. Penalise every parameter except the intercept, and for logistic regression add the penalty to the likelihood instead of the squared residuals.</li>
+    </ol>
+
+    <p>The next figure shows what lambda actually does. Josh sets lambda to 1, then 2, then 3. Each time the slope gets smaller and the line gets flatter.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 310" role="img" aria-label="A fan of fitted lines getting flatter as lambda increases, beside a three step flow for choosing lambda">
+        <path class="sv-line" stroke-width="1.5" d="M60 35 L60 250 L440 250"/>
+        <text class="sv-ts" x="250" y="270" text-anchor="middle">weight</text>
+        <text class="sv-ts" x="28" y="145" text-anchor="middle" transform="rotate(-90 28 145)">size</text>
+
+        <line x1="100" y1="229" x2="340" y2="39" class="sv-stroke-key" stroke-width="2.5"/>
+        <line x1="100" y1="200" x2="380" y2="64" class="sv-stroke-acc" stroke-width="2.5"/>
+        <line x1="100" y1="183" x2="380" y2="97" class="sv-stroke-acc" stroke-width="2"/>
+        <line x1="100" y1="174" x2="380" y2="114" class="sv-stroke-acc" stroke-width="1.6"/>
+        <line x1="100" y1="154" x2="380" y2="154" class="sv-stroke-ink" stroke-width="1.4" stroke-dasharray="5 4"/>
+
+        <text class="sv-ts" x="346" y="43">λ = 0</text>
+        <text class="sv-ts" x="386" y="68">λ = 1</text>
+        <text class="sv-ts" x="386" y="101">λ = 2</text>
+        <text class="sv-ts" x="386" y="118">λ = 3</text>
+        <text class="sv-ts" x="386" y="158">λ → ∞</text>
+
+        <text class="sv-ts" x="62" y="286">λ = 0 is exactly the least squares line.</text>
+
+        <defs>
+          <marker id="ar1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" class="sv-ink"/>
+          </marker>
+        </defs>
+        <text class="sv-tb" x="480" y="45">Choosing λ</text>
+        <rect x="480" y="60" width="250" height="46" rx="6" class="sv-paper2"/>
+        <text class="sv-t" x="494" y="89">Try many values of λ</text>
+        <line x1="605" y1="108" x2="605" y2="126" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ar1)"/>
+        <rect x="480" y="130" width="250" height="46" rx="6" class="sv-acc-soft"/>
+        <text class="sv-t" x="494" y="159">Score each with 10-fold CV</text>
+        <line x1="605" y1="178" x2="605" y2="196" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ar1)"/>
+        <rect x="480" y="200" width="250" height="60" rx="6" class="sv-good-soft"/>
+        <text class="sv-t" x="494" y="224">Keep the λ with the lowest</text>
+        <text class="sv-t" x="494" y="246">error on held-out data</text>
+      </svg>
+      <figcaption>Notice that as lambda grows the slope shrinks toward zero, so the prediction depends less and less on weight.</figcaption>
+    </figure>
+
+    <p>The last part of the video is the surprising one. Least squares needs at least as many data points as parameters. Two parameters need two points. An equation with 10,001 parameters needs 10,001 mice. A gene expression study may measure 10,000 genes but have only 500 mice. Ridge regression still returns an answer, because the penalty prefers small parameters and breaks the tie.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 260" role="img" aria-label="Many lines through a single data point, all with zero residuals, with ridge choosing the flattest one">
+        <path class="sv-line" stroke-width="1.5" d="M60 35 L60 210 L380 210"/>
+        <text class="sv-ts" x="220" y="230" text-anchor="middle">weight</text>
+        <line x1="120" y1="195" x2="320" y2="55" class="sv-line" stroke-width="1.5"/>
+        <line x1="120" y1="170" x2="320" y2="80" class="sv-line" stroke-width="1.5"/>
+        <line x1="120" y1="100" x2="320" y2="150" class="sv-line" stroke-width="1.5"/>
+        <line x1="120" y1="145" x2="320" y2="105" class="sv-line" stroke-width="1.5"/>
+        <line x1="120" y1="125" x2="320" y2="125" class="sv-stroke-acc" stroke-width="2.5"/>
+        <circle cx="220" cy="125" r="6" class="sv-ink"/>
+        <line x1="306" y1="104" x2="306" y2="125" class="sv-line" stroke-width="1"/>
+        <rect x="232" y="86" width="140" height="18" rx="3" class="sv-paper"/>
+        <text class="sv-ts" x="236" y="100">ridge picks the flat line</text>
+
+        <rect x="410" y="40" width="330" height="78" rx="6" class="sv-key-soft"/>
+        <text class="sv-tb" x="424" y="64">Least squares</text>
+        <text class="sv-t" x="424" y="88">Every line through the point has</text>
+        <text class="sv-t" x="424" y="108">zero residuals, so there is no winner.</text>
+        <rect x="410" y="136" width="330" height="78" rx="6" class="sv-acc-soft"/>
+        <text class="sv-tb" x="424" y="160">Ridge regression</text>
+        <text class="sv-t" x="424" y="184">The penalty λ × slope² breaks the tie</text>
+        <text class="sv-t" x="424" y="204">and favours the flatter line.</text>
+      </svg>
+      <figcaption>With a single training point least squares cannot choose between these lines, but the ridge penalty makes the flatter one cheaper.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Least squares</span>
+      <div class="math">$$ \min_{b_0,\,b_1} \; \sum_{i=1}^{n}\bigl(y_i - (b_0 + b_1 x_i)\bigr)^2 $$</div>
+      <p class="explain"><b>Symbols:</b> \(x_i\) is the weight of mouse \(i\); \(y_i\) is its measured size; \(b_0\) is the y-axis intercept; \(b_1\) is the slope; \(n\) is the number of training points. The bracket is the residual, the vertical gap between a point and the line. <b>What it tells you:</b> least squares only cares about the training residuals, so with few points it will drive them to zero and overfit.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Ridge regression for one predictor</span>
+      <div class="math">$$ \min_{b_0,\,b_1} \; \underbrace{\sum_{i=1}^{n}\bigl(y_i - (b_0 + b_1 x_i)\bigr)^2}_{\text{sum of squared residuals}} \; + \; \underbrace{\lambda\, b_1^{2}}_{\text{ridge penalty}} $$</div>
+      <p class="explain"><b>Symbols:</b> the first term is the same as above; \(\lambda\) (lambda) is a number from zero to infinity that sets how severe the penalty is; \(b_1^{2}\) is the squared slope. <b>What it tells you:</b> a steep slope now has a price, so the best line trades a little extra residual for a much smaller slope.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Ridge penalty in general</span>
+      <div class="math">$$ \text{SSR} \; + \; \lambda \sum_{j=1}^{p} b_j^{2} $$</div>
+      <p class="explain"><b>Symbols:</b> SSR is the sum of squared residuals; \(p\) is the number of parameters other than the intercept; \(b_j\) is one such parameter, for example a slope for weight or the diet difference \(0.7\) in \(\text{size} = 1.5 + 0.7 \times \text{high fat diet}\). The intercept \(b_0\) is deliberately missing from the sum. <b>What it tells you:</b> every parameter that multiplies a measurement gets shrunk, however many of them there are.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Two mice form the training data. The least squares line passes through both, so its sum of squared residuals is zero, and its slope is 1.3. The ridge line misses the two points by 0.3 and 0.1, and its slope is 0.8. Set \(\lambda = 1\) and score both lines.</p>
+      <div class="math">$$ \text{least squares: } \; 0 + 1 \times 1.3^{2} = 1.69 $$</div>
+      <div class="math">$$ \text{ridge: } \; 0.3^{2} + 0.1^{2} + 1 \times 0.8^{2} = 0.09 + 0.01 + 0.64 = 0.74 $$</div>
+      <p>0.74 is smaller than 1.69, so the penalised criterion prefers the ridge line. The ridge line has a little bias on the training data and much less variance on new data.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>The intercept is never penalised. Every other parameter is scaled by a measurement, so shrinking it changes how sensitive the prediction is. The intercept is not scaled by anything, so there is nothing to desensitise.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Lambda is not found by minimising the same criterion. If you did that, the answer would always be zero. You must try a range of values and judge them with cross-validation on held-out data.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Ridge shrinks parameters toward zero, but only asymptotically. Even at a large lambda the slope stays slightly above zero, so ridge does not remove variables from the model. That is what Lasso, in the next video, does differently.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>The ridge fit looks worse on the training data, and that is the point. Judge it on new data. The bias you add is the price you pay for the variance you remove.</p>
+    </div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>What problem does ridge regression solve?</summary>
+      <div class="a">With small samples, least squares fits the training data too closely and gives a model with high variance. Ridge regression adds a penalty on the squared parameters, which deliberately introduces a little bias. In exchange the model becomes much less sensitive to the training data, so predictions on new data improve.</div>
+    </details>
+
+    <details class="qa" open><summary>What does lambda control, and how do you choose it?</summary>
+      <div class="a">Lambda sets how strongly the parameters are pulled toward zero. At lambda equal to zero you get plain least squares, and as lambda grows the slopes shrink asymptotically toward zero. There is no formula for the best value, so I try a grid of values and pick the one with the lowest cross-validated error, usually with 10-fold cross-validation.</div>
+    </details>
+
+    <details class="qa" open><summary>How can ridge fit a model with more parameters than data points?</summary>
+      <div class="a">Least squares needs at least as many observations as parameters, otherwise infinitely many fits give zero residuals and there is no unique answer. The ridge penalty breaks that tie because among all those fits it prefers the one with the smallest squared parameters. That is why ridge can estimate 10,001 gene coefficients from 500 mice.</div>
+    </details>
+
+    <details class="qa" open><summary>Does ridge regression apply outside linear regression?</summary>
+      <div class="a">Yes, the same penalty works for logistic regression and for larger models with many terms. For logistic regression the model is fitted by maximum likelihood, so the penalty is applied to the sum of the likelihoods rather than to squared residuals. The effect is the same: the estimated slopes shrink and the predictions become less sensitive.</div>
+    </details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap">
+      <ul>
+        <li>Least squares minimises only the sum of squared residuals, so small samples lead to overfit lines with high variance.</li>
+        <li>Ridge regression minimises the sum of squared residuals plus lambda times the squared parameters.</li>
+        <li>The penalty adds a little bias and removes a lot of variance, which improves long-run predictions.</li>
+        <li>Shrinking a slope makes the prediction less sensitive to that measurement.</li>
+        <li>Lambda runs from zero to infinity, and zero gives back the least squares fit.</li>
+        <li>You choose lambda by cross-validation, typically 10-fold.</li>
+        <li>The penalty includes every parameter except the y-axis intercept, and it also works for discrete predictors and for logistic regression.</li>
+        <li>Ridge can still find a solution when there are fewer data points than parameters.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Ridge regression</span><span class="board-tag">a little bias for much less variance</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 285" role="img" aria-label="Two training points. The least squares line runs through both with slope 1.3. The flatter ridge line, slope 0.8, misses them a little. With lambda 1 the total to minimise is 1.69 for least squares and 0.74 for ridge, so ridge wins.">
+            <line x1="150" y1="134" x2="150" y2="118" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="3 3"/>
+            <line x1="125" y1="172.5" x2="240" y2="23" class="sv-stroke-key" stroke-width="4" stroke-linecap="round"/>
+            <line x1="110" y1="148" x2="260" y2="28" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round"/>
+            <circle cx="150" cy="140" r="6" class="sv-ink"/>
+            <circle cx="214" cy="56.8" r="6" class="sv-ink"/>
+            <text x="98" y="153" text-anchor="end" class="sv-t">slope 0.8</text>
+            <text x="113" y="178" text-anchor="end" class="sv-t">slope 1.3</text>
+            <text x="166" y="156" class="sv-ts">2 training points</text>
+            <text x="140" y="204" class="sv-ts">total to minimise, λ = 1</text>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <rect x="140" y="214" width="186" height="22" rx="4" class="sv-key"/>
+              <rect x="140" y="248" width="81" height="22" rx="4" class="sv-acc"/>
+            </g>
+            <text x="130" y="230" text-anchor="end" class="sv-ts">least squares</text>
+            <text x="334" y="232" class="sv-tb">1.69</text>
+            <text x="130" y="264" text-anchor="end" class="sv-ts">ridge</text>
+            <text x="230" y="266" class="sv-tb">0.74</text>
+          </svg>
+          <p>With two training points, least squares draws a steep line through both and overfits. Ridge minimises the sum of squared residuals plus λ × slope², accepting small misses for a flatter, less sensitive line.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Overfit</dt><dd>Fits the training points closely but predicts new data badly.</dd>
+            <dt>Lambda (λ)</dt><dd>Penalty strength, 0 to infinity; 0 gives least squares.</dd>
+            <dt>Ridge penalty</dt><dd>λ times the squared parameters, intercept left out.</dd>
+            <dt>Slope</dt><dd>The prediction's sensitivity: how much size moves per unit of weight.</dd>
+            <dt>Cross-validation</dt><dd>Scores each λ on held-out data, usually 10-fold.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Fit least squares</b>2 points, zero residuals, overfit</li>
+            <li><b>Add the penalty</b>SSR plus λ × slope²</li>
+            <li><b>Compare totals</b>a worse fit can win</li>
+            <li><b>Turn the dial</b>bigger λ, flatter line</li>
+            <li><b>Pick λ</b>try many, 10-fold cross-validation</li>
+            <li><b>Scale it up</b>every parameter but the intercept</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\sum_{i=1}^{n}\bigl(y_i-(b_0+b_1x_i)\bigr)^2+\lambda\,b_1^{2}$$
+          $$\text{SSR}+\lambda\sum_{j=1}^{p}b_j^{2}$$
+          <ul class="keys">
+            <li>SSR: sum of squared residuals; \(b_0\) intercept, \(b_1\) slope.</li>
+            <li>\(\lambda\) runs from 0 to infinity; \(p\) counts all parameters but the intercept.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>λ = 1</th><th>least squares</th><th>ridge</th></tr>
+            <tr><td>slope</td><td>1.3</td><td>0.8</td></tr>
+            <tr><td>residuals²</td><td>0</td><td>0.3² + 0.1²</td></tr>
+            <tr><td>λ × slope²</td><td>1 × 1.3²</td><td>1 × 0.8²</td></tr>
+            <tr class="final"><td>total</td><td>1.69</td><td>0.74 ✓</td></tr>
+          </table>
+          <p class="hand">0.09 + 0.01 + 0.64 = 0.74 beats 1.69, so ridge wins: a little bias on training, much less variance.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Penalise the intercept too.</span><span class="yes">Never. It is not scaled by a measurement, so there is nothing to desensitise.</span></li>
+            <li><span class="no">Find λ by minimising the same total.</span><span class="yes">That always gives 0. Try many values and judge them by cross-validation.</span></li>
+            <li><span class="no">A big λ removes variables.</span><span class="yes">It never does: slopes shrink only asymptotically toward zero. Lasso, next, does this differently.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="24-roc-and-auc-in-r.html"><small>Previous</small>ROC and AUC in R</a> <a href="26-regularization-part-2-lasso-l1-regression.html"><small>Next</small>Regularization Part 2: Lasso (L1) Regression</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

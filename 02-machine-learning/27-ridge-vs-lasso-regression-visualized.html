@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ridge vs Lasso Regression, Visualized — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>27</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 27 · 9.1 min</div>
+    <h1>Ridge vs Lasso Regression, Visualized</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=Xm2C_gTAl8c" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Ridge and lasso regression both add a penalty to the fit. This video draws both penalties on one picture. You then see why lasso can push a slope all the way to zero, and ridge cannot.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh fits lines with different slopes to a small weight and height data set. For each slope he plots the sum of the squared residuals, which traces a parabola with its lowest point at slope 0.45. The ridge penalty, lambda times the slope squared, slides that lowest point toward zero but never onto zero. The lasso penalty, lambda times the absolute value of the slope, puts a sharp kink at slope zero. When lambda is large enough, the kink becomes the lowest point, so the best slope is exactly zero.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Both methods start from the same number: the sum of the squared residuals, usually shortened to SSR. A residual is the gap between an observed height and the height the line predicts. Square every gap and add them up. One number now says how bad the line is.</p>
+    <p>The clever move here is to treat the slope as the thing we vary. Fit a horizontal line and note its SSR. Tilt the line a little and note the SSR again. Put the slope on the x axis and the SSR on the y axis. The points trace a parabola, and its bottom marks the best slope, here 0.45.</p>
+    <p>A penalty changes this curve, not the data. Ridge adds lambda times the slope squared. Lasso adds lambda times the absolute value of the slope. Both terms are zero when the slope is zero, and both grow as the slope moves away from zero. Wherever the new curve bottoms out is the new best slope.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 320" role="img" aria-label="Left: weight against height with three fitted lines of slope 0, 0.2 and 0.45. Right: the sum of squared residuals plotted against the slope, forming a parabola with its lowest point at slope 0.45.">
+        <line class="sv-line" x1="60" y1="45" x2="60" y2="255" stroke-width="1.5"></line>
+        <line class="sv-line" x1="60" y1="255" x2="340" y2="255" stroke-width="1.5"></line>
+        <line class="sv-stroke-ink" x1="70" y1="182.5" x2="320" y2="182.5" stroke-width="1.6"></line>
+        <line class="sv-stroke-ink" x1="70" y1="212.5" x2="320" y2="152.5" stroke-width="1.6"></line>
+        <line class="sv-stroke-key" x1="70" y1="250" x2="320" y2="115" stroke-width="2.5"></line>
+        <circle class="sv-acc" cx="95" cy="234" r="4"></circle>
+        <circle class="sv-acc" cx="133" cy="220" r="4"></circle>
+        <circle class="sv-acc" cx="170" cy="193" r="4"></circle>
+        <circle class="sv-acc" cx="208" cy="181" r="4"></circle>
+        <circle class="sv-acc" cx="245" cy="151" r="4"></circle>
+        <circle class="sv-acc" cx="283" cy="139" r="4"></circle>
+        <circle class="sv-acc" cx="308" cy="115" r="4"></circle>
+        <text class="sv-ts" x="324" y="112">0.45</text>
+        <text class="sv-ts" x="324" y="150">0.2</text>
+        <text class="sv-ts" x="324" y="180">0</text>
+        <text class="sv-ts" x="200" y="278" text-anchor="middle">weight</text>
+        <text class="sv-ts" x="30" y="150" text-anchor="middle" transform="rotate(-90 30 150)">height</text>
+        <text class="sv-tb" x="60" y="34">Lines with different slopes</text>
+
+        <line class="sv-line" x1="430" y1="45" x2="430" y2="255" stroke-width="1.5"></line>
+        <line class="sv-line" x1="430" y1="255" x2="740" y2="255" stroke-width="1.5"></line>
+        <polyline class="sv-stroke-acc" stroke-width="2.5" points="440,70 471,133 502,181 533,212 564,228 580,230 596,228 627,212 658,181 689,133 720,70"></polyline>
+        <circle class="sv-ink" cx="440" cy="70" r="4"></circle>
+        <circle class="sv-ink" cx="502" cy="181" r="4"></circle>
+        <circle class="sv-ink" cx="564" cy="228" r="4"></circle>
+        <circle class="sv-key" cx="580" cy="230" r="5.5"></circle>
+        <line class="sv-line" x1="580" y1="230" x2="580" y2="255" stroke-width="1.5" stroke-dasharray="4 4"></line>
+        <text class="sv-ts" x="430" y="272" text-anchor="middle">0</text>
+        <text class="sv-tm" x="580" y="272" text-anchor="middle">0.45</text>
+        <text class="sv-ts" x="720" y="272" text-anchor="middle">0.9</text>
+        <text class="sv-ts" x="585" y="290" text-anchor="middle">slope</text>
+        <text class="sv-ts" x="400" y="150" text-anchor="middle" transform="rotate(-90 400 150)">sum of squared residuals</text>
+        <text class="sv-tb" x="430" y="34">SSR for each slope</text>
+      </svg>
+      <figcaption>Each line on the left becomes one point on the right. The lowest point of the parabola marks the best slope, 0.45.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Start with a horizontal line through the weight and height data. It fits badly. Measure the residuals, square them, and add them up.</li>
+      <li>Plot that number on a new graph. The y axis is the SSR and the x axis is the slope. The horizontal line has slope 0.</li>
+      <li>Raise the slope to 0.2 and plot the new SSR. Raise it to 0.4 and plot again. Keep going, or simply draw the whole curve.</li>
+      <li>The curve is a parabola. Its lowest point is at slope 0.45, so 0.45 is the best plain least squares fit.</li>
+      <li>Now switch to ridge. Add lambda times the slope squared to the SSR. With lambda set to 0 the penalty vanishes, so we get the original parabola back.</li>
+      <li>Set lambda to 10. Residuals fall as the slope rises, but the penalty grows, so the curve now bottoms out below 0.45.</li>
+      <li>Raise lambda to 20, then 40. The curve stays a smooth parabola and its lowest point moves closer to zero. Even at lambda 400 the best slope is still above zero.</li>
+      <li>Now switch to lasso. Add lambda times the absolute value of the slope. At lambda 10 a kink appears at slope zero, and it sharpens at 20. At lambda 40 the kink is the lowest point, so the best slope is exactly 0 and weight is ignored.</li>
+    </ol>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 350" role="img" aria-label="Four ridge regression curves for lambda 0, 10, 20 and 40. Each curve is a smooth parabola and its lowest point moves toward slope zero as lambda grows, without ever reaching zero.">
+        <defs>
+          <marker id="arA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" class="sv-ink2"></path>
+          </marker>
+        </defs>
+        <line class="sv-stroke-acc" x1="90" y1="26" x2="116" y2="26" stroke-width="3"></line>
+        <text class="sv-ts" x="122" y="30">&#955; = 0</text>
+        <line class="sv-stroke-key" x1="210" y1="26" x2="236" y2="26" stroke-width="3"></line>
+        <text class="sv-ts" x="242" y="30">&#955; = 10</text>
+        <line class="sv-stroke-good" x1="340" y1="26" x2="366" y2="26" stroke-width="3"></line>
+        <text class="sv-ts" x="372" y="30">&#955; = 20</text>
+        <line class="sv-stroke-ink" x1="470" y1="26" x2="496" y2="26" stroke-width="3"></line>
+        <text class="sv-ts" x="502" y="30">&#955; = 40</text>
+
+        <line class="sv-line" x1="70" y1="50" x2="70" y2="285" stroke-width="1.5"></line>
+        <line class="sv-line" x1="70" y1="285" x2="745" y2="285" stroke-width="1.5"></line>
+        <line class="sv-line" x1="250" y1="50" x2="250" y2="285" stroke-width="1.5" stroke-dasharray="4 4"></line>
+
+        <polyline class="sv-stroke-acc" stroke-width="2.5" points="90,126.4 122,143.3 154,159.1 186,173.9 218,187.6 250,200.2 282,211.8 314,222.3 346,231.7 378,240 410,247.2 442,253.4 474,258.5 506,262.5 538,265.5 570,267.4 602,268.2 634,267.9 666,266.6 698,264.2 730,260.7"></polyline>
+        <polyline class="sv-stroke-key" stroke-width="2.5" points="90,123 122,141.1 154,157.9 186,173.4 218,187.5 250,200.2 282,211.6 314,221.7 346,230.4 378,237.8 410,243.9 442,248.6 474,251.9 506,253.9 538,254.6 570,253.9 602,251.9 634,248.6 666,243.9 698,237.8 730,230.4"></polyline>
+        <polyline class="sv-stroke-good" stroke-width="2.5" points="90,119.7 122,139 154,156.7 186,172.8 218,187.3 250,200.2 282,211.5 314,221.2 346,229.2 378,235.7 410,240.5 442,243.7 474,245.4 506,245.4 538,243.7 570,240.5 602,235.7 634,229.2 666,221.2 698,211.5 730,200.2"></polyline>
+        <polyline class="sv-stroke-ink" stroke-width="2.5" points="90,112.9 122,134.7 154,154.3 186,171.8 218,187.1 250,200.2 282,211.2 314,220.1 346,226.8 378,231.4 410,233.8 442,234.1 474,232.2 506,228.2 538,222 570,213.7 602,203.2 634,190.6 666,175.8 698,158.9 730,139.8"></polyline>
+
+        <circle class="sv-acc" cx="610" cy="268.2" r="5"></circle>
+        <circle class="sv-key" cx="538" cy="254.6" r="5"></circle>
+        <circle class="sv-good" cx="490" cy="245.6" r="5"></circle>
+        <circle class="sv-ink" cx="430" cy="234.2" r="5"></circle>
+
+        <rect class="sv-paper" x="300" y="96" width="268" height="24" rx="4"></rect>
+        <text class="sv-ts" x="310" y="112">lowest points slide left, never reach 0</text>
+        <line class="sv-stroke-ink" x1="424" y1="122" x2="432" y2="224" stroke-width="1.4" marker-end="url(#arA)"></line>
+
+        <text class="sv-ts" x="90" y="303" text-anchor="middle">-0.2</text>
+        <text class="sv-ts" x="250" y="303" text-anchor="middle">0</text>
+        <text class="sv-ts" x="410" y="303" text-anchor="middle">0.2</text>
+        <text class="sv-ts" x="570" y="303" text-anchor="middle">0.4</text>
+        <text class="sv-ts" x="730" y="303" text-anchor="middle">0.6</text>
+        <text class="sv-ts" x="400" y="325" text-anchor="middle">slope</text>
+        <text class="sv-ts" x="30" y="168" text-anchor="middle" transform="rotate(-90 30 168)">SSR + penalty</text>
+      </svg>
+      <figcaption>Notice that every ridge curve stays a smooth parabola, so its lowest point always sits a little to the right of zero.</figcaption>
+    </figure>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 350" role="img" aria-label="Four lasso regression curves for lambda 0, 10, 20 and 40. A kink forms at slope zero and grows sharper, until at lambda 40 the kink is the lowest point of the curve.">
+        <defs>
+          <marker id="arB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" class="sv-ink2"></path>
+          </marker>
+        </defs>
+        <line class="sv-stroke-acc" x1="90" y1="26" x2="116" y2="26" stroke-width="3"></line>
+        <text class="sv-ts" x="122" y="30">&#955; = 0</text>
+        <line class="sv-stroke-key" x1="210" y1="26" x2="236" y2="26" stroke-width="3"></line>
+        <text class="sv-ts" x="242" y="30">&#955; = 10</text>
+        <line class="sv-stroke-good" x1="340" y1="26" x2="366" y2="26" stroke-width="3"></line>
+        <text class="sv-ts" x="372" y="30">&#955; = 20</text>
+        <line class="sv-stroke-ink" x1="470" y1="26" x2="496" y2="26" stroke-width="3"></line>
+        <text class="sv-ts" x="502" y="30">&#955; = 40</text>
+
+        <line class="sv-line" x1="70" y1="50" x2="70" y2="285" stroke-width="1.5"></line>
+        <line class="sv-line" x1="70" y1="285" x2="745" y2="285" stroke-width="1.5"></line>
+        <line class="sv-line" x1="250" y1="50" x2="250" y2="285" stroke-width="1.5" stroke-dasharray="4 4"></line>
+
+        <polyline class="sv-stroke-acc" stroke-width="2.5" points="90,126.4 122,143.3 154,159.1 186,173.9 218,187.6 250,200.2 282,211.8 314,222.3 346,231.7 378,240 410,247.2 442,253.4 474,258.5 506,262.5 538,265.5 570,267.4 602,268.2 634,267.9 666,266.6 698,264.2 730,260.7"></polyline>
+        <polyline class="sv-stroke-key" stroke-width="2.5" points="90,109.6 122,129.9 154,149.1 186,167.2 218,184.3 250,200.2 282,208.4 314,215.5 346,221.6 378,226.6 410,230.4 442,233.3 474,235 506,235.7 538,235.3 570,233.8 602,231.3 634,227.6 666,222.9 698,217.2 730,210.3"></polyline>
+        <polyline class="sv-stroke-good" stroke-width="2.5" points="90,92.8 122,116.4 154,139 186,160.5 218,180.9 250,200.2 282,205.1 314,208.8 346,211.5 378,213.1 410,213.7 442,213.1 474,211.5 506,208.8 538,205.1 570,200.2 602,194.3 634,187.3 666,179.3 698,170.2 730,159.9"></polyline>
+        <polyline class="sv-stroke-ink" stroke-width="2.5" points="90,59.2 122,89.6 154,118.9 186,147.1 218,174.2 250,200.2 282,198.4 314,195.4 346,191.4 378,186.3 410,180.1 442,172.8 474,164.5 506,155.1 538,144.6 570,133.1 602,120.5 634,106.8 666,92 698,76.1 730,59.2"></polyline>
+
+        <circle class="sv-acc" cx="610" cy="268.2" r="5"></circle>
+        <circle class="sv-key" cx="510" cy="235.7" r="5"></circle>
+        <circle class="sv-good" cx="410" cy="213.7" r="5"></circle>
+        <circle class="sv-ink" cx="250" cy="200.2" r="6"></circle>
+
+        <rect class="sv-paper" x="278" y="104" width="272" height="24" rx="4"></rect>
+        <text class="sv-ts" x="288" y="120">at &#955; = 40 the kink is the lowest point</text>
+        <line class="sv-stroke-ink" x1="300" y1="132" x2="258" y2="192" stroke-width="1.4" marker-end="url(#arB)"></line>
+
+        <text class="sv-ts" x="90" y="303" text-anchor="middle">-0.2</text>
+        <text class="sv-ts" x="250" y="303" text-anchor="middle">0</text>
+        <text class="sv-ts" x="410" y="303" text-anchor="middle">0.2</text>
+        <text class="sv-ts" x="570" y="303" text-anchor="middle">0.4</text>
+        <text class="sv-ts" x="730" y="303" text-anchor="middle">0.6</text>
+        <text class="sv-ts" x="400" y="325" text-anchor="middle">slope</text>
+        <text class="sv-ts" x="30" y="168" text-anchor="middle" transform="rotate(-90 30 168)">SSR + penalty</text>
+      </svg>
+      <figcaption>The absolute value makes a corner at slope zero. Once lambda is big enough, that corner is the bottom of the curve.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Sum of squared residuals</span>
+      <div class="math">$$ \text{SSR} = \sum_{i=1}^{n}\left(y_i - \hat{y}_i\right)^2 $$</div>
+      <p class="explain"><b>Symbols:</b> \(y_i\) is the observed height of person \(i\). \(\hat{y}_i\) is the height the line predicts for that person. \(n\) is the number of people. Their difference is the residual. <b>What it tells you:</b> one number for how far the line misses the data, with big misses counted much more heavily.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Ridge, the L2 or squared penalty</span>
+      <div class="math">$$ \text{SSR} + \lambda\, m^{2} $$</div>
+      <p class="explain"><b>Symbols:</b> \(m\) is the slope, the change in height per unit of weight. \(\lambda\) (lambda) is a number you choose that sets the strength of the penalty. <b>What it tells you:</b> ridge minimises this quantity. Because \(m^{2}\) is a smooth bowl, adding it to a parabola gives another parabola, whose bottom sits closer to zero but never on it.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Lasso, the L1 or absolute value penalty</span>
+      <div class="math">$$ \text{SSR} + \lambda\, \lvert m \rvert $$</div>
+      <p class="explain"><b>Symbols:</b> the same \(m\) and \(\lambda\) as above. The bars \(\lvert m \rvert\) mean the size of the slope, ignoring its sign. <b>What it tells you:</b> lasso minimises this quantity. \(\lvert m \rvert\) is a V shape with a corner at \(m = 0\), so the total curve inherits that corner, and the corner can become the lowest point.</p>
+    </div>
+
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh sets lambda to 10 and works through three slopes for the ridge penalty. The penalty is \(10 \times m^{2}\), so it costs nothing at slope zero and grows quickly after that.</p>
+      <table>
+        <tr><th>slope \(m\)</th><th>penalty \(10 \times m^2\)</th><th>what happens to the fit</th></tr>
+        <tr><td>0</td><td>0</td><td>horizontal line, worst residuals, no penalty at all</td></tr>
+        <tr><td>0.2</td><td>0.4</td><td>residuals shrink, a small penalty appears</td></tr>
+        <tr><td>0.4</td><td>1.6</td><td>residuals shrink further, but the penalty is now four times larger</td></tr>
+      </table>
+      <p>The two forces pull in opposite directions. The falling residuals want a bigger slope and the rising penalty wants a smaller one. The balance point lands below 0.45, which is why lambda equal to 10 shrinks the slope.</p>
+      <p>With lasso at lambda 40 the penalty is \(40 \times \lvert m \rvert\). Now the balance point is not just small, it is exactly zero, so the best line is flat and weight plays no part.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Lasso does not zero out a slope because it punishes harder. The size of the penalty is not the point; the shape is. The corner at a slope of zero is what lets zero win.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Ridge never removes a variable. Josh raises lambda to 10, 20, 40 and even 400, and the best slope keeps shrinking without landing on zero. To drop useless predictors, ridge alone is not enough.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The y axis here is the SSR plus the penalty, not the SSR alone. Curves for different lambda values sit at different heights, so compare only where each one bottoms out.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Lambda equal to zero turns both methods back into ordinary least squares, because the penalty is then zero at every slope. That is why the blue curve is the same in both figures.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>Why can lasso set a coefficient to exactly zero when ridge cannot?</summary><div class="a">It is the shape of the penalty near zero. The squared penalty is smooth there, so the total curve stays a parabola and its minimum always sits a little away from zero. The absolute value penalty has a corner at zero, which puts a kink in the total curve. Once lambda is large enough that kink becomes the lowest point, so the coefficient is exactly zero.</div></details>
+    <details class="qa" open><summary>What does lambda control, and what happens as you raise it?</summary><div class="a">Lambda sets how much you care about a large coefficient compared with a good fit. At lambda zero there is no penalty and you get plain least squares. As lambda grows the best slope shrinks toward zero in both methods. Ridge approaches zero and stops short, while lasso can reach zero and stay there.</div></details>
+    <details class="qa" open><summary>Can you explain the picture Josh draws?</summary><div class="a">He puts the slope on the x axis and the sum of squared residuals plus the penalty on the y axis. Each candidate line becomes one point, and the points trace a curve. The bottom of the curve is the slope the method chooses. One curve per lambda value makes the shrinkage visible as that bottom slides left.</div></details>
+    <details class="qa" open><summary>When would you prefer lasso over ridge?</summary><div class="a">Use lasso when you think some predictors are useless and you want the model to drop them, since it can drive their coefficients to zero. Use ridge when you believe most predictors carry a little signal and you only want to calm them down. In the video, a large lambda with lasso removes weight completely, while ridge always keeps some of it.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Plot the slope of the fitted line against the sum of squared residuals, and you get a parabola.</li>
+      <li>The bottom of that parabola is the plain least squares answer, here a slope of 0.45.</li>
+      <li>Ridge adds lambda times the slope squared, which keeps the curve a smooth parabola.</li>
+      <li>Raising lambda in ridge slides the lowest point toward zero but never onto it, even at lambda 400.</li>
+      <li>Lasso adds lambda times the absolute value of the slope, which puts a corner in the curve at zero.</li>
+      <li>Raising lambda in lasso sharpens that corner until it becomes the lowest point of the curve.</li>
+      <li>At lambda 40 the lasso slope is exactly zero, so weight drops out of the prediction.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Ridge vs Lasso</span><span class="board-tag">the corner at zero lets zero win</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 270" role="img" aria-label="Two panels of SSR plus penalty against slope. In each, a thin curve is plain SSR with its lowest point at slope 0.45. Left, ridge: the bold curve stays a smooth bowl whose bottom sits right of slope 0. Right, lasso: the bold curve has a corner at slope 0, and that corner is its lowest point.">
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linecap="round">
+              <line x1="20" y1="200" x2="190" y2="200"/>
+              <line x1="210" y1="200" x2="380" y2="200"/>
+            </g>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-dasharray="4 5" stroke-linecap="round">
+              <line x1="52" y1="52" x2="52" y2="200"/>
+              <line x1="242" y1="52" x2="242" y2="200"/>
+            </g>
+            <g class="sv-stroke-acc" stroke-width="2.5" stroke-linecap="round">
+              <path d="M29.5 78 Q108.25 267 187 125.25"/>
+              <path d="M219.5 78 Q298.25 267 377 125.25"/>
+            </g>
+            <g class="sv-stroke-key" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M29.5 69.6 Q83.5 239.6 137.5 60"/>
+              <path d="M227 57.75 Q234.5 93 242 125.25 Q266.25 108.3 290.5 60"/>
+            </g>
+            <circle cx="119.5" cy="186" r="5" class="sv-acc"/>
+            <circle cx="309.5" cy="186" r="5" class="sv-acc"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="82" cy="152.25" r="5" class="sv-key"/>
+              <circle cx="242" cy="125.25" r="7" class="sv-good"/>
+            </g>
+            <text x="22" y="34" class="sv-tb">ridge + λm²</text>
+            <text x="212" y="34" class="sv-tb">lasso + λ|m|</text>
+            <text x="52" y="222" text-anchor="middle" class="sv-ts">slope 0</text>
+            <text x="119.5" y="222" text-anchor="middle" class="sv-ts">0.45</text>
+            <text x="242" y="222" text-anchor="middle" class="sv-ts">slope 0</text>
+            <text x="309.5" y="222" text-anchor="middle" class="sv-ts">0.45</text>
+            <text x="105" y="254" text-anchor="middle" class="sv-t">smooth: never 0</text>
+            <text x="295" y="254" text-anchor="middle" class="sv-t">corner: exactly 0</text>
+          </svg>
+          <p>Thin: plain SSR, lowest at slope 0.45. Bold: SSR plus the penalty. Ridge's square keeps a smooth bowl whose bottom only nears zero; lasso's absolute value adds a corner at zero that, with lambda large enough, becomes the bottom.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>SSR</dt><dd>Sum of squared residuals: square each gap, add them up.</dd>
+            <dt>Lambda (λ)</dt><dd>Sets the penalty's strength; you choose it.</dd>
+            <dt>L2 and L1</dt><dd>Ridge's squared penalty; lasso's absolute value penalty.</dd>
+            <dt>Kink</dt><dd>The corner |m| puts in the curve at slope zero.</dd>
+            <dt>Lowest point</dt><dd>Where the curve bottoms out: the chosen slope.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Flat line</b>slope 0: square, add residuals</li>
+            <li><b>Tilt and plot</b>0.2, 0.4 … a parabola</li>
+            <li><b>Least squares</b>lowest point at 0.45</li>
+            <li><b>Ridge</b>+ λm²; at λ 10, below 0.45</li>
+            <li><b>Raise λ</b>20, 40, even 400: never 0</li>
+            <li><b>Lasso</b>+ λ|m|; at λ 40, exactly 0</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{ridge: }\ \text{SSR}+\lambda\,m^{2}$$
+          $$\text{lasso: }\ \text{SSR}+\lambda\,\lvert m\rvert$$
+          <ul class="keys">
+            <li>\(m\) is the slope; \(\lambda=0\) gives plain least squares.</li>
+            <li>\(m^2\) is a smooth bowl: the total stays a parabola.</li>
+            <li>\(\lvert m\rvert\) is a V; its corner at 0 carries into the total.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>slope m</th><th>10 × m²</th><th>residuals</th></tr>
+            <tr><td>0</td><td>0</td><td>worst</td></tr>
+            <tr><td>0.2</td><td>0.4</td><td>shrink</td></tr>
+            <tr><td>0.4</td><td>1.6</td><td>shrink more</td></tr>
+            <tr><td>ridge best</td><td colspan="2">below 0.45</td></tr>
+            <tr class="final"><td>lasso, 40|m|</td><td colspan="2">exactly 0</td></tr>
+          </table>
+          <p class="hand">Falling residuals want a bigger slope, the rising penalty a smaller one; the balance point is the best slope.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Lasso zeroes slopes because it punishes harder.</span><span class="yes">Shape, not size: the corner at zero lets zero win.</span></li>
+            <li><span class="no">Big enough λ makes ridge drop a variable.</span><span class="yes">Even at λ 400 the best ridge slope stays above zero.</span></li>
+            <li><span class="no">Compare the curves' heights across λ.</span><span class="yes">The y axis is SSR plus penalty; compare only where curves bottom out.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="26-regularization-part-2-lasso-l1-regression.html"><small>Previous</small>Regularization Part 2: Lasso (L1) Regression</a> <a href="28-regularization-part-3-elastic-net-regression.html"><small>Next</small>Regularization Part 3: Elastic Net Regression</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

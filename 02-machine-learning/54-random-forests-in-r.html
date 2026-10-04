@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Random Forests in R — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>54</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 54 · 15.2 min</div>
+    <h1>Random Forests in R</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=6EXPYzbfLCE" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Josh builds a random forest in R on the UCI heart disease data. He cleans the data, fills the gaps, checks the error, tunes two settings, and clusters the patients.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Most of the work is cleaning: question marks become <code>NA</code>, and coded columns become factors. <code>rfImpute</code> fills the missing values, and <code>randomForest</code> builds the model. Printing the model shows that 83.5% of the out-of-bag samples are classified correctly. Josh then checks the number of trees and the number of variables per split. Last, he turns the proximity matrix into an MDS plot of the patients.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>A random forest is many decision trees, each built on a bootstrap sample of the rows. The theory is in the two earlier videos. The key habit here is that the forest grades itself. Rows left out of a tree's bootstrap sample are called out-of-bag, and only those trees predict them. The share of these predictions that are wrong is the out-of-bag error.</p>
+    <p>One model object holds everything Josh needs afterwards. It has the confusion matrix, the error rate after every tree, and, if you ask, the proximity matrix.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Pipeline from the raw heart disease file through cleaning and imputation to one random forest with three outputs">
+        <defs>
+          <marker id="arP" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" class="sv-ink3"></path>
+          </marker>
+        </defs>
+        <text x="28" y="30" class="sv-tb">One model object, three things to read from it</text>
+
+        <rect x="28" y="52" width="150" height="66" rx="6" class="sv-paper2"></rect>
+        <text x="40" y="76" class="sv-tm">read.csv(url)</text>
+        <text x="40" y="96" class="sv-ts">303 patients, no</text>
+        <text x="40" y="112" class="sv-ts">column names</text>
+
+        <line x1="182" y1="85" x2="200" y2="85" class="sv-line" stroke-width="2" marker-end="url(#arP)"></line>
+
+        <rect x="204" y="52" width="150" height="66" rx="6" class="sv-paper2"></rect>
+        <text x="216" y="76" class="sv-tm">clean up</text>
+        <text x="216" y="96" class="sv-ts">"?" becomes NA,</text>
+        <text x="216" y="112" class="sv-ts">codes become factors</text>
+
+        <line x1="358" y1="85" x2="376" y2="85" class="sv-line" stroke-width="2" marker-end="url(#arP)"></line>
+
+        <rect x="380" y="52" width="150" height="66" rx="6" class="sv-acc-soft"></rect>
+        <text x="392" y="76" class="sv-tm">rfImpute()</text>
+        <text x="392" y="96" class="sv-ts">a small forest fills</text>
+        <text x="392" y="112" class="sv-ts">the missing values</text>
+
+        <line x1="534" y1="85" x2="552" y2="85" class="sv-line" stroke-width="2" marker-end="url(#arP)"></line>
+
+        <rect x="556" y="52" width="180" height="66" rx="6" class="sv-acc-soft"></rect>
+        <text x="568" y="76" class="sv-tm">randomForest()</text>
+        <text x="568" y="96" class="sv-ts">500 trees, 3 variables</text>
+        <text x="568" y="112" class="sv-ts">tried at each node</text>
+
+        <line x1="646" y1="118" x2="646" y2="146" class="sv-line" stroke-width="2"></line>
+        <line x1="142" y1="146" x2="646" y2="146" class="sv-line" stroke-width="2"></line>
+        <line x1="142" y1="146" x2="142" y2="176" class="sv-line" stroke-width="2" marker-end="url(#arP)"></line>
+        <line x1="386" y1="146" x2="386" y2="176" class="sv-line" stroke-width="2" marker-end="url(#arP)"></line>
+        <line x1="626" y1="146" x2="626" y2="176" class="sv-line" stroke-width="2" marker-end="url(#arP)"></line>
+
+        <rect x="28" y="180" width="228" height="66" rx="6" class="sv-paper"></rect>
+        <rect x="28" y="180" width="4" height="66" class="sv-good"></rect>
+        <text x="44" y="204" class="sv-tm">print(model)</text>
+        <text x="44" y="224" class="sv-ts">OOB error 16.5% and</text>
+        <text x="44" y="240" class="sv-ts">the confusion matrix</text>
+
+        <rect x="272" y="180" width="228" height="66" rx="6" class="sv-paper"></rect>
+        <rect x="272" y="180" width="4" height="66" class="sv-acc"></rect>
+        <text x="288" y="204" class="sv-tm">model$err.rate</text>
+        <text x="288" y="224" class="sv-ts">error after every tree,</text>
+        <text x="288" y="240" class="sv-ts">so you can pick ntree</text>
+
+        <rect x="516" y="180" width="220" height="66" rx="6" class="sv-paper"></rect>
+        <rect x="516" y="180" width="4" height="66" class="sv-key"></rect>
+        <text x="532" y="204" class="sv-tm">model$proximity</text>
+        <text x="532" y="224" class="sv-ts">how often two patients</text>
+        <text x="532" y="240" class="sv-ts">share a leaf, for MDS</text>
+
+        <text x="28" y="278" class="sv-ts">The proximity matrix only appears if you pass proximity = TRUE when you build the forest.</text>
+      </svg>
+      <figcaption>Notice that cleaning and imputation come first, and that a single fitted model supplies the score, the tuning curve, and the cluster plot.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Load the libraries, read the data, and name the columns.</li>
+      <li>Turn question marks into <code>NA</code> and coded columns into factors.</li>
+      <li>Set the seed and fill the missing values with <code>rfImpute</code>.</li>
+      <li>Build the forest, then print it to see the error and the confusion matrix.</li>
+      <li>Plot the error against the number of trees, and loop over <code>mtry</code>.</li>
+      <li>Draw an MDS plot from the proximity matrix.</li>
+    </ol>
+
+    <h3>1. Read the data and name the columns</h3>
+    <p>The file has no column names. So Josh copies the names from the UCI website.</p>
+<pre><code>library(ggplot2)
+library(cowplot)
+library(randomForest)
+
+url &lt;- paste("http://archive.ics.uci.edu/ml/machine-learning-databases/",
+             "heart-disease/processed.cleveland.data", sep="")
+data &lt;- read.csv(url, header=FALSE)
+
+colnames(data) &lt;- c("age","sex","cp","trestbps","chol","fbs","restecg",
+                    "thalach","exang","oldpeak","slope","ca","thal","hd")
+head(data)
+str(data)</code></pre>
+
+    <h3>2. Clean the columns</h3>
+    <p>The <code>str</code> function shows the structure of the data. Sex and chest pain are stored as numbers but should be factors, which are category columns. The <code>ca</code> and <code>thal</code> columns use a question mark for a missing value.</p>
+<pre><code>data[data == "?"] &lt;- NA
+
+data[data$sex == 0,]$sex &lt;- "F"          # easier on the eyes
+data[data$sex == 1,]$sex &lt;- "M"
+data$sex &lt;- as.factor(data$sex)
+
+data$cp &lt;- as.factor(data$cp)            # and fbs, restecg, exang, slope
+data$ca &lt;- as.factor(as.integer(data$ca))    # the "?" made it a string
+data$thal &lt;- as.factor(as.integer(data$thal))
+
+data$hd &lt;- as.factor(ifelse(test=data$hd == 0, yes="Healthy", no="Unhealthy"))</code></pre>
+    <p><b>The same idea in Python.</b> Read the file with pandas and mark the question marks as missing.</p>
+<pre><code>import pandas as pd
+cols = ["age","sex","cp","trestbps","chol","fbs","restecg",
+        "thalach","exang","oldpeak","slope","ca","thal","hd"]
+df = pd.read_csv(url, header=None, names=cols, na_values="?")
+df["hd"] = (df["hd"] > 0).map({True: "Unhealthy", False: "Healthy"})
+
+cat = ["sex","cp","fbs","restecg","exang","slope","ca","thal"]
+X, y = df.drop(columns="hd"), df["hd"]</code></pre>
+
+    <h3>3. Fill the missing values, then build the forest</h3>
+    <p><code>rfImpute</code> builds forests to guess the missing values. The formula <code>hd ~ .</code> means "predict heart disease from all other columns". The <code>iter</code> argument sets how many forests to build, and four to six is usually enough. After each pass it prints the out-of-bag error.</p>
+<pre><code>set.seed(42)
+data.imputed &lt;- rfImpute(hd ~ ., data=data, iter=6)
+
+model &lt;- randomForest(hd ~ ., data=data.imputed, proximity=TRUE)
+model</code></pre>
+    <p><b>The same idea in Python.</b> Scikit-learn has no <code>rfImpute</code>, so use <code>IterativeImputer</code>, a different method with the same goal. Impute first, then one-hot encode the coded columns, because scikit-learn cannot split on a category directly. Fit with <code>oob_score=True</code> so the forest grades itself.</p>
+<pre><code>from sklearn.experimental import enable_iterative_imputer  # noqa
+from sklearn.impute import IterativeImputer
+from sklearn.ensemble import RandomForestClassifier
+
+X = pd.DataFrame(IterativeImputer(max_iter=6, random_state=42)
+                 .fit_transform(X), columns=X.columns)
+X[cat] = X[cat].round()                  # imputed codes back to whole numbers
+X = pd.get_dummies(X, columns=cat)       # one-hot encode after imputing
+
+rf = RandomForestClassifier(n_estimators=500, max_features="sqrt",
+                            oob_score=True, random_state=42).fit(X, y)
+print("OOB error:", round(1 - rf.oob_score_, 3))</code></pre>
+
+    <h3>4. Read the printed summary</h3>
+    <p>The type is classification, because the forest classifies samples. Predicting weight would say regression. Leaving out the target would say unsupervised. The forest has 500 trees and tries 3 variables at each internal node; both are defaults. Last come the out-of-bag error and the confusion matrix.</p>
+
+    <h3>5. Are 500 trees enough?</h3>
+    <p>The model holds a matrix called <code>err.rate</code>. Its columns are the overall out-of-bag error, the healthy error, and the unhealthy error. Row 1 is the rate after one tree, and the last row is after all 500. Josh reshapes it so ggplot2 can draw one line per error type.</p>
+<pre><code>oob.error.data &lt;- data.frame(
+  Trees = rep(1:nrow(model$err.rate), times=3),
+  Type  = rep(c("OOB","Healthy","Unhealthy"), each=nrow(model$err.rate)),
+  Error = c(model$err.rate[,"OOB"],
+            model$err.rate[,"Healthy"],
+            model$err.rate[,"Unhealthy"]))
+
+ggplot(data=oob.error.data, aes(x=Trees, y=Error)) + geom_line(aes(color=Type))
+
+model &lt;- randomForest(hd ~ ., data=data.imputed, ntree=1000, proximity=TRUE)</code></pre>
+    <p><b>The same idea in Python.</b> Scikit-learn keeps no error history. So grow the forest with <code>warm_start=True</code> and record the error after each new tree.</p>
+<pre><code>import numpy as np, matplotlib.pyplot as plt
+
+rf = RandomForestClassifier(n_estimators=1, max_features="sqrt",
+                            oob_score=True, warm_start=True, random_state=42)
+oob_err = []
+for n in range(1, 1001):
+    rf.set_params(n_estimators=n).fit(X, y)   # warnings are normal at first
+    oob_err.append(1 - rf.oob_score_)
+
+plt.plot(range(1, 1001), oob_err)
+plt.xlabel("Number of trees"); plt.ylabel("OOB error rate")</code></pre>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 310" role="img" aria-label="Three error curves fall quickly and then flatten out shortly after five hundred trees">
+        <text x="28" y="30" class="sv-tb">Error rate against the number of trees</text>
+
+        <line x1="80" y1="240" x2="730" y2="240" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <line x1="80" y1="56" x2="80" y2="240" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <line x1="400" y1="56" x2="400" y2="240" class="sv-line" stroke-width="1.5" stroke-dasharray="5 5"></line>
+
+        <polyline points="80,72 96,112 112,130 144,144 208,152 272,150 400,155 528,154 720,155" class="sv-stroke-acc" stroke-width="2.2"></polyline>
+        <polyline points="80,106 96,142 112,162 144,176 208,184 272,186 400,188 528,187 720,188" class="sv-stroke-good" stroke-width="2.2"></polyline>
+        <polyline points="80,116 96,156 112,176 144,192 208,198 272,200 400,202 528,201 720,202" class="sv-stroke-key" stroke-width="2.2"></polyline>
+
+        <text x="72" y="74" class="sv-ts" text-anchor="end">0.30</text>
+        <text x="72" y="154" class="sv-ts" text-anchor="end">0.20</text>
+        <text x="72" y="234" class="sv-ts" text-anchor="end">0.10</text>
+        <text x="80" y="258" class="sv-ts" text-anchor="middle">0</text>
+        <text x="400" y="258" class="sv-ts" text-anchor="middle">500</text>
+        <text x="720" y="258" class="sv-ts" text-anchor="middle">1000</text>
+        <text x="404" y="50" class="sv-ts">the default, 500 trees</text>
+
+        <rect x="470" y="116" width="256" height="22" rx="4" class="sv-paper"></rect>
+        <text x="726" y="132" class="sv-ts" text-anchor="end">flat from here on, so more trees do not help</text>
+
+        <line x1="80" y1="282" x2="106" y2="282" class="sv-stroke-acc" stroke-width="2.2"></line>
+        <text x="114" y="286" class="sv-ts">Unhealthy error</text>
+        <line x1="250" y1="282" x2="276" y2="282" class="sv-stroke-good" stroke-width="2.2"></line>
+        <text x="284" y="286" class="sv-ts">Overall out-of-bag error</text>
+        <line x1="470" y1="282" x2="496" y2="282" class="sv-stroke-key" stroke-width="2.2"></line>
+        <text x="504" y="286" class="sv-ts">Healthy error</text>
+      </svg>
+      <figcaption>Notice that all three curves settle soon after 500 trees, so the 1000-tree forest scores the same as the smaller one.</figcaption>
+    </figure>
+
+    <h3>6. How many variables at each node?</h3>
+    <p>The other setting is <code>mtry</code>, the number of variables tried at each split. A loop builds one forest for each value from 1 to 10. It stores the out-of-bag error after all 1000 trees. The lowest error came at <code>mtry = 3</code>, the default.</p>
+<pre><code>oob.values &lt;- vector(length=10)
+for(i in 1:10) {
+  temp.model &lt;- randomForest(hd ~ ., data=data.imputed, mtry=i, ntree=1000)
+  oob.values[i] &lt;- temp.model$err.rate[nrow(temp.model$err.rate), 1]
+}
+oob.values</code></pre>
+    <p><b>The same idea in Python.</b> The <code>max_features</code> argument is <code>mtry</code> under another name.</p>
+<pre><code>for m in range(1, 11):
+    fit = RandomForestClassifier(n_estimators=1000, max_features=m,
+                                 oob_score=True, random_state=42).fit(X, y)
+    print(m, round(1 - fit.oob_score_, 4))</code></pre>
+
+    <h3>7. Cluster the patients with an MDS plot</h3>
+    <p>The proximity of two patients is how often they land in the same leaf. One minus proximity is a distance. <code>cmdscale</code> runs classical multidimensional scaling (MDS), which draws the patients on a flat map. The eigenvalues give the share of variation each axis explains.</p>
+<pre><code>distance.matrix &lt;- dist(1 - model$proximity)
+mds.stuff &lt;- cmdscale(distance.matrix, eig=TRUE, x.ret=TRUE)
+mds.var.per &lt;- round(mds.stuff$eig / sum(mds.stuff$eig) * 100, 1)
+
+mds.data &lt;- data.frame(Sample=rownames(mds.stuff$points),
+                       X=mds.stuff$points[,1], Y=mds.stuff$points[,2],
+                       Status=data.imputed$hd)
+
+ggplot(data=mds.data, aes(x=X, y=Y, label=Sample)) +
+  geom_text(aes(color=Status)) +
+  xlab(paste("MDS1 - ", mds.var.per[1], "%", sep="")) +
+  ylab(paste("MDS2 - ", mds.var.per[2], "%", sep=""))</code></pre>
+    <p><b>The same idea in Python.</b> Scikit-learn does not return proximities. So build them from the leaf each sample falls into.</p>
+<pre><code>from sklearn.manifold import MDS
+
+leaves = rf.apply(X)                                   # samples x trees
+prox = (leaves[:, None, :] == leaves[None, :, :]).mean(axis=2)
+coords = MDS(n_components=2, dissimilarity="precomputed",
+             random_state=42).fit_transform(1 - prox)
+
+plt.scatter(coords[:, 0], coords[:, 1], c=(y == "Unhealthy"))</code></pre>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 315" role="img" aria-label="MDS plot with unhealthy patients on the left and healthy patients on the right, split along the first axis">
+        <text x="28" y="30" class="sv-tb">MDS plot from 1 minus the proximities</text>
+
+        <line x1="80" y1="240" x2="730" y2="240" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <line x1="405" y1="56" x2="405" y2="240" class="sv-line" stroke-width="1.5" stroke-dasharray="5 5"></line>
+
+        <circle cx="150" cy="100" r="5" class="sv-acc"></circle>
+        <circle cx="196" cy="140" r="5" class="sv-acc"></circle>
+        <circle cx="168" cy="178" r="5" class="sv-acc"></circle>
+        <circle cx="238" cy="112" r="5" class="sv-acc"></circle>
+        <circle cx="222" cy="196" r="5" class="sv-acc"></circle>
+        <circle cx="278" cy="152" r="5" class="sv-acc"></circle>
+        <circle cx="300" cy="94" r="5" class="sv-acc"></circle>
+        <circle cx="262" cy="216" r="5" class="sv-acc"></circle>
+
+        <circle cx="520" cy="106" r="5" class="sv-key"></circle>
+        <circle cx="566" cy="150" r="5" class="sv-key"></circle>
+        <circle cx="602" cy="112" r="5" class="sv-key"></circle>
+        <circle cx="544" cy="198" r="5" class="sv-key"></circle>
+        <circle cx="640" cy="164" r="5" class="sv-key"></circle>
+        <circle cx="596" cy="212" r="5" class="sv-key"></circle>
+        <circle cx="668" cy="120" r="5" class="sv-key"></circle>
+
+        <circle cx="200" cy="76" r="5" class="sv-key"></circle>
+        <rect x="150" y="46" width="180" height="22" rx="4" class="sv-paper"></rect>
+        <text x="158" y="62" class="sv-ts">patient 253, labelled healthy</text>
+        <line x1="205" y1="68" x2="201" y2="70" class="sv-line" stroke-width="1.5"></line>
+
+        <rect x="112" y="252" width="150" height="22" rx="4" class="sv-paper"></rect>
+        <text x="120" y="268" class="sv-ts">unhealthy patients</text>
+        <rect x="516" y="252" width="140" height="22" rx="4" class="sv-paper"></rect>
+        <text x="524" y="268" class="sv-ts">healthy patients</text>
+
+        <text x="405" y="292" class="sv-ts" text-anchor="middle">MDS1 - 47%</text>
+        <text x="60" y="148" class="sv-ts" text-anchor="middle" transform="rotate(-90 60 148)">MDS2 - 14%</text>
+      </svg>
+      <figcaption>Notice that the split runs left to right, so the first axis carries the real signal, and one patient labelled healthy sits with the unhealthy group.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Out-of-bag error rate</span>
+      <div class="math">$$ \text{OOB error} = \frac{1}{N}\sum_{i=1}^{N} \mathbf{1}\!\left(\hat{y}^{\,\text{oob}}_i \neq y_i\right) $$</div>
+      <p class="explain"><b>Symbols:</b> \(N\) is the number of patients. \(y_i\) is the true label. \(\hat{y}^{\,\text{oob}}_i\) is the vote of only the trees that did not see patient \(i\). \(\mathbf{1}(\cdot)\) is 1 for a wrong label and 0 for a right one. <b>What it tells you:</b> it is an honest error from unseen data, so no separate test set is needed.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Default number of variables per node</span>
+      <div class="math">$$ m_{\text{try}} = \left\lfloor \sqrt{p} \right\rfloor \ \text{(classification)}, \qquad m_{\text{try}} = \left\lfloor p/3 \right\rfloor \ \text{(regression)} $$</div>
+      <p class="explain"><b>Symbols:</b> \(p\) is the number of predictor columns. \(m_{\text{try}}\) is how many of them a tree may choose from at each node. \(\lfloor\cdot\rfloor\) rounds down. <b>What it tells you:</b> with 13 predictors the default is 3, as the summary shows. It is a starting point, not a proven best.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Proximity turned into distance</span>
+      <div class="math">$$ d_{ij} = 1 - \text{prox}_{ij}, \qquad \text{prox}_{ij} = \frac{\text{trees where } i \text{ and } j \text{ share a leaf}}{\text{total number of trees}} $$</div>
+      <p class="explain"><b>Symbols:</b> \(\text{prox}_{ij}\) runs from 0 to 1 and says how alike patients \(i\) and \(j\) look to the forest. \(d_{ij}\) is their distance. <b>What it tells you:</b> two patients who always share a leaf get a distance of 0.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Variation explained by an MDS axis</span>
+      <div class="math">$$ \text{percent}_k = \frac{\lambda_k}{\sum_j \lambda_j} \times 100 $$</div>
+      <p class="explain"><b>Symbols:</b> \(\lambda_k\) is the \(k\)-th eigenvalue from <code>cmdscale</code>. The sum runs over all eigenvalues. <b>What it tells you:</b> here the x-axis carries 47% and the y-axis 14%, so the big differences run left to right.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Printing the model gives this confusion matrix for the 303 patients. Each row is the true label, and each column is the forest's call.</p>
+      <table>
+        <tr><th></th><th>Called Healthy</th><th>Called Unhealthy</th><th>Class error</th></tr>
+        <tr><th>Healthy</th><td>141</td><td>23</td><td>23 / 164 = 14.0%</td></tr>
+        <tr><th>Unhealthy</th><td>27</td><td>112</td><td>27 / 139 = 19.4%</td></tr>
+      </table>
+      <p>The overall out-of-bag error uses both kinds of mistake:</p>
+      <div class="math">$$ \text{OOB error} = \frac{23 + 27}{303} = \frac{50}{303} = 0.165 $$</div>
+      <p>So 83.5% of the out-of-bag samples were classified correctly. A forest with 1000 trees gave the same error rate.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Do not skip the factor conversions. Chest pain uses the codes 1 to 4, and these codes are names, not amounts. Left as numbers, the trees would treat 4 as larger than 1.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>The error that <code>rfImpute</code> prints should fall if the guesses improve. Here it does not, even with 20 iterations. That means the guesses are as good as this method can make them.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>The defaults of 500 trees and <code>mtry = 3</code> were right here, but only testing showed it. You cannot know the curve is flat until you grow more trees than you keep.</p>
+    </div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open>
+      <summary>What is the out-of-bag error and why can it replace a test set?</summary>
+      <div class="a">Each tree trains on a bootstrap sample, so some rows are left out of it. Each row is predicted only by the trees that never saw it. The share of wrong predictions is the out-of-bag error. Because the data are unseen, the estimate is honest without a test set.</div>
+    </details>
+
+    <details class="qa" open>
+      <summary>How do you choose the number of trees and the number of variables per split?</summary>
+      <div class="a">I plot the out-of-bag error against the number of trees and stop where it flattens. Here it settled just after 500 trees. For variables per split, I loop over a small range and compare the final errors. The default of 3 won here, but I would not assume it.</div>
+    </details>
+
+    <details class="qa" open>
+      <summary>What is the proximity matrix and what can you do with it?</summary>
+      <div class="a">Proximity is the share of trees in which two samples end in the same leaf. One minus proximity is a distance, which feeds an MDS plot. Here the plot split healthy from unhealthy patients. It also flagged patient 253, who may have been misdiagnosed.</div>
+    </details>
+
+    <details class="qa" open>
+      <summary>How does a random forest deal with missing values?</summary>
+      <div class="a">In R I call <code>rfImpute</code>, which refines its guesses with forests and proximities. Four to six passes are usually enough. I watch the printed out-of-bag error to see if the guesses still improve. In scikit-learn I would use an iterative imputer instead.</div>
+    </details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap">
+      <ul>
+        <li>Most of the work is cleaning: question marks become <code>NA</code>, and codes become factors.</li>
+        <li><code>rfImpute</code> fills the missing values before the real forest is built.</li>
+        <li><code>randomForest(..., proximity=TRUE)</code> builds the model and keeps the proximities.</li>
+        <li>Here 50 of 303 patients were wrong, so 83.5% were classified correctly.</li>
+        <li>The error curve showed that 500 trees were already enough.</li>
+        <li>A loop over <code>mtry</code> from 1 to 10 showed the default of 3 was best.</li>
+        <li>The MDS plot split unhealthy patients from healthy ones along the x-axis.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Random forests</span><span class="board-tag">clean first, then the forest grades itself</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 260" role="img" aria-label="Each of the 500 trees is built from a bootstrap sample of the rows. The rows it left out, the out-of-bag rows, are predicted by that tree and come out right or wrong. Across the forest 50 of 303 patients are wrong, an OOB error of 16.5%.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <text x="20" y="28" class="sv-ts">bootstrap sample</text>
+            <text x="330" y="28" text-anchor="middle" class="sv-ts">out-of-bag</text>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="30" cy="52" r="8" class="sv-acc"/>
+              <circle cx="54" cy="52" r="8" class="sv-acc"/>
+              <circle cx="78" cy="52" r="8" class="sv-acc"/>
+              <circle cx="102" cy="52" r="8" class="sv-acc"/>
+              <circle cx="126" cy="52" r="8" class="sv-acc"/>
+              <circle cx="150" cy="52" r="8" class="sv-acc"/>
+              <circle cx="306" cy="52" r="8" class="sv-key"/>
+              <circle cx="330" cy="52" r="8" class="sv-key"/>
+              <circle cx="354" cy="52" r="8" class="sv-key"/>
+            </g>
+            <line x1="90" y1="68" x2="90" y2="94" class="sv-stroke-acc" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="106" y="88" class="sv-ts">builds the tree</text>
+            <line x1="90" y1="112" x2="60" y2="150" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round"/>
+            <line x1="90" y1="112" x2="120" y2="150" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="90" cy="112" r="11" class="sv-paper"/>
+              <circle cx="60" cy="150" r="10" class="sv-paper"/>
+              <circle cx="120" cy="150" r="10" class="sv-paper"/>
+            </g>
+            <text x="90" y="188" text-anchor="middle" class="sv-ts">one of 500 trees</text>
+            <line x1="138" y1="150" x2="282" y2="150" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="210" y="136" text-anchor="middle" class="sv-ts">predicts them</text>
+            <line x1="330" y1="68" x2="330" y2="128" class="sv-stroke-key" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="306" cy="150" r="8" class="sv-good"/>
+              <circle cx="330" cy="150" r="8" class="sv-good"/>
+              <circle cx="354" cy="150" r="8" class="sv-warn"/>
+            </g>
+            <line x1="330" y1="168" x2="330" y2="186" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="384" y="214" text-anchor="end" class="sv-t">50 of 303 wrong</text>
+            <text x="384" y="242" text-anchor="end" class="sv-tb">OOB error = 16.5%</text>
+          </svg>
+          <p>Each tree grows on a bootstrap sample of the rows. Only trees that never saw a row predict it. Here 50 of 303 patients were called wrong: an honest 16.5% error, with no test set needed.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Out-of-bag</dt><dd>Rows left out of a tree's bootstrap sample.</dd>
+            <dt>OOB error</dt><dd>The share of out-of-bag predictions that are wrong.</dd>
+            <dt>Factor</dt><dd>R's category column, for codes like sex and chest pain.</dd>
+            <dt><code>mtry</code></dt><dd>Variables tried at each split. The default is 3.</dd>
+            <dt>Proximity</dt><dd>How often two patients land in the same leaf.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Read the data</b>303 patients, name the columns</li>
+            <li><b>Clean</b>"?" → <code>NA</code>, codes → factors</li>
+            <li><b>Impute</b><code>rfImpute</code> fills missing values</li>
+            <li><b>Build and print</b>500 trees, OOB error 16.5%</li>
+            <li><b>Tune</b>error vs trees; <code>mtry</code> 1 to 10</li>
+            <li><b>MDS plot</b>distance = 1 − proximity</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{OOB error}=\frac{1}{N}\sum_{i=1}^{N}\mathbf{1}\big(\hat{y}^{\,\text{oob}}_i\neq y_i\big)$$
+          $$m_{\text{try}}=\lfloor\sqrt{p}\rfloor$$
+          $$d_{ij}=1-\text{prox}_{ij}$$
+          <ul class="keys">
+            <li>\(\hat{y}^{\,\text{oob}}_i\) is the vote of only the trees that did not see patient \(i\).</li>
+            <li>\(p\) is the number of predictors; 13 gives the default of 3.</li>
+            <li>\(\text{prox}_{ij}\) is the share of trees where \(i\) and \(j\) share a leaf.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>true</th><th>called H</th><th>called U</th><th>error</th></tr>
+            <tr><td>Healthy</td><td>141</td><td>23</td><td>14.0%</td></tr>
+            <tr><td>Unhealthy</td><td>27</td><td>112</td><td>19.4%</td></tr>
+            <tr class="final"><td>all 303</td><td colspan="2">23 + 27 = 50</td><td>16.5%</td></tr>
+          </table>
+          <p class="hand">So 83.5% of out-of-bag calls were right. 1000 trees gave the same error.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Coded columns can stay as numbers.</span><span class="yes">Chest pain codes 1 to 4 are names. As numbers, trees treat 4 as larger than 1.</span></li>
+            <li><span class="no">rfImpute's error must keep falling.</span><span class="yes">Flat even at 20 iterations: the guesses are as good as this method gets.</span></li>
+            <li><span class="no">The defaults are always right.</span><span class="yes">500 trees and <code>mtry = 3</code> were right here, but only testing showed it.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="53-random-forests-part-2-missing-data-and-clustering.html"><small>Previous</small>Random Forests Part 2: Missing data and clustering</a> <a href="55-the-chain-rule.html"><small>Next</small>The Chain Rule</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>One or Two Tailed P-Values — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>50</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 50 · 7.1 min</div>
+    <h1>One or Two Tailed P-Values</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=bsZGt-caXO4" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Josh settles a question people ask him all the time. When a test lets you pick one tail or two, which p-value should you report?</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>A one-tailed p-value only asks if your result is better. A two-tailed p-value asks if it is better or worse. The one-tailed value is smaller, so it is tempting. But you almost always want both sides of the story. Switching to one tail after seeing the data raises false positives from 5% to about 8%.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Imagine you have a new cancer treatment. You run a small trial on six patients. Red dots show the new treatment, black dots the standard one. The new treatment looks better, but the result is a bit ambiguous. So you run the stats.</p>
+    <p>A one-tailed test gives a p-value of 0.03. That beats the usual 0.05 cutoff. A two-tailed test gives 0.06. That misses the cutoff. The two answers disagree, so the choice matters.</p>
+    <p>The two tests ask different questions. The one-tailed p-value tests only whether your treatment is better. The two-tailed p-value tests whether it is better, worse, or not clearly different. One tail is smaller because it lumps "worse" together with "no clear difference". With a cancer treatment you want to know about harm.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Two bell curves. The left one shades both tails for a two-tailed test. The right one shades only the upper tail for a one-tailed test.">
+        <text class="sv-tb" x="40" y="26">Two-tailed: both ends count</text>
+        <text class="sv-tb" x="420" y="26">One-tailed: only one end counts</text>
+        <path class="sv-acc-soft" d="M 41.5,230 L 41.5,225.6 L 58,220.5 L 74.5,211.2 L 80,207 L 80,230 Z"/>
+        <path class="sv-acc-soft" d="M 300,230 L 300,207 L 305.5,211.2 L 322,220.5 L 338.5,225.6 L 338.5,230 Z"/>
+        <polyline class="sv-stroke-acc" stroke-width="2.5" points="41.5,225.6 58,220.5 74.5,211.2 91,196.4 107.5,174.8 124,147.2 140.5,116.6 157,88 173.5,67.5 190,60 206.5,67.5 223,88 239.5,116.6 256,147.2 272.5,174.8 289,196.4 305.5,211.2 322,220.5 338.5,225.6"/>
+        <line class="sv-line" stroke-width="1.5" x1="35" y1="230" x2="345" y2="230"/>
+        <text class="sv-ts" x="41.5" y="248">worse</text>
+        <text class="sv-ts" x="305" y="248">better</text>
+        <text class="sv-tm" x="34" y="199">2.5%</text>
+        <text class="sv-tm" x="299" y="199">2.5%</text>
+        <path class="sv-key-soft" d="M 669,230 L 669,196.4 L 685.5,211.2 L 702,220.5 L 718.5,225.6 L 718.5,230 Z"/>
+        <polyline class="sv-stroke-key" stroke-width="2.5" points="421.5,225.6 438,220.5 454.5,211.2 471,196.4 487.5,174.8 504,147.2 520.5,116.6 537,88 553.5,67.5 570,60 586.5,67.5 603,88 619.5,116.6 636,147.2 652.5,174.8 669,196.4 685.5,211.2 702,220.5 718.5,225.6"/>
+        <line class="sv-line" stroke-width="1.5" x1="415" y1="230" x2="725" y2="230"/>
+        <text class="sv-ts" x="421.5" y="248">worse</text>
+        <text class="sv-ts" x="685" y="248">better</text>
+        <text class="sv-tm" x="672" y="186">5%</text>
+        <text class="sv-ts" x="40" y="276">Far left or far right counts as a surprise.</text>
+        <text class="sv-ts" x="420" y="276">Far left is ignored, so surprises come cheaper.</text>
+      </svg>
+      <figcaption>The one-tailed test spends its whole 5% budget on one side. It flags results more easily, but it is blind to harm.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Before you collect data, ask what you want to learn. For a cancer treatment you must learn if it helps or harms.</li>
+      <li>Choose the test and the p-value type now. Deciding later, after you see the data, is p hacking.</li>
+      <li>Run the experiment and compute the p-value you chose. Compare it to your cutoff, usually 0.05.</li>
+      <li>Report that p-value, even when the other one looks better. In the trial that means 0.06, not 0.03.</li>
+      <li>If your test offers no choice of tails, do not worry about it.</li>
+    </ol>
+    <p>Josh then shows why the timing of the choice matters. He starts with a standard normal distribution. Most draws land in the middle, but now and then one is very small or very large.</p>
+    <p>He draws two samples of three numbers from that same distribution. Both samples come from one distribution, so any significant result is a false positive. He ran 10,000 two-tailed t-tests and got close to 500 of them, the 5% we expect. Then he mimicked switching tails after looking: when sample one sat clearly below sample two, he used a one-tailed test. False positives climbed to about 800.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Two histograms of p-values from 10,000 simulated tests. Always two-tailed gives about 500 false positives. Switching to one-tailed after seeing the data gives about 800.">
+        <text class="sv-tb" x="50" y="26">Always two-tailed</text>
+        <text class="sv-tb" x="430" y="26">Switch tails after seeing the data</text>
+        <rect class="sv-acc" x="55" y="151" width="26" height="89"/>
+        <rect class="sv-ink3" x="85" y="151" width="26" height="89"/>
+        <rect class="sv-ink3" x="115" y="153" width="26" height="87"/>
+        <rect class="sv-ink3" x="145" y="149" width="26" height="91"/>
+        <rect class="sv-ink3" x="175" y="152" width="26" height="88"/>
+        <rect class="sv-ink3" x="205" y="150" width="26" height="90"/>
+        <rect class="sv-ink3" x="235" y="153" width="26" height="87"/>
+        <rect class="sv-ink3" x="265" y="151" width="26" height="89"/>
+        <rect class="sv-ink3" x="295" y="150" width="26" height="90"/>
+        <rect class="sv-ink3" x="325" y="152" width="26" height="88"/>
+        <line class="sv-stroke-acc" stroke-width="2" stroke-dasharray="6 4" x1="50" y1="151" x2="356" y2="151"/>
+        <line class="sv-line" stroke-width="1.5" x1="50" y1="240" x2="356" y2="240"/>
+        <text class="sv-ts" x="50" y="258">p = 0</text>
+        <text class="sv-ts" x="322" y="258">p = 1</text>
+        <text class="sv-tm" x="50" y="140">500</text>
+        <text class="sv-ts" x="50" y="282">First bar = false positives, right on target.</text>
+        <rect class="sv-key" x="435" y="98" width="26" height="142"/>
+        <rect class="sv-ink3" x="465" y="154" width="26" height="86"/>
+        <rect class="sv-ink3" x="495" y="156" width="26" height="84"/>
+        <rect class="sv-ink3" x="525" y="153" width="26" height="87"/>
+        <rect class="sv-ink3" x="555" y="155" width="26" height="85"/>
+        <rect class="sv-ink3" x="585" y="152" width="26" height="88"/>
+        <rect class="sv-ink3" x="615" y="156" width="26" height="84"/>
+        <rect class="sv-ink3" x="645" y="154" width="26" height="86"/>
+        <rect class="sv-ink3" x="675" y="153" width="26" height="87"/>
+        <rect class="sv-ink3" x="705" y="155" width="26" height="85"/>
+        <line class="sv-stroke-acc" stroke-width="2" stroke-dasharray="6 4" x1="430" y1="151" x2="736" y2="151"/>
+        <line class="sv-line" stroke-width="1.5" x1="430" y1="240" x2="736" y2="240"/>
+        <text class="sv-ts" x="430" y="258">p = 0</text>
+        <text class="sv-ts" x="702" y="258">p = 1</text>
+        <text class="sv-tm" x="430" y="88">800</text>
+        <text class="sv-ts" x="430" y="282">First bar swells: 5% becomes about 8%.</text>
+      </svg>
+      <figcaption>The dashed line is the expected count per bin. Only the first bar changes, and that is the bar you would publish.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>The video shows no algebra. Two simple relations explain its numbers.</p>
+    <div class="formula"><span class="lbl">One tail from two</span><div class="math">$$ p_{\text{one}} = \frac{p_{\text{two}}}{2} $$</div><p class="explain"><b>Symbols:</b> \(p_{\text{two}}\) is the two-tailed p-value; \(p_{\text{one}}\) is the one-tailed p-value, on the side the data went. <b>What it tells you:</b> for a symmetric test the one-tailed value is half the two-tailed value, so 0.06 becomes 0.03.</p></div>
+    <div class="formula"><span class="lbl">False positive rate</span><div class="math">$$ \text{expected false positives} = \alpha \times N $$</div><p class="explain"><b>Symbols:</b> \(\alpha\) is the significance cutoff, here 0.05; \(N\) is the number of tests run, here 10,000. <b>What it tells you:</b> An honest two-tailed test expects \(0.05 \times 10000 = 500\) false positives. Tail switching gave about 800, so the real \(\alpha\) was near 0.08.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Six patients: red dots on the new treatment, black dots on the standard one. The new-treatment values sit toward the better end, but the groups are not cleanly separated.</p>
+      <p>The two-tailed test gives 0.06. The one-tailed test gives \(0.06 / 2 = 0.03\). Against a 0.05 cutoff, one tail says significant and two tails say not significant.</p>
+      <p>You must report 0.06. The one-tailed number stays silent about the risk that the treatment is worse. For a cancer treatment that is unacceptable.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span>Do not argue that the data already leans your way, so testing the other side is pointless. That uses the data twice. It is p hacking, and it pushed false positives from 500 to 800.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span>A one-tailed test cannot separate "worse" from "not clearly different". If harm matters to you, it cannot answer your question.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span>The smaller number is not better evidence. A one-tailed p-value is smaller by construction.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>When would you use a one-tailed test?</summary><div class="a">In practice, almost never. A one-tailed test only asks whether the effect goes in one direction, and it cannot separate the opposite direction from no effect. We normally want both sides of the story, so I default to two-tailed.</div></details>
+    <details class="qa" open><summary>Your one-tailed p-value is 0.03 and your two-tailed is 0.06. Which do you report?</summary><div class="a">The 0.06, unless I pre-registered a one-tailed test. Choosing the smaller number after seeing the data is p hacking. I would report the two-tailed result as not significant.</div></details>
+    <details class="qa" open><summary>How much does switching tails after seeing the data cost you?</summary><div class="a">More than people expect. In the simulation, 10,000 honest two-tailed tests on null data gave about 500 false positives, the 5% we signed up for. Switching to one tail whenever the data looked promising pushed that to about 800. The real error rate was near 8%.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>A one-tailed p-value asks only whether your result is better in one direction.</li>
+      <li>A two-tailed p-value asks whether it is better, worse, or not clearly different.</li>
+      <li>The smaller number is not stronger evidence; it just ignores one side.</li>
+      <li>Pick the test and the p-value before you collect data, because picking afterwards is p hacking.</li>
+      <li>In the simulation that raised false positives from 5% to about 8%.</li>
+      <li>When the test gives you a choice, always choose the two-tailed p-value.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">One or two tails</span><span class="board-tag">you almost always want both sides</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 280" role="img" aria-label="A p-value scale with the 0.05 cutoff. The two-tailed p-value, 0.06, asks better or worse and sits above the cutoff. Halving it gives the one-tailed 0.03, which asks only better and drops into the significant zone.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <rect x="24" y="116" width="352" height="150" rx="8" class="sv-good-soft"/>
+            <line x1="24" y1="116" x2="376" y2="116" class="sv-stroke-ink" stroke-width="2.5" stroke-dasharray="8 6" stroke-linecap="round"/>
+            <line x1="150" y1="34" x2="150" y2="252" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <path d="M140,62 C76,92 76,200 138,230" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="150" cy="56" r="8" class="sv-key"/>
+              <circle cx="150" cy="236" r="8" class="sv-acc"/>
+            </g>
+            <text x="170" y="54" class="sv-tb">two tails: 0.06</text>
+            <text x="170" y="76" class="sv-ts">better or worse?</text>
+            <text x="376" y="104" text-anchor="end" class="sv-tb">0.05 cutoff</text>
+            <text x="366" y="144" text-anchor="end" class="sv-t">significant</text>
+            <text x="80" y="153" text-anchor="end" class="sv-tb">÷ 2</text>
+            <text x="170" y="234" class="sv-tb">one tail: 0.03</text>
+            <text x="170" y="256" class="sv-ts">better only?</text>
+          </svg>
+          <p>A two-tailed p-value asks if the new treatment is better or worse; a one-tailed one asks only if it is better. Halving 0.06 to 0.03 crosses the 0.05 cutoff, but it says nothing about harm, so report 0.06.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>One-tailed p-value</dt><dd>Tests only whether your result is better, in one direction.</dd>
+            <dt>Two-tailed p-value</dt><dd>Tests whether it is better, worse, or not clearly different.</dd>
+            <dt>Cutoff (\(\alpha\))</dt><dd>The significance threshold, usually 0.05.</dd>
+            <dt>False positive</dt><dd>A significant result when both samples come from one distribution.</dd>
+            <dt>p hacking</dt><dd>Choosing the test or the tails after seeing the data.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Ask first</b>helps or harms? before any data</li>
+            <li><b>Choose tails now</b>deciding later is p hacking</li>
+            <li><b>Run and compare</b>p-value against 0.05</li>
+            <li><b>Report it</b>0.06, not 0.03</li>
+            <li><b>No choice?</b>then do not worry</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$p_{\text{one}}=\frac{p_{\text{two}}}{2}$$
+          $$\text{expected false positives}=\alpha\times N$$
+          <ul class="keys">
+            <li>For a symmetric test, 0.06 halves to 0.03 on the side the data went.</li>
+            <li>\(\alpha=0.05\), \(N=10{,}000\) tests: expect 500. Switching tails gave about 800, so the real \(\alpha\) was near 0.08.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>test</th><th>p</th><th>vs 0.05</th></tr>
+            <tr><td>two-tailed</td><td>0.06</td><td>not significant</td></tr>
+            <tr><td>one-tailed</td><td>0.06 / 2 = 0.03</td><td>significant</td></tr>
+            <tr class="final"><td>report</td><td>0.06</td><td>not significant</td></tr>
+          </table>
+          <p class="hand">One tail flips the verdict only by ignoring "worse", and a cancer treatment needs that side.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">The data leans my way, so skip the other side.</span><span class="yes">That uses the data twice. It is p hacking, and it pushed false positives from 500 to 800.</span></li>
+            <li><span class="no">One tail still tells me about harm.</span><span class="yes">It cannot separate "worse" from "not clearly different", so it cannot answer that question.</span></li>
+            <li><span class="no">The smaller p-value is better evidence.</span><span class="yes">A one-tailed p-value is smaller by construction; it just ignores one side.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="49-statquickie-which-t-test-to-use.html"><small>Previous</small>StatQuickie: Which t test to use</a> <a href="51-quantiles-and-percentiles.html"><small>Next</small>Quantiles and Percentiles</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

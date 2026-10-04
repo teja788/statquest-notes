@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Binomial Distribution and Test — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>24</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 24 · 15.8 min</div>
+    <h1>The Binomial Distribution and Test</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=J8jNoF-K8E8" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video shows how to compute the chance of a yes/no result happening by luck, and how to turn that into a p-value.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh asks people whether they prefer orange Fanta or grape Fanta. If nobody really has a preference, each person is like a coin flip. The binomial distribution gives the probability of every possible survey outcome under that "no preference" model. When you add up the probability of your result plus everything equally likely or rarer, you get a p-value. That calculation is called a binomial test.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Four people say they prefer orange Fanta and three say grape. Is that real evidence, or just noise from a small survey? You cannot answer that by staring at the numbers. You need a model of what pure chance looks like.</p>
+    <p>So Josh builds one. Assume nobody truly prefers either flavour. Then every person has a 50% chance of saying orange and a 50% chance of saying grape. The binomial distribution turns that assumption into a probability for each possible survey result. If the observed result sits comfortably inside that distribution, the "no preference" idea survives.</p>
+    <p>The key move is counting orders. Take three people, and suppose two choose orange. One specific sequence, orange–orange–grape, has probability \(0.5 \times 0.5 \times 0.5 = 0.125\). But grape could have come first or second instead. There are three sequences, each with the same probability of 0.125. So the chance that <em>any</em> two of three prefer orange is \(3 \times 0.125 = 0.375\).</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 290" role="img" aria-label="Three equally likely orders in which two of three people choose orange Fanta, each with probability 0.125, summing to 0.375">
+        <defs>
+          <marker id="ah24" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" class="sv-ink3"/>
+          </marker>
+        </defs>
+        <text x="20" y="24" class="sv-tb">Three equally likely orders where 2 of 3 people choose orange</text>
+        <text x="740" y="52" text-anchor="end" class="sv-ts">O = orange · G = grape</text>
+        <text x="110" y="52" text-anchor="middle" class="sv-ts">Person 1</text>
+        <text x="175" y="52" text-anchor="middle" class="sv-ts">Person 2</text>
+        <text x="240" y="52" text-anchor="middle" class="sv-ts">Person 3</text>
+
+        <circle cx="110" cy="80" r="20" class="sv-key-soft"/><circle cx="110" cy="80" r="20" class="sv-stroke-key" stroke-width="1.5"/><text x="110" y="86" text-anchor="middle" class="sv-tb">O</text>
+        <circle cx="175" cy="80" r="20" class="sv-key-soft"/><circle cx="175" cy="80" r="20" class="sv-stroke-key" stroke-width="1.5"/><text x="175" y="86" text-anchor="middle" class="sv-tb">O</text>
+        <circle cx="240" cy="80" r="20" class="sv-acc-soft"/><circle cx="240" cy="80" r="20" class="sv-stroke-acc" stroke-width="1.5"/><text x="240" y="86" text-anchor="middle" class="sv-tb">G</text>
+        <text x="290" y="86" class="sv-tm">0.5 × 0.5 × 0.5 = 0.125</text>
+
+        <circle cx="110" cy="130" r="20" class="sv-key-soft"/><circle cx="110" cy="130" r="20" class="sv-stroke-key" stroke-width="1.5"/><text x="110" y="136" text-anchor="middle" class="sv-tb">O</text>
+        <circle cx="175" cy="130" r="20" class="sv-acc-soft"/><circle cx="175" cy="130" r="20" class="sv-stroke-acc" stroke-width="1.5"/><text x="175" y="136" text-anchor="middle" class="sv-tb">G</text>
+        <circle cx="240" cy="130" r="20" class="sv-key-soft"/><circle cx="240" cy="130" r="20" class="sv-stroke-key" stroke-width="1.5"/><text x="240" y="136" text-anchor="middle" class="sv-tb">O</text>
+        <text x="290" y="136" class="sv-tm">0.5 × 0.5 × 0.5 = 0.125</text>
+
+        <circle cx="110" cy="180" r="20" class="sv-acc-soft"/><circle cx="110" cy="180" r="20" class="sv-stroke-acc" stroke-width="1.5"/><text x="110" y="186" text-anchor="middle" class="sv-tb">G</text>
+        <circle cx="175" cy="180" r="20" class="sv-key-soft"/><circle cx="175" cy="180" r="20" class="sv-stroke-key" stroke-width="1.5"/><text x="175" y="186" text-anchor="middle" class="sv-tb">O</text>
+        <circle cx="240" cy="180" r="20" class="sv-key-soft"/><circle cx="240" cy="180" r="20" class="sv-stroke-key" stroke-width="1.5"/><text x="240" y="186" text-anchor="middle" class="sv-tb">O</text>
+        <text x="290" y="186" class="sv-tm">0.5 × 0.5 × 0.5 = 0.125</text>
+
+        <line x1="440" y1="206" x2="440" y2="228" class="sv-line" stroke-width="1.5" marker-end="url(#ah24)"/>
+        <rect x="250" y="234" width="380" height="36" rx="6" class="sv-paper2"/>
+        <text x="440" y="257" text-anchor="middle" class="sv-tm">0.125 + 0.125 + 0.125 = 0.375</text>
+      </svg>
+      <figcaption>Notice that each single order is rare, but there are three of them, so the count of orders is what lifts the total to 0.375.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Write down the null idea you want to test. Here it is "people love both flavours equally", which means the probability of choosing orange is \(p = 0.5\).</li>
+      <li>Compute the probability of one specific sequence of answers. Multiply the per-person probabilities together, because the answers are independent.</li>
+      <li>Count how many different orders give the same totals. That count is the factorial term in the formula.</li>
+      <li>Multiply the count by the probability of one sequence. That gives the probability of the whole outcome, such as "any 4 of 7 prefer orange".</li>
+      <li>Repeat for every possible outcome, from 0 orange up to 7 orange. Together these probabilities form the binomial distribution.</li>
+      <li>For the p-value, add the probability of the observed outcome plus every outcome that is equally likely or rarer, on both sides. That sum is the binomial test.</li>
+    </ol>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 320" role="img" aria-label="Bar chart of the binomial distribution for seven people with probability one half, showing the observed outcome of four orange">
+        <text x="20" y="24" class="sv-tb">If nobody prefers either flavour: 7 people, p = 0.5</text>
+        <line x1="60" y1="250" x2="740" y2="250" class="sv-line" stroke-width="1.5"/>
+
+        <rect x="72"  y="245" width="60" height="5"   class="sv-acc"/><text x="102" y="237" text-anchor="middle" class="sv-ts">0.008</text>
+        <rect x="156" y="214" width="60" height="36"  class="sv-acc"/><text x="186" y="206" text-anchor="middle" class="sv-ts">0.055</text>
+        <rect x="240" y="142" width="60" height="108" class="sv-acc"/><text x="270" y="134" text-anchor="middle" class="sv-ts">0.164</text>
+        <rect x="324" y="70"  width="60" height="180" class="sv-acc"/><text x="354" y="62"  text-anchor="middle" class="sv-ts">0.273</text>
+        <rect x="408" y="70"  width="60" height="180" class="sv-key"/><text x="438" y="62"  text-anchor="middle" class="sv-ts">0.273</text>
+        <rect x="408" y="70"  width="60" height="180" class="sv-stroke-key" stroke-width="2"/>
+        <rect x="492" y="142" width="60" height="108" class="sv-acc"/><text x="522" y="134" text-anchor="middle" class="sv-ts">0.164</text>
+        <rect x="576" y="214" width="60" height="36"  class="sv-acc"/><text x="606" y="206" text-anchor="middle" class="sv-ts">0.055</text>
+        <rect x="660" y="245" width="60" height="5"   class="sv-acc"/><text x="690" y="237" text-anchor="middle" class="sv-ts">0.008</text>
+
+        <text x="102" y="272" text-anchor="middle" class="sv-t">0</text>
+        <text x="186" y="272" text-anchor="middle" class="sv-t">1</text>
+        <text x="270" y="272" text-anchor="middle" class="sv-t">2</text>
+        <text x="354" y="272" text-anchor="middle" class="sv-t">3</text>
+        <text x="438" y="272" text-anchor="middle" class="sv-t">4</text>
+        <text x="522" y="272" text-anchor="middle" class="sv-t">5</text>
+        <text x="606" y="272" text-anchor="middle" class="sv-t">6</text>
+        <text x="690" y="272" text-anchor="middle" class="sv-t">7</text>
+        <text x="400" y="294" text-anchor="middle" class="sv-ts">Number of the 7 people who prefer orange Fanta (highlighted bar = observed result)</text>
+      </svg>
+      <figcaption>Notice that the observed bar is one of the two tallest, so no other outcome is more likely, and every bar joins the p-value sum.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Binomial probability</span>
+      <div class="math">$$ p(x \mid n, p) \;=\; \frac{n!}{x!\,(n-x)!}\; p^{\,x}\,(1-p)^{\,n-x} $$</div>
+      <p class="explain"><b>Symbols:</b> \(x\) is the number of people who preferred orange Fanta. \(n\) is the total number of people asked. \(n-x\) is therefore the number who preferred grape. \(p\) is the probability that one person picks orange, and \(1-p\) is the probability that they pick grape. The exclamation mark is a factorial, so \(3! = 3 \times 2 \times 1 = 6\). <b>What it tells you:</b> it gives the probability of seeing exactly \(x\) orange answers out of \(n\) people, if every person answers independently with probability \(p\).</p>
+    </div>
+
+    <div class="formula"><span class="lbl">The factorial part is just a count</span>
+      <div class="math">$$ \frac{n!}{x!\,(n-x)!} \;=\; \frac{3!}{2!\,(3-2)!} \;=\; \frac{6}{2 \times 1} \;=\; 3 $$</div>
+      <p class="explain"><b>Symbols:</b> same \(n\), \(x\) as above, here with \(n = 3\) and \(x = 2\). <b>What it tells you:</b> there are exactly 3 different orders in which 2 of 3 people can say orange. This matches the three rows drawn in the figure above, so the scary looking term is only a counter.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Binomial test p-value (two-sided)</span>
+      <div class="math">$$ \text{p-value} \;=\; \sum_{\;k \,:\, p(k \mid n,p)\;\le\; p(x \mid n,p)} p(k \mid n, p) $$</div>
+      <p class="explain"><b>Symbols:</b> \(x\) is the observed count, \(k\) runs over every possible count from 0 to \(n\), and \(p(k \mid n,p)\) is the binomial probability of that count. The condition under the sum keeps only the counts that are equally likely or rarer than what you saw. <b>What it tells you:</b> how much of the "no preference" distribution is at least as extreme as your data. Including the low side as well as the high side is what makes it two-sided.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh asks 7 people. Four prefer orange Fanta and three prefer grape. Under the no-preference model, \(n = 7\), \(x = 4\) and \(p = 0.5\). Plugging in gives \(p(4 \mid 7, 0.5) = 0.273\).</p>
+      <p>Now build the p-value. Start with the observed outcome and walk outward on the orange side: \(0.273\) for 4 orange, \(0.164\) for 5, \(0.055\) for 6, and \(0.008\) for 7. Those add to \(0.5\).</p>
+      <p>The grape side is a mirror image. Three orange out of seven has the same probability as four out of seven, so it is equally rare and must be included. Its four probabilities also add to \(0.5\).</p>
+      <p>The total is \(0.5 + 0.5 = 1\). The p-value is 1, so the no-preference model fits the data well. With only 7 people, we cannot rule out that both flavours are loved equally.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>One sequence is not the same as one outcome. The value 0.125 is the chance that the first two people say orange <em>and</em> the third says grape, in that exact order. The chance that any two of three say orange is three times larger, at 0.375.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>A p-value is never a single probability from the distribution. It is the observed probability plus the probability of everything equally likely or rarer. Reporting 0.273 as the p-value for 4 of 7 would be wrong; the correct answer is 1.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Because \(p = 0.5\) makes the distribution symmetric, the grape side mirrors the orange side exactly. You must still add that half in. A two-sided p-value counts every outcome that is equally likely or rarer, on both sides.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>The binomial distribution assumes independence. One person saying they like orange Fanta must not change the probability for the next person. If people influence each other, or you sample the same group repeatedly, the model no longer applies.</p>
+    </div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>What does the binomial distribution model?</summary><div class="a">It models the number of successes in a fixed number of independent yes/no trials, where every trial has the same success probability. You give it \(n\), the number of trials, and \(p\), the success probability. It returns the probability of each possible count from 0 to \(n\). In the video the trials are people, success is choosing orange Fanta, and \(p = 0.5\) encodes "no real preference".</div></details>
+
+    <details class="qa" open><summary>Why is there a factorial term in the formula?</summary><div class="a">Because more than one order of answers can produce the same count. Any one specific order has probability \(p^x (1-p)^{n-x}\), and the factorial term simply counts how many orders share that count. For 2 of 3 people it gives 3, which you can also verify by listing the sequences by hand.</div></details>
+
+    <details class="qa" open><summary>What exactly is a binomial test?</summary><div class="a">It is a hypothesis test where the binomial distribution supplies the p-value. You fix a null probability, usually 0.5 for "no preference", then sum the probability of the observed count plus every count that is equally likely or rarer. If that sum is small, the null model fits badly and you reject it. If it is large, as in the 4 versus 3 example, you cannot rule the null model out.</div></details>
+
+    <details class="qa" open><summary>Four of seven people preferred orange. Is that evidence of a preference?</summary><div class="a">No. The binomial test gives a p-value of 1, which is as unconvincing as a result can be. The observed count is the most likely outcome under the no-preference model, so nothing about it is surprising. The honest conclusion is that a sample of seven is too small to detect a preference of that size.</div></details>
+
+    <details class="qa" open><summary>When does the binomial distribution stop being appropriate?</summary><div class="a">When the trials are not independent, or when the success probability changes between trials. Josh is explicit about this at the end of the video. If one person saying they like orange Fanta changes the chance for the next person, the multiplication of probabilities no longer holds.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>The binomial distribution gives the probability of each possible count of successes in \(n\) independent yes/no trials.</li>
+      <li>Set \(p = 0.5\) to model the idea that people have no real preference between the two flavours.</li>
+      <li>The probability of one specific order of answers is a simple product, such as \(0.5 \times 0.5 \times 0.5 = 0.125\).</li>
+      <li>The factorial term counts how many orders give the same count, so 2 of 3 orange has probability \(3 \times 0.125 = 0.375\).</li>
+      <li>Using the binomial distribution to compute a p-value is called a binomial test.</li>
+      <li>The p-value adds the observed probability plus everything equally likely or rarer, on both sides.</li>
+      <li>For 4 of 7 people preferring orange, the p-value is 1, so the no-preference model fits fine.</li>
+      <li>The model needs independent answers, so one person's choice must not change anyone else's probability.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Binomial distribution and test</span><span class="board-tag">count the orders, then add the rarer ones</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 300" role="img" aria-label="Binomial distribution for 7 people with p = 0.5. The observed 4 orange has probability 0.273 and every bar is at or below it, so the orange side (0.5) and the grape side (0.5) both count and the p-value is 1.">
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <rect x="44" y="192.3" width="32" height="3.7" class="sv-acc"/>
+              <rect x="84" y="170.6" width="32" height="25.4" class="sv-acc"/>
+              <rect x="124" y="120.3" width="32" height="75.7" class="sv-acc"/>
+              <rect x="164" y="70" width="32" height="126" class="sv-acc"/>
+              <rect x="204" y="70" width="32" height="126" class="sv-key"/>
+              <rect x="244" y="120.3" width="32" height="75.7" class="sv-acc"/>
+              <rect x="284" y="170.6" width="32" height="25.4" class="sv-acc"/>
+              <rect x="324" y="192.3" width="32" height="3.7" class="sv-acc"/>
+            </g>
+            <line x1="30" y1="196" x2="370" y2="196" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="30" y1="70" x2="370" y2="70" class="sv-stroke-key" stroke-width="2.5" stroke-dasharray="7 5" stroke-linecap="round"/>
+            <path d="M44 226 L44 232 L196 232 L196 226" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M204 226 L204 232 L356 232 L356 226" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="20" y="26" class="sv-t">if no preference: 7 people, p = 0.5</text>
+            <text x="20" y="54" class="sv-ts">observed 0.273: add every bar at or below</text>
+            <text x="60" y="216" text-anchor="middle" class="sv-ts">0 orange</text>
+            <text x="220" y="216" text-anchor="middle" class="sv-tb">4 orange</text>
+            <text x="340" y="216" text-anchor="middle" class="sv-ts">7 orange</text>
+            <text x="120" y="254" text-anchor="middle" class="sv-t">grape side: 0.5</text>
+            <text x="280" y="254" text-anchor="middle" class="sv-t">orange side: 0.5</text>
+            <text x="200" y="284" text-anchor="middle" class="sv-tb">p-value = 0.5 + 0.5 = 1</text>
+          </svg>
+          <p>If nobody has a preference, each answer is a coin flip, p = 0.5. Counting orders turns that into a probability for every count. The p-value adds every bar as likely or rarer than the observed one.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Binomial distribution</dt><dd>Probability of each count of successes in n independent yes/no trials.</dd>
+            <dt>Sequence</dt><dd>One exact order, like orange, orange, grape.</dd>
+            <dt>Factorial term</dt><dd>The \(n!\) part; it only counts orders.</dd>
+            <dt>p-value</dt><dd>Observed probability plus all equally likely or rarer outcomes, both sides.</dd>
+            <dt>Binomial test</dt><dd>A p-value computed from the binomial distribution.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Null idea</b>no preference, so p = 0.5</li>
+            <li><b>One sequence</b>multiply the per-person probabilities</li>
+            <li><b>Count orders</b>the factorial term</li>
+            <li><b>Outcome probability</b>count × one sequence</li>
+            <li><b>Every outcome</b>0 to 7 orange: the distribution</li>
+            <li><b>p-value</b>observed + as likely or rarer</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$p(x\mid n,p)=\frac{n!}{x!\,(n-x)!}\,p^{x}(1-p)^{n-x}$$
+          $$\frac{3!}{2!\,(3-2)!}=\frac{6}{2\times 1}=3$$
+          $$\text{p-value}=\sum_{k:\;p(k)\,\le\,p(x)} p(k)$$
+          <ul class="keys">
+            <li>\(n\) people asked, \(x\) chose orange, \(p\) is one person's chance of orange.</li>
+            <li>The factorial part counts orders: 3 for 2 of 3.</li>
+            <li>\(k\) runs from 0 to \(n\); keep counts as likely or rarer than \(x\).</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>orange of 7</th><th>probability</th></tr>
+            <tr><td>4 (observed)</td><td>0.273</td></tr>
+            <tr><td>5, 6, 7</td><td>0.164, 0.055, 0.008</td></tr>
+            <tr><td>orange side</td><td>0.5</td></tr>
+            <tr><td>grape side</td><td>0.5 (mirror)</td></tr>
+            <tr class="final"><td>p-value</td><td>1 ✓</td></tr>
+          </table>
+          <p class="hand">With only 7 people, we cannot rule out that both flavours are loved equally.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">0.125 is the chance that 2 of 3 say orange.</span><span class="yes">That is one exact order. Three orders give 3 × 0.125 = 0.375.</span></li>
+            <li><span class="no">The p-value for 4 of 7 is 0.273.</span><span class="yes">Add everything equally likely or rarer, both sides: the p-value is 1.</span></li>
+            <li><span class="no">It works even if people influence each other.</span><span class="yes">Answers must be independent: one choice cannot change the next person's probability.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="23-expected-values-for-continuous-variables.html"><small>Previous</small>Expected Values for Continuous Variables</a> <a href="25-the-central-limit-theorem.html"><small>Next</small>The Central Limit Theorem</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

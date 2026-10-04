@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Backpropagation Details Pt. 1: Optimizing 3 parameters simultaneously. — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>78</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 78 · 18.5 min</div>
+    <h1>Backpropagation Details Pt. 1: Optimizing 3 parameters simultaneously.</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=iyn2zdALii8" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: Neural Networks / Deep Learning (video 6)</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video extends backpropagation from one parameter to three. Josh optimizes the last two weights, \(w_3\) and \(w_4\), and the last bias, \(b_3\), at the same time.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>We use the same drug dosage data and the same small neural network as in the Main Ideas video. The other weights and biases are already optimal, so only \(w_3\), \(w_4\) and \(b_3\) are unknown. The chain rule links the sum of the squared residuals (SSR) to each of the three parameters through the predicted values. The first part of each derivative is the same for all three parameters; only the second part changes. We plug all three derivatives into gradient descent and repeat until the green squiggle fits the data.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>In the Main Ideas video, only the last bias \(b_3\) was unknown. Now Josh pretends he also does not know the last two weights, \(w_3\) and \(w_4\). The weights and biases in the first layer stay fixed at their optimal values. The goal is to see how the chain rule and gradient descent handle more than one parameter, and to learn some notation.</p>
+    <p>Each dosage goes through two connections, one to each node in the hidden layer. Each node applies the softplus activation function, a smooth bent curve, \(\log(1 + e^{x})\). The top curve is scaled by \(w_3\) and the bottom curve by \(w_4\). The two scaled curves are added, and then \(b_3\) is added. The result is the green squiggle, which gives the predicted values.</p>
+    <p>All three unknown parameters reach the SSR only through the predicted values. So the chain rule splits each derivative into two factors. The first factor, the derivative of the SSR with respect to the predicted values, is shared. The second factor is simple for each parameter.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Neural network with fixed first-layer parameters and the three parameters w3, w4 and b3 that are optimized">
+        <defs>
+          <marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker>
+        </defs>
+        <rect x="20" y="130" width="110" height="40" rx="8" class="sv-paper2"/>
+        <text x="75" y="154" text-anchor="middle" class="sv-ts">Dosage (input i)</text>
+        <path d="M130,145 L294,88" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah1)"/>
+        <path d="M130,155 L294,212" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah1)"/>
+        <rect x="140" y="84" width="130" height="20" rx="4" class="sv-paper"/>
+        <text x="205" y="98" text-anchor="middle" class="sv-ts">w1 = 3.34, b1 = −1.43</text>
+        <rect x="140" y="198" width="130" height="20" rx="4" class="sv-paper"/>
+        <text x="205" y="212" text-anchor="middle" class="sv-ts">w2 = −3.53, b2 = 0.57</text>
+        <circle cx="330" cy="80" r="34" class="sv-key-soft"/>
+        <text x="330" y="85" text-anchor="middle" class="sv-ts">softplus</text>
+        <text x="330" y="36" text-anchor="middle" class="sv-tm">x(1,i) → y(1,i)</text>
+        <circle cx="330" cy="220" r="34" class="sv-key-soft"/>
+        <text x="330" y="225" text-anchor="middle" class="sv-ts">softplus</text>
+        <text x="330" y="276" text-anchor="middle" class="sv-tm">x(2,i) → y(2,i)</text>
+        <path d="M364,84 L506,140" class="sv-stroke-acc" stroke-width="2.5" marker-end="url(#ah1)"/>
+        <path d="M364,216 L506,160" class="sv-stroke-acc" stroke-width="2.5" marker-end="url(#ah1)"/>
+        <rect x="375" y="80" width="110" height="22" rx="4" class="sv-paper"/>
+        <text x="430" y="96" text-anchor="middle" class="sv-tb">× w3 (0.36)</text>
+        <rect x="375" y="198" width="110" height="22" rx="4" class="sv-paper"/>
+        <text x="430" y="214" text-anchor="middle" class="sv-tb">× w4 (0.63)</text>
+        <circle cx="530" cy="150" r="24" class="sv-acc-soft"/>
+        <text x="530" y="156" text-anchor="middle" class="sv-tb">+</text>
+        <path d="M554,150 L618,150" class="sv-stroke-acc" stroke-width="2.5" marker-end="url(#ah1)"/>
+        <text x="586" y="138" text-anchor="middle" class="sv-tb">+ b3 (0)</text>
+        <rect x="620" y="130" width="120" height="40" rx="8" class="sv-good-soft"/>
+        <text x="680" y="155" text-anchor="middle" class="sv-t">Predicted i</text>
+        <path d="M680,170 L680,216" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah1)"/>
+        <rect x="620" y="218" width="120" height="40" rx="8" class="sv-paper2"/>
+        <text x="680" y="243" text-anchor="middle" class="sv-t">SSR = 1.4</text>
+      </svg>
+      <figcaption>The first-layer values on the left stay fixed; only the three highlighted parameters, shown with their starting values, are optimized.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Initialize \(w_3\) and \(w_4\) with random values from a standard normal distribution, a bell curve with mean 0 and standard deviation 1. Here they start at 0.36 and 0.63. Set \(b_3\) to 0, because bias terms frequently start at zero.</li>
+      <li>Run dosages from 0 to 1 through the top node to get the blue curve. Multiply its y-axis values by \(w_3\) to get a new blue curve.</li>
+      <li>Run the dosages through the bottom node to get the orange curve. Multiply its y-axis values by \(w_4\) to get a new orange curve.</li>
+      <li>Add the blue and orange curves to get the green squiggle. Adding \(b_3 = 0\) changes nothing yet.</li>
+      <li>Measure the fit with the SSR. With these starting values, the SSR is 1.4.</li>
+      <li>Find the derivative of the SSR with respect to \(b_3\). It is exactly the same derivative as in the Main Ideas video. Derivatives we already found do not change when we add more parameters.</li>
+      <li>Introduce notation for the hidden layer, then find the derivatives with respect to \(w_3\) and \(w_4\) with the chain rule.</li>
+      <li>Plug the observed values, predicted values and activation outputs into all three derivatives. Use them in gradient descent to calculate new values for \(w_3\), \(w_4\) and \(b_3\).</li>
+      <li>Repeat until the predictions no longer improve very much, a maximum number of steps is reached, or some other criterion is met.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 260" role="img" aria-label="Chain rule: one shared first factor multiplied by a different second factor for each parameter">
+        <defs>
+          <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker>
+        </defs>
+        <rect x="20" y="95" width="290" height="70" rx="10" class="sv-key-soft"/>
+        <text x="165" y="122" text-anchor="middle" class="sv-tb">Shared: dSSR / dPredicted</text>
+        <text x="165" y="146" text-anchor="middle" class="sv-tm">Σ −2 (observed i − predicted i)</text>
+        <path d="M310,120 L396,58" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah2)"/>
+        <path d="M310,130 L396,130" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah2)"/>
+        <path d="M310,140 L396,202" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah2)"/>
+        <text x="350" y="122" text-anchor="middle" class="sv-tb">×</text>
+        <rect x="400" y="30" width="340" height="50" rx="10" class="sv-acc-soft"/>
+        <text x="570" y="60" text-anchor="middle" class="sv-tm">dPredicted / dw3 = y(1,i)</text>
+        <rect x="400" y="105" width="340" height="50" rx="10" class="sv-acc-soft"/>
+        <text x="570" y="135" text-anchor="middle" class="sv-tm">dPredicted / dw4 = y(2,i)</text>
+        <rect x="400" y="180" width="340" height="50" rx="10" class="sv-acc-soft"/>
+        <text x="570" y="210" text-anchor="middle" class="sv-tm">dPredicted / db3 = 1</text>
+      </svg>
+      <figcaption>Notice that the left factor is computed once and reused; only the right factor differs between \(w_3\), \(w_4\) and \(b_3\).</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">Hidden-layer notation</span><div class="math">$$ x_{1,i} = \text{input}_i \times w_1 + b_1, \qquad y_{1,i} = \text{softplus}(x_{1,i}) $$ $$ x_{2,i} = \text{input}_i \times w_2 + b_2, \qquad y_{2,i} = \text{softplus}(x_{2,i}) $$</div><p class="explain"><b>Symbols:</b> \(i\) is the index of the data point, so \(\text{input}_i\) is dosage \(i\). The first subscript, 1 or 2, names the top or bottom node. \(x\) is the x-axis coordinate that goes into the activation function, and \(y\) is the y-axis coordinate that comes out. \(w_1, b_1, w_2, b_2\) are the fixed first-layer weights and biases. <b>What it tells you:</b> each dosage makes two numbers in the hidden layer, one per node.</p></div>
+
+    <div class="formula"><span class="lbl">Predicted values (the green squiggle)</span><div class="math">$$ \text{Predicted}_i = y_{1,i}\, w_3 + y_{2,i}\, w_4 + b_3 $$</div><p class="explain"><b>Symbols:</b> \(w_3\) scales the top curve, \(w_4\) scales the bottom curve, and \(b_3\) is the final bias. <b>What it tells you:</b> the prediction is the sum of the two scaled curves plus the bias, so all three parameters act on it directly.</p></div>
+
+    <div class="formula"><span class="lbl">Sum of the squared residuals</span><div class="math">$$ \text{SSR} = \sum_{i=1}^{n} (\text{Observed}_i - \text{Predicted}_i)^2 $$</div><p class="explain"><b>Symbols:</b> \(n\) is the number of data points (3 here). \(\text{Observed}_i\) is the true value for dosage \(i\). <b>What it tells you:</b> a smaller SSR means the green squiggle fits the data better.</p></div>
+
+    <div class="formula"><span class="lbl">Shared derivative</span><div class="math">$$ \frac{d\,\text{SSR}}{d\,\text{Predicted}} = \sum_{i=1}^{n} 2(\text{Observed}_i - \text{Predicted}_i) \times (-1) = \sum_{i=1}^{n} -2(\text{Observed}_i - \text{Predicted}_i) $$</div><p class="explain"><b>Symbols:</b> the 2 comes from moving the square to the front. The \(-1\) is the derivative of the inside of the parentheses with respect to the predicted value. <b>What it tells you:</b> this factor is the same for \(w_3\), \(w_4\) and \(b_3\).</p></div>
+
+    <div class="formula"><span class="lbl">Chain rule for w3</span><div class="math">$$ \frac{d\,\text{SSR}}{d w_3} = \frac{d\,\text{SSR}}{d\,\text{Predicted}} \times \frac{d\,\text{Predicted}}{d w_3} = \sum_{i=1}^{n} -2(\text{Observed}_i - \text{Predicted}_i) \times y_{1,i} $$</div><p class="explain">Only the first term of the predicted value contains \(w_3\), and its derivative is \(y_{1,i}\), so we multiply the shared factor by the top node's output.</p></div>
+
+    <div class="formula"><span class="lbl">Chain rule for w4</span><div class="math">$$ \frac{d\,\text{SSR}}{d w_4} = \frac{d\,\text{SSR}}{d\,\text{Predicted}} \times \frac{d\,\text{Predicted}}{d w_4} = \sum_{i=1}^{n} -2(\text{Observed}_i - \text{Predicted}_i) \times y_{2,i} $$</div><p class="explain">Only the second term contains \(w_4\), so the other terms give zero and we multiply the shared factor by the bottom node's output \(y_{2,i}\).</p></div>
+
+    <div class="formula"><span class="lbl">Chain rule for b3</span><div class="math">$$ \frac{d\,\text{SSR}}{d b_3} = \frac{d\,\text{SSR}}{d\,\text{Predicted}} \times \frac{d\,\text{Predicted}}{d b_3} = \sum_{i=1}^{n} -2(\text{Observed}_i - \text{Predicted}_i) \times 1 $$</div><p class="explain">The bias is added on its own, so its derivative is 1 and the result is just the shared factor, the same as in the Main Ideas video.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>The data has three dosages: 0, 0.5 and 1. The fixed first-layer values are \(w_1 = 3.34\), \(b_1 = -1.43\), \(w_2 = -3.53\) and \(b_2 = 0.57\). The starting values are \(w_3 = 0.36\), \(w_4 = 0.63\) and \(b_3 = 0\).</p>
+      <p><b>Notation check for i = 3.</b> Dosage 3 is 1, the maximum dosage. For the top node, \(x_{1,3} = 1 \times 3.34 - 1.43 = 1.91\). For the bottom node, \(x_{2,3} = 1 \times (-3.53) + 0.57 = -2.96\).</p>
+      <p><b>First prediction.</b> For dosage 0, the observed value is 0 and the green squiggle predicts 0.72. With all three dosages, the SSR is 1.4.</p>
+      <p><b>Derivative for w3.</b> Expand the sum, then plug in the observed values (0, 1, 0), the predicted values, and the top node's outputs \(y_{1,i}\). With rounded numbers:</p>
+      $$ -2(0 - 0.72)(0.21) + -2(1 - 0.46)(0.82) + -2(0 - 0.77)(2.05) \approx 0.30 - 0.89 + 3.16 = 2.57 $$
+      <p>Josh gets 2.58, because he uses the unrounded values.</p>
+      <p>The derivatives for \(w_4\) and \(b_3\) are found the same way. Gradient descent then uses all three to calculate new parameter values. Josh's animation shows the green squiggle fitting the data after 175 steps.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Adding more parameters does not change the derivatives you already found. The derivative for \(b_3\) is exactly the one from the Main Ideas video.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Read the subscripts in order. In \(x_{1,i}\) and \(y_{1,i}\), the first number names the node and \(i\) names the dosage. Mixing them up gives the wrong values in the sum.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The second factor for a weight is not a constant. \(y_{1,i}\) and \(y_{2,i}\) change with each dosage, so they must sit inside the sum next to their own residual.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Weights and biases start differently here. The weights get random values from a standard normal distribution, while the bias starts at 0.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>How do you get the gradient of the loss for a last-layer weight?</summary><div class="a">I use the chain rule through the predicted values. The derivative of the SSR with respect to the weight is the derivative of the SSR with respect to the prediction, times the derivative of the prediction with respect to the weight. For a last-layer weight, that second part is just the output of the hidden node it multiplies.</div></details>
+    <details class="qa" open><summary>Why can part of the calculation be reused across parameters?</summary><div class="a">All three parameters reach the SSR only through the predicted values. So the derivative of the SSR with respect to the predictions is the same for each of them. Only the second factor changes: the top node's output, the bottom node's output, or 1 for the bias.</div></details>
+    <details class="qa" open><summary>How were the parameters initialized in this example?</summary><div class="a">The two weights got random values from a standard normal distribution, here 0.36 and 0.63. The bias was set to 0, because bias terms frequently start at zero.</div></details>
+    <details class="qa" open><summary>When does gradient descent stop?</summary><div class="a">It repeats the update until the predictions no longer improve very much. It can also stop at a maximum number of steps, or when some other criterion is met.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>We optimize \(w_3\), \(w_4\) and \(b_3\) together, while the first-layer parameters stay fixed.</li>
+      <li>The weights start with random values from a standard normal distribution, and the bias starts at 0.</li>
+      <li>The prediction is \(y_{1,i} w_3 + y_{2,i} w_4 + b_3\), where \(y\) is a hidden node's softplus output.</li>
+      <li>The chain rule gives each derivative as the shared factor \(\sum -2(\text{Observed}_i - \text{Predicted}_i)\) times one simple term.</li>
+      <li>That simple term is \(y_{1,i}\) for \(w_3\), \(y_{2,i}\) for \(w_4\), and 1 for \(b_3\).</li>
+      <li>Derivatives we already found do not change when we add parameters.</li>
+      <li>Gradient descent uses all three derivatives at each step and repeats until the fit stops improving.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Backpropagation for 3 parameters</span><span class="board-tag">share the first factor, swap the second</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 260" role="img" aria-label="Bottom to top: w3, b3 and w4 feed the predicted values through links worth y1,i, 1 and y2,i, and one shared link worth the sum of −2 times observed minus predicted leads on to the SSR.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <rect x="165" y="14" width="70" height="36" rx="10" class="sv-paper2"/>
+              <rect x="138" y="100" width="124" height="42" rx="10" class="sv-good-soft"/>
+              <circle cx="200" cy="222" r="24" class="sv-paper"/>
+            </g>
+            <g class="sv-stroke-acc" stroke-width="3"><circle cx="62" cy="222" r="24" class="sv-paper"/></g>
+            <g class="sv-stroke-key" stroke-width="3"><circle cx="338" cy="222" r="24" class="sv-paper"/></g>
+            <line x1="200" y1="95" x2="200" y2="56" class="sv-stroke-good" stroke-width="4" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="84.6" y1="203.8" x2="158" y2="145" class="sv-stroke-acc" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="200" y1="193" x2="200" y2="146" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="315.4" y1="203.8" x2="242" y2="145" class="sv-stroke-key" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="200" y="39" text-anchor="middle" class="sv-tb">SSR</text>
+            <text x="218" y="84" class="sv-tm">Σ −2(obs − pred)</text>
+            <text x="200" y="128" text-anchor="middle" class="sv-tb">Predicted</text>
+            <text x="112" y="170" text-anchor="end" class="sv-tm">× y₁,ᵢ</text>
+            <text x="212" y="178" class="sv-tm">× 1</text>
+            <text x="288" y="170" class="sv-tm">× y₂,ᵢ</text>
+            <text x="62" y="229" text-anchor="middle" class="sv-tb">w₃</text>
+            <text x="200" y="229" text-anchor="middle" class="sv-tb">b₃</text>
+            <text x="338" y="229" text-anchor="middle" class="sv-tb">w₄</text>
+          </svg>
+          <p>The first layer stays fixed. The three unknowns reach the SSR only through the predicted values, so each derivative is one shared factor times a simple factor of its own.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Softplus</dt><dd>The hidden nodes' smooth bent curve, \(\log(1+e^{x})\).</dd>
+            <dt>\(x_{1,i}\), \(y_{1,i}\)</dt><dd>In and out of the top node's softplus for dosage \(i\); 2 means bottom.</dd>
+            <dt>Green squiggle</dt><dd>The predicted values, made by adding both scaled curves and \(b_3\).</dd>
+            <dt>SSR</dt><dd>Sum of the squared residuals. Smaller means a better fit.</dd>
+            <dt>Standard normal</dt><dd>Mean 0, standard deviation 1. The starting weights come from it.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Initialize</b>\(w_3\) = 0.36, \(w_4\) = 0.63, \(b_3\) = 0</li>
+            <li><b>Scale curves</b>blue × \(w_3\), orange × \(w_4\)</li>
+            <li><b>Add</b>plus \(b_3\): the green squiggle</li>
+            <li><b>Measure</b>SSR = 1.4</li>
+            <li><b>Chain rule</b>shared factor × own factor</li>
+            <li><b>Gradient descent</b>new \(w_3\), \(w_4\), \(b_3\)</li>
+          </ol>
+          <p class="loop">↺ repeat with the new values until the predictions stop improving much or a step limit is hit</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{Pred}_i=y_{1,i}\,w_3+y_{2,i}\,w_4+b_3$$
+          $$\frac{d\,\text{SSR}}{d\,w_3}=\frac{d\,\text{SSR}}{d\,\text{Pred}}\times\frac{d\,\text{Pred}}{d\,w_3}$$
+          $$\frac{d\,\text{SSR}}{d\,\text{Pred}}=\sum_i -2(\text{Obs}_i-\text{Pred}_i)$$
+          <ul class="keys">
+            <li>Obs, Pred: the observed and predicted values for dosage \(i\).</li>
+            <li>The second factor is \(y_{1,i}\) for \(w_3\), \(y_{2,i}\) for \(w_4\) and 1 for \(b_3\).</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>i</th><th>−2(obs − pred)</th><th>\(y_{1,i}\)</th><th>term</th></tr>
+            <tr><td>1</td><td>−2(0 − 0.72)</td><td>0.21</td><td>0.30</td></tr>
+            <tr><td>2</td><td>−2(1 − 0.46)</td><td>0.82</td><td>−0.89</td></tr>
+            <tr><td>3</td><td>−2(0 − 0.77)</td><td>2.05</td><td>3.16</td></tr>
+            <tr class="final"><td colspan="3">sum = \(d\,\text{SSR}/d\,w_3\)</td><td>2.57</td></tr>
+          </table>
+          <p class="hand">Josh gets 2.58 with unrounded values. Using all three derivatives, the squiggle fits after 175 steps.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Adding parameters changes the derivatives already found.</span><span class="yes">They stay the same. The \(b_3\) derivative is exactly the one from the Main Ideas video.</span></li>
+            <li><span class="no">A weight's second factor is a constant.</span><span class="yes">\(y_{1,i}\) and \(y_{2,i}\) change with each dosage, so they sit inside the sum by their own residual.</span></li>
+            <li><span class="no">Weights and biases start the same way.</span><span class="yes">Weights get random standard normal values; the bias starts at 0.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="77-neural-networks-pt-2-backpropagation-main-ideas.html"><small>Previous</small>Neural Networks Pt. 2: Backpropagation Main Ideas</a> <a href="79-backpropagation-details-pt-2-going-bonkers-with-the-chain-ru.html"><small>Next</small>Backpropagation Details Pt. 2: Going bonkers with The Chain Rule</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

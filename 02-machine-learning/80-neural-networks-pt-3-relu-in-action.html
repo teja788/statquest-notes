@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Neural Networks Pt. 3: ReLU In Action — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>80</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 80 · 9.0 min</div>
+    <h1>Neural Networks Pt. 3: ReLU In Action</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=68BZ5f7P94E" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: Neural Networks / Deep Learning (video 8)</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video swaps the curved soft plus activation function for ReLU. Then it runs the drug dosage data through the network by hand. It shows that simple bent lines can still combine into a shape that fits the data.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>ReLU, short for rectified linear unit, outputs whichever value is larger: zero or its input. Each hidden node turns dosages into a bent or straight line, and the weights stretch and flip those lines. The network adds the lines, adds a final bias, and passes the sum through one more ReLU at the output. The result is a pointy shape that is zero for low and high dosages and positive for medium dosages. The bend in ReLU has no derivative, but we simply define it as zero or one.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>The data set is the one from part one. Low and high drug dosages do not work against the virus, but a medium dosage does. To keep the math simple, dosage goes from 0 (low) to 1 (high).</p>
+    <p>An activation function is the bent or curved function inside each node. In part one, the hidden layer used soft plus, and the network fit a green squiggle to the data. Here Josh replaces soft plus with ReLU. ReLU is one of the most popular activation functions for deep learning and convolutional neural networks. Because it is common to put an activation function before the final output, this network also has a ReLU right before the output.</p>
+    <p>ReLU is not curvy, and its equation is very simple. That can make it look too weak to fit anything interesting. But the weights and biases on the connections slice, flip, and stretch the ReLU into new shapes. The network then adds these shapes together to get an entirely new shape that fits the data.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 340" role="img" aria-label="Four panels: bent blue line, straight orange line, their sum minus 16 as a green wedge, and the final ReLU output as a green pointy shape">
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker>
+        </defs>
+        <!-- panel backgrounds -->
+        <rect x="20" y="20" width="165" height="300" rx="8" class="sv-paper2"/>
+        <rect x="205" y="20" width="165" height="300" rx="8" class="sv-paper2"/>
+        <rect x="390" y="20" width="165" height="300" rx="8" class="sv-paper2"/>
+        <rect x="575" y="20" width="165" height="300" rx="8" class="sv-paper2"/>
+        <!-- titles -->
+        <text x="102.5" y="46" text-anchor="middle" class="sv-tb">Top: ×(−40.8)</text>
+        <text x="102.5" y="66" text-anchor="middle" class="sv-ts">bent blue line</text>
+        <text x="287.5" y="46" text-anchor="middle" class="sv-tb">Bottom: ×2.70</text>
+        <text x="287.5" y="66" text-anchor="middle" class="sv-ts">straight orange line</text>
+        <text x="472.5" y="46" text-anchor="middle" class="sv-tb">Add, then −16</text>
+        <text x="472.5" y="66" text-anchor="middle" class="sv-ts">green wedge</text>
+        <text x="657.5" y="46" text-anchor="middle" class="sv-tb">ReLU at output</text>
+        <text x="657.5" y="66" text-anchor="middle" class="sv-ts">green pointy thing</text>
+        <!-- zero axes -->
+        <line x1="35" y1="190" x2="170" y2="190" class="sv-line" stroke-width="1.5"/>
+        <line x1="220" y1="190" x2="355" y2="190" class="sv-line" stroke-width="1.5"/>
+        <line x1="405" y1="190" x2="540" y2="190" class="sv-line" stroke-width="1.5"/>
+        <line x1="590" y1="270" x2="725" y2="270" class="sv-line" stroke-width="1.5"/>
+        <!-- panel 1: -40.8 * ReLU(1.70d - 0.85) -->
+        <polyline points="35,190 102.5,190 170,289.1" class="sv-stroke-acc" stroke-width="3"/>
+        <!-- panel 2: 2.70 * orange line -->
+        <polyline points="220,190 355,92.8" class="sv-stroke-key" stroke-width="3"/>
+        <!-- operators -->
+        <text x="195" y="195" text-anchor="middle" class="sv-tb">+</text>
+        <line x1="373" y1="190" x2="387" y2="190" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="558" y1="190" x2="572" y2="190" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#arr)"/>
+        <!-- panel 3: green wedge -->
+        <polyline points="405,235.7 472.5,187.1 540,237.6" class="sv-stroke-good" stroke-width="3"/>
+        <circle cx="405" cy="235.7" r="4.5" class="sv-good"/>
+        <circle cx="432" cy="216.3" r="4.5" class="sv-good"/>
+        <text x="410" y="256" class="sv-tm">−16</text>
+        <text x="440" y="230" class="sv-tm">−9.2</text>
+        <!-- panel 4: ReLU of wedge -->
+        <polyline points="590,270 653.5,270 657.5,118.5 661.4,270 725,270" class="sv-stroke-good" stroke-width="3"/>
+        <circle cx="655.4" cy="196.5" r="4.5" class="sv-good"/>
+        <text x="666" y="200" class="sv-tm">0.49</text>
+      </svg>
+      <figcaption>The x-axis in each panel is dosage from 0 to 1. The last panel uses a taller scale. Notice that only the small part of the green wedge above zero survives the final ReLU.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Plug a dosage into the connection to the top hidden node. The connection multiplies the dosage by 1.70 and adds −0.85. The result is an x-axis coordinate for the activation function.</li>
+      <li>Pass that value through ReLU. For dosages 0, 0.2, and 0.4 the value is negative, so ReLU outputs 0. At dosage 0.6 the value is 0.17, and ReLU outputs 0.17.</li>
+      <li>Repeat for all dosages from 0 to 1. The outputs form a bent blue line: flat at zero, then rising.</li>
+      <li>Multiply the bent blue line by −40.8. This flips it upside down and makes it much steeper.</li>
+      <li>Run the dosages through the connection to the bottom hidden node. This gives a straight orange line. Multiply it by 2.70.</li>
+      <li>Add the bent blue line and the straight orange line. The result is a green wedge.</li>
+      <li>Add the final bias, −16, to every point on the green wedge.</li>
+      <li>Pass each point of the green wedge through the ReLU in front of the output. Negative values become zero, and positive values stay the same. The result is the green pointy thing that fits the data.</li>
+    </ol>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">ReLU activation function</span><div class="math">$$ f(x) = \max(0,\, x) $$</div><p class="explain"><b>Symbols:</b> \(x\) is the input to the node, which is the x-axis coordinate for the activation function. \(\max\) picks the larger of the two values. <b>What it tells you:</b> negative inputs become zero, and positive inputs pass through unchanged.</p></div>
+    <div class="formula"><span class="lbl">Top hidden node, scaled</span><div class="math">$$ b(d) = -40.8 \cdot \max(0,\; 1.70\,d - 0.85) $$</div><p class="explain"><b>Symbols:</b> \(d\) is the dosage, from 0 to 1. \(1.70\) is the weight and \(-0.85\) is the bias on the input connection. \(-40.8\) is the weight on the output connection. \(b(d)\) is the final bent blue line. <b>What it tells you:</b> the blue line is zero for low dosages, then drops steeply once \(1.70\,d - 0.85\) turns positive.</p></div>
+    <div class="formula"><span class="lbl">Network output</span><div class="math">$$ \text{output}(d) = \max\big(0,\; b(d) + 2.70 \cdot o(d) - 16\big) $$</div><p class="explain"><b>Symbols:</b> \(b(d)\) is the bent blue line from above. \(o(d)\) is the straight orange line from the bottom hidden node; the video does not read out its weight and bias. \(2.70\) is the weight on the bottom node's output connection. \(-16\) is the final bias. The outer \(\max\) is the ReLU in front of the output. <b>What it tells you:</b> the output is the sum of the two lines plus the bias, with every negative value set to zero.</p></div>
+    <div class="formula"><span class="lbl">Slope of ReLU for gradient descent</span><div class="math">$$ f'(x) = \begin{cases} 0 & x &lt; 0 \\ 1 & x &gt; 0 \\ \text{define as } 0 \text{ or } 1 & x = 0 \end{cases} $$</div><p class="explain"><b>Symbols:</b> \(f'(x)\) is the derivative, or slope, of ReLU at input \(x\). <b>What it tells you:</b> the slope is zero on the flat part and one on the rising part. At the bend it is not defined, so we pick zero or one, and the choice does not really matter.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>First, run dosages through the top hidden node. Compute \(1.70\,d - 0.85\), apply ReLU, then multiply by −40.8.</p>
+      <table>
+        <tr><th>Dosage d</th><th>1.70d − 0.85</th><th>ReLU output</th><th>× (−40.8)</th></tr>
+        <tr><td>0</td><td>−0.85</td><td>0</td><td>0</td></tr>
+        <tr><td>0.2</td><td>−0.51</td><td>0</td><td>0</td></tr>
+        <tr><td>0.4</td><td>−0.17</td><td>0</td><td>0</td></tr>
+        <tr><td>0.6</td><td>0.17</td><td>0.17</td><td>−6.94</td></tr>
+        <tr><td>1.0</td><td>0.85</td><td>0.85</td><td>−34.68</td></tr>
+      </table>
+      <p>Next, add the scaled orange line and the final bias, −16, to get the green wedge. Then apply the output ReLU to each point.</p>
+      <ul>
+        <li>The first point on the green wedge, at the lowest dosage, is −16. Because 0 is greater than −16, the output is 0.</li>
+        <li>The next point on the green wedge is −9.2. The output is again 0.</li>
+        <li>For one point near the middle, the green wedge is positive, 0.49. ReLU keeps it, so the output is 0.49.</li>
+      </ul>
+      <p>All other positive values stay the same, and all negative values become zero. The final output is zero for low and high dosages and positive for medium dosages, which matches the data.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> "Not curvy" does not mean "cannot fit curves." Each ReLU is only a bent line, but after the weights flip and stretch them and the network adds them, the sum can take a new shape that fits the data.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> ReLU has no derivative at the bend. Gradient descent, which estimates the weights and biases, needs a derivative at every point. The fix is simple: define the derivative at the bend as zero or one.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The ReLU before the output changes the answer. Without it, the output would be the green wedge, which is negative almost everywhere. With it, every negative value is set to zero.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Josh says his drawings are not to scale. If you draw this at home, the bent blue line will have a steeper slope than in the video.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is the ReLU activation function?</summary><div class="a">ReLU stands for rectified linear unit. It outputs whichever value is larger, zero or its input. So negative inputs become zero and positive inputs pass through unchanged. It is one of the most popular activation functions in deep learning and convolutional neural networks.</div></details>
+    <details class="qa" open><summary>ReLU is just two straight pieces. How can a network of ReLUs fit a curved pattern?</summary><div class="a">The weights and biases slice, flip, and stretch each ReLU into a new bent line. The network then adds these lines together. In the dosage example, a flipped bent line plus a straight line, shifted down by a bias, gives a wedge. A final ReLU turns that wedge into a peak at medium dosages.</div></details>
+    <details class="qa" open><summary>ReLU is not differentiable at zero. How does gradient descent handle that?</summary><div class="a">Gradient descent needs a derivative at every point, and ReLU has none at the bend. In practice we just define the derivative there as zero or one. The choice does not really matter, so it is not a big problem.</div></details>
+    <details class="qa" open><summary>What does a ReLU right before the output do?</summary><div class="a">It sets every negative value of the summed shape to zero and keeps the positive values. In the dosage example, the green wedge was −16 and −9.2 at low dosages, and the ReLU turned both into zero. Only the part above zero survived, which gave the final pointy shape.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>ReLU outputs the larger of zero and its input.</li>
+      <li>The top hidden node computes 1.70 × dosage − 0.85 and applies ReLU, giving a bent blue line.</li>
+      <li>Multiplying by −40.8 flips that line and makes it steep; the bottom node gives a straight orange line scaled by 2.70.</li>
+      <li>Adding the two lines and the final bias of −16 gives a green wedge.</li>
+      <li>A ReLU before the output sets negative values to zero, leaving a pointy shape that fits the medium dosages.</li>
+      <li>Weights and biases turn simple bent lines into a new shape that fits the data.</li>
+      <li>The bend has no derivative, so we define it as zero or one for gradient descent.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">ReLU in action</span><span class="board-tag">simple bent lines add up to a peak</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 260" role="img" aria-label="A bent line times −40.8 plus a straight line times 2.70, minus 16, makes a dashed green wedge over dosage. The output ReLU lifts the wedge points −16 and −9.2 to 0 and keeps 0.49, leaving a peak at medium dosages.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <polyline points="14,60 36,60 62,30" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="72" y="54" class="sv-tm">×(−40.8)</text>
+            <text x="164" y="54" text-anchor="middle" class="sv-tb">+</text>
+            <line x1="180" y1="60" x2="224" y2="30" class="sv-stroke-key" stroke-width="4" stroke-linecap="round"/>
+            <text x="234" y="54" class="sv-tm">×2.70</text>
+            <text x="294" y="54" class="sv-tm">− 16</text>
+            <text x="346" y="54" text-anchor="middle" class="sv-tb">=</text>
+            <polyline points="360,60 374,32 388,60" class="sv-stroke-good" stroke-width="3" stroke-dasharray="5 4" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="20" y1="130" x2="388" y2="130" class="sv-stroke-ink" stroke-width="2"/>
+            <polyline points="30,216 205,108 380,218" class="sv-stroke-good" stroke-width="2.5" stroke-dasharray="7 6" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="30,130 169.4,130 205,108 240,130 380,130" class="sv-stroke-good" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="30" y1="207" x2="30" y2="140" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="4 4" marker-end="url(#board-arr)"/>
+            <line x1="100" y1="164" x2="100" y2="140" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="4 4" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="30" cy="216" r="6" class="sv-paper"/>
+              <circle cx="100" cy="173" r="6" class="sv-paper"/>
+              <circle cx="189" cy="118" r="7" class="sv-good"/>
+            </g>
+            <text x="176" y="110" text-anchor="end" class="sv-tb">0.49 kept</text>
+            <text x="385" y="112" text-anchor="end" class="sv-t">ReLU output</text>
+            <text x="385" y="154" text-anchor="end" class="sv-ts">dosage →</text>
+            <text x="114" y="194" class="sv-tm">−9.2 → 0</text>
+            <text x="42" y="242" class="sv-tm">−16 → 0</text>
+          </svg>
+          <p>Hidden nodes turn dosage into bent or straight lines, and weights flip and stretch them. Their sum plus the bias −16 is the dashed wedge; the output ReLU sets its negatives to zero, leaving a peak at medium dosages.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>ReLU</dt><dd>Rectified linear unit: outputs the larger of zero and its input.</dd>
+            <dt>Activation function</dt><dd>The bent or curved function inside a node.</dd>
+            <dt>Weights and biases</dt><dd>Numbers on connections that flip and stretch each ReLU.</dd>
+            <dt>Green wedge</dt><dd>Both scaled lines added, plus the bias −16.</dd>
+            <dt>The bend</dt><dd>ReLU's corner, where it has no derivative.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Top node</b>1.70 × dosage − 0.85</li>
+            <li><b>ReLU</b>negatives to 0: bent blue line</li>
+            <li><b>Flip, stretch</b>blue line × (−40.8)</li>
+            <li><b>Bottom node</b>straight orange line × 2.70</li>
+            <li><b>Add lines</b>green wedge, then add −16</li>
+            <li><b>Output ReLU</b>negatives to 0: pointy shape</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$f(x)=\max(0,\,x)$$
+          $$b=-40.8\cdot\max(0,\,1.70\,d-0.85)$$
+          $$y=\max\big(0,\;b+2.70\,o-16\big)$$
+          <ul class="keys">
+            <li>\(d\): dosage, 0 to 1. \(b\), \(o\): the blue and orange lines. \(y\): output.</li>
+            <li>1.70 and −0.85 are the top node's weight and bias; −16 is the final bias.</li>
+            <li>ReLU's slope is 0, then 1; at the bend, pick 0 or 1.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>d</th><th>1.70d−0.85</th><th>ReLU</th><th>×(−40.8)</th></tr>
+            <tr><td>0</td><td>−0.85</td><td>0</td><td>0</td></tr>
+            <tr><td>0.4</td><td>−0.17</td><td>0</td><td>0</td></tr>
+            <tr><td>0.6</td><td>0.17</td><td>0.17</td><td>−6.94</td></tr>
+            <tr><td>1.0</td><td>0.85</td><td>0.85</td><td>−34.68</td></tr>
+            <tr class="final"><td>output</td><td>−16 → 0</td><td>−9.2 → 0</td><td>0.49 kept</td></tr>
+          </table>
+          <p class="hand">Negatives become 0 and positives stay: 0 at low and high dosages, positive for medium ones.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">ReLU is not curvy, so it cannot fit curves.</span><span class="yes">Flipped, stretched and added, bent lines make a new shape that fits.</span></li>
+            <li><span class="no">No derivative at the bend breaks gradient descent.</span><span class="yes">Define it there as 0 or 1; the choice does not really matter.</span></li>
+            <li><span class="no">The ReLU before the output changes little.</span><span class="yes">Without it the output is the wedge, negative almost everywhere.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="79-backpropagation-details-pt-2-going-bonkers-with-the-chain-ru.html"><small>Previous</small>Backpropagation Details Pt. 2: Going bonkers with The Chain Rule</a> <a href="81-neural-networks-pt-4-multiple-inputs-and-outputs.html"><small>Next</small>Neural Networks Pt. 4: Multiple Inputs and Outputs</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>StatQuickie: Thresholds for Significance — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>48</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 48 · 6.7 min</div>
+    <h1>StatQuickie: Thresholds for Significance</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=KEofcJ1tfkI" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>The first StatQuickie: a short answer to a question from the comments</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">People keep asking Josh one question: is 0.05 always the right threshold for significance? This short video says the honest answer is "it depends on what you will do with the result".</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>A threshold for significance is the p-value cut-off you agree on before you call a result real. The usual value, 0.05, was picked by convention, not by nature. It works well when you publish, because editors and reviewers expect it. When you only explore a free data set that you will confirm later, you can relax it. If the effect size is tiny, or the claim is extraordinary, a small p-value is not enough.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>The threshold, often written \(\alpha\), is the line you draw before the test. If the p-value falls below it, you call the result significant. Josh is clear that 0.05 has no biological or natural reason behind it. It is relatively arbitrary. Science has used it for a long time, and for the most part it does an okay job.</p>
+    <p>It survives because it hedges the bets. You are wrong about 5% of the time and right about 95%. For most of biological science that trade is cost-effective. The better question is how much evidence your situation needs.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Three situations from the video placed on a scale from weaker to stronger evidence needed">
+        <defs>
+          <marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker>
+        </defs>
+        <text x="30" y="28" class="sv-tb">How strict should the threshold be?</text>
+
+        <rect x="30" y="48" width="200" height="100" rx="6" class="sv-good-soft"/>
+        <text x="46" y="72" class="sv-t">Exploring a data set</text>
+        <text x="46" y="94" class="sv-ts">You downloaded it for free.</text>
+        <text x="46" y="112" class="sv-ts">You will validate it later.</text>
+        <text x="46" y="136" class="sv-tm">any smallish p is fine</text>
+
+        <rect x="280" y="48" width="200" height="100" rx="6" class="sv-acc-soft"/>
+        <text x="296" y="72" class="sv-t">Publishing a result</text>
+        <text x="296" y="94" class="sv-ts">Editors expect the standard.</text>
+        <text x="296" y="112" class="sv-ts">Lower is even better.</text>
+        <text x="296" y="136" class="sv-tm">p &lt; 0.05</text>
+
+        <rect x="530" y="48" width="200" height="100" rx="6" class="sv-key-soft"/>
+        <text x="546" y="72" class="sv-t">Extraordinary claim</text>
+        <text x="546" y="94" class="sv-ts">UFOs over New York City.</text>
+        <text x="546" y="112" class="sv-ts">0.0047 is not enough.</text>
+        <text x="546" y="136" class="sv-tm">p must be tiny</text>
+
+        <line x1="130" y1="150" x2="130" y2="192" class="sv-line" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <line x1="380" y1="150" x2="380" y2="192" class="sv-line" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <line x1="630" y1="150" x2="630" y2="192" class="sv-line" stroke-width="1.5" stroke-dasharray="4 4"/>
+
+        <line x1="40" y1="200" x2="720" y2="200" class="sv-stroke-ink" stroke-width="2" marker-end="url(#ah1)"/>
+        <circle cx="130" cy="200" r="5" class="sv-good"/>
+        <circle cx="380" cy="200" r="5" class="sv-acc"/>
+        <circle cx="630" cy="200" r="5" class="sv-key"/>
+
+        <text x="40" y="228" class="sv-ts">Weaker evidence is enough</text>
+        <text x="720" y="228" class="sv-ts" text-anchor="end">Stronger evidence is needed</text>
+
+        <rect x="150" y="244" width="460" height="34" rx="6" class="sv-paper2"/>
+        <text x="380" y="266" class="sv-t" text-anchor="middle">0.05 is a convention, not a law of nature.</text>
+      </svg>
+      <figcaption>Notice that the same test can be convincing in one situation and weak in another.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Ask what you will do with the result. Publication, private exploration, and a headline claim need different amounts of evidence.</li>
+      <li>If you plan to publish, use 0.05. That is what editors and reviewers expect. Going below it is even better.</li>
+      <li>If you are only exploring a data set to generate hypotheses, relax. You will confirm the finding later anyway.</li>
+      <li>Check the effect size next. Josh uses \(R^2\). If it is near 10%, your variable explains little, so a tiny p-value does not rescue the result.</li>
+      <li>If the claim is extraordinary, demand extraordinary data. A p-value just under the line does not move a reader who starts out very sceptical.</li>
+    </ol>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 290" role="img" aria-label="Two studies with the same tiny p-value, one explaining ten percent of the variation and one explaining most of it">
+        <text x="40" y="30" class="sv-tb">The same tiny p-value, two very different results</text>
+
+        <rect x="40" y="56" width="300" height="170" rx="6" class="sv-key-soft"/>
+        <text x="62" y="86" class="sv-t">p = 0.00000001, R² near 10%</text>
+        <rect x="62" y="104" width="256" height="26" rx="3" class="sv-paper2"/>
+        <rect x="62" y="104" width="26" height="26" rx="3" class="sv-key"/>
+        <text x="62" y="154" class="sv-ts">Only a tenth of the variation is explained.</text>
+        <text x="62" y="182" class="sv-tm">Josh's answer: who cares?</text>
+
+        <rect x="420" y="56" width="300" height="170" rx="6" class="sv-good-soft"/>
+        <text x="442" y="86" class="sv-t">p = 0.00000001, high R²</text>
+        <rect x="442" y="104" width="256" height="26" rx="3" class="sv-paper2"/>
+        <rect x="442" y="104" width="188" height="26" rx="3" class="sv-good"/>
+        <text x="442" y="154" class="sv-ts">Most of the variation is explained.</text>
+        <text x="442" y="182" class="sv-tm">This is the result you want.</text>
+
+        <rect x="140" y="240" width="480" height="30" rx="6" class="sv-paper2"/>
+        <text x="380" y="260" class="sv-t" text-anchor="middle">Report the p-value and the effect size together.</text>
+      </svg>
+      <figcaption>Notice that the shaded part of each bar is the variation your variable explains; the p-value says nothing about its width.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>This video gives judgement rules, not derivations. Two expressions state them precisely.</p>
+    <div class="formula"><span class="lbl">The decision rule</span><div class="math">$$ \text{significant} \iff p < \alpha, \qquad \alpha = 0.05 \text{ by convention} $$</div><p class="explain"><b>Symbols:</b> \(p\) is the p-value, the chance of seeing data at least this extreme if nothing real is going on. \(\alpha\) is the threshold you fix before you look at the result. <b>What it tells you:</b> you choose \(\alpha\), so you choose how often you accept being wrong. At 0.05 that is about 5% of the time.</p></div>
+    <div class="formula"><span class="lbl">Effect size, as Josh uses it</span><div class="math">$$ R^2 = \frac{\text{variation explained by your variable}}{\text{total variation in the data}} $$</div><p class="explain"><b>Symbols:</b> \(R^2\) is the share of the variation in the data that your variable accounts for. People often report it as a percentage. <b>What it tells you:</b> \(R^2 = 0.10\) means your variable explains only 10% of what is happening, which is not much, whatever the p-value says.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh imagines a study that proves extraterrestrials fly around New York City in UFOs. The test returns \(p = 0.0047\). That is below 0.05, so the standard rule calls it significant.</p>
+      <p>Is that good enough? Josh says absolutely not. The claim is extraordinary, so the data must be extraordinary too. You want a p-value so small that a reader thinks: I cannot explain that away, so I have to believe it.</p>
+      <p>His second example runs the other way. He has seen publications with \(p = 0.00000001\) and a horrible \(R^2\). The variable explains almost none of the variation, so the finding still does not matter.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Treating 0.05 as a natural constant. It is a convention that hedges the bets well. It is not the optimal threshold for every question.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Reporting a tiny p-value with no effect size. A small p-value says something is probably there. \(R^2\) says whether it is big enough to care about.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Running analysis after analysis until something drops under 0.05. That is p-hacking.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>Why do we use 0.05, and should we always use it?</summary><div class="a">It is a convention, not a natural constant. It hedges the bets well: wrong about 5% of the time, right about 95%. I keep it for work that will be published, because reviewers expect it. For exploratory work I am looser.</div></details>
+    <details class="qa" open><summary>A model gives p = 0.00000001 but R² of 10%. What do you say?</summary><div class="a">I would say the effect is probably real but almost useless. The p-value only says the effect is unlikely to be noise. The \(R^2\) says my variable explains just a tenth of the variation. I would report both numbers together.</div></details>
+    <details class="qa" open><summary>When would you demand a threshold much stricter than 0.05?</summary><div class="a">When the claim is extraordinary. If a result would overturn something people firmly believe, a p-value just under 0.05 will not convince anyone, and it should not. I would want a p-value small enough that noise is not a credible explanation, plus a solid effect size.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>The threshold for significance is the p-value cut-off you set before the test.</li>
+      <li>0.05 is arbitrary in origin, but it hedges the bets well.</li>
+      <li>Use 0.05 when you will publish, because that is what editors and reviewers expect.</li>
+      <li>Relax the threshold when you are only exploring data that you will confirm later.</li>
+      <li>A small p-value with a poor \(R^2\) is not an interesting finding.</li>
+      <li>Extraordinary claims need extraordinary data, so a p-value of 0.0047 will not carry a UFO story.</li>
+      <li>Always report the p-value and the effect size together.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Thresholds for significance</span><span class="board-tag">0.05 is a convention, not a law</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 260" role="img" aria-label="Three bars show how much evidence each use needs: a little to explore, p below 0.05 to publish, and a tiny p for an extraordinary claim. The UFO study's p = 0.0047 clears the first two bars but is stopped by the third.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <line x1="24" y1="212" x2="24" y2="38" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="24" y1="212" x2="386" y2="212" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <rect x="44" y="184" width="96" height="28" rx="5" class="sv-good-soft"/>
+              <rect x="160" y="146" width="96" height="66" rx="5" class="sv-acc-soft"/>
+              <rect x="276" y="50" width="96" height="162" rx="5" class="sv-key-soft"/>
+            </g>
+            <line x1="31" y1="96" x2="234" y2="96" class="sv-stroke-key" stroke-width="3" stroke-dasharray="8 6" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="36" y="34" class="sv-ts">evidence needed</text>
+            <text x="34" y="82" class="sv-tb">UFO: p = 0.0047</text>
+            <text x="256" y="103" text-anchor="middle" class="sv-tb">✗</text>
+            <text x="208" y="174" text-anchor="middle" class="sv-t">p &lt; 0.05</text>
+            <text x="324" y="80" text-anchor="middle" class="sv-t">tiny p</text>
+            <text x="92" y="236" text-anchor="middle" class="sv-t">explore</text>
+            <text x="208" y="236" text-anchor="middle" class="sv-t">publish</text>
+            <text x="324" y="236" text-anchor="middle" class="sv-t">extraordinary</text>
+          </svg>
+          <p>You fix the threshold before the test; a p-value below it is significant. 0.05 is a convention that suits publishing, and exploring can be looser. An extraordinary claim needs extraordinary data, so the UFO study's 0.0047 is not enough.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Threshold (\(\alpha\))</dt><dd>The p-value cut-off you fix before the test.</dd>
+            <dt>p-value</dt><dd>The chance of data at least this extreme if nothing real is going on.</dd>
+            <dt>Effect size (\(R^2\))</dt><dd>The share of the variation in the data your variable explains.</dd>
+            <dt>Extraordinary claim</dt><dd>Overturns something people firmly believe, so it needs extraordinary data.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Ask the use</b>publish, explore or headline claim?</li>
+            <li><b>Publish</b>use 0.05; lower is even better</li>
+            <li><b>Explore</b>relax; you will confirm later</li>
+            <li><b>Check R²</b>near 10%: tiny p cannot rescue</li>
+            <li><b>Extraordinary claim</b>demand extraordinary data</li>
+            <li><b>Report both</b>p-value and effect size together</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{significant}\iff p\lt\alpha$$
+          $$R^2=\frac{\text{explained variation}}{\text{total variation}}$$
+          <ul class="keys">
+            <li>\(\alpha\): the threshold you fix first; 0.05 by convention, so wrong about 5% of the time.</li>
+            <li>\(R^2 = 0.10\) means your variable explains only 10%.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>check</th><th>UFO study</th><th>horrible R²</th></tr>
+            <tr><td>p</td><td>0.0047</td><td>0.00000001</td></tr>
+            <tr><td>&lt; 0.05?</td><td>yes</td><td>yes</td></tr>
+            <tr><td>problem</td><td>extraordinary</td><td>explains almost none</td></tr>
+            <tr class="final"><td>verdict</td><td>not enough</td><td>does not matter</td></tr>
+          </table>
+          <p class="hand">Both clear 0.05, and both still fail. Report the p-value and the effect size together.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">0.05 is a natural constant.</span><span class="yes">It is a convention that hedges the bets, not the best threshold for every question.</span></li>
+            <li><span class="no">A tiny p-value means the finding matters.</span><span class="yes">p says something is probably there; R² says whether it is big enough to care about.</span></li>
+            <li><span class="no">Try analyses until one drops under 0.05.</span><span class="yes">Running analysis after analysis until something drops under 0.05 is p-hacking.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="46-sampling-from-a-distribution.html"><small>Previous</small>Sampling from a Distribution</a> <a href="49-statquickie-which-t-test-to-use.html"><small>Next</small>StatQuickie: Which t test to use</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

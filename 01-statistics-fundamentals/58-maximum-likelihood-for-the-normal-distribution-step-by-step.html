@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Maximum Likelihood For the Normal Distribution, step-by-step — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>58</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 58 · 19.8 min</div>
+    <h1>Maximum Likelihood For the Normal Distribution, step-by-step</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=Dn6b9fCIUpM" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video proves where two familiar formulas come from. It finds the normal curve that makes the observed data most likely.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>A normal curve has two knobs: μ moves its centre and σ sets its width. The likelihood of a curve, given one measurement, is the height of the curve above that measurement. With several measurements the likelihoods multiply, because the measurements are independent. Josh takes the log of that product, which turns it into a sum and makes the derivatives easy. The μ derivative gives the mean of the data, and the σ derivative gives the standard deviation of the data.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>The equation for the normal curve has two parameters. The first is μ, the Greek letter mu, which sets the location of the mean. A smaller μ moves the curve left, and a larger μ moves it right. The second is σ, the Greek letter sigma, the standard deviation, which sets the width. A larger σ makes the curve shorter and wider.</p>
+    <p>We want the μ and σ that fit the data best. Josh starts with the smallest data set possible: one mouse that weighs 32 grams. Lay a curve with μ = 28 and σ = 2 over that point and plug x = 32 into the equation. The likelihood is 0.03, which is exactly the height of the curve above 32 grams. Slide the centre to μ = 30 and the likelihood rises to 0.12, so that curve fits better.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 330" role="img" aria-label="Two normal curves drawn over one mouse that weighs 32 grams. The curve centred at 28 gives likelihood 0.03 and the curve centred at 30 gives likelihood 0.12.">
+        <defs>
+          <marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink3"/></marker>
+        </defs>
+        <text x="20" y="22" class="sv-tb">One mouse weighs 32 grams. Which curve makes that weight more likely?</text>
+
+        <line x1="90" y1="60" x2="90" y2="260" class="sv-line" stroke-width="1"/>
+        <line x1="90" y1="260" x2="710" y2="260" class="sv-line" stroke-width="1"/>
+
+        <line x1="90" y1="234.3" x2="456" y2="234.3" class="sv-line" stroke-width="1" stroke-dasharray="5 4"/>
+        <line x1="90" y1="144.7" x2="456" y2="144.7" class="sv-line" stroke-width="1" stroke-dasharray="5 4"/>
+        <line x1="456" y1="260" x2="456" y2="138" class="sv-line" stroke-width="1" stroke-dasharray="5 4"/>
+
+        <polyline points="100,260 120.5,259.6 151,257.9 181.5,251.7 212,234.3 242.5,198.3 273,144.7 303.5,92.3 334,70 364.5,92.3 395,144.7 425.5,198.3 456,234.3 486.5,251.7 517,257.9 547.5,259.6 570,260" class="sv-stroke-acc" stroke-width="2.5"/>
+        <polyline points="160,260 181.5,259.6 212,257.9 242.5,251.7 273,234.3 303.5,198.3 334,144.7 364.5,92.3 395,70 425.5,92.3 456,144.7 486.5,198.3 517,234.3 547.5,251.7 578,257.9 608.5,259.6 630,260" class="sv-stroke-key" stroke-width="2.5"/>
+
+        <line x1="300" y1="50" x2="328" y2="64" class="sv-line" stroke-width="1.2" marker-end="url(#ah1)"/>
+        <line x1="450" y1="50" x2="402" y2="64" class="sv-line" stroke-width="1.2" marker-end="url(#ah1)"/>
+        <text x="250" y="45" class="sv-acc" font-size="13" font-weight="600" text-anchor="middle">μ = 28, σ = 2</text>
+        <text x="500" y="45" class="sv-key" font-size="13" font-weight="600" text-anchor="middle">μ = 30, σ = 2</text>
+
+        <circle cx="456" cy="234.3" r="6" class="sv-acc"/>
+        <circle cx="456" cy="144.7" r="6" class="sv-key"/>
+        <circle cx="456" cy="260" r="6" class="sv-ink"/>
+
+        <text x="82" y="239" class="sv-acc" font-size="12.5" text-anchor="end">0.03</text>
+        <text x="82" y="149" class="sv-key" font-size="12.5" text-anchor="end">0.12</text>
+
+        <line x1="212" y1="260" x2="212" y2="266" class="sv-line" stroke-width="1"/>
+        <line x1="334" y1="260" x2="334" y2="266" class="sv-line" stroke-width="1"/>
+        <line x1="456" y1="260" x2="456" y2="266" class="sv-line" stroke-width="1"/>
+        <line x1="578" y1="260" x2="578" y2="266" class="sv-line" stroke-width="1"/>
+        <text x="212" y="281" class="sv-ts" text-anchor="middle">24</text>
+        <text x="334" y="281" class="sv-ts" text-anchor="middle">28</text>
+        <text x="456" y="281" class="sv-ts" text-anchor="middle">32</text>
+        <text x="578" y="281" class="sv-ts" text-anchor="middle">36</text>
+        <text x="700" y="281" class="sv-ink3" font-size="12">grams</text>
+        <text x="456" y="303" class="sv-ink" font-size="12.5" font-weight="600" text-anchor="middle">the measured mouse, x = 32 g</text>
+      </svg>
+      <figcaption>The likelihood is just the height of the curve above the data point. Moving the centre from 28 to 30 raises that height from 0.03 to 0.12.</figcaption>
+    </figure>
+    <p>So fix σ at 2 and treat it as a given, like the data. Try many values of μ and plot each likelihood against the μ that produced it. The result is a curve with one clear peak, at the place where its slope is zero. Here that peak sits at μ = 32. The same trick then finds σ: fix μ, try many widths, and look for the peak again.</p>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Move to two mice, \(x_1 = 32\) and \(x_2 = 34\) grams. They are independent, because weighing the first did not change the second.</li>
+      <li>So the likelihood given both mice is the likelihood given \(x_1\) times the likelihood given \(x_2\). With n mice you multiply all n individual likelihoods.</li>
+      <li>Take the log of that product. The log does not move the peak, but it turns multiplication into addition, which is far easier to differentiate.</li>
+      <li>Simplify each term. The log splits the fraction from the exponential, ln(e) = 1 removes the exponential, and the log of 2πσ² splits into the log of 2π plus twice the log of σ.</li>
+      <li>Combine the n simplified terms into one tidy log-likelihood. That is the function we differentiate.</li>
+      <li>Differentiate with respect to μ, treating σ as a constant. The first two terms contain no μ, so they vanish, and the chain rule handles each squared term.</li>
+      <li>Differentiate with respect to σ, treating μ as a constant. Rewrite 1/σ² as σ to the power −2 first, because that makes the derivative straightforward.</li>
+      <li>Set each derivative to zero and solve. The μ equation gives the mean of the data, and the σ equation gives the standard deviation of the data.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 310" role="img" aria-label="Likelihood plotted against the value tried for mu, with the peak at mu equals 32 where the slope is zero.">
+        <text x="20" y="22" class="sv-tb">Try many values for μ, plot the likelihood, then find where the slope is zero</text>
+
+        <line x1="100" y1="40" x2="100" y2="240" class="sv-line" stroke-width="1"/>
+        <line x1="100" y1="240" x2="710" y2="240" class="sv-line" stroke-width="1"/>
+
+        <polyline points="100,240 160,239.9 190,239.6 220,238 250,232.1 280,215.6 310,181.5 340,130.8 370,81.1 400,60 430,81.1 460,130.8 490,181.5 520,215.6 550,232.1 580,238 610,239.6 640,239.9 700,240" class="sv-stroke-acc" stroke-width="2.5"/>
+
+        <line x1="400" y1="60" x2="400" y2="240" class="sv-line" stroke-width="1" stroke-dasharray="5 4"/>
+        <line x1="352" y1="60" x2="448" y2="60" class="sv-stroke-key" stroke-width="2.5"/>
+        <text x="400" y="46" class="sv-key" font-size="13" font-weight="600" text-anchor="middle">slope = 0, so this is the peak</text>
+
+        <circle cx="280" cy="215.6" r="5.5" class="sv-ink"/>
+        <circle cx="340" cy="130.8" r="5.5" class="sv-ink"/>
+        <circle cx="400" cy="60" r="6" class="sv-key"/>
+        <text x="272" y="207" class="sv-ink2" font-size="12" text-anchor="end">0.03</text>
+        <text x="332" y="122" class="sv-ink2" font-size="12" text-anchor="end">0.12</text>
+
+        <line x1="160" y1="240" x2="160" y2="246" class="sv-line" stroke-width="1"/>
+        <line x1="280" y1="240" x2="280" y2="246" class="sv-line" stroke-width="1"/>
+        <line x1="400" y1="240" x2="400" y2="246" class="sv-line" stroke-width="1"/>
+        <line x1="520" y1="240" x2="520" y2="246" class="sv-line" stroke-width="1"/>
+        <line x1="640" y1="240" x2="640" y2="246" class="sv-line" stroke-width="1"/>
+        <text x="160" y="261" class="sv-ts" text-anchor="middle">24</text>
+        <text x="280" y="261" class="sv-ts" text-anchor="middle">28</text>
+        <text x="400" y="261" class="sv-key" font-size="12.5" font-weight="700" text-anchor="middle">32</text>
+        <text x="520" y="261" class="sv-ts" text-anchor="middle">36</text>
+        <text x="640" y="261" class="sv-ts" text-anchor="middle">40</text>
+        <text x="400" y="285" class="sv-ink3" font-size="12.5" text-anchor="middle">values we try for μ, with σ held at 2</text>
+        <text x="92" y="140" class="sv-ink3" font-size="12.5" text-anchor="middle" transform="rotate(-90 92 140)">likelihood</text>
+      </svg>
+      <figcaption>Each dot is one curve we tried. The two dots at 28 and 30 are the 0.03 and 0.12 from the figure above, and the peak sits at μ = 32.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Likelihood for one measurement</span>
+      <div class="math">$$ L(\mu,\sigma \mid x) \;=\; \frac{1}{\sqrt{2\pi\sigma^{2}}}\; e^{-\frac{(x-\mu)^{2}}{2\sigma^{2}}} $$</div>
+      <p class="explain"><b>Symbols:</b> \(x\) is the measurement; \(\mu\) is the centre of the curve; \(\sigma\) is the standard deviation, so \(\sigma^{2}\) is the variance; \(\pi\) is 3.14159 and \(e\) is 2.71828. <b>What it tells you:</b> the height of this curve above the measurement, which is the likelihood.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Likelihood for n independent measurements</span>
+      <div class="math">$$ L(\mu,\sigma \mid x_1,\dots,x_n) \;=\; \prod_{i=1}^{n} \frac{1}{\sqrt{2\pi\sigma^{2}}}\; e^{-\frac{(x_i-\mu)^{2}}{2\sigma^{2}}} $$</div>
+      <p class="explain"><b>Symbols:</b> \(x_1\) to \(x_n\) are the n measurements; the \(\prod\) sign means multiply all n terms. <b>What it tells you:</b> the likelihood of the whole data set is the product of the individual likelihoods.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Taking the log, one term at a time</span>
+      <div class="math">$$ \ln\!\left[\frac{1}{\sqrt{2\pi\sigma^{2}}}\,e^{-\frac{(x_1-\mu)^{2}}{2\sigma^{2}}}\right] $$</div>
+      <p class="explain">Start with the log of one likelihood term. The log of a product is the sum of the logs, so it splits in two.</p>
+      <div class="math">$$ =\; \ln\frac{1}{\sqrt{2\pi\sigma^{2}}} \;+\; \ln e^{-\frac{(x_1-\mu)^{2}}{2\sigma^{2}}} $$</div>
+      <p class="explain">One over a square root is the power \(-\tfrac{1}{2}\), and \(\ln(e)=1\) makes the exponential disappear.</p>
+      <div class="math">$$ =\; -\tfrac{1}{2}\ln\!\left(2\pi\sigma^{2}\right) \;-\; \frac{(x_1-\mu)^{2}}{2\sigma^{2}} $$</div>
+      <p class="explain">The log splits \(2\pi\sigma^{2}\) into \(2\pi\) plus \(\sigma^{2}\), the exponent 2 comes out in front of \(\ln\sigma\), and then the two halves cancel.</p>
+      <div class="math">$$ =\; -\tfrac{1}{2}\ln(2\pi) \;-\; \ln(\sigma) \;-\; \frac{(x_1-\mu)^{2}}{2\sigma^{2}} $$</div>
+      <p class="explain"><b>Symbols:</b> \(\ln\) is the natural log. <b>What it tells you:</b> every piece now adds instead of multiplies, so the derivative becomes easy.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">The simplified log-likelihood</span>
+      <div class="math">$$ \ln L \;=\; -\frac{n}{2}\ln(2\pi) \;-\; n\ln(\sigma) \;-\; \frac{(x_1-\mu)^{2}}{2\sigma^{2}} \;-\;\cdots\;-\; \frac{(x_n-\mu)^{2}}{2\sigma^{2}} $$</div>
+      <p class="explain"><b>Symbols:</b> \(n\) is how many measurements we have; the first two terms collect the n copies of the constant pieces. <b>What it tells you:</b> this is the function we differentiate, and it peaks at the same μ and σ as the likelihood.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Derivative with respect to μ</span>
+      <div class="math">$$ \frac{\partial \ln L}{\partial \mu} \;=\; \frac{1}{\sigma^{2}}\Big[(x_1+\cdots+x_n) \;-\; n\mu\Big] $$</div>
+      <p class="explain"><b>Symbols:</b> \(\partial\) marks a derivative taken while the other parameter is held fixed. <b>What it tells you:</b> the slope as we slide the curve left and right, so the best μ is where it equals zero.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Derivative with respect to σ</span>
+      <div class="math">$$ \frac{\partial \ln L}{\partial \sigma} \;=\; -\frac{n}{\sigma} \;+\; \frac{1}{\sigma^{3}}\Big[(x_1-\mu)^{2}+\cdots+(x_n-\mu)^{2}\Big] $$</div>
+      <p class="explain"><b>Symbols:</b> the same as above, with μ now a fixed number. <b>What it tells you:</b> the slope as we make the curve wider or narrower, so the best σ is where it equals zero.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Setting each slope to zero and solving</span>
+      <div class="math">$$ \frac{1}{\sigma^{2}}\Big[(x_1+\cdots+x_n) - n\mu\Big] = 0 \;\Longrightarrow\; x_1+\cdots+x_n = n\mu $$</div>
+      <p class="explain">Multiply both sides by \(\sigma^{2}\), which makes it disappear. Then add \(n\mu\) to both sides. Divide by \(n\) and μ is alone.</p>
+      <div class="math">$$ -\frac{n}{\sigma} + \frac{1}{\sigma^{3}}\Big[(x_1-\mu)^{2}+\cdots+(x_n-\mu)^{2}\Big] = 0 \;\Longrightarrow\; (x_1-\mu)^{2}+\cdots+(x_n-\mu)^{2} = n\sigma^{2} $$</div>
+      <p class="explain">Multiply both sides by \(\sigma\), then add \(n\) to both sides. Multiply by \(\sigma^{2}\), divide by \(n\), and take the square root.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">The two answers</span>
+      <div class="math">$$ \mu \;=\; \frac{x_1+\cdots+x_n}{n} \qquad\qquad \sigma \;=\; \sqrt{\frac{(x_1-\mu)^{2}+\cdots+(x_n-\mu)^{2}}{n}} $$</div>
+      <p class="explain"><b>Symbols:</b> the same n measurements, and the μ on the right is the value we just solved for. <b>What it tells you:</b> the best centre is the mean of the data, and the best width is the standard deviation of the data.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>One mouse weighs 32 grams. Put a curve with μ = 28 and σ = 2 over it. The front part is \(1/\sqrt{2\pi\cdot 4} = 0.199\) and the exponential is \(e^{-(32-28)^{2}/8} = e^{-2} = 0.135\), so the likelihood is 0.03. Shift the centre to μ = 30 and the exponential becomes \(e^{-0.5} = 0.607\), so the likelihood rises to 0.12.</p>
+      <p>Add a second mouse at 34 grams, still with μ = 28 and σ = 2. Its own likelihood is \(0.199 \times e^{-36/8} = 0.0022\), so the likelihood given both mice is about 0.00006. Josh notes that this is a really small number.</p>
+      <p>Now use the solved formulas on those two mice. The mean is \((32+34)/2 = 33\), so the best curve is centred at 33. The standard deviation is \(\sqrt{((32-33)^{2}+(34-33)^{2})/2} = 1\), so that is its width.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Likelihood is not probability. Here it is the height of a fixed curve above a fixed data point. Probability comes from areas under the curve, while likelihood comes from heights.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Taking the log is a convenience, not a change of problem. The log is an increasing function, so the likelihood and the log-likelihood peak at exactly the same μ and σ.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Solve one parameter at a time, holding the other one constant. The σ formula also uses μ, so you must find μ first.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> This derivation divides the squared differences by n, not by n − 1. That is the maximum likelihood answer. Also, one measurement can give you μ but never σ, as Josh points out.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What are the maximum likelihood estimates for a normal distribution?</summary><div class="a">The estimate for the centre is the mean of the data, and the estimate for the width is the standard deviation. They look obvious, but the calculus proves the intuition. You write the likelihood, take its log, differentiate with respect to each parameter, and set each derivative to zero.</div></details>
+    <details class="qa" open><summary>Why maximise the log-likelihood instead of the likelihood?</summary><div class="a">The likelihood is a product of n terms, and differentiating a long product is painful. The log turns it into a sum, so each term differentiates on its own. The log is increasing, so the peak does not move and the answer is the same. It also avoids numerical underflow, because a product of many small likelihoods shrinks very fast.</div></details>
+    <details class="qa" open><summary>Why can you multiply the individual likelihoods together?</summary><div class="a">Because the measurements are independent, so weighing one mouse said nothing about the next. Under independence the likelihood of the whole data set is the product of the individual likelihoods. If the observations were correlated, that product would be the wrong model.</div></details>
+    <details class="qa" open><summary>Why does the maximum likelihood variance divide by n rather than n − 1?</summary><div class="a">Dividing by n is what falls out of setting the σ derivative to zero. It is slightly biased downward, because it uses the estimated mean rather than the true mean. Dividing by n − 1 corrects that bias, but unbiasedness and maximum likelihood are different criteria.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>A normal curve has two parameters: μ sets where it sits, and σ sets how wide it is.</li>
+      <li>The likelihood of a curve, given one measurement, is the height of that curve above the measurement.</li>
+      <li>Because the measurements are independent, the likelihood given n of them is the product of the n individual likelihoods.</li>
+      <li>Taking the log turns that product into a sum without moving the peak, which makes the derivatives easy.</li>
+      <li>Differentiate with respect to μ while holding σ fixed, set the result to zero, and μ becomes the mean of the data.</li>
+      <li>Differentiate with respect to σ while holding μ fixed, set that to zero, and σ becomes the standard deviation of the data.</li>
+      <li>So the familiar formulas are not just intuition; they are the values that make the observed data most likely.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Normal maximum likelihood</span><span class="board-tag">mean and SD make the data most likely</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 272" role="img" aria-label="Two mice at 32 and 34 grams. A bell with mu 28 and sigma 2 sits far to the left, so its heights above the mice are tiny. The bell with mu 33, the mean, and sigma 1, the standard deviation, gives both mice tall heights, and the heights multiply.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <line x1="20" y1="230" x2="385" y2="230" class="sv-stroke-ink" stroke-width="2"/>
+            <polyline points="51.5,226.7 73,219.7 83.8,213.6 94.5,205.4 105.3,195.3 116,184 126.8,172.8 137.5,163.1 148.3,156.5 159,154.2 169.8,156.5 180.5,163.1 191.3,172.8 202,184 212.8,195.3 223.5,205.4 234.3,213.6 245,219.7 266.5,226.7 277.3,228.3" class="sv-stroke-key" stroke-width="2.5" stroke-dasharray="6 5" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="202,228.3 212.8,223.3 223.5,209.5 228.9,197.2 234.3,180.8 239.6,160.6 245,138.1 250.4,115.6 255.8,96.2 261.1,83.1 266.5,78.4 271.9,83.1 277.3,96.2 282.6,115.6 288,138.1 293.4,160.6 298.8,180.8 304.1,197.2 309.5,209.5 320.3,223.3 331,228.3" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="245" y1="230" x2="245" y2="138.1" class="sv-stroke-good" stroke-width="3"/>
+            <line x1="288" y1="230" x2="288" y2="138.1" class="sv-stroke-good" stroke-width="3"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="245" cy="138.1" r="5" class="sv-good"/>
+              <circle cx="288" cy="138.1" r="5" class="sv-good"/>
+              <circle cx="245" cy="230" r="6" class="sv-ink"/>
+              <circle cx="288" cy="230" r="6" class="sv-ink"/>
+            </g>
+            <text x="30" y="40" class="sv-t">height = likelihood</text>
+            <line x1="150" y1="52" x2="236" y2="131" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="385" y="34" text-anchor="end" class="sv-tb">μ = mean = 33</text>
+            <text x="385" y="60" text-anchor="end" class="sv-tb">σ = SD = 1</text>
+            <text x="159" y="140" text-anchor="middle" class="sv-ts">μ = 28, σ = 2</text>
+            <text x="266.5" y="200" text-anchor="middle" class="sv-tb">×</text>
+            <text x="245" y="256" text-anchor="middle" class="sv-t">32</text>
+            <text x="288" y="256" text-anchor="middle" class="sv-t">34</text>
+            <text x="385" y="256" text-anchor="end" class="sv-ts">grams</text>
+          </svg>
+          <p>Likelihood is the curve's height above each mouse; heights multiply. Shift and resize the bell from μ = 28, σ = 2 until the product peaks: μ = 33 (mean), σ = 1 (SD).</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>μ (mu)</dt><dd>Centre of the curve.</dd>
+            <dt>σ (sigma)</dt><dd>Standard deviation (SD): the curve's width.</dd>
+            <dt>Likelihood</dt><dd>Curve height above a measurement, not an area.</dd>
+            <dt>Independent</dt><dd>No measurement affects another, so likelihoods multiply.</dd>
+            <dt>Log-likelihood</dt><dd>Product becomes a sum; same peak.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Multiply heights</b>likelihoods multiply</li>
+            <li><b>Take the log</b>a sum, same peak</li>
+            <li><b>Simplify</b>via ln(e) = 1</li>
+            <li><b>Slope in μ</b>hold σ; chain rule</li>
+            <li><b>Slope in σ</b>hold μ; use \(\sigma^{-2}\)</li>
+            <li><b>Set to 0</b>mean and SD</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$L=\frac{1}{\sqrt{2\pi\sigma^2}}\,e^{-\frac{(x-\mu)^2}{2\sigma^2}}$$
+          $$\mu=\frac{x_1+\cdots+x_n}{n}$$
+          $$\sigma=\sqrt{\frac{(x_1-\mu)^2+\cdots+(x_n-\mu)^2}{n}}$$
+          <ul class="keys">
+            <li>\(L\) is the curve's height above one measurement \(x\).</li>
+            <li>For \(n\) mice, multiply, take the log, and set each slope to 0.</li>
+            <li>Divide by \(n\), not \(n-1\): that is the maximum likelihood answer.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>mouse</th><th>curve μ, σ</th><th>likelihood</th></tr>
+            <tr><td>32 g</td><td>28, 2</td><td>0.03</td></tr>
+            <tr><td>32 g</td><td>30, 2</td><td>0.12</td></tr>
+            <tr><td>34 g</td><td>28, 2</td><td>0.0022</td></tr>
+            <tr><td>both</td><td>28, 2</td><td>≈ 0.00006</td></tr>
+            <tr class="final"><td>both</td><td>33, 1 ✓</td><td>mean, SD</td></tr>
+          </table>
+          <p class="hand">Moving μ from 28 to 30 lifts 0.03 to 0.12. Best: mean 33, SD 1.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Likelihood is a probability.</span><span class="yes">Likelihood is a height above a data point; probability is an area under the curve.</span></li>
+            <li><span class="no">Solve μ and σ in any order.</span><span class="yes">Hold one fixed at a time. The σ formula uses μ, so find μ first.</span></li>
+            <li><span class="no">The σ formula divides by n − 1.</span><span class="yes">Maximum likelihood divides by n. And one measurement gives μ but never σ.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="57-maximum-likelihood-for-the-binomial-distribution.html"><small>Previous</small>Maximum Likelihood for the Binomial Distribution</a> <a href="59-odds-and-log-odds.html"><small>Next</small>Odds and Log(Odds)</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

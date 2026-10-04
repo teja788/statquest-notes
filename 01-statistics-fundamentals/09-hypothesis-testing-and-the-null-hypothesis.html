@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hypothesis Testing and The Null Hypothesis — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>09</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 09 · 14.7 min</div>
+    <h1>Hypothesis Testing and The Null Hypothesis</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=0oc49DyA3hU" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video shows what a hypothesis is, how repeated experiments let us reject one, and why we almost always test the boring hypothesis that there is <em>no</em> difference.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>A hypothesis is a statement we can test with new data. Josh runs a small drug experiment, turns the result into a hypothesis, then repeats the experiment to see if it survives. When the repeats land far away, we reject it. When they land close but not exactly on it, the honest verdict is "fail to reject", because we cannot tell which nearby value is right. So we test the null hypothesis, which says there is no difference at all. Zero is the one value that never depends on a first experiment.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh starts with a virus and two drugs. Three people take drug A, and we record each recovery time. The three times differ. One person eats well and exercises; another has a stressful job or breathes polluted air. These random things make every measurement wobble.</p>
+    <p>Three other people take drug B, and their times also differ. Averaging each group, drug A looks better by 15 hours. So we write a hypothesis: people taking drug A need, on average, 15 fewer hours to recover. A hypothesis is a claim we can check with fresh data.</p>
+    <p>Now the test. We run the experiment again. This time drug A needs 35 <em>more</em> hours, the exact opposite of the claim. Maybe those three people were unlucky, or maybe we swapped the labels. So we repeat again and again, checking every detail. Every repeat gives the opposite result, so we confidently reject the hypothesis.</p>
+    <p>Josh does the same with drugs C and D. The first experiment says drug C is faster by 13 hours. The repeats say 12 and 13.5 hours: same direction, but neither matches 13. We cannot reject the claim, and we cannot call it right. The best we can say is that we <strong>fail to reject</strong> it.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 360" role="img" aria-label="Two number lines. For drugs A and B the repeated results sit far from the hypothesis, so we reject it. For drugs C and D the repeated results sit right beside the hypothesis, so we fail to reject it.">
+        <rect x="20" y="20" width="720" height="150" rx="8" class="sv-paper2"></rect>
+        <text x="36" y="44" class="sv-tb">Drugs A and B: the repeats land far away</text>
+        <text x="36" y="62" class="sv-ts">hours by which drug A recovers sooner than drug B</text>
+        <line x1="50" y1="118" x2="710" y2="118" class="sv-line" stroke-width="1.5"></line>
+        <line x1="430" y1="108" x2="430" y2="128" class="sv-line" stroke-width="1.5"></line>
+        <text x="430" y="144" class="sv-ts" text-anchor="middle">0</text>
+        <polygon points="520,112 511,96 529,96" class="sv-key"></polygon>
+        <text x="520" y="88" class="sv-ts" text-anchor="middle">hypothesis: +15</text>
+        <circle cx="208" cy="118" r="6" class="sv-acc"></circle>
+        <circle cx="220" cy="118" r="6" class="sv-acc"></circle>
+        <circle cx="232" cy="118" r="6" class="sv-acc"></circle>
+        <text x="220" y="144" class="sv-ts" text-anchor="middle">every repeat: −35</text>
+        <rect x="556" y="128" width="156" height="30" rx="15" class="sv-key-soft"></rect>
+        <text x="634" y="148" class="sv-key" font-size="13" font-weight="700" text-anchor="middle">Reject the hypothesis</text>
+
+        <rect x="20" y="190" width="720" height="150" rx="8" class="sv-paper2"></rect>
+        <text x="36" y="214" class="sv-tb">Drugs C and D: the repeats land right beside it</text>
+        <text x="36" y="232" class="sv-ts">same kind of axis, but zoomed in: all three values sit within 1.5 hours</text>
+        <line x1="50" y1="288" x2="710" y2="288" class="sv-line" stroke-width="1.5"></line>
+        <line x1="80" y1="278" x2="80" y2="298" class="sv-line" stroke-width="1.5"></line>
+        <text x="80" y="314" class="sv-ts" text-anchor="middle">0</text>
+        <polygon points="600,282 591,266 609,266" class="sv-key"></polygon>
+        <text x="600" y="258" class="sv-ts" text-anchor="middle">hypothesis: 13</text>
+        <circle cx="560" cy="288" r="6" class="sv-acc"></circle>
+        <circle cx="620" cy="288" r="6" class="sv-acc"></circle>
+        <text x="556" y="314" class="sv-ts" text-anchor="middle">12</text>
+        <text x="624" y="314" class="sv-ts" text-anchor="middle">13.5</text>
+        <rect x="100" y="248" width="200" height="30" rx="15" class="sv-acc-soft"></rect>
+        <text x="200" y="268" class="sv-acc" font-size="13" font-weight="700" text-anchor="middle">Fail to reject it</text>
+      </svg>
+      <figcaption>Rejecting is easy when the repeats sit far from the claim, and impossible when they sit on top of it.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Run a small first experiment. Give drug A to three people and drug B to three others, recording every recovery time.</li>
+      <li>Accept that times inside each group differ. Diet, exercise, stress and pollution are random effects.</li>
+      <li>Average each group and compare. Here drug A came out 15 hours faster.</li>
+      <li>Write that as a hypothesis: drug A needs, on average, 15 fewer hours.</li>
+      <li>Test it with a fresh experiment. This repeat says drug A needs 35 more hours, the opposite of the claim.</li>
+      <li>Repeat again, checking every detail in case the labels were swapped. Every repeat contradicts the claim, so reject it.</li>
+      <li>Try the same routine on drugs C and D. The hypothesis says 13 fewer hours; the repeats say 12 and 13.5, so we fail to reject.</li>
+      <li>Notice the weak point. The value 13 was special only because it came first. 12, 13.5, 12.25 and 13.1 are just as reasonable.</li>
+      <li>Switch to the null hypothesis: instead of picking one value from many, test the single claim of no difference.</li>
+      <li>Read the result. If small random changes could flip the winner, fail to reject. If the difference is too big for randomness, reject the null and conclude the drugs differ.</li>
+    </ol>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 312" role="img" aria-label="Top: five candidate hypothesis values feed into the question of which one to test. Bottom: a number line where zero means no difference, and the two results for drugs E and F fall on opposite sides of zero.">
+        <defs>
+          <marker id="arInk" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink"></path></marker>
+          <marker id="arAcc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-acc"></path></marker>
+        </defs>
+        <text x="20" y="34" class="sv-tb">Without a null hypothesis: too many values to choose from</text>
+        <rect x="40" y="52" width="64" height="26" rx="13" class="sv-acc-soft"></rect>
+        <text x="72" y="70" class="sv-tm" text-anchor="middle">12</text>
+        <rect x="116" y="52" width="64" height="26" rx="13" class="sv-acc-soft"></rect>
+        <text x="148" y="70" class="sv-tm" text-anchor="middle">12.25</text>
+        <rect x="192" y="52" width="64" height="26" rx="13" class="sv-acc-soft"></rect>
+        <text x="224" y="70" class="sv-tm" text-anchor="middle">13</text>
+        <rect x="268" y="52" width="64" height="26" rx="13" class="sv-acc-soft"></rect>
+        <text x="300" y="70" class="sv-tm" text-anchor="middle">13.1</text>
+        <rect x="344" y="52" width="64" height="26" rx="13" class="sv-acc-soft"></rect>
+        <text x="376" y="70" class="sv-tm" text-anchor="middle">13.5</text>
+        <line x1="418" y1="65" x2="460" y2="65" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#arInk)"></line>
+        <rect x="470" y="44" width="250" height="42" rx="8" class="sv-paper2"></rect>
+        <text x="595" y="70" class="sv-t" text-anchor="middle">Which one do we test?</text>
+        <line x1="20" y1="112" x2="740" y2="112" class="sv-line" stroke-width="1"></line>
+
+        <text x="20" y="146" class="sv-tb">With the null hypothesis: one value, and no first experiment needed</text>
+        <text x="380" y="180" class="sv-ts" text-anchor="middle">small random changes flip the winner</text>
+        <path d="M 292 214 C 330 188, 390 188, 421 212" class="sv-stroke-acc" stroke-width="1.6" marker-end="url(#arAcc)"></path>
+        <line x1="60" y1="230" x2="700" y2="230" class="sv-line" stroke-width="1.5"></line>
+        <line x1="380" y1="206" x2="380" y2="242" class="sv-stroke-key" stroke-width="2"></line>
+        <circle cx="290" cy="230" r="6" class="sv-acc"></circle>
+        <circle cx="425" cy="230" r="6" class="sv-acc"></circle>
+        <text x="290" y="252" class="sv-ts" text-anchor="middle">F faster by 0.5</text>
+        <text x="425" y="252" class="sv-ts" text-anchor="middle">E faster by 0.25</text>
+        <text x="380" y="284" class="sv-key" font-size="13" font-weight="700" text-anchor="middle">0 = no difference</text>
+        <rect x="500" y="262" width="220" height="28" rx="14" class="sv-acc-soft"></rect>
+        <text x="610" y="281" class="sv-acc" font-size="13" font-weight="700" text-anchor="middle">Fail to reject the null</text>
+      </svg>
+      <figcaption>The two results for drugs E and F sit on opposite sides of zero, so randomness alone could explain the gap.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>The video keeps the arithmetic light: group averages, the gap between them, and the null hypothesis itself.</p>
+
+    <div class="formula"><span class="lbl">Group mean and the observed gap</span><div class="math">$$\bar{x}=\frac{1}{n}\sum_{i=1}^{n}x_i, \qquad d=\bar{x}_{B}-\bar{x}_{A}$$</div><p class="explain"><b>Symbols:</b> \(x_i\) is one person's recovery time and \(n\) is the group size, three here. \(\bar{x}_A\) and \(\bar{x}_B\) are the group averages. \(d\) is the hours by which drug A recovers sooner. <b>What it tells you:</b> the first experiment gave \(d=15\), and the repeat gave \(d=-35\).</p></div>
+
+    <div class="formula"><span class="lbl">A hypothesis built from preliminary data</span><div class="math">$$H:\ \mu_{B}-\mu_{A}=15\ \text{hours}$$</div><p class="explain"><b>Symbols:</b> \(\mu_A\) and \(\mu_B\) are the true average recovery times for everyone who could take each drug, not just the three measured. <b>What it tells you:</b> this claim exists only because one small experiment produced 15. A different first experiment would have produced a different claim.</p></div>
+
+    <div class="formula"><span class="lbl">The null hypothesis</span><div class="math">$$H_0:\ \mu_{D}-\mu_{C}=0$$</div><p class="explain"><b>Symbols:</b> \(\mu_C\) and \(\mu_D\) are the true average recovery times for drugs C and D. The subscript zero marks the "no difference" claim. <b>What it tells you:</b> exactly one value means no difference, so this hypothesis needs no preliminary experiment.</p></div>
+
+    <p>The video gives no test statistic. Its rule: reject the null when the gap is too large and too steady for random differences to explain. P-values turn that into a number.</p>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p><strong>Drugs C and D.</strong> The first experiment gives \(d = \bar{x}_D-\bar{x}_C = 13\) hours in favour of drug C, so the hypothesis says "13 fewer hours". The repeats give 12 and 13.5.</p>
+      <p>Nothing is far enough from 13 to reject the claim. Nothing confirms it either, because the data supports 12 and 13.5 just as strongly. The verdict: fail to reject.</p>
+      <p><strong>Drugs E and F.</strong> The first experiment gives \(d=-0.5\), so drug F is faster by half an hour. The repeat gives \(d=+0.25\), so now drug E is faster. One person exercising a little less is enough to move the answer across zero. Since tiny random effects flip the winner, we fail to reject the null hypothesis.</p>
+      <p>The video then changes one thing. Test the drugs on many people. If the gap stays large and steady, we reject the null and conclude the drugs really do differ.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> "Fail to reject" is not "accept" or "prove". With drugs C and D, 12 and 13.5 were supported just as well as 13. It only means the data gave no reason to drop the claim.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not build a hypothesis from one experiment and test it on that same experiment. Josh tests it on new data, and that is what makes the test honest.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not read too much into three people. The spread inside each group comes from diet, exercise, stress and pollution, so a small sample can point either way.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Rejecting the null tells you a difference exists. It does not tell you how big it is or which drug wins. That belongs to the alternative hypothesis, the next video.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is the null hypothesis, in plain words?</summary><div class="a">It is the claim that there is no difference between the groups. In the drug example it says drug C and drug D give the same average recovery time. We collect data and ask whether it gives enough reason to reject that claim.</div></details>
+    <details class="qa" open><summary>Why test "no difference" instead of the difference you measured?</summary><div class="a">Because the measured difference is one draw from a noisy process. Josh got 13 hours, then 12, then 13.5, and 12.25 would have been just as believable. There is an endless list of reasonable non-zero hypotheses. Exactly one value means "no difference", so the null is well defined before any data.</div></details>
+    <details class="qa" open><summary>Why say "fail to reject" rather than "accept" the null?</summary><div class="a">The test looks for evidence against the null, not for it. Data that fits no difference usually also fits several small real differences. So "fail to reject" means we found too little evidence, not that the groups are identical.</div></details>
+    <details class="qa" open><summary>What would make you confident enough to reject the null?</summary><div class="a">A difference that is large and steady across many people. If small random things could shuffle the winner back and forth, I hold back. In practice a p-value makes this judgement numerical.</div></details>
+    <details class="qa" open><summary>Why does the null need no preliminary data?</summary><div class="a">An ordinary hypothesis must name a number, and without data we cannot tell whether to guess 13 hours or 13,000. The null names zero, the only value that means no difference, so it is available before a single measurement.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>A hypothesis is a claim we check against new data, not against the data that produced it.</li>
+      <li>Recovery times differ inside every group because of random things like diet, exercise and stress.</li>
+      <li>When repeats contradict the claim, as drugs A and B did from +15 to −35 hours, we reject it.</li>
+      <li>When repeats land close but not on the claim, as drugs C and D did with 12, 13 and 13.5, we only fail to reject.</li>
+      <li>Any single measured difference is an arbitrary hypothesis, since 12, 12.25 and 13.5 are equally reasonable.</li>
+      <li>The null hypothesis fixes this by claiming no difference, which pins the value at zero.</li>
+      <li>Drugs E and F swapped winners between repeats, so we fail to reject the null. A large steady gap would let us reject it.</li>
+      <li>Rejecting the null says a difference exists; the alternative hypothesis and p-values fill in the rest.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Testing the null hypothesis</span><span class="board-tag">reject when far, fail to reject when close</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 280" role="img" aria-label="Two number lines. Top: the claim is +15 hours, but the repeats land at −35, far away, so we reject it. Bottom: the claim is 13 and the repeats land at 12 and 13.5, close by, so we only fail to reject. Last line: the null, where 0 means no difference.">
+            <line x1="20" y1="66" x2="380" y2="66" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="260" y1="58" x2="260" y2="74" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <polygon points="350,62 341,46 359,46" class="sv-key"/>
+              <circle cx="44" cy="66" r="6" class="sv-acc"/>
+              <circle cx="56" cy="66" r="6" class="sv-acc"/>
+              <circle cx="68" cy="66" r="6" class="sv-acc"/>
+            </g>
+            <text x="20" y="30" class="sv-tb">far away: reject</text>
+            <text x="380" y="30" text-anchor="end" class="sv-t">claim +15</text>
+            <text x="26" y="92" class="sv-ts">repeats −35</text>
+            <text x="260" y="92" text-anchor="middle" class="sv-ts">0</text>
+            <line x1="20" y1="114" x2="380" y2="114" class="sv-line" stroke-width="2" stroke-dasharray="4 6" stroke-linecap="round"/>
+            <line x1="140" y1="186" x2="380" y2="186" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <polygon points="300,182 291,166 309,166" class="sv-key"/>
+              <circle cx="180" cy="186" r="6" class="sv-acc"/>
+              <circle cx="360" cy="186" r="6" class="sv-acc"/>
+            </g>
+            <text x="20" y="150" class="sv-tb">close: fail to reject</text>
+            <text x="300" y="150" text-anchor="middle" class="sv-t">claim 13</text>
+            <text x="180" y="212" text-anchor="middle" class="sv-ts">12</text>
+            <text x="360" y="212" text-anchor="middle" class="sv-ts">13.5</text>
+            <line x1="20" y1="232" x2="380" y2="232" class="sv-line" stroke-width="2" stroke-dasharray="4 6" stroke-linecap="round"/>
+            <text x="20" y="264" class="sv-tb">null: 0 = no difference</text>
+          </svg>
+          <p>Test a claim on fresh data: repeats far away reject it, while repeats close by only fail to reject it, since nearby values fit just as well. So we test the null, which says no difference, the one value that needs no first experiment.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Hypothesis</dt><dd>A claim we can test with new data.</dd>
+            <dt>Random effects</dt><dd>Diet, exercise, stress, pollution: things that make each measurement wobble.</dd>
+            <dt>Reject</dt><dd>Drop the claim because new data contradicts it.</dd>
+            <dt>Fail to reject</dt><dd>No reason to drop the claim; not the same as proving it.</dd>
+            <dt>Null hypothesis</dt><dd>The claim of no difference, so its value is zero.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Small first test</b>drug A vs B, three each</li>
+            <li><b>Write a claim</b>A needs 15 fewer hours</li>
+            <li><b>Repeat it</b>new data, check every detail</li>
+            <li><b>Judge the claim</b>far: reject; close: fail to reject</li>
+            <li><b>Use the null</b>no difference, value zero</li>
+            <li><b>Read the result</b>too big for randomness: reject</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$d=\bar{x}_B-\bar{x}_A$$
+          $$H:\ \mu_B-\mu_A=15$$
+          $$H_0:\ \mu_D-\mu_C=0$$
+          <ul class="keys">
+            <li>\(\bar{x}_A,\bar{x}_B\): group averages; \(d\): hours drug A is sooner.</li>
+            <li>\(\mu\): true average recovery time for everyone who could take that drug.</li>
+            <li>\(H_0\) needs no first experiment: one value means no difference.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>drugs</th><th>claim</th><th>results</th><th>verdict</th></tr>
+            <tr><td>A, B</td><td>+15</td><td>−35</td><td>reject</td></tr>
+            <tr><td>C, D</td><td>13</td><td>12, 13.5</td><td>fail to reject</td></tr>
+            <tr class="final"><td>E, F</td><td>0</td><td>−0.5, +0.25</td><td>fail to reject</td></tr>
+          </table>
+          <p class="hand">E and F swap winners, so we fail to reject the null. A large, steady gap over many people would reject it.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Fail to reject means the claim is proven.</span><span class="yes">It only means no reason to drop it. 12 and 13.5 fit as well as 13.</span></li>
+            <li><span class="no">Test a claim on the data that made it.</span><span class="yes">Test it on new data. That is what makes the test honest.</span></li>
+            <li><span class="no">Rejecting the null says which drug wins.</span><span class="yes">It only says a difference exists, not its size or the winner.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="08-what-is-a-mathematical-model.html"><small>Previous</small>What is a (mathematical) model?</a> <a href="10-alternative-hypotheses-main-ideas.html"><small>Next</small>Alternative Hypotheses: Main Ideas</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

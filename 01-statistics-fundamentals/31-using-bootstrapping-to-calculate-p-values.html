@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Using Bootstrapping to Calculate p-values — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>31</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 31 · 8.1 min</div>
+    <h1>Using Bootstrapping to Calculate p-values</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=N4ZQQqyIf6k" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Bootstrapping does more than build confidence intervals. It can also give you a p-value for almost any statistic you like, without a textbook formula.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>A p-value needs a picture of the world where the null hypothesis is true. Josh builds that picture by shifting the data so its statistic equals zero. He then bootstraps the shifted data a few thousand times and draws a histogram of the results. The p-value is the share of that histogram at least as far from zero as the value we actually observed. The same recipe works for the mean, the median, or any other statistic.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>The example carries over from the previous video. A new drug was given to eight people with an illness, and the mean improvement was 0.5. The null hypothesis says the drug does nothing at all. If that were true, and nothing random got in the way, the mean would be zero.</p>
+    <p>So the data we have is centred in the wrong place for the test. The fix is simple. Subtract 0.5 from every one of the eight measurements. The shifted data has exactly the same shape and spread, but its mean is now zero. That shifted set is our stand-in for a world where the null hypothesis is true.</p>
+    <p>Now we bootstrap the shifted data instead of the raw data. Each bootstrapped set gives one mean, and a few thousand of them give a histogram. That histogram answers the question a p-value asks: if the drug really does nothing, how often would luck alone hand us a mean as far from zero as 0.5?</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 290" role="img" aria-label="Eight measurements with mean 0.5 are shifted left by 0.5 so the shifted mean sits exactly on zero">
+        <text class="sv-tb" x="60" y="32">Original data</text>
+        <line class="sv-stroke-ink" x1="60" y1="95" x2="700" y2="95" stroke-width="1.2"></line>
+        <line class="sv-stroke-ink" x1="120" y1="95" x2="120" y2="101" stroke-width="1"></line>
+        <line class="sv-stroke-ink" x1="250" y1="95" x2="250" y2="101" stroke-width="1"></line>
+        <line class="sv-stroke-ink" x1="380" y1="95" x2="380" y2="101" stroke-width="1"></line>
+        <line class="sv-stroke-ink" x1="510" y1="95" x2="510" y2="101" stroke-width="1"></line>
+        <line class="sv-stroke-ink" x1="640" y1="95" x2="640" y2="101" stroke-width="1"></line>
+        <text class="sv-ts" x="120" y="116" text-anchor="middle">-2</text>
+        <text class="sv-ts" x="250" y="116" text-anchor="middle">-1</text>
+        <text class="sv-ts" x="380" y="116" text-anchor="middle">0</text>
+        <text class="sv-ts" x="510" y="116" text-anchor="middle">1</text>
+        <text class="sv-ts" x="640" y="116" text-anchor="middle">2</text>
+        <circle class="sv-ink2" cx="250" cy="75" r="6"></circle>
+        <circle class="sv-ink2" cx="302" cy="75" r="6"></circle>
+        <circle class="sv-ink2" cx="354" cy="75" r="6"></circle>
+        <circle class="sv-ink2" cx="432" cy="75" r="6"></circle>
+        <circle class="sv-ink2" cx="484" cy="75" r="6"></circle>
+        <circle class="sv-ink2" cx="536" cy="75" r="6"></circle>
+        <circle class="sv-ink2" cx="562" cy="60" r="6"></circle>
+        <circle class="sv-ink2" cx="640" cy="75" r="6"></circle>
+        <line class="sv-stroke-key" x1="445" y1="46" x2="445" y2="101" stroke-width="2" stroke-dasharray="5 4"></line>
+        <text class="sv-key" x="455" y="42" font-size="13" font-weight="600">mean = 0.5</text>
+        <text class="sv-ts" x="60" y="52">3 felt worse, 5 felt better</text>
+        <defs>
+          <marker id="arrL" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+            <path class="sv-key" d="M9,0 L0,4.5 L9,9 Z"></path>
+          </marker>
+        </defs>
+        <line class="sv-stroke-key" x1="510" y1="148" x2="392" y2="148" stroke-width="2" marker-end="url(#arrL)"></line>
+        <text class="sv-ink2" x="451" y="138" font-size="13" text-anchor="middle">shift every point left by 0.5</text>
+        <text class="sv-tb" x="60" y="182">Shifted data: a true null hypothesis</text>
+        <line class="sv-stroke-ink" x1="60" y1="240" x2="700" y2="240" stroke-width="1.2"></line>
+        <line class="sv-stroke-ink" x1="120" y1="240" x2="120" y2="246" stroke-width="1"></line>
+        <line class="sv-stroke-ink" x1="250" y1="240" x2="250" y2="246" stroke-width="1"></line>
+        <line class="sv-stroke-ink" x1="380" y1="240" x2="380" y2="246" stroke-width="1"></line>
+        <line class="sv-stroke-ink" x1="510" y1="240" x2="510" y2="246" stroke-width="1"></line>
+        <line class="sv-stroke-ink" x1="640" y1="240" x2="640" y2="246" stroke-width="1"></line>
+        <text class="sv-ts" x="120" y="261" text-anchor="middle">-2</text>
+        <text class="sv-ts" x="250" y="261" text-anchor="middle">-1</text>
+        <text class="sv-ts" x="380" y="261" text-anchor="middle">0</text>
+        <text class="sv-ts" x="510" y="261" text-anchor="middle">1</text>
+        <text class="sv-ts" x="640" y="261" text-anchor="middle">2</text>
+        <circle class="sv-acc" cx="185" cy="220" r="6"></circle>
+        <circle class="sv-acc" cx="237" cy="220" r="6"></circle>
+        <circle class="sv-acc" cx="289" cy="220" r="6"></circle>
+        <circle class="sv-acc" cx="367" cy="220" r="6"></circle>
+        <circle class="sv-acc" cx="419" cy="220" r="6"></circle>
+        <circle class="sv-acc" cx="471" cy="220" r="6"></circle>
+        <circle class="sv-acc" cx="497" cy="205" r="6"></circle>
+        <circle class="sv-acc" cx="575" cy="220" r="6"></circle>
+        <line class="sv-stroke-acc" x1="380" y1="192" x2="380" y2="246" stroke-width="2" stroke-dasharray="5 4"></line>
+        <text class="sv-acc" x="390" y="200" font-size="13" font-weight="600">mean = 0</text>
+      </svg>
+      <figcaption>Notice that only the position changes. The spread and the shape of the eight measurements stay exactly the same after the shift.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Start with the original data and calculate the statistic you care about. Here the mean of the eight measurements is 0.5.</li>
+      <li>Subtract that value from every measurement. The shifted data now has a mean of exactly zero, which is what the null hypothesis predicts.</li>
+      <li>Make one bootstrapped data set from the shifted measurements. Sample with replacement and keep the same sample size, so duplicates are fine.</li>
+      <li>Calculate the same statistic on that bootstrapped set, and add the number to a histogram.</li>
+      <li>Repeat the last two steps a few thousand times. The histogram now shows how the statistic bounces around when the drug does nothing.</li>
+      <li>Add up the share of the histogram that is at least as far from zero as your observed value, counting both sides. That total is the p-value.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 320" role="img" aria-label="Histogram of bootstrapped means centred on zero, with the two tails beyond plus and minus 0.5 shaded as the p-value region">
+        <text class="sv-tb" x="60" y="30">Bootstrapped means when the null hypothesis is true</text>
+        <rect class="sv-key" x="90" y="247" width="29" height="3"></rect>
+        <rect class="sv-key" x="120" y="246" width="29" height="4"></rect>
+        <rect class="sv-key" x="150" y="242" width="29" height="8"></rect>
+        <rect class="sv-key" x="180" y="236" width="29" height="14"></rect>
+        <rect class="sv-key" x="210" y="229" width="29" height="21"></rect>
+        <rect class="sv-key" x="240" y="219" width="29" height="31"></rect>
+        <rect class="sv-key" x="270" y="205" width="29" height="45"></rect>
+        <rect class="sv-key" x="300" y="188" width="29" height="62"></rect>
+        <rect class="sv-acc-soft" x="330" y="166" width="29" height="84"></rect>
+        <rect class="sv-acc-soft" x="360" y="132" width="29" height="118"></rect>
+        <rect class="sv-acc-soft" x="390" y="127" width="29" height="123"></rect>
+        <rect class="sv-acc-soft" x="420" y="141" width="29" height="109"></rect>
+        <rect class="sv-key" x="450" y="146" width="29" height="104"></rect>
+        <rect class="sv-key" x="480" y="154" width="29" height="96"></rect>
+        <rect class="sv-key" x="510" y="164" width="29" height="86"></rect>
+        <rect class="sv-key" x="540" y="176" width="29" height="74"></rect>
+        <rect class="sv-key" x="570" y="190" width="29" height="60"></rect>
+        <rect class="sv-key" x="600" y="204" width="29" height="46"></rect>
+        <rect class="sv-key" x="630" y="218" width="29" height="32"></rect>
+        <rect class="sv-key" x="660" y="234" width="29" height="16"></rect>
+        <line class="sv-stroke-ink" x1="80" y1="250" x2="700" y2="250" stroke-width="1.2"></line>
+        <line class="sv-stroke-ink" x1="150" y1="250" x2="150" y2="256" stroke-width="1"></line>
+        <line class="sv-stroke-ink" x1="270" y1="250" x2="270" y2="256" stroke-width="1"></line>
+        <line class="sv-stroke-ink" x1="390" y1="250" x2="390" y2="256" stroke-width="1"></line>
+        <line class="sv-stroke-ink" x1="510" y1="250" x2="510" y2="256" stroke-width="1"></line>
+        <line class="sv-stroke-ink" x1="630" y1="250" x2="630" y2="256" stroke-width="1"></line>
+        <text class="sv-ts" x="150" y="272" text-anchor="middle">-2</text>
+        <text class="sv-ts" x="270" y="272" text-anchor="middle">-1</text>
+        <text class="sv-ts" x="390" y="272" text-anchor="middle">0</text>
+        <text class="sv-ts" x="510" y="272" text-anchor="middle">1</text>
+        <text class="sv-ts" x="630" y="272" text-anchor="middle">2</text>
+        <text class="sv-ts" x="390" y="296" text-anchor="middle">bootstrapped mean of the shifted data</text>
+        <line class="sv-stroke-key" x1="330" y1="250" x2="330" y2="100" stroke-width="1.5" stroke-dasharray="4 4"></line>
+        <line class="sv-stroke-key" x1="450" y1="250" x2="450" y2="100" stroke-width="1.5" stroke-dasharray="4 4"></line>
+        <text class="sv-key" x="330" y="92" text-anchor="middle" font-size="12.5" font-weight="600">-0.5</text>
+        <text class="sv-key" x="458" y="92" font-size="12.5" font-weight="600">0.5 = the observed mean</text>
+        <text class="sv-key" x="205" y="150" text-anchor="middle" font-size="16" font-weight="700">16%</text>
+        <rect class="sv-paper" x="352" y="180" width="74" height="26" rx="4"></rect>
+        <text class="sv-ink" x="389" y="199" text-anchor="middle" font-size="16" font-weight="700">36%</text>
+        <text class="sv-key" x="578" y="140" text-anchor="middle" font-size="16" font-weight="700">48%</text>
+      </svg>
+      <figcaption>Notice that the two shaded tails, not the tall middle, are what the p-value adds up.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">Shifting the data</span><div class="math">$$ y_j \;=\; x_j - \hat{\theta}_{\text{obs}}, \qquad j = 1,\dots,n $$</div><p class="explain"><b>Symbols:</b> \(x_j\) is the \(j\)-th original measurement. \(\hat{\theta}_{\text{obs}}\) is the statistic calculated from the original data, which is the mean 0.5 in this video. \(y_j\) is the shifted measurement. \(n\) is the sample size, 8 here. <b>What it tells you:</b> subtracting the observed statistic slides the whole data set so its statistic becomes exactly zero, which is the value the null hypothesis predicts.</p></div>
+    <div class="formula"><span class="lbl">Two-sided bootstrap p-value</span><div class="math">$$ p \;=\; \frac{1}{B}\Big( \#\{\, \hat{\theta}^{*}_{i} \ge \hat{\theta}_{\text{obs}} \,\} \;+\; \#\{\, \hat{\theta}^{*}_{i} \le -\hat{\theta}_{\text{obs}} \,\} \Big) $$</div><p class="explain"><b>Symbols:</b> \(\hat{\theta}^{*}_{i}\) is the statistic from the \(i\)-th bootstrapped set of the shifted data. \(B\) is how many bootstraps we run. \(\#\{\dots\}\) means "count how many satisfy this". \(\hat{\theta}_{\text{obs}}\) is the observed statistic, taken as positive here. <b>What it tells you:</b> it is the share of the null histogram that sits as far from zero as the observed value, or further, on either side.</p></div>
+    <p>The decision rule is the usual one. If \(p\) is below 0.05 we reject the null hypothesis, and otherwise we fail to reject it.</p>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>After shifting the eight measurements and bootstrapping the means, the histogram splits into three parts. About 16% of the bootstrapped means are at or below -0.5. About 36% fall between -0.5 and 0.5. The rest, roughly 48%, are at or above 0.5.</p>
+      <p>The observed mean was 0.5, so "as extreme or more extreme" means more than 0.5 units away from zero in either direction. Josh adds the right tail and the left tail:</p>
+      <div class="math">$$ p \;=\; 0.47 \;+\; 0.16 \;=\; 0.63 $$</div>
+      <p>Because 0.63 is much larger than 0.05, we fail to reject the hypothesis that the drug makes no difference.</p>
+      <p>Josh then repeats the whole recipe with the median. He shifts the data so the median is zero, bootstraps, and gets a histogram of medians. The observed median is 1.8, so the p-value is the share at or above 1.8 plus the share at or below -1.8:</p>
+      <div class="math">$$ p \;=\; 0.01 \;+\; 0.19 \;=\; 0.20 $$</div>
+      <p>Again we fail to reject, but this time using medians. That is the real point of the example. The recipe does not care which statistic you choose.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Bootstrap the shifted data, not the raw data. The histogram from raw data is centred on 0.5 and is used for a confidence interval. The histogram for a p-value must be centred on the null value, which is why we shift first.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Both tails count. It is easy to report only the 0.47 on the right and forget the 0.16 on the left. "More extreme" means further from zero than 0.5 in either direction, so the two shares are added.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> These percentages are read off a finite histogram, so they wobble a little between runs. That is why the video reads about 48% from the picture and uses 0.47 in the sum. Use a few thousand repeats so the wobble stays small.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Failing to reject is not proof that the drug does nothing. A p-value of 0.63 only says the observed mean is an ordinary result when the null hypothesis is true. With eight people, the test simply has little power to see a real effect.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>How do you get a p-value out of a bootstrap?</summary><div class="a">First I calculate the statistic on the real data. Then I shift every observation by that amount so the statistic equals the null value, usually zero. I bootstrap the shifted data a few thousand times to build the distribution of the statistic under the null hypothesis. The p-value is the fraction of that distribution at least as far from the null value as what I observed, counting both tails.</div></details>
+    <details class="qa" open><summary>Why do you have to shift the data first?</summary><div class="a">A p-value is a probability calculated under the assumption that the null hypothesis is true. If I bootstrap the raw data, my histogram is centred on 0.5, which is the world where the drug works. Shifting moves the centre to zero while keeping the spread and shape, so the histogram now describes a world where the drug does nothing. That is the only world in which the p-value question makes sense.</div></details>
+    <details class="qa" open><summary>How is this different from the bootstrap confidence interval?</summary><div class="a">They use the same four bootstrap steps but different starting data. The confidence interval bootstraps the original data and asks which values of the true mean are plausible. The p-value bootstraps the shifted data and asks how unusual the observed value is under the null. In this example both give the same conclusion, since the 95% interval covered zero and the p-value came out at 0.63.</div></details>
+    <details class="qa" open><summary>When would you test the median instead of the mean?</summary><div class="a">When the data looks like it has outliers. The median is more resilient to a few extreme values, so it gives a steadier read on the typical response. The swap costs nothing: shift so the median is zero, bootstrap medians, and read the two tails the same way.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>A p-value needs a picture of the world where the null hypothesis is true.</li>
+      <li>Build that picture by shifting the data so its statistic equals the null value, which is zero here.</li>
+      <li>Bootstrap the shifted data a few thousand times and record the statistic each time.</li>
+      <li>The resulting histogram shows how the statistic varies when the drug has no effect.</li>
+      <li>The p-value is the share of that histogram at least as far from zero as the observed value, added over both tails.</li>
+      <li>In the video the observed mean of 0.5 gives 0.47 plus 0.16, so p is 0.63 and we fail to reject.</li>
+      <li>The same recipe with medians gives 0.01 plus 0.19, so p is 0.20 and again we fail to reject.</li>
+      <li>Because nothing in the recipe depends on the mean, you can test almost any statistic this way.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Bootstrap p-values</span><span class="board-tag">shift to zero, bootstrap, add both tails</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 270" role="img" aria-label="The data are shifted by −0.5 so the mean is 0, the bootstrapped means of the shifted data form a histogram around 0, and the shaded tails past −0.5 and 0.5 hold 0.16 and 0.47, so p = 0.63.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <rect x="30" y="190" width="20" height="10" class="sv-key"/>
+              <rect x="50" y="180" width="20" height="20" class="sv-key"/>
+              <rect x="70" y="168" width="20" height="32" class="sv-key"/>
+              <rect x="90" y="154" width="20" height="46" class="sv-key"/>
+              <rect x="110" y="139" width="20" height="61" class="sv-key"/>
+              <rect x="130" y="120" width="20" height="80" class="sv-paper"/>
+              <rect x="150" y="100" width="20" height="100" class="sv-paper"/>
+              <rect x="170" y="96" width="20" height="104" class="sv-paper"/>
+              <rect x="190" y="104" width="20" height="96" class="sv-paper"/>
+              <rect x="210" y="106" width="20" height="94" class="sv-key"/>
+              <rect x="230" y="112" width="20" height="88" class="sv-key"/>
+              <rect x="250" y="120" width="20" height="80" class="sv-key"/>
+              <rect x="270" y="130" width="20" height="70" class="sv-key"/>
+              <rect x="290" y="140" width="20" height="60" class="sv-key"/>
+              <rect x="310" y="152" width="20" height="48" class="sv-key"/>
+              <rect x="330" y="163" width="20" height="37" class="sv-key"/>
+              <rect x="350" y="170" width="20" height="30" class="sv-key"/>
+            </g>
+            <line x1="22" y1="200" x2="378" y2="200" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="130" y1="200" x2="130" y2="88" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="5 4"/>
+            <line x1="210" y1="200" x2="210" y2="66" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="5 4"/>
+            <line x1="203" y1="58" x2="179" y2="58" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2"><circle cx="210" cy="58" r="7" class="sv-key"/></g>
+            <text x="190" y="38" text-anchor="middle" class="sv-t">shift by −0.5</text>
+            <text x="62" y="150" text-anchor="middle" class="sv-tb">0.16</text>
+            <text x="320" y="126" text-anchor="middle" class="sv-tb">0.47</text>
+            <text x="130" y="222" text-anchor="middle" class="sv-ts">−0.5</text>
+            <text x="170" y="222" text-anchor="middle" class="sv-ts">0</text>
+            <text x="210" y="222" text-anchor="middle" class="sv-ts">0.5</text>
+            <text x="388" y="222" text-anchor="end" class="sv-ts">bootstrapped means</text>
+            <text x="200" y="254" text-anchor="middle" class="sv-tb">p = 0.47 + 0.16 = 0.63</text>
+          </svg>
+          <p>Shift the data so its mean is 0, the world where the drug does nothing, and bootstrap it a few thousand times. The p-value is the share of bootstrapped means at least as far from 0 as the observed 0.5, on both sides.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Null hypothesis</dt><dd>The drug does nothing, so the mean would be zero.</dd>
+            <dt>Shifted data</dt><dd>Every point minus 0.5: same shape and spread, mean zero.</dd>
+            <dt>Bootstrapped set</dt><dd>Sampled with replacement, same size; duplicates are fine.</dd>
+            <dt>p-value</dt><dd>Share of the null histogram at least as far from zero as observed.</dd>
+            <dt>Both tails</dt><dd>"More extreme" means further from zero in either direction.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Observed statistic</b>mean of the 8 is 0.5</li>
+            <li><b>Shift to zero</b>subtract 0.5 from every point</li>
+            <li><b>Bootstrap</b>sample with replacement, same size</li>
+            <li><b>Record</b>add its mean to a histogram</li>
+            <li><b>Add both tails</b>that share is the p-value</li>
+          </ol>
+          <p class="loop">↺ repeat steps 3 and 4 a few thousand times</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$y_j=x_j-\hat\theta$$
+          $$p=\frac{\#\{\hat\theta^*\ge\hat\theta\}+\#\{\hat\theta^*\le-\hat\theta\}}{B}$$
+          <ul class="keys">
+            <li>\(x_j\) is a measurement, \(y_j\) its shifted value; \(\hat\theta\) is the observed statistic, 0.5 here.</li>
+            <li>\(\hat\theta^*\): one bootstrapped statistic; \(B\): how many bootstraps.</li>
+            <li>Reject the null only if \(p\lt 0.05\).</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th></th><th>mean</th><th>median</th></tr>
+            <tr><td>observed</td><td>0.5</td><td>1.8</td></tr>
+            <tr><td>right tail</td><td>0.47</td><td>0.01</td></tr>
+            <tr><td>left tail</td><td>0.16</td><td>0.19</td></tr>
+            <tr class="final"><td>p</td><td>0.63</td><td>0.20</td></tr>
+          </table>
+          <p class="hand">Both are above 0.05, so we fail to reject. The recipe does not care which statistic you use.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Bootstrap the raw data to get a p-value.</span><span class="yes">Shift first: the null histogram must centre on zero, not on 0.5.</span></li>
+            <li><span class="no">Only the tail on the observed side counts.</span><span class="yes">Add both tails: 0.47 on the right plus 0.16 on the left.</span></li>
+            <li><span class="no">Failing to reject proves the drug does nothing.</span><span class="yes">p = 0.63 only says 0.5 is ordinary under the null; eight people give little power.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="30-bootstrapping-main-ideas.html"><small>Previous</small>Bootstrapping Main Ideas</a> <a href="32-bar-charts-are-better-than-pie-charts.html"><small>Next</small>Bar Charts Are Better than Pie Charts</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

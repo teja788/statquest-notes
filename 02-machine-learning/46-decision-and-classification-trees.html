@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Decision and Classification Trees — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>46</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 46 · 18.1 min</div>
+    <h1>Decision and Classification Trees</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=_L39rN6gz7Y" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video shows how to read a classification tree, and how to build one from raw data using Gini impurity. It is the base for random forests, gradient boosting and many other models.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>A decision tree makes a statement, then moves left or right based on true or false. A tree that predicts categories is a classification tree. A tree that predicts numbers is a regression tree. To build a tree, we test every feature as a possible question and measure how mixed the resulting groups are. Gini impurity gives that measure, and the feature with the lowest impurity goes at the top.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>A decision tree asks a question and then follows one of two paths. If the statement is true you go left. If it is false you go right. You keep going until you reach a point with no arrows leaving it, and that point gives you the answer.</p>
+    <p>Josh uses three names for the parts of a tree. The box at the very top is the <strong>root node</strong>, or just the root. Boxes in the middle have arrows coming in and arrows going out, and they are called <strong>internal nodes</strong> or <strong>branches</strong>. Boxes with arrows coming in but none going out are <strong>leaves</strong>.</p>
+    <p>Trees are relaxed about data. One tree can mix numeric columns with yes or no columns. The same column can appear twice, with a different threshold each time. The same answer can also appear in more than one leaf.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 330" role="img" aria-label="The finished classification tree: root asks Loves Soda, left branch asks Age less than 12.5, three leaves give the prediction">
+        <defs>
+          <marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" class="sv-ink3"></path>
+          </marker>
+        </defs>
+        <rect x="290" y="24" width="180" height="46" rx="6" class="sv-acc-soft"></rect>
+        <rect x="290" y="24" width="180" height="46" rx="6" class="sv-stroke-acc" stroke-width="2" fill="none"></rect>
+        <text x="380" y="53" text-anchor="middle" class="sv-tb">Loves Soda?</text>
+        <text x="280" y="52" text-anchor="end" class="sv-ts">root node</text>
+
+        <line x1="330" y1="72" x2="230" y2="136" class="sv-line" stroke-width="1.5" marker-end="url(#ar1)"></line>
+        <line x1="430" y1="72" x2="545" y2="136" class="sv-line" stroke-width="1.5" marker-end="url(#ar1)"></line>
+        <rect x="252" y="88" width="42" height="18" rx="4" class="sv-paper"></rect>
+        <text x="273" y="102" text-anchor="middle" class="sv-ts">true</text>
+        <rect x="470" y="88" width="46" height="18" rx="4" class="sv-paper"></rect>
+        <text x="493" y="102" text-anchor="middle" class="sv-ts">false</text>
+
+        <rect x="110" y="138" width="200" height="46" rx="6" class="sv-acc-soft"></rect>
+        <rect x="110" y="138" width="200" height="46" rx="6" class="sv-stroke-acc" stroke-width="2" fill="none"></rect>
+        <text x="210" y="167" text-anchor="middle" class="sv-tb">Age &lt; 12.5?</text>
+        <text x="24" y="166" class="sv-ts">internal node</text>
+
+        <rect x="460" y="138" width="250" height="46" rx="6" class="sv-paper2"></rect>
+        <rect x="460" y="138" width="250" height="46" rx="6" class="sv-line" stroke-width="1.5"></rect>
+        <text x="585" y="167" text-anchor="middle" class="sv-t">Does not love Cool as Ice</text>
+        <text x="585" y="200" text-anchor="middle" class="sv-ts">leaf · 3 people</text>
+
+        <line x1="160" y1="186" x2="140" y2="242" class="sv-line" stroke-width="1.5" marker-end="url(#ar1)"></line>
+        <line x1="260" y1="186" x2="360" y2="242" class="sv-line" stroke-width="1.5" marker-end="url(#ar1)"></line>
+        <rect x="106" y="204" width="42" height="18" rx="4" class="sv-paper"></rect>
+        <text x="127" y="218" text-anchor="middle" class="sv-ts">true</text>
+        <rect x="292" y="204" width="46" height="18" rx="4" class="sv-paper"></rect>
+        <text x="315" y="218" text-anchor="middle" class="sv-ts">false</text>
+
+        <rect x="40" y="244" width="200" height="46" rx="6" class="sv-paper2"></rect>
+        <rect x="40" y="244" width="200" height="46" rx="6" class="sv-line" stroke-width="1.5"></rect>
+        <text x="140" y="273" text-anchor="middle" class="sv-t">Does not love it</text>
+        <text x="140" y="306" text-anchor="middle" class="sv-ts">leaf · 1 person</text>
+
+        <rect x="262" y="244" width="200" height="46" rx="6" class="sv-good-soft"></rect>
+        <rect x="262" y="244" width="200" height="46" rx="6" class="sv-stroke-good" stroke-width="1.5"></rect>
+        <text x="362" y="273" text-anchor="middle" class="sv-t">Loves Cool as Ice</text>
+        <text x="362" y="306" text-anchor="middle" class="sv-ts">leaf · 3 people</text>
+      </svg>
+      <figcaption>The finished tree from the video. Notice that a leaf can hold very few people, which is the warning sign for overfitting.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <p>The data has seven people. For each person we know if they love popcorn, if they love soda, their age, and whether they love the 1991 film <em>Cool as Ice</em>. The last column is what we want to predict.</p>
+    <ol class="steps">
+      <li>Pick a candidate question, for example "Loves Popcorn?". Build a tiny tree with just that question and two leaves.</li>
+      <li>Run all seven rows down the tiny tree. Count how many people in each leaf love Cool as Ice, and how many do not.</li>
+      <li>A leaf that holds a mixture of both answers is called <strong>impure</strong>. Measure the impurity of each leaf with Gini impurity.</li>
+      <li>Combine the two leaf scores into one number for the split. Use a weighted average, because leaves rarely hold the same number of people.</li>
+      <li>Repeat for every candidate. For a numeric column such as age, sort the rows, take the average of each adjacent pair, and score each of those averages as a threshold.</li>
+      <li>Put the candidate with the lowest total Gini impurity at the root. Here that is "Loves Soda", with 0.214.</li>
+      <li>Repeat the whole search inside each impure node. Stop when a node is pure, or when splitting no longer helps. Then give each leaf the answer held by most of its people.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Two candidate stumps side by side, Loves Popcorn with total Gini 0.405 and Loves Soda with total Gini 0.214">
+        <defs>
+          <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" class="sv-ink3"></path>
+          </marker>
+        </defs>
+        <line x1="380" y1="20" x2="380" y2="280" class="sv-line" stroke-width="1"></line>
+
+        <rect x="80" y="24" width="200" height="40" rx="6" class="sv-acc-soft"></rect>
+        <rect x="80" y="24" width="200" height="40" rx="6" class="sv-stroke-acc" stroke-width="2" fill="none"></rect>
+        <text x="180" y="50" text-anchor="middle" class="sv-tb">Loves Popcorn?</text>
+        <line x1="150" y1="66" x2="105" y2="126" class="sv-line" stroke-width="1.5" marker-end="url(#ar2)"></line>
+        <line x1="215" y1="66" x2="258" y2="126" class="sv-line" stroke-width="1.5" marker-end="url(#ar2)"></line>
+        <rect x="30" y="128" width="140" height="62" rx="6" class="sv-paper2"></rect>
+        <rect x="30" y="128" width="140" height="62" rx="6" class="sv-line" stroke-width="1.5"></rect>
+        <text x="100" y="150" text-anchor="middle" class="sv-t">yes 1 · no 3</text>
+        <text x="100" y="174" text-anchor="middle" class="sv-tm">Gini 0.375</text>
+        <rect x="192" y="128" width="140" height="62" rx="6" class="sv-paper2"></rect>
+        <rect x="192" y="128" width="140" height="62" rx="6" class="sv-line" stroke-width="1.5"></rect>
+        <text x="262" y="150" text-anchor="middle" class="sv-t">yes 2 · no 1</text>
+        <text x="262" y="174" text-anchor="middle" class="sv-tm">Gini 0.444</text>
+        <text x="180" y="228" text-anchor="middle" class="sv-tb">Total Gini = 0.405</text>
+        <text x="180" y="252" text-anchor="middle" class="sv-ts">both leaves are impure</text>
+
+        <rect x="460" y="24" width="200" height="40" rx="6" class="sv-acc-soft"></rect>
+        <rect x="460" y="24" width="200" height="40" rx="6" class="sv-stroke-acc" stroke-width="2" fill="none"></rect>
+        <text x="560" y="50" text-anchor="middle" class="sv-tb">Loves Soda?</text>
+        <line x1="530" y1="66" x2="485" y2="126" class="sv-line" stroke-width="1.5" marker-end="url(#ar2)"></line>
+        <line x1="595" y1="66" x2="638" y2="126" class="sv-line" stroke-width="1.5" marker-end="url(#ar2)"></line>
+        <rect x="410" y="128" width="140" height="62" rx="6" class="sv-paper2"></rect>
+        <rect x="410" y="128" width="140" height="62" rx="6" class="sv-line" stroke-width="1.5"></rect>
+        <text x="480" y="150" text-anchor="middle" class="sv-t">yes 3 · no 1</text>
+        <text x="480" y="174" text-anchor="middle" class="sv-tm">Gini 0.375</text>
+        <rect x="572" y="128" width="140" height="62" rx="6" class="sv-good-soft"></rect>
+        <rect x="572" y="128" width="140" height="62" rx="6" class="sv-stroke-good" stroke-width="1.5"></rect>
+        <text x="642" y="150" text-anchor="middle" class="sv-t">yes 0 · no 3</text>
+        <text x="642" y="174" text-anchor="middle" class="sv-tm">Gini 0</text>
+        <text x="560" y="228" text-anchor="middle" class="sv-tb">Total Gini = 0.214</text>
+        <text x="560" y="252" text-anchor="middle" class="sv-ts">one leaf is perfectly pure — this wins</text>
+      </svg>
+      <figcaption>Both candidates get scored the same way. Loves Soda wins because one of its leaves is pure, which pulls the weighted average down.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">Gini impurity of one leaf</span><div class="math">$$ G_{\text{leaf}} = 1 - p_{\text{yes}}^{2} - p_{\text{no}}^{2} $$</div><p class="explain"><b>Symbols:</b> \(G_{\text{leaf}}\) is the impurity score of a single leaf. \(p_{\text{yes}}\) is the share of people in that leaf who love Cool as Ice. \(p_{\text{no}}\) is the share who do not. Each share is a count divided by the total number of people in the leaf. <b>What it tells you:</b> it is 0 when the leaf holds one answer only, and it grows as the leaf becomes more mixed.</p></div>
+    <div class="formula"><span class="lbl">Total Gini impurity of a split</span><div class="math">$$ G_{\text{split}} = \frac{n_L}{n_L + n_R}\,G_L + \frac{n_R}{n_L + n_R}\,G_R $$</div><p class="explain"><b>Symbols:</b> \(n_L\) and \(n_R\) are the numbers of people in the left and right leaves. \(G_L\) and \(G_R\) are their Gini impurities. <b>What it tells you:</b> it is a weighted average, so a big leaf counts more than a small one. Compare this single number across candidates and keep the smallest.</p></div>
+    <div class="formula"><span class="lbl">Candidate thresholds for a numeric column</span><div class="math">$$ t_j = \frac{a_j + a_{j+1}}{2} $$</div><p class="explain"><b>Symbols:</b> \(a_j\) is the \(j\)-th age after sorting the rows from lowest to highest. \(t_j\) is the midpoint between two neighbouring ages. <b>What it tells you:</b> a numeric column has no natural yes or no split, so you test the midpoint of every adjacent pair as a threshold.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Take the "Loves Popcorn" tree. Four people love popcorn, and among them one loves Cool as Ice and three do not. So the left leaf scores:</p>
+      <div class="math">$$ G_L = 1 - \left(\tfrac{1}{4}\right)^{2} - \left(\tfrac{3}{4}\right)^{2} = 1 - 0.0625 - 0.5625 = 0.375 $$</div>
+      <p>Three people do not love popcorn. Two of them love Cool as Ice and one does not, so the right leaf scores:</p>
+      <div class="math">$$ G_R = 1 - \left(\tfrac{2}{3}\right)^{2} - \left(\tfrac{1}{3}\right)^{2} = 0.444 $$</div>
+      <p>The leaves hold four and three people, so we take the weighted average:</p>
+      <div class="math">$$ G_{\text{split}} = \tfrac{4}{7}(0.375) + \tfrac{3}{7}(0.444) = 0.405 $$</div>
+      <p>The same work on "Loves Soda" gives 0.214. For age, we sort the rows and test each midpoint. The threshold \(\text{Age} &lt; 9.5\) sends one person left, and that leaf is pure, so \(G_L = 0\). The other six go right and give \(G_R = 0.5\), so the total is \(\tfrac{6}{7}(0.5) = 0.429\). Two age thresholds, 15 and 44, tie for the best age score of 0.343.</p>
+      <p>Loves Soda has the lowest score of all, so it goes at the root. The four soda lovers form an impure node with three yes and one no. Popcorn splits them at 0.25, but \(\text{Age} &lt; 12.5\) splits them at 0, so age wins. The three people who do not love soda already agree, so that node is a leaf. Each leaf takes the answer held by most of its people.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not add raw leaf impurities together. The total for a split is a <em>weighted</em> average, with weights equal to the share of people in each leaf. Without the weights, a tiny pure leaf would look far more valuable than it is.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A leaf built from one person is a warning sign, and this tree has one. That is overfitting. The two cures are pruning the finished tree, or limiting growth, such as three people per leaf. A limit leaves impure leaves, and that is fine: a leaf that is 75 percent one-sided still tells you how sure it is. Pick the limit with cross validation.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Gini impurity is not the only option. Entropy and information gain do a similar job, and the numbers come out quite similar. Josh uses Gini because it is popular and the most straightforward.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>How does a decision tree choose which feature to split on?</summary><div class="a">It treats every feature as a candidate question and scores each one. We send the training rows down a one-level split, then measure how mixed the two groups are with Gini impurity. The two leaves are combined with a weighted average. The lowest total impurity wins, and we repeat the search inside each impure child.</div></details>
+    <details class="qa" open><summary>What exactly is Gini impurity?</summary><div class="a">It is one minus the sum of the squared class probabilities inside a group. If every person in the group has the same label, the score is zero, which means the group is pure. The more evenly the labels are mixed, the higher the score.</div></details>
+    <details class="qa" open><summary>How does a tree handle a numeric feature such as age?</summary><div class="a">It turns the number into a set of yes or no questions. You sort the rows by that feature, take the midpoint of each adjacent pair of values, and treat each midpoint as a candidate threshold. Then you score every threshold with Gini impurity, exactly like a categorical split. Ties can happen, and either tied threshold is acceptable.</div></details>
+    <details class="qa" open><summary>Why do decision trees overfit, and what do you do about it?</summary><div class="a">A tree keeps splitting until its leaves are pure, so leaves can end up holding one or two rows. Those leaves memorise noise. You either prune the tree, or limit its growth, for example with at least three people per leaf. Cross validation picks the limit.</div></details>
+    <details class="qa" open><summary>What is the difference between a classification tree and a regression tree?</summary><div class="a">A classification tree sorts things into categories, such as loves or does not love a film. A regression tree predicts a number, such as mouse size from diet. In a classification tree, each leaf outputs the category held by most of its people.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>A decision tree makes a statement and moves left when it is true and right when it is false.</li>
+      <li>A tree that predicts categories is a classification tree, and one that predicts numbers is a regression tree.</li>
+      <li>The parts have names: the root at the top, internal nodes or branches in the middle, and leaves at the ends.</li>
+      <li>A leaf that mixes two answers is impure, and Gini impurity puts a number on that mixture.</li>
+      <li>The total score of a split is the weighted average of its leaf impurities, so leaf size matters.</li>
+      <li>Numeric features are handled by sorting the values and testing the midpoint of each adjacent pair.</li>
+      <li>The feature with the lowest total impurity goes at the top, and the search then repeats inside each impure node.</li>
+      <li>Leaves built from very few rows signal overfitting, so use pruning or a minimum leaf size chosen by cross validation.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Classification Trees</span><span class="board-tag">the purest split goes at the root</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 260" role="img" aria-label="Loves Soda sends the seven people into a mixed group of 3 yes and 1 no with Gini 0.375 and a pure group of 3 no with Gini 0, for a weighted total of 0.214.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <g class="sv-stroke-ink" stroke-width="2.5">
+              <rect x="120" y="12" width="160" height="44" rx="10" class="sv-acc-soft"/>
+            </g>
+            <line x1="170" y1="56" x2="114" y2="104" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="230" y1="56" x2="286" y2="104" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <rect x="32" y="110" width="160" height="50" rx="10" class="sv-paper"/>
+              <rect x="208" y="110" width="160" height="50" rx="10" class="sv-paper"/>
+              <circle cx="67" cy="135" r="10" class="sv-good"/>
+              <circle cx="97" cy="135" r="10" class="sv-good"/>
+              <circle cx="127" cy="135" r="10" class="sv-good"/>
+              <circle cx="157" cy="135" r="10" class="sv-key"/>
+              <circle cx="258" cy="135" r="10" class="sv-key"/>
+              <circle cx="288" cy="135" r="10" class="sv-key"/>
+              <circle cx="318" cy="135" r="10" class="sv-key"/>
+            </g>
+            <text x="200" y="41" text-anchor="middle" class="sv-tb">Loves Soda?</text>
+            <text x="124" y="84" text-anchor="end" class="sv-ts">true</text>
+            <text x="276" y="84" class="sv-ts">false</text>
+            <text x="112" y="182" text-anchor="middle" class="sv-ts">yes 3 · no 1</text>
+            <text x="288" y="182" text-anchor="middle" class="sv-ts">yes 0 · no 3</text>
+            <text x="112" y="206" text-anchor="middle" class="sv-t">Gini 0.375</text>
+            <text x="288" y="206" text-anchor="middle" class="sv-t">Gini 0 · pure</text>
+            <text x="200" y="242" text-anchor="middle" class="sv-tb">weighted total = 0.214</text>
+          </svg>
+          <p>True goes left, false goes right. Gini impurity scores how mixed each group is, and a weighted average scores the split. Soda's 0.214 beats Popcorn's 0.405, so Soda takes the root.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Classification tree</dt><dd>Predicts a category, not a number.</dd>
+            <dt>Root node</dt><dd>The question at the very top.</dd>
+            <dt>Internal node</dt><dd>A middle box with arrows in and out; also a branch.</dd>
+            <dt>Leaf</dt><dd>An end box; gives the majority answer.</dd>
+            <dt>Gini impurity</dt><dd>How mixed a leaf is; 0 for one answer only.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Pick a question</b>a tiny tree with two leaves</li>
+            <li><b>Run the rows</b>count yes and no per leaf</li>
+            <li><b>Score each leaf</b>Gini impurity of the mix</li>
+            <li><b>Weighted average</b>one total score per split</li>
+            <li><b>Try every question</b>ages: test each adjacent midpoint</li>
+            <li><b>Lowest wins</b>Loves Soda, 0.214, at the root</li>
+          </ol>
+          <p class="loop">↺ repeat inside each impure node until it is pure or splitting no longer helps</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$G_{\text{leaf}}=1-p_{\text{yes}}^{2}-p_{\text{no}}^{2}$$
+          $$G_{\text{split}}=\frac{n_L}{n}G_L+\frac{n_R}{n}G_R$$
+          $$t_j=\frac{a_j+a_{j+1}}{2}$$
+          <ul class="keys">
+            <li>\(p_{\text{yes}}\), \(p_{\text{no}}\): shares who do and do not love Cool as Ice.</li>
+            <li>\(n_L\), \(n_R\): people in each leaf, \(n=n_L+n_R\); \(G_L\), \(G_R\): their Gini.</li>
+            <li>\(a_j\): the \(j\)-th sorted age; \(t_j\): a threshold to test.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>split</th><th>Gini L</th><th>Gini R</th><th>total</th></tr>
+            <tr><td>Popcorn</td><td>0.375</td><td>0.444</td><td>0.405</td></tr>
+            <tr><td>Age &lt; 9.5</td><td>0</td><td>0.5</td><td>0.429</td></tr>
+            <tr><td>Age 15 or 44</td><td>…</td><td>…</td><td>0.343</td></tr>
+            <tr class="final"><td>Soda ✓</td><td>0.375</td><td>0</td><td>0.214</td></tr>
+          </table>
+          <p class="hand">Lowest total takes the root. Inside the soda lovers, Age &lt; 12.5 scores 0, beating Popcorn's 0.25.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Just add the two leaf impurities.</span><span class="yes">Weight each leaf by its size, or a tiny pure leaf looks too valuable.</span></li>
+            <li><span class="no">Every leaf should end up pure.</span><span class="yes">One-person leaves overfit. Prune, or set a minimum leaf size by cross validation.</span></li>
+            <li><span class="no">Gini impurity is the only option.</span><span class="yes">Entropy and information gain work too, with similar numbers.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="45-gaussian-naive-bayes.html"><small>Previous</small>Gaussian Naive Bayes</a> <a href="47-decision-trees-part-2-feature-selection-and-missing-data.html"><small>Next</small>Decision Trees, Part 2 - Feature Selection and Missing Data</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

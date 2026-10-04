@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Maximum Likelihood for the Exponential Distribution — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>56</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 56 · 9.7 min</div>
+    <h1>Maximum Likelihood for the Exponential Distribution</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=p3T-_LMrvBc" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">The exponential distribution models the time between events. This video shows how to pick the one rate parameter that best fits your measured waiting times.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>An exponential distribution has a single knob, the rate \(\lambda\). Josh collects the gaps in time between views of his video and asks which \(\lambda\) makes that data most likely. He multiplies the individual likelihoods together, takes the log to make the algebra easy, then sets the derivative to zero. The answer is simple: \(\lambda\) equals the number of measurements divided by their sum. That is just one over the average waiting time.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>The exponential distribution is a statistical distribution that models the time between events. How long will you wait before the next text message arrives? How much time passes before the next person views this video? Those waiting times follow this shape.</p>
+    <p>The x-axis is the amount of time between events. The y-axis is scaled so the whole area under the curve equals 1. To get the probability that an event happens within 0 to 5 seconds, you find the area under the curve between \(x = 0\) and \(x = 5\).</p>
+    <p>The curve has one parameter, \(\lambda\), called the rate parameter. It is proportional to how quickly things happen. When \(\lambda = 1\), events happen on average once every second. When \(\lambda = 2\), events happen on average twice every second. When \(\lambda = 0.5\), events happen on average once every two seconds. Maximum likelihood is how we choose \(\lambda\) from real data.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 320" role="img" aria-label="Three exponential curves with rate parameters 2, 1 and 0.5, showing that a larger lambda makes events happen sooner">
+        <line class="sv-line" x1="60" y1="250" x2="710" y2="250" stroke-width="1.5"></line>
+        <line class="sv-line" x1="60" y1="40" x2="60" y2="250" stroke-width="1.5"></line>
+        <polyline class="sv-stroke-key" stroke-width="2.5" points="60,50 92,128.7 124,176.4 156,205.4 188,222.9 252,240 316,246.3 444,249.5 572,250 700,250"></polyline>
+        <polyline class="sv-stroke-acc" stroke-width="2.5" points="60,150 124,189.4 188,213.2 252,227.7 316,236.5 380,241.8 444,245 572,248.2 700,249.3"></polyline>
+        <polyline class="sv-stroke-good" stroke-width="2.5" points="60,200 188,219.7 316,231.6 444,238.8 572,243.2 700,245.9"></polyline>
+        <text class="sv-tm sv-key" x="150" y="120">λ = 2 · twice a second</text>
+        <text class="sv-tm sv-acc" x="215" y="165">λ = 1 · once a second</text>
+        <text class="sv-tm sv-good" x="330" y="215">λ = 0.5 · once every 2 seconds</text>
+        <text class="sv-ts" x="60" y="270" text-anchor="middle">0</text>
+        <text class="sv-ts" x="188" y="270" text-anchor="middle">1</text>
+        <text class="sv-ts" x="316" y="270" text-anchor="middle">2</text>
+        <text class="sv-ts" x="444" y="270" text-anchor="middle">3</text>
+        <text class="sv-ts" x="572" y="270" text-anchor="middle">4</text>
+        <text class="sv-ts" x="700" y="270" text-anchor="middle">5</text>
+        <text class="sv-ts" x="385" y="290" text-anchor="middle">time between events (seconds)</text>
+        <text class="sv-ts" x="30" y="145" transform="rotate(-90 30 145)" text-anchor="middle">density (area under curve = 1)</text>
+      </svg>
+      <figcaption>Notice that a bigger λ pushes the curve up on the left and down fast, so short waits become more likely.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Collect the data. \(x_1\) is the time that passed between the first and second views. \(x_2\) is the time between the second and third views, and so on up to \(x_n\).</li>
+      <li>Write the likelihood for one measurement. For a value of \(\lambda\) we plug \(x_1\) into the curve's equation. The height of the curve at that point is the likelihood of \(\lambda\) given \(x_1\).</li>
+      <li>Combine two measurements. Because we care about \(x_1\) <em>and</em> \(x_2\), we multiply the two likelihoods. Pull the two \(\lambda\) terms out and add the exponents together.</li>
+      <li>Combine all the measurements. The full likelihood is the product of all \(n\) individual likelihoods. It collapses to \(\lambda^n\) times \(e\) raised to minus \(\lambda\) times the sum of every measurement.</li>
+      <li>Look at the likelihood as a function of \(\lambda\). It rises, reaches a peak, and falls. At the peak the slope, and so the derivative, equals zero.</li>
+      <li>Take the log first. Any function with an exponential in it is almost always easier to differentiate after taking the log. The log turns the product into a sum, moves the exponent \(n\) in front, and reduces the exponential term to just its exponent.</li>
+      <li>Take the derivative with respect to \(\lambda\), set it to zero, and solve. That gives the maximum likelihood estimate.</li>
+    </ol>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 320" role="img" aria-label="Likelihood plotted against lambda, peaking at lambda equals 0.5 where the tangent line is flat">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" class="sv-ink2"></path>
+          </marker>
+        </defs>
+        <line class="sv-line" x1="60" y1="250" x2="710" y2="250" stroke-width="1.5"></line>
+        <line class="sv-line" x1="60" y1="40" x2="60" y2="250" stroke-width="1.5"></line>
+        <polyline class="sv-stroke-acc" stroke-width="2.5" points="60,250 92,234.1 124,180.3 156,120.9 188,82.1 220,70 252,79.3 284,101.2 316,128.1 380,178.3 444,212.7 540,238 700,248.6"></polyline>
+        <line class="sv-stroke-key" stroke-width="2" x1="160" y1="70" x2="280" y2="70"></line>
+        <circle class="sv-key" cx="220" cy="70" r="5"></circle>
+        <line class="sv-line" x1="220" y1="70" x2="220" y2="250" stroke-width="1.5" stroke-dasharray="4 4"></line>
+        <rect class="sv-paper" x="286" y="52" width="196" height="24" rx="4"></rect>
+        <text class="sv-tm sv-key" x="292" y="69">slope = 0 at the peak</text>
+        <rect class="sv-paper" x="176" y="256" width="92" height="22" rx="4"></rect>
+        <text class="sv-tm sv-key" x="222" y="272" text-anchor="middle">λ = 0.5</text>
+        <line class="sv-line" x1="470" y1="150" x2="330" y2="150" stroke-width="1.5" marker-end="url(#ah)"></line>
+        <text class="sv-ts" x="476" y="155">likelihood falls off on either side</text>
+        <text class="sv-ts" x="385" y="292" text-anchor="middle">candidate values of λ</text>
+        <text class="sv-ts" x="30" y="145" transform="rotate(-90 30 145)" text-anchor="middle">likelihood of λ given the data</text>
+      </svg>
+      <figcaption>Notice that we search over λ, not over x: the peak of this curve is the maximum likelihood estimate.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">The exponential distribution</span><div class="math">$$ y = \lambda\, e^{-\lambda x} $$</div><p class="explain"><b>Symbols:</b> \(x\) is the time between two events. \(y\) is the height of the curve at that time. \(\lambda\) is the rate parameter, which is proportional to how quickly events happen. \(e\) is Euler's number, about 2.718. <b>What it tells you:</b> you plug in a value for \(x\) and out comes a value for \(y\); the area under this curve over a range of times is the probability of waiting that long.</p></div>
+
+    <div class="formula"><span class="lbl">Likelihood of λ given two measurements</span><div class="math">$$ L(\lambda \mid x_1, x_2) = \lambda e^{-\lambda x_1} \times \lambda e^{-\lambda x_2} = \lambda^{2} e^{-\lambda (x_1 + x_2)} $$</div><p class="explain"><b>Symbols:</b> \(L\) is the likelihood, read as "the likelihood of \(\lambda\) given the data". \(x_1\) and \(x_2\) are the first two measured waiting times. <b>What it tells you:</b> because we want both measurements at once, we multiply their likelihoods; the two \(\lambda\) terms combine into \(\lambda^2\) and the two exponents add together.</p></div>
+
+    <div class="formula"><span class="lbl">Likelihood of λ given all the data</span><div class="math">$$ L(\lambda \mid x_1 \ldots x_n) = \prod_{i=1}^{n} \lambda e^{-\lambda x_i} = \lambda^{n} e^{-\lambda (x_1 + x_2 + \cdots + x_n)} $$</div><p class="explain"><b>Symbols:</b> \(n\) is how many measurements you have. \(\prod\) means multiply every term together. <b>What it tells you:</b> the same trick scales to \(n\) points; all the \(\lambda\) terms pull out as \(\lambda^n\) and all the exponents add into one sum.</p></div>
+
+    <div class="formula"><span class="lbl">Step 1 — take the log, then the derivative</span><div class="math">$$ \ln L = n \ln(\lambda) - \lambda (x_1 + x_2 + \cdots + x_n) $$</div><p class="explain">The log splits the multiplication into addition. The exponent \(n\) moves in front of the log, and the log of the exponential term reduces to just its exponent. Now differentiate with respect to \(\lambda\):</p><div class="math">$$ \frac{d\,\ln L}{d\lambda} = \frac{n}{\lambda} - (x_1 + x_2 + \cdots + x_n) $$</div><p class="explain"><b>Symbols:</b> \(\ln\) is the natural log. \(\tfrac{d}{d\lambda}\) means the slope as \(\lambda\) changes. <b>What it tells you:</b> the log is safe to use here because a function and its log have a derivative of zero at the same place, so the peak does not move.</p></div>
+
+    <div class="formula"><span class="lbl">Step 2 — set the derivative to zero and solve</span><div class="math">$$ \frac{n}{\lambda} - (x_1 + \cdots + x_n) = 0 \;\Rightarrow\; \frac{n}{\lambda} = x_1 + \cdots + x_n \;\Rightarrow\; n = \lambda (x_1 + \cdots + x_n) $$</div><p class="explain">First add the sum to both sides, so that term cancels and leaves \(n/\lambda\) alone. Then multiply both sides by \(\lambda\). Finally divide both sides by the sum.</p><div class="math">$$ \hat{\lambda} = \frac{n}{x_1 + x_2 + \cdots + x_n} $$</div><p class="explain"><b>Symbols:</b> \(\hat{\lambda}\) is the maximum likelihood estimate of the rate. <b>What it tells you:</b> the best rate is the count of measurements divided by their total; that is one divided by the mean waiting time.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh measures the gaps between views of this video. Two seconds passed between the first and second views, so \(x_1 = 2\). Two and a half seconds passed between the second and third views, so \(x_2 = 2.5\). One and a half seconds passed between the third and fourth views, so \(x_3 = 1.5\).</p>
+      <p>That is all the data, so \(n = 3\). Plug the three values into the estimate:</p>
+      <div class="math">$$ \hat{\lambda} = \frac{3}{2 + 2.5 + 1.5} = \frac{3}{6} = 0.5 $$</div>
+      <p>Given this data, the maximum likelihood estimate for \(\lambda\) is 0.5. We can now draw the exponential distribution with \(\lambda = 0.5\) and use it as the fitted model. It says an event happens on average once every two seconds.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> The likelihood is a function of \(\lambda\), not of \(x\). When you plug a measurement into the curve you get one number. You then vary \(\lambda\) and watch that number change. The data stays fixed the whole time.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Taking the log is a convenience, not a different problem. A function and the log of that function have a derivative of zero in the same place. So for finding the peak they are interchangeable, and the log turns a hard product into an easy sum.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Multiplying the individual likelihoods assumes the measurements are independent. The video does exactly this when it writes the combined likelihood as a product. If the waiting times influence each other, that product no longer holds.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not mix up the rate and the mean. \(\lambda\) is events per unit of time. The average waiting time is \(1/\lambda\). In the example \(\lambda = 0.5\) per second, which is an average wait of 2 seconds.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What does the exponential distribution model, and what is its parameter?</summary><div class="a">It models the time between events, like the gap before the next text message arrives. It has one parameter, the rate \(\lambda\), which is proportional to how quickly events happen. The density is \(\lambda e^{-\lambda x}\), and the area under the curve equals 1.</div></details>
+    <details class="qa" open><summary>Derive the maximum likelihood estimate for λ.</summary><div class="a">Write the likelihood as the product of \(\lambda e^{-\lambda x_i}\) over all \(n\) points, which simplifies to \(\lambda^n e^{-\lambda \sum x_i}\). Take the log to get \(n\ln\lambda - \lambda \sum x_i\). Differentiate to get \(n/\lambda - \sum x_i\), set it to zero, and solve. You get \(\hat{\lambda} = n / \sum x_i\).</div></details>
+    <details class="qa" open><summary>Why take the log of the likelihood before differentiating?</summary><div class="a">Because the likelihood is a product with an exponential in it, and that is awkward to differentiate. The log turns the product into a sum and reduces the exponential to its exponent. It is valid because the derivative of a function and the derivative of its log are zero in the same place, so the location of the peak does not change.</div></details>
+    <details class="qa" open><summary>How do you interpret the estimate in plain terms?</summary><div class="a">The estimate is the number of measurements divided by their total time, so it is one over the average waiting time. If your three gaps are 2, 2.5 and 1.5 seconds, the estimate is 3 divided by 6, which is 0.5. That means one event on average every two seconds.</div></details>
+    <details class="qa" open><summary>How do you know the solution is a maximum and not a minimum?</summary><div class="a">If you plot the likelihood against candidate values of \(\lambda\), it rises from zero, reaches a single peak, then decays. The derivative is zero only at that peak. So the single solution of the derivative equation is the maximum likelihood estimate.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap">
+      <ul>
+        <li>The exponential distribution models the time between events and has the density \(\lambda e^{-\lambda x}\).</li>
+        <li>The single parameter \(\lambda\) is the rate, and it is proportional to how quickly events happen.</li>
+        <li>The likelihood of \(\lambda\) given one measurement is just the height of the curve at that measurement.</li>
+        <li>For several measurements you multiply the individual likelihoods, which gives \(\lambda^n e^{-\lambda \sum x_i}\).</li>
+        <li>Take the log first, because it turns the product into a sum without moving the peak.</li>
+        <li>Differentiate the log likelihood, set it to zero, and solve for \(\lambda\).</li>
+        <li>The maximum likelihood estimate is \(\hat{\lambda} = n / (x_1 + \cdots + x_n)\), which is one over the mean waiting time.</li>
+        <li>With gaps of 2, 2.5 and 1.5 seconds the estimate is 0.5, so an event happens on average every two seconds.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Exponential maximum likelihood</span><span class="board-tag">best rate: one over the mean wait</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 272" role="img" aria-label="Gaps of 2, 2.5 and 1.5 seconds between views. The likelihood of lambda rises, peaks where the slope is 0, then falls. The peak is at lambda = 3/6 = 0.5.">
+            <text x="30" y="26" class="sv-ts">gaps between views</text>
+            <line x1="30" y1="44" x2="330" y2="44" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="30" cy="44" r="6" class="sv-key"/>
+              <circle cx="130" cy="44" r="6" class="sv-key"/>
+              <circle cx="255" cy="44" r="6" class="sv-key"/>
+              <circle cx="330" cy="44" r="6" class="sv-key"/>
+            </g>
+            <text x="80" y="72" text-anchor="middle" class="sv-t">2 s</text>
+            <text x="192.5" y="72" text-anchor="middle" class="sv-t">2.5 s</text>
+            <text x="292.5" y="72" text-anchor="middle" class="sv-t">1.5 s</text>
+            <text x="40" y="98" class="sv-ts">likelihood of λ</text>
+            <line x1="30" y1="108" x2="30" y2="232" class="sv-stroke-ink" stroke-width="2"/>
+            <line x1="30" y1="232" x2="385" y2="232" class="sv-stroke-ink" stroke-width="2"/>
+            <polyline points="30,232 50,221.9 70,187.9 90,150.3 110,125.6 130,118 150,123.9 170,137.7 190,154.8 210,171.7 230,186.6 250,198.8 270,208.4 290,215.5 310,220.7 330,224.4 350,226.9 380,229.3" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="92" y1="118" x2="168" y2="118" class="sv-stroke-key" stroke-width="3" stroke-linecap="round"/>
+            <line x1="130" y1="128" x2="130" y2="232" class="sv-stroke-good" stroke-width="2" stroke-dasharray="4 4"/>
+            <g class="sv-stroke-ink" stroke-width="2"><circle cx="130" cy="118" r="7" class="sv-good"/></g>
+            <text x="178" y="124" class="sv-t">slope 0 at peak</text>
+            <text x="130" y="256" text-anchor="middle" class="sv-tb">best λ = 3/6 = 0.5</text>
+            <text x="385" y="256" text-anchor="end" class="sv-ts">λ →</text>
+          </svg>
+          <p>Each gap's height on the curve \(\lambda e^{-\lambda x}\) is its likelihood. Multiply them and slide \(\lambda\): the product rises, peaks where the slope is 0, then falls. The peak is \(n\) over the total, 3/6 = 0.5.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Exponential distribution</dt><dd>Models the time between events. The area under it is 1.</dd>
+            <dt>Rate \(\lambda\)</dt><dd>Its one parameter, proportional to how quickly events happen.</dd>
+            <dt>Likelihood</dt><dd>The curve's height at a data point, read as a function of \(\lambda\).</dd>
+            <dt>Log likelihood</dt><dd>Turns the product into a sum; the peak stays put.</dd>
+            <dt>Estimate \(\hat\lambda\)</dt><dd>The \(\lambda\) at the peak: the maximum likelihood estimate.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Collect gaps</b>\(x_1\) to \(x_n\), time between views</li>
+            <li><b>One gap</b>likelihood = curve height at \(x_1\)</li>
+            <li><b>Multiply all</b>gives \(\lambda^n e^{-\lambda\sum x_i}\)</li>
+            <li><b>Find the peak</b>slope is 0 at the top</li>
+            <li><b>Take the log</b>the product becomes a sum</li>
+            <li><b>Solve</b>derivative = 0, get \(\hat\lambda\)</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$y=\lambda e^{-\lambda x}$$
+          $$\ln L=n\ln\lambda-\lambda\sum x_i$$
+          $$\hat\lambda=\frac{n}{x_1+\cdots+x_n}$$
+          <ul class="keys">
+            <li>\(x\) is the time between events; \(n\) is the number of measurements.</li>
+            <li>Set the derivative \(n/\lambda-\sum x_i\) to 0 to get \(\hat\lambda\).</li>
+            <li>\(\hat\lambda\) is one over the mean waiting time.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>gap</th><th>between views</th><th>seconds</th></tr>
+            <tr><td>\(x_1\)</td><td>1st → 2nd</td><td>2</td></tr>
+            <tr><td>\(x_2\)</td><td>2nd → 3rd</td><td>2.5</td></tr>
+            <tr><td>\(x_3\)</td><td>3rd → 4th</td><td>1.5</td></tr>
+            <tr><td>sum</td><td>\(n\) = 3</td><td>6</td></tr>
+            <tr class="final"><td>\(\hat\lambda\) ✓</td><td>3 / 6</td><td>0.5</td></tr>
+          </table>
+          <p class="hand">A rate of 0.5 per second: on average one view every two seconds.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">The likelihood is a function of x.</span><span class="yes">It is a function of λ. The data stay fixed while λ varies.</span></li>
+            <li><span class="no">Taking the log changes the answer.</span><span class="yes">A function and its log have zero slope in the same place, so the peak stays.</span></li>
+            <li><span class="no">λ is the average waiting time.</span><span class="yes">λ is events per second; the mean wait is 1/λ. Here 0.5 means 2 seconds.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="55-maximum-likelihood.html"><small>Previous</small>Maximum Likelihood</a> <a href="57-maximum-likelihood-for-the-binomial-distribution.html"><small>Next</small>Maximum Likelihood for the Binomial Distribution</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

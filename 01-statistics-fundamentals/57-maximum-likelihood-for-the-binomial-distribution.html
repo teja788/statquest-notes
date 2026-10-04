@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Maximum Likelihood for the Binomial Distribution — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>57</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 57 · 11.4 min</div>
+    <h1>Maximum Likelihood for the Binomial Distribution</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=4KKV9yZCoM4" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video finds the value of <em>p</em> that best fits binomial data. Josh does the calculus in full, and the answer turns out to be the simple average.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>The binomial formula tells you the probability of the data when you already know <em>p</em>. Maximum likelihood turns that around. You hold the data fixed, try different values of <em>p</em>, and pick the one that makes the data most likely. To find that peak you take the log of the likelihood, take the derivative with respect to <em>p</em>, and set it to zero. The answer is the number of successes divided by the number of trials.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh starts with the question from the earlier binomial video. Do people prefer orange Fanta over grape Fanta? He asked 7 people and 4 of them chose orange. In the binomial formula, <em>x</em> is the number of people who preferred orange, <em>n</em> is the number of people asked, and <em>p</em> is the probability that a random person picks orange.</p>
+    <p>When you already believe that <em>p</em> is 0.5, the formula reads as a probability. It answers: how likely is it that 4 of 7 people choose orange? Plug in the numbers and you get 0.273.</p>
+    <p>Maximum likelihood asks the opposite question. The 4 out of 7 already happened, so the data is fixed. What we do not know is <em>p</em>. So we rewrite the left side of the equation as a likelihood of <em>p</em>, given <em>n</em> and <em>x</em>. The right side does not change at all. Only the reading changes: now <em>p</em> is the thing we vary.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 260" role="img" aria-label="The same binomial expression read two ways: as a probability of the data, and as a likelihood of p">
+        <defs>
+          <marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" class="sv-ink3"></path>
+          </marker>
+        </defs>
+        <rect x="20" y="26" width="320" height="90" rx="8" class="sv-acc-soft"></rect>
+        <text x="180" y="52" text-anchor="middle" class="sv-tb">Probability</text>
+        <text x="180" y="74" text-anchor="middle" class="sv-tm">Pr( X = 4 | n = 7, p = 0.5 )</text>
+        <text x="180" y="98" text-anchor="middle" class="sv-ts">p is fixed, the data varies</text>
+
+        <rect x="420" y="26" width="320" height="90" rx="8" class="sv-key-soft"></rect>
+        <text x="580" y="52" text-anchor="middle" class="sv-tb">Likelihood</text>
+        <text x="580" y="74" text-anchor="middle" class="sv-tm">L( p | n = 7, X = 4 )</text>
+        <text x="580" y="98" text-anchor="middle" class="sv-ts">the data is fixed, p varies</text>
+
+        <path d="M180,120 L300,172" class="sv-line" stroke-width="2" marker-end="url(#ah1)"></path>
+        <path d="M580,120 L460,172" class="sv-line" stroke-width="2" marker-end="url(#ah1)"></path>
+
+        <rect x="190" y="180" width="380" height="58" rx="8" class="sv-paper2"></rect>
+        <text x="380" y="207" text-anchor="middle" class="sv-tm">35 &#215; p<tspan dy="-6" font-size="10">4</tspan><tspan dy="6"> &#215; (1 &#8722; p)</tspan><tspan dy="-6" font-size="10">3</tspan></text>
+        <text x="380" y="228" text-anchor="middle" class="sv-ts">the right side of the equation never changes</text>
+      </svg>
+      <figcaption>Notice that both readings share one expression. Only the question, and therefore what you hold fixed, is different.</figcaption>
+    </figure>
+    <p>Because <em>p</em> is now free, we can try many values and compare the scores. Plotting the likelihood for every <em>p</em> between 0 and 1 gives a curve with one clear peak. That peak is the maximum likelihood, and the slope of the curve there is zero.</p>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Write the binomial formula for the observed data. With \(n = 7\) and \(x = 4\), the right side is \(35\,p^{4}(1-p)^{3}\).</li>
+      <li>Reread the left side as a likelihood of <em>p</em>. The numbers <em>n</em> and <em>x</em> stay fixed and <em>p</em> becomes the unknown.</li>
+      <li>Take the log of the likelihood function. The log turns the multiplication into addition and the exponents into multiplication, so the derivative is much easier. This is safe, because both curves peak at the same value of <em>p</em>.</li>
+      <li>Take the derivative with respect to <em>p</em>. The constant term has no <em>p</em>, so it drops out. The last term needs the chain rule because of the \(1-p\) inside the log.</li>
+      <li>Set the derivative to zero, since the slope is flat at the peak. Multiply both sides by \(p(1-p)\) to clear the fractions.</li>
+      <li>Solve for <em>p</em>. For the Fanta data you get \(4/7\). Repeat the same steps with letters instead of numbers and you get the general rule \(x/n\).</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 360" role="img" aria-label="Likelihood curve for p between 0 and 1, peaking at p equals four sevenths">
+        <line x1="90" y1="270" x2="710" y2="270" class="sv-line" stroke-width="1.5"></line>
+        <line x1="90" y1="60" x2="90" y2="270" class="sv-line" stroke-width="1.5"></line>
+        <polyline points="90,270 120,270 151,268 182,263 212,251 242,231 273,205 304,174 334,141 364,111 395,88 426,75 439,74 456,77 487,91 517,119 548,155 578,193 608,229 639,255 670,268 700,270" class="sv-stroke-acc" stroke-width="2.5"></polyline>
+
+        <line x1="439" y1="74" x2="439" y2="270" class="sv-line" stroke-width="1" stroke-dasharray="4 4"></line>
+        <line x1="389" y1="74" x2="509" y2="74" class="sv-stroke-key" stroke-width="2"></line>
+        <circle cx="439" cy="74" r="5" class="sv-key"></circle>
+        <circle cx="395" cy="88" r="4" class="sv-acc"></circle>
+        <circle cx="242" cy="231" r="4" class="sv-acc"></circle>
+
+        <rect x="470" y="46" width="150" height="22" rx="4" class="sv-paper"></rect>
+        <text x="474" y="62" class="sv-ts">slope = 0 at the peak</text>
+        <rect x="110" y="215" width="120" height="22" rx="4" class="sv-paper"></rect>
+        <text x="114" y="231" class="sv-ts">p = 0.25 &#8594; 0.058</text>
+        <rect x="228" y="82" width="120" height="22" rx="4" class="sv-paper"></rect>
+        <text x="232" y="98" class="sv-ts">p = 0.50 &#8594; 0.273</text>
+
+        <text x="439" y="292" text-anchor="middle" class="sv-tm">p = 4/7 &#8776; 0.571</text>
+        <text x="439" y="310" text-anchor="middle" class="sv-ts">likelihood = 0.294</text>
+        <text x="90" y="292" text-anchor="middle" class="sv-ts">0</text>
+        <text x="700" y="292" text-anchor="middle" class="sv-ts">1</text>
+        <text x="400" y="330" text-anchor="middle" class="sv-t">value of p</text>
+        <text x="32" y="165" class="sv-t" transform="rotate(-90 32 165)" text-anchor="middle">likelihood</text>
+      </svg>
+      <figcaption>Notice that the curve rises to a single peak at 4/7, and that the tangent line there is flat, which is why setting the derivative to zero works.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Binomial likelihood</span>
+      <div class="math">$$ L(p \mid n, x) = \frac{n!}{x!\,(n-x)!}\, p^{x} (1-p)^{\,n-x} $$</div>
+      <p class="explain"><b>Symbols:</b> <em>p</em> is the probability of a success on one trial, and it is the unknown we want. <em>n</em> is the number of trials, here the 7 people we asked. <em>x</em> is the number of successes, here the 4 who chose orange Fanta. The factorial term counts the ways to arrange <em>x</em> successes among <em>n</em> trials. <b>What it tells you:</b> for a candidate value of <em>p</em>, how likely the data you actually saw would be.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Step 1 — take the log</span>
+      <div class="math">$$ \ln L = \ln\!\left(\frac{n!}{x!\,(n-x)!}\right) + x \ln p + (n-x)\ln(1-p) $$</div>
+      <p class="explain"><b>Symbols:</b> <em>ln</em> is the natural log. The symbols are the same as above. <b>What it tells you:</b> the log splits the product into a sum and pulls the exponents down in front. Both curves peak at the same <em>p</em>, so working with the log costs nothing.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Step 2 — take the derivative</span>
+      <div class="math">$$ \frac{d}{dp}\ln L \;=\; 0 \;+\; \frac{x}{p} \;-\; \frac{n-x}{1-p} $$</div>
+      <p class="explain"><b>Symbols:</b> \(\tfrac{d}{dp}\) means the slope of the curve as <em>p</em> changes. <b>What it tells you:</b> the factorial term holds no <em>p</em>, so its derivative is zero. The last term needs the chain rule: the derivative of \(\ln(1-p)\) is \(\tfrac{1}{1-p}\), multiplied by the derivative of \(1-p\), which is \(-1\). That minus sign is where the negative comes from.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Step 3 — set the slope to zero and solve</span>
+      <div class="math">$$ \frac{x}{p} - \frac{n-x}{1-p} = 0 \;\;\Longrightarrow\;\; x(1-p) - (n-x)p = 0 $$</div>
+      <div class="math">$$ x - xp - np + xp = 0 \;\;\Longrightarrow\;\; x = np \;\;\Longrightarrow\;\; \hat{p} = \frac{x}{n} $$</div>
+      <p class="explain"><b>Symbols:</b> \(\hat{p}\) is the maximum likelihood estimate, the value of <em>p</em> at the peak. <b>What it tells you:</b> multiplying both sides by \(p(1-p)\) clears the fractions. Then \(-xp\) and \(+xp\) cancel, and the answer is the number of successes divided by the number of trials. That is just the sample proportion.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Seven people were asked which soda they prefer, and four chose orange Fanta. So \(n = 7\) and \(x = 4\), and the factorial term is \(7!/(4!\,3!) = 35\).</p>
+      <p>The likelihood when \(p = 0.5\) is \(35 \times 0.5^{4} \times 0.5^{3} = 0.273\). Trying \(p = 0.25\) gives \(0.058\), which is lower, so 0.25 fits the data worse. Trying \(p = 0.57\) gives \(0.294\), which is higher, so 0.57 fits better.</p>
+      <p>Instead of guessing, take the log and the derivative. The log likelihood is \(\ln(35) + 4\ln p + 3\ln(1-p)\), so the derivative is \(\tfrac{4}{p} - \tfrac{3}{1-p}\). Set it to zero and multiply by \(p(1-p)\): \(4(1-p) - 3p = 0\), then \(4 = 7p\), so \(\hat{p} = 4/7 \approx 0.571\).</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>A likelihood is not a probability of <em>p</em>. The right side of the equation is the same, but the reading is different. In a probability, <em>p</em> is known and the data varies. In a likelihood, the data is known and <em>p</em> varies. The likelihood values across all <em>p</em> do not add up to one.</p>
+    </div>
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Taking the log is a convenience, not a change of the problem. The log is a steadily increasing function, so it never moves the location of the peak. Josh shows both curves side by side to make this clear. Only the height changes, not the value of <em>p</em> that wins.</p>
+    </div>
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>The chain rule on the last term is the easy place to slip. You need the derivative of \(\ln(1-p)\), not of \(\ln p\). The inner derivative of \(1-p\) is \(-1\), which flips the sign. Forget it and you will not get \(x/n\).</p>
+    </div>
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>The factorial term plays no part in the answer. It holds no <em>p</em>, so the derivative kills it. That is why the estimate depends only on the counts <em>x</em> and <em>n</em>.</p>
+    </div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is the maximum likelihood estimate for a binomial proportion, and can you prove it?</summary><div class="a">It is the sample proportion, x over n. You write the binomial likelihood, take the natural log, and differentiate with respect to p. That gives x over p minus (n minus x) over one minus p. Set it to zero, clear the fractions, and the p terms cancel, leaving p equal to x over n.</div></details>
+    <details class="qa" open><summary>What is the difference between probability and likelihood here?</summary><div class="a">They use the same formula but hold different things fixed. Probability fixes the parameter and asks how likely various data are. Likelihood fixes the observed data and asks how well various parameter values explain it. Likelihood is a function of the parameter, and it does not integrate to one.</div></details>
+    <details class="qa" open><summary>Why do we maximise the log likelihood instead of the likelihood?</summary><div class="a">Purely for convenience. The log is monotonic, so it peaks at the same parameter value. It also turns products into sums and exponents into coefficients, which makes the derivative simple. With many data points it also avoids numerical underflow from multiplying tiny probabilities.</div></details>
+    <details class="qa" open><summary>Why does setting the derivative to zero find the maximum?</summary><div class="a">At the top of a smooth curve the tangent is flat, so the slope is zero. Solving for where the derivative equals zero locates that point. The binomial log likelihood has a single peak, so the one solution is the maximum.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>The binomial formula gives the probability of x successes in n trials when p is known.</li>
+      <li>Rewriting the left side as a likelihood of p keeps the same maths but changes the question.</li>
+      <li>Plotting the likelihood against p gives a curve with one peak, where the slope is zero.</li>
+      <li>Take the log first, because it turns products into sums and makes the derivative easy.</li>
+      <li>Differentiate, remembering the chain rule on the log of one minus p, then set the result to zero.</li>
+      <li>For the Fanta data this gives p equal to 4 over 7, about 0.571.</li>
+      <li>In general the maximum likelihood estimate is x over n, which is the intuitive average, now proved.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Binomial maximum likelihood</span><span class="board-tag">best p is x over n, now proved</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 284" role="img" aria-label="Seven people, four of them chose orange. The likelihood of p rises from p = 0, peaks with slope 0 at p = 4/7, about 0.571, and falls back to zero at p = 1.">
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="30" cy="32" r="9" class="sv-key"/>
+              <circle cx="54" cy="32" r="9" class="sv-key"/>
+              <circle cx="78" cy="32" r="9" class="sv-key"/>
+              <circle cx="102" cy="32" r="9" class="sv-key"/>
+              <circle cx="126" cy="32" r="9" class="sv-paper2"/>
+              <circle cx="150" cy="32" r="9" class="sv-paper2"/>
+              <circle cx="174" cy="32" r="9" class="sv-paper2"/>
+            </g>
+            <text x="196" y="38" class="sv-t">4 of 7 chose orange</text>
+            <text x="40" y="74" class="sv-ts">likelihood of p</text>
+            <line x1="30" y1="86" x2="30" y2="244" class="sv-stroke-ink" stroke-width="2"/>
+            <line x1="30" y1="244" x2="385" y2="244" class="sv-stroke-ink" stroke-width="2"/>
+            <polyline points="30,244 64,242.9 81,239.3 98,231.7 115,219.3 132,202.3 149,182.1 166,161 183,141.6 200,126.7 217,118.8 224.3,118 234,119.5 251,129.1 268,146.7 285,169.8 302,194.8 319,217.6 336,234.2 353,242.5 370,244" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="176" y1="118" x2="272" y2="118" class="sv-stroke-key" stroke-width="3" stroke-linecap="round"/>
+            <line x1="224.3" y1="127" x2="224.3" y2="244" class="sv-stroke-good" stroke-width="2" stroke-dasharray="4 4"/>
+            <g class="sv-stroke-ink" stroke-width="2"><circle cx="224.3" cy="118" r="7" class="sv-good"/></g>
+            <text x="172" y="100" class="sv-t">slope 0 at peak</text>
+            <text x="14" y="268" class="sv-ts">p = 0</text>
+            <text x="224.3" y="268" text-anchor="middle" class="sv-tb">best p = 4/7 ≈ 0.571</text>
+            <text x="386" y="268" text-anchor="end" class="sv-ts">p = 1</text>
+          </svg>
+          <p>The data are fixed: 4 of 7 people chose orange. Slide \(p\) from 0 to 1 and score each value with \(35\,p^4(1-p)^3\); the scores form one hill. Its peak, where the slope is 0, is \(\hat p = 4/7 \approx 0.571\).</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Probability</dt><dd>\(p\) is known; how likely are different data?</dd>
+            <dt>Likelihood</dt><dd>Same formula, data fixed; how well does each \(p\) explain it?</dd>
+            <dt>Log likelihood</dt><dd>Turns products into sums and peaks at the same \(p\).</dd>
+            <dt>Chain rule</dt><dd>Needed for \(\ln(1-p)\); the inner \(-1\) flips the sign.</dd>
+            <dt>Estimate \(\hat p\)</dt><dd>The \(p\) at the peak: the maximum likelihood estimate.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Write the formula</b>\(35\,p^4(1-p)^3\) for 4 of 7</li>
+            <li><b>Reread as likelihood</b>\(n\) and \(x\) fixed, \(p\) varies</li>
+            <li><b>Take the log</b>products become sums, same peak</li>
+            <li><b>Differentiate</b>chain rule on \(\ln(1-p)\)</li>
+            <li><b>Set to 0</b>multiply by \(p(1-p)\)</li>
+            <li><b>Solve</b>\(4/7\); in general \(x/n\)</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$L(p)=\frac{n!}{x!\,(n-x)!}\,p^{x}(1-p)^{n-x}$$
+          $$\frac{d\ln L}{dp}=\frac{x}{p}-\frac{n-x}{1-p}=0$$
+          $$\hat p=\frac{x}{n}$$
+          <ul class="keys">
+            <li>\(n\) is the number of trials (7); \(x\) is the successes (4).</li>
+            <li>The factorial term holds no \(p\), so its derivative is 0.</li>
+            <li>Clear the fractions with \(p(1-p)\); the \(xp\) terms cancel.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>p</th><th>likelihood</th><th>fit</th></tr>
+            <tr><td>0.25</td><td>0.058</td><td>worse</td></tr>
+            <tr><td>0.5</td><td>0.273</td><td></td></tr>
+            <tr><td>0.57</td><td>0.294</td><td>better</td></tr>
+            <tr class="final"><td>4/7 ≈ 0.571 ✓</td><td>peak</td><td>best</td></tr>
+          </table>
+          <p class="hand">No guessing needed: slope 0 gives 4 = 7p, so p = 4/7, the sample proportion.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Likelihood is the probability of p.</span><span class="yes">Same formula, but the data are fixed and p varies. Likelihoods across p do not add to one.</span></li>
+            <li><span class="no">Taking the log moves the peak.</span><span class="yes">The log only increases, so the winning p stays put. Only the height changes.</span></li>
+            <li><span class="no">ln(1 − p) differentiates to 1/(1 − p).</span><span class="yes">The chain rule adds the inner −1, which flips the sign. Miss it and you never reach x/n.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="56-maximum-likelihood-for-the-exponential-distribution.html"><small>Previous</small>Maximum Likelihood for the Exponential Distribution</a> <a href="58-maximum-likelihood-for-the-normal-distribution-step-by-step.html"><small>Next</small>Maximum Likelihood For the Normal Distribution, step-by-step</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

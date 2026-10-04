@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Deviance Residuals — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>22</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 22 · 6.3 min</div>
+    <h1>Deviance Residuals</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=JC56jS2gVUE" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">A deviance residual shows how much one data point adds to the residual deviance. It is the logistic regression answer to the plain residual you know from least squares.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>The residual deviance compares the saturated model with the proposed model. Likelihoods multiply, so log likelihoods add, and the deviance splits into one term per point. The square root of each term is that point's deviance residual. Square them and add them, and the residual deviance comes back. Plot them to spot outliers.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>This video follows on from saturated models and deviance statistics. The residual deviance is twice the gap between two log likelihoods. One is the saturated model, which fits every point perfectly. The other is the proposed model, the one you fitted.</p>
+    <p>Josh uses three data points. The likelihood of the data is point one times point two times point three. Taking the log turns that product into a sum. So the deviance becomes a sum of small differences, one per data point. The square root of each difference is a deviance residual.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 330" role="img" aria-label="The residual deviance splits into one term per data point, and each square root is a deviance residual">
+        <rect x="110" y="20" width="540" height="46" rx="6" class="sv-acc-soft"></rect>
+        <rect x="110" y="20" width="540" height="46" rx="6" class="sv-stroke-acc" stroke-width="1.5"></rect>
+        <text x="380" y="49" text-anchor="middle" class="sv-tb">Residual deviance = 2 × ( log L saturated − log L proposed )</text>
+        <path d="M380,66 L380,94" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"></path>
+        <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink"></path></marker></defs>
+        <rect x="50" y="100" width="200" height="56" rx="6" class="sv-paper2"></rect>
+        <rect x="50" y="100" width="200" height="56" rx="6" class="sv-line" stroke-width="1.2"></rect>
+        <text x="150" y="122" text-anchor="middle" class="sv-ts">term for point 1</text>
+        <text x="150" y="142" text-anchor="middle" class="sv-tm">2 (logL sat,1 − logL prop,1)</text>
+        <rect x="280" y="100" width="200" height="56" rx="6" class="sv-paper2"></rect>
+        <rect x="280" y="100" width="200" height="56" rx="6" class="sv-line" stroke-width="1.2"></rect>
+        <text x="380" y="122" text-anchor="middle" class="sv-ts">term for point 2</text>
+        <text x="380" y="142" text-anchor="middle" class="sv-tm">2 (logL sat,2 − logL prop,2)</text>
+        <rect x="510" y="100" width="200" height="56" rx="6" class="sv-paper2"></rect>
+        <rect x="510" y="100" width="200" height="56" rx="6" class="sv-line" stroke-width="1.2"></rect>
+        <text x="610" y="122" text-anchor="middle" class="sv-ts">term for point 3</text>
+        <text x="610" y="142" text-anchor="middle" class="sv-tm">2 (logL sat,3 − logL prop,3)</text>
+        <path d="M150,156 L150,192" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"></path>
+        <path d="M380,156 L380,192" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"></path>
+        <path d="M610,156 L610,192" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"></path>
+        <text x="196" y="180" class="sv-ts">square root</text>
+        <text x="426" y="180" class="sv-ts">square root</text>
+        <text x="656" y="180" class="sv-ts">square root</text>
+        <rect x="50" y="198" width="200" height="46" rx="6" class="sv-good-soft"></rect>
+        <rect x="50" y="198" width="200" height="46" rx="6" class="sv-stroke-good" stroke-width="1.5"></rect>
+        <text x="150" y="227" text-anchor="middle" class="sv-tb">deviance residual d₁</text>
+        <rect x="280" y="198" width="200" height="46" rx="6" class="sv-good-soft"></rect>
+        <rect x="280" y="198" width="200" height="46" rx="6" class="sv-stroke-good" stroke-width="1.5"></rect>
+        <text x="380" y="227" text-anchor="middle" class="sv-tb">deviance residual d₂</text>
+        <rect x="510" y="198" width="200" height="46" rx="6" class="sv-good-soft"></rect>
+        <rect x="510" y="198" width="200" height="46" rx="6" class="sv-stroke-good" stroke-width="1.5"></rect>
+        <text x="610" y="227" text-anchor="middle" class="sv-tb">deviance residual d₃</text>
+        <rect x="110" y="266" width="540" height="38" rx="6" class="sv-key-soft"></rect>
+        <text x="380" y="290" text-anchor="middle" class="sv-tb">square them and add: d₁² + d₂² + d₃² = residual deviance</text>
+      </svg>
+      <figcaption>Notice that nothing is lost: the deviance is cut into per point pieces, then rebuilt by squaring and adding.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Write the saturated likelihood as a product over the data points, then take the log.</li>
+      <li>Do the same for the proposed model, and put both log likelihoods into the deviance equation.</li>
+      <li>Regroup the terms by data point instead of by model. Now each point owns one term.</li>
+      <li>Take the square root of each term. That is the deviance residual for that point.</li>
+      <li>Square the deviance residuals and add them, and you are back at the residual deviance.</li>
+    </ol>
+    <p>In logistic regression the equation can be rewritten using the distance from each point to the best fitting squiggly line. Points above the squiggle get a positive residual. Points below it get a negative one. That sign makes the residual plot readable.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 340" role="img" aria-label="Distances from six points to the logistic curve, and the matching deviance residual plot">
+        <text x="60" y="28" class="sv-tb">Distance from each point to the squiggle</text>
+        <path d="M60,250 L370,250" class="sv-stroke-ink" stroke-width="1.2"></path>
+        <path d="M60,55 L60,250" class="sv-stroke-ink" stroke-width="1.2"></path>
+        <text x="52" y="64" text-anchor="end" class="sv-ts">1</text>
+        <text x="52" y="254" text-anchor="end" class="sv-ts">0</text>
+        <path d="M60,250 C120,250 150,245 185,195 S240,80 350,64" class="sv-stroke-acc" stroke-width="2.5"></path>
+        <path d="M150,60 L150,232" class="sv-stroke-acc" stroke-width="1.5" stroke-dasharray="4 3"></path>
+        <path d="M250,60 L250,105" class="sv-stroke-acc" stroke-width="1.5" stroke-dasharray="4 3"></path>
+        <path d="M340,60 L340,66" class="sv-stroke-acc" stroke-width="1.5" stroke-dasharray="4 3"></path>
+        <path d="M200,250 L200,178" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="4 3"></path>
+        <path d="M300,250 L300,75" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="4 3"></path>
+        <circle cx="150" cy="60" r="5" class="sv-acc"></circle>
+        <circle cx="250" cy="60" r="5" class="sv-acc"></circle>
+        <circle cx="340" cy="60" r="5" class="sv-acc"></circle>
+        <circle cx="95" cy="250" r="5" class="sv-key"></circle>
+        <circle cx="200" cy="250" r="5" class="sv-key"></circle>
+        <circle cx="300" cy="250" r="5" class="sv-key"></circle>
+        <rect x="66" y="272" width="150" height="20" rx="4" class="sv-paper"></rect>
+        <text x="70" y="287" class="sv-ts">above squiggle: positive</text>
+        <rect x="66" y="294" width="150" height="20" rx="4" class="sv-paper"></rect>
+        <text x="70" y="309" class="sv-ts">below squiggle: negative</text>
+        <text x="430" y="28" class="sv-tb">Deviance residual plot</text>
+        <path d="M430,155 L722,155" class="sv-stroke-ink" stroke-width="1.2" stroke-dasharray="5 4"></path>
+        <text x="728" y="159" class="sv-ts">0</text>
+        <circle cx="460" cy="160" r="5" class="sv-key"></circle>
+        <circle cx="505" cy="90" r="5" class="sv-acc"></circle>
+        <circle cx="550" cy="185" r="5" class="sv-key"></circle>
+        <circle cx="595" cy="133" r="5" class="sv-acc"></circle>
+        <circle cx="640" cy="225" r="5" class="sv-key"></circle>
+        <circle cx="685" cy="145" r="5" class="sv-acc"></circle>
+        <text x="505" y="78" text-anchor="middle" class="sv-ts">2nd</text>
+        <text x="640" y="247" text-anchor="middle" class="sv-ts">5th</text>
+        <rect x="470" y="266" width="230" height="24" rx="4" class="sv-paper2"></rect>
+        <text x="585" y="283" text-anchor="middle" class="sv-ts">2nd and 5th sit far from zero: check them</text>
+      </svg>
+      <figcaption>Notice that the two points furthest from the squiggle become the two residuals furthest from zero.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">Residual deviance, split by point</span>
+      <div class="math">$$ D \;=\; 2\left[\log L_{\text{sat}} - \log L_{\text{prop}}\right] \;=\; 2\sum_{i=1}^{n}\left[\log L_{\text{sat},i} - \log L_{\text{prop},i}\right] $$</div>
+      <p class="explain"><b>Symbols:</b> \(D\) is the residual deviance. \(L_{\text{sat}}\) is the likelihood under the saturated model, which fits every point perfectly. \(L_{\text{prop}}\) is the likelihood under the model you fitted. \(n\) is the number of points. <b>What it tells you:</b> likelihoods multiply, so their logs add, and the deviance is a sum of per point pieces.</p>
+    </div>
+    <div class="formula"><span class="lbl">Deviance residual</span>
+      <div class="math">$$ d_i \;=\; \operatorname{sign}\!\left(y_i - \hat{p}_i\right)\sqrt{\,2\left[\log L_{\text{sat},i} - \log L_{\text{prop},i}\right]\,} $$</div>
+      <p class="explain"><b>Symbols:</b> \(d_i\) is the deviance residual for point \(i\). \(y_i\) is the observed outcome, 0 or 1. \(\hat{p}_i\) is the probability the fitted squiggle gives that point. So the sign is positive above the squiggle and negative below it. <b>What it tells you:</b> \(d_i\) is the square root of one point's contribution to the total deviance.</p>
+    </div>
+    <div class="formula"><span class="lbl">Putting them back together</span>
+      <div class="math">$$ \sum_{i=1}^{n} d_i^{\,2} \;=\; D $$</div>
+      <p class="explain"><b>Symbols:</b> the same \(d_i\) and \(D\) as above. <b>What it tells you:</b> squaring and adding the deviance residuals rebuilds the residual deviance, just as squaring ordinary residuals gives the sum of squares.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh uses three data points. The saturated likelihood is \(L_{\text{sat},1}\times L_{\text{sat},2}\times L_{\text{sat},3}\), and the proposed model gives the matching product.</p>
+      <p>Taking logs turns both products into sums, so the deviance becomes \(D = 2\left[(\log L_{\text{sat},1}-\log L_{\text{prop},1}) + (\log L_{\text{sat},2}-\log L_{\text{prop},2}) + (\log L_{\text{sat},3}-\log L_{\text{prop},3})\right]\).</p>
+      <p>The first bracket belongs to point one, and so on. The square root of each bracket gives \(d_1\), \(d_2\) and \(d_3\). Square those three, add them, and you are back at \(D\).</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> A deviance residual is a square root, not a plain difference. It measures a gap in log likelihood, not a gap in the units of the response.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The square root itself is never negative. The sign comes from whether the point sits above or below the squiggle. Without it you could not tell the two sides apart in a plot.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A large deviance residual is a flag, not a verdict. Josh checks the second and fifth points for a labelling mistake before calling them outliers.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is a deviance residual?</summary><div class="a">It is the square root of the contribution one data point makes to the residual deviance. The residual deviance is twice the gap in log likelihood between the saturated and proposed models. Log likelihoods add across points, so that gap splits into one term per point. The square root of a point's term, with a sign attached, is its deviance residual.</div></details>
+    <details class="qa" open><summary>How do deviance residuals relate to ordinary least squares residuals?</summary><div class="a">They play the same role. In least squares you square the residuals and add them to get the sum of squares. With deviance residuals you square and add them to get the residual deviance. Both numbers tell you how well the model fits.</div></details>
+    <details class="qa" open><summary>Why do we plot them, and what are we looking for?</summary><div class="a">We plot them to find outliers. If the model fits well, the residuals sit close to zero and centred on it. Points far from zero are fitted badly. I would check those rows for a labelling mistake first.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>The residual deviance is twice the difference in log likelihood between the saturated and proposed models.</li>
+      <li>Likelihoods multiply across points, so log likelihoods add, and the deviance splits into one term per point.</li>
+      <li>A deviance residual is the square root of one of those terms.</li>
+      <li>Square the deviance residuals and add them, and the residual deviance comes back.</li>
+      <li>The sign comes from the squiggly line: positive above it, negative below it.</li>
+      <li>Plotted, they should sit near zero, and the far ones are worth checking.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Deviance residuals</span><span class="board-tag">split the deviance, one root per point</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 250" role="img" aria-label="The residual deviance D is one bar cut into a piece per point: d1 squared, d2 squared and d3 squared. The square root of each piece, given a sign, is that point's deviance residual: d1 and d3 point up, d2 points down. The sign is plus above the squiggle and minus below it.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <text x="20" y="51" class="sv-tb">D =</text>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <rect x="62" y="24" width="88" height="40" class="sv-paper"/>
+              <rect x="150" y="24" width="145" height="40" class="sv-paper2"/>
+              <rect x="295" y="24" width="85" height="40" class="sv-paper"/>
+            </g>
+            <text x="106" y="51" text-anchor="middle" class="sv-t">d₁²</text>
+            <text x="222" y="51" text-anchor="middle" class="sv-t">d₂²</text>
+            <text x="338" y="51" text-anchor="middle" class="sv-t">d₃²</text>
+            <line x1="106" y1="70" x2="106" y2="92" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="222" y1="70" x2="222" y2="130" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="338" y1="70" x2="338" y2="94" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="122" y="99" class="sv-t">√, signed</text>
+            <line x1="40" y1="140" x2="380" y2="140" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="106" y1="140" x2="106" y2="106" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round"/>
+            <line x1="222" y1="140" x2="222" y2="182" class="sv-stroke-key" stroke-width="4" stroke-linecap="round"/>
+            <line x1="338" y1="140" x2="338" y2="108" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="106" cy="106" r="7" class="sv-acc"/>
+              <circle cx="222" cy="182" r="7" class="sv-key"/>
+              <circle cx="338" cy="108" r="7" class="sv-acc"/>
+            </g>
+            <text x="92" y="113" text-anchor="end" class="sv-t">d₁</text>
+            <text x="236" y="188" class="sv-t">d₂</text>
+            <text x="352" y="114" class="sv-t">d₃</text>
+            <text x="200" y="226" text-anchor="middle" class="sv-ts">sign: + above squiggle, − below</text>
+          </svg>
+          <p>The residual deviance, twice the log likelihood gap between the saturated and proposed models, splits into one piece per point. Each piece's square root, plus above the squiggle and minus below, is that point's deviance residual. Square and add them to get D back.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Saturated model</dt><dd>Fits every data point perfectly.</dd>
+            <dt>Proposed model</dt><dd>The model you fitted.</dd>
+            <dt>Residual deviance</dt><dd>Twice the log likelihood gap, saturated minus proposed.</dd>
+            <dt>Deviance residual</dt><dd>Signed square root of one point's share of the deviance.</dd>
+            <dt>Squiggle</dt><dd>The fitted logistic regression curve.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Log both models</b>products over points become sums</li>
+            <li><b>Regroup by point</b>each point owns one term</li>
+            <li><b>Square root</b>of each term: the deviance residual</li>
+            <li><b>Add the sign</b>+ above the squiggle, − below</li>
+            <li><b>Square and add</b>the residual deviance comes back</li>
+            <li><b>Plot them</b>check ones far from zero</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$D=2\sum_{i=1}^{n}\left[\log L_{s,i}-\log L_{p,i}\right]$$
+          $$d_i=\pm\sqrt{2\left[\log L_{s,i}-\log L_{p,i}\right]}$$
+          $$\sum_{i=1}^{n}d_i^{\,2}=D$$
+          <ul class="keys">
+            <li>\(L_{s,i}\), \(L_{p,i}\): point \(i\)'s likelihood under the saturated and the proposed model.</li>
+            <li>\(\pm\): plus if the point sits above the squiggle, minus if below.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>point</th><th>its term in D</th><th>residual</th></tr>
+            <tr><td>1</td><td>\(2(\log L_{s,1}-\log L_{p,1})\)</td><td>\(d_1\)</td></tr>
+            <tr><td>2</td><td>\(2(\log L_{s,2}-\log L_{p,2})\)</td><td>\(d_2\)</td></tr>
+            <tr><td>3</td><td>\(2(\log L_{s,3}-\log L_{p,3})\)</td><td>\(d_3\)</td></tr>
+            <tr class="final"><td>sum</td><td>\(d_1^2+d_2^2+d_3^2\)</td><td>\(=D\)</td></tr>
+          </table>
+          <p class="hand">Logs turn products into sums, so each term belongs to one point. Square the three residuals, add them, and D comes back.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">A deviance residual is a plain difference.</span><span class="yes">It is a square root of a log likelihood gap, not a gap in response units.</span></li>
+            <li><span class="no">The square root carries the sign.</span><span class="yes">Roots are never negative. The sign comes from the point's side of the squiggle.</span></li>
+            <li><span class="no">A large deviance residual proves an outlier.</span><span class="yes">It is a flag, not a verdict. Check those rows for a labelling mistake first.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="21-logistic-regression-in-r.html"><small>Previous</small>Logistic Regression in R</a> <a href="23-roc-and-auc.html"><small>Next</small>ROC and AUC</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

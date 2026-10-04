@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Logistic Regression Details Pt 3: R-squared and p-value — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>19</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 19 · 15.4 min</div>
+    <h1>Logistic Regression Details Pt 3: R-squared and p-value</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=xxFYro8QuXA" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Part 2 gave us the best fitting squiggle. This video answers the next question: is that squiggle actually useful?</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>For linear models we score a fit with sums of squares. Logistic regression cannot do that, because its residuals are infinite. So we swap sums of squares for log likelihoods. We compare the log likelihood of the fitted squiggle with the log likelihood of a model that ignores weight. That comparison gives McFadden's pseudo R-squared, which measures effect size. Twice the same difference is a chi-squared value, which gives the p-value.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>First, a warning from Josh. Everyone agrees how to compute R-squared for linear models. Nobody agrees for logistic regression, where more than ten definitions compete. So look at what people in your own field already report. This video uses McFadden's pseudo R-squared, because it is common and easy to read off software output.</p>
+    <p>Now the quick review. In linear regression we measure residuals, the vertical gaps from each point to a line. We square them and add them up. Around the best fitting line that total is SS(fit), a measure of a good fit. Around the flat mean line it is SS(mean), a measure of a bad fit. R-squared is the share of the variation around the mean that the line removes. It runs from 0 to 1.</p>
+    <p>Logistic regression puts log odds on the y-axis, so the raw data sit at plus and minus infinity. Every residual is therefore infinite and useless. But we still have a score for any candidate squiggle: the log likelihood of the data. So we replace SS(fit) with LL(fit), the log likelihood of the data under the fitted squiggle. And we replace SS(mean) with LL(overall probability), the log likelihood under a model that uses no weight at all.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 330" role="img" aria-label="Left panel: a linear model with a best fitting line giving SS of fit and a mean line giving SS of mean. Right panel: a logistic model with a best fitting squiggle giving LL of fit and a flat overall probability line giving LL of overall probability. The two R-squared formulas share the same shape.">
+        <text x="30" y="24" class="sv-tb">Linear model — sums of squares</text>
+        <line x1="60" y1="42" x2="60" y2="232" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <line x1="60" y1="232" x2="345" y2="232" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <text x="32" y="140" class="sv-ts" text-anchor="middle" transform="rotate(-90 32 140)">size</text>
+        <text x="205" y="254" class="sv-ts" text-anchor="middle">weight</text>
+        <line x1="70" y1="146" x2="338" y2="146" class="sv-stroke-ink" stroke-width="1.5" stroke-dasharray="6 4"></line>
+        <line x1="75" y1="218" x2="335" y2="72" class="sv-stroke-acc" stroke-width="2.5"></line>
+        <circle cx="100" cy="210" r="4" class="sv-ink"></circle>
+        <circle cx="140" cy="170" r="4" class="sv-ink"></circle>
+        <circle cx="180" cy="172" r="4" class="sv-ink"></circle>
+        <circle cx="220" cy="120" r="4" class="sv-ink"></circle>
+        <circle cx="260" cy="122" r="4" class="sv-ink"></circle>
+        <circle cx="300" cy="80" r="4" class="sv-ink"></circle>
+        <rect x="176" y="128" width="162" height="18" rx="3" class="sv-paper"></rect>
+        <text x="180" y="142" class="sv-ts">mean line gives SS(mean)</text>
+        <rect x="168" y="52" width="170" height="18" rx="3" class="sv-paper"></rect>
+        <text x="172" y="66" class="sv-ts">best line gives SS(fit)</text>
+
+        <line x1="392" y1="40" x2="392" y2="272" class="sv-line" stroke-width="1.5"></line>
+
+        <text x="440" y="24" class="sv-tb">Logistic model — log likelihoods</text>
+        <line x1="470" y1="42" x2="470" y2="232" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <line x1="470" y1="232" x2="740" y2="232" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <text x="436" y="140" class="sv-ts" text-anchor="middle" transform="rotate(-90 436 140)">probability of obesity</text>
+        <text x="605" y="254" class="sv-ts" text-anchor="middle">weight</text>
+        <line x1="480" y1="131" x2="735" y2="131" class="sv-stroke-ink" stroke-width="1.5" stroke-dasharray="6 4"></line>
+        <path d="M480 226 C 552 225, 583 219, 604 164 C 625 109, 660 60, 732 57" class="sv-stroke-acc" stroke-width="2.5"></path>
+        <circle cx="505" cy="232" r="4" class="sv-ink"></circle>
+        <circle cx="545" cy="232" r="4" class="sv-ink"></circle>
+        <circle cx="585" cy="232" r="4" class="sv-ink"></circle>
+        <circle cx="645" cy="52" r="4" class="sv-key"></circle>
+        <circle cx="680" cy="52" r="4" class="sv-key"></circle>
+        <circle cx="715" cy="52" r="4" class="sv-key"></circle>
+        <rect x="486" y="113" width="230" height="18" rx="3" class="sv-paper"></rect>
+        <text x="490" y="127" class="sv-ts">flat p = 0.56 gives LL(overall) = -6.18</text>
+        <rect x="486" y="66" width="200" height="18" rx="3" class="sv-paper"></rect>
+        <text x="490" y="80" class="sv-ts">squiggle gives LL(fit) = -3.77</text>
+
+        <text x="205" y="298" class="sv-ts" text-anchor="middle">R² = ( SS(mean) − SS(fit) ) / SS(mean)</text>
+        <text x="600" y="298" class="sv-ts" text-anchor="middle">R² = ( LL(overall) − LL(fit) ) / LL(overall)</text>
+      </svg>
+      <figcaption>Notice that the two formulas have the same shape. Log likelihoods simply take over the job that sums of squares do in a linear model.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Fit the log odds line with maximum likelihood, exactly as in Part 2. This gives the best fitting squiggle on the probability scale.</li>
+      <li>Project each mouse onto that squiggle and read off its predicted probability. Add up the logs of those probabilities. That total is LL(fit), and here it equals -3.77.</li>
+      <li>Now build the "no weight" model. Take the total number of obese mice divided by the total number of mice that are not obese, then take the log. That gives a flat log odds line at 0.22.</li>
+      <li>Translate that flat log odds line back to probability. It becomes a flat line at p = 0.56, which is simply the overall probability of obesity. Both routes give the same number.</li>
+      <li>Project the mice onto that flat line and add the logs again. That total is LL(overall probability), and here it equals -6.18.</li>
+      <li>Combine the two totals with the R-squared formula. That gives McFadden's pseudo R-squared, which is 0.39 for this data.</li>
+      <li>Double the gap between the two log likelihoods. That number is a chi-squared statistic, and its tail area is the p-value.</li>
+    </ol>
+
+    <p>Before trusting this R-squared, Josh checks that it behaves. He builds data where weight predicts nothing: light and heavy mice are obese in equal measure. The best fitting line has a slope of almost exactly zero, so LL(fit) equals -6.18, the same as the baseline. The formula returns zero. He then builds data where weight predicts obesity perfectly. Every predicted probability is 1 for the outcome that happened, and the log of 1 is zero. So LL(fit) is zero and the formula returns one.</p>
+    <p>This shows a useful habit of log likelihoods. They are always negative or zero, because we take logs of probabilities between 0 and 1. A good fit sits close to zero.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 250" role="img" aria-label="A number line for log likelihood running from minus infinity on the left to zero on the right, with the baseline at minus 6.18, the worked example fit at minus 3.77, and a perfect fit at zero, each labelled with its R-squared value.">
+        <text x="30" y="24" class="sv-tb">Where the log likelihood lands, and what R² becomes</text>
+
+        <rect x="40" y="44" width="262" height="60" rx="5" class="sv-paper2"></rect>
+        <text x="52" y="66" class="sv-ts">baseline: LL(overall) = -6.18</text>
+        <text x="52" y="83" class="sv-ts">if weight is useless, LL(fit) = -6.18 too,</text>
+        <text x="52" y="97" class="sv-ts">so R² = 0</text>
+        <line x1="159" y1="104" x2="229" y2="140" class="sv-line" stroke-width="1.5"></line>
+
+        <rect x="310" y="44" width="200" height="60" rx="5" class="sv-acc-soft"></rect>
+        <text x="322" y="66" class="sv-ts">this video's data:</text>
+        <text x="322" y="83" class="sv-ts">LL(fit) = -3.77</text>
+        <text x="322" y="97" class="sv-ts">so R² = 0.39</text>
+        <line x1="410" y1="104" x2="413" y2="140" class="sv-line" stroke-width="1.5"></line>
+
+        <rect x="545" y="44" width="195" height="60" rx="5" class="sv-good-soft"></rect>
+        <text x="557" y="66" class="sv-ts">perfect predictor:</text>
+        <text x="557" y="83" class="sv-ts">LL(fit) = 0</text>
+        <text x="557" y="97" class="sv-ts">so R² = 1</text>
+        <line x1="642" y1="104" x2="700" y2="140" class="sv-line" stroke-width="1.5"></line>
+
+        <line x1="90" y1="150" x2="706" y2="150" class="sv-stroke-ink" stroke-width="2"></line>
+        <line x1="229" y1="142" x2="229" y2="160" class="sv-stroke-ink" stroke-width="2"></line>
+        <line x1="413" y1="142" x2="413" y2="160" class="sv-stroke-acc" stroke-width="2"></line>
+        <line x1="700" y1="142" x2="700" y2="160" class="sv-stroke-good" stroke-width="2"></line>
+        <text x="84" y="180" class="sv-ts">-∞ (worst possible fit)</text>
+        <text x="712" y="180" class="sv-ts" text-anchor="end">0 (perfect fit)</text>
+        <text x="380" y="222" class="sv-ts" text-anchor="middle">Log likelihoods here always sit between -∞ and 0, so better fits move right.</text>
+      </svg>
+      <figcaption>Notice that R-squared only asks how far the fitted squiggle moves from the baseline towards zero.</figcaption>
+    </figure>
+
+    <p>The p-value uses the same two numbers. Twice the difference between LL(fit) and LL(overall probability) follows a chi-squared distribution. The degrees of freedom equal the difference in the number of parameters. The fitted model has an intercept and a slope, so two. The baseline model has only an intercept, so one. That leaves one degree of freedom.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 290" role="img" aria-label="A chi-squared distribution with one degree of freedom. A dashed line marks the value 4.82 and an arrow points at the small shaded area in the right tail, labelled p equals 0.03.">
+        <defs>
+          <marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-key"></path></marker>
+        </defs>
+        <text x="30" y="24" class="sv-tb">From the two log likelihoods to a p-value</text>
+        <text x="30" y="50" class="sv-tm">2 × ( LL(fit) - LL(overall) ) = 2 × ( -3.77 + 6.18 ) = 4.82</text>
+        <text x="100" y="78" class="sv-ts">chi-squared distribution with 1 degree of freedom</text>
+
+        <path d="M389 247 L460 248 L580 249.5 L700 250 L389 250 Z" class="sv-key-soft"></path>
+        <polyline points="115,109 130,162 160,202 190,219 220,229 280,240 340,245 389,247 460,248 580,249.5 700,250" class="sv-stroke-key" stroke-width="2.5"></polyline>
+        <line x1="100" y1="250" x2="712" y2="250" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <line x1="389" y1="250" x2="389" y2="166" class="sv-stroke-key" stroke-width="2" stroke-dasharray="5 4"></line>
+        <rect x="404" y="112" width="232" height="46" rx="5" class="sv-key-soft"></rect>
+        <text x="416" y="132" class="sv-ts">χ² = 4.82 with df = 1</text>
+        <text x="416" y="149" class="sv-ts">area to the right = p-value = 0.03</text>
+        <line x1="412" y1="158" x2="394" y2="242" class="sv-stroke-key" stroke-width="1.5" marker-end="url(#ar3)"></line>
+        <text x="100" y="270" class="sv-ts" text-anchor="middle">0</text>
+        <text x="400" y="270" class="sv-ts" text-anchor="middle">5</text>
+        <text x="700" y="270" class="sv-ts" text-anchor="middle">10</text>
+      </svg>
+      <figcaption>Notice that the p-value is the tail area to the right of 4.82, and it shrinks as the fitted squiggle pulls further away from the baseline.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">R-squared for a linear model (the pattern to copy)</span>
+      <div class="math">$$ R^2 = \frac{SS(\text{mean}) - SS(\text{fit})}{SS(\text{mean})} $$</div>
+      <p class="explain"><b>Symbols:</b> \(SS(\text{mean})\) is the sum of squared distances from the points to the flat mean line, a bad fit. \(SS(\text{fit})\) is the sum of squared distances to the best fitting line, a good fit. <b>What it tells you:</b> the fraction of the variation around the mean that the line removes.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">The overall log odds of obesity</span>
+      <div class="math">$$ \log(\text{odds}) = \log\!\left(\frac{\text{number of obese mice}}{\text{number of mice that are not obese}}\right) $$</div>
+      <p class="explain"><b>Symbols:</b> the two counts are simple head counts, ignoring weight completely. <b>What it tells you:</b> the height of the flat baseline log odds line, which was 0.22 here and became p = 0.56 on the probability scale.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">McFadden's pseudo R-squared</span>
+      <div class="math">$$ R^2 = \frac{LL(\text{overall probability}) - LL(\text{fit})}{LL(\text{overall probability})} $$</div>
+      <p class="explain"><b>Symbols:</b> \(LL(\text{fit})\) is the log likelihood of the data under the fitted squiggle. \(LL(\text{overall probability})\) is the log likelihood under the flat baseline that ignores weight. <b>What it tells you:</b> the effect size, on a scale from 0 for a useless predictor to 1 for a perfect one.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">The p-value</span>
+      <div class="math">$$ 2\big(LL(\text{fit}) - LL(\text{overall probability})\big) \sim \chi^2_{\,df}, \qquad df = 2 - 1 = 1 $$</div>
+      <p class="explain"><b>Symbols:</b> the two log likelihoods are the same ones as above. \(\chi^2\) is the chi-squared distribution, and \(df\) is its degrees of freedom, here the fitted model's two parameters minus the baseline model's one parameter. <b>What it tells you:</b> the tail area beyond this value is the p-value, so a bigger gap between the models means a smaller p-value.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">The version you will meet in textbooks</span>
+      <div class="math">$$ R^2 = \frac{2\big(LL(\text{saturated}) - LL(\text{overall})\big) - 2\big(LL(\text{saturated}) - LL(\text{fit})\big)}{2\big(LL(\text{saturated}) - LL(\text{overall})\big)} $$</div>
+      <p class="explain"><b>Symbols:</b> \(LL(\text{saturated})\) is the log likelihood of a model with one parameter per data point. <b>What it tells you:</b> the same thing as the simple formula. For logistic regression \(LL(\text{saturated}) = 0\), so every saturated term cancels. Other generalized linear models keep it, because there it is not zero.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>We predict obesity in mice from their weight. The best fitting squiggle gives a log likelihood of LL(fit) = -3.77. Ignoring weight, the overall probability of obesity is 0.56, and that flat line gives LL(overall probability) = -6.18.</p>
+      <p>The effect size:</p>
+      <div class="math">$$ R^2 = \frac{-6.18 - (-3.77)}{-6.18} = \frac{-2.41}{-6.18} = 0.39 $$</div>
+      <p>The significance test:</p>
+      <div class="math">$$ \chi^2 = 2\big(-3.77 - (-6.18)\big) = 2 \times 2.41 = 4.82 $$</div>
+      <p>With one degree of freedom, a chi-squared value of 4.82 gives p = 0.03. So the relationship between weight and obesity is unlikely to be due to chance, and R-squared of 0.39 tells us how strong that relationship is.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> There is no single R-squared for logistic regression. More than ten versions exist and they give different numbers on the same data. Always say which one you used, and check what your field normally reports.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not try to compute residuals on the log odds scale. The data points sit at plus and minus infinity there, so every residual is infinite. Log likelihood exists precisely to replace them.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Keep the two ideas apart. R-squared reports effect size, meaning how much the predictor helps. The p-value reports significance, meaning how likely the result is by chance.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>Why can't we use the usual R-squared for logistic regression?</summary><div class="a">The usual R-squared is built from residuals. In logistic regression the y-axis holds log odds, so the observed points sit at plus and minus infinity and every residual is infinite. We need a different score for a fit, so we use the log likelihood of the data. McFadden's pseudo R-squared then compares the fitted model's log likelihood with that of a model using no predictors.</div></details>
+
+    <details class="qa" open><summary>How do you compute McFadden's pseudo R-squared?</summary><div class="a">You need two log likelihoods. One is for the fitted model, found by summing the logs of its predicted probabilities. The other is for the null model, which uses only the overall probability of the outcome. R-squared is the difference between them divided by the null log likelihood. It is 0 when the predictor adds nothing and 1 when the fit is perfect.</div></details>
+
+    <details class="qa" open><summary>Where does the p-value come from?</summary><div class="a">It is a likelihood ratio test. Twice the difference between the two log likelihoods follows a chi-squared distribution. The degrees of freedom equal the difference in the number of parameters between the two models. For one predictor that is two parameters against one, so one degree of freedom. The tail area beyond the observed value is the p-value.</div></details>
+
+    <details class="qa" open><summary>Why are log likelihoods always negative here?</summary><div class="a">Every term is the log of a predicted probability, and probabilities lie between 0 and 1. The log of a number in that range is negative or zero. So the total runs from minus infinity up to zero. A good model pushes it towards zero, and a poor model leaves it as a large negative number.</div></details>
+
+    <details class="qa" open><summary>Textbook formulas include a saturated model. Why does it disappear here?</summary><div class="a">The saturated model has one parameter per observation, so it fits the data perfectly. For logistic regression its log likelihood is zero, so those terms cancel out. Other generalized linear models have a non-zero saturated log likelihood, so the general formulas keep the term.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap">
+      <ul>
+        <li>Logistic regression has infinite residuals, so sums of squares cannot score a fit.</li>
+        <li>Log likelihoods take their place: LL(fit) for the fitted squiggle, LL(overall probability) for a model that ignores the predictor.</li>
+        <li>McFadden's pseudo R-squared is their difference divided by LL(overall probability).</li>
+        <li>It behaves like the familiar R-squared, running from 0 for a useless predictor to 1 for a perfect one.</li>
+        <li>In the mouse example LL(fit) is -3.77 and LL(overall probability) is -6.18, which gives R-squared of 0.39.</li>
+        <li>Twice that same difference is 4.82, a chi-squared value with one degree of freedom, and the p-value is 0.03.</li>
+        <li>General formulas add a saturated model term, but that term is zero for logistic regression and drops out.</li>
+        <li>There is no agreed R-squared for logistic regression, so state which version you report.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Logistic R-squared and p-value</span><span class="board-tag">swap sums of squares for log likelihoods</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 250" role="img" aria-label="Three models scored on a log likelihood bar that runs from −6.18 to 0. A flat line at p = 0.56 scores −6.18, the fitted squiggle scores −3.77, and a perfect fit scores 0. The squiggle covers 2.41 of the 6.18, so R² = 0.39. Twice the gap, 4.82, is a chi-squared value that gives p = 0.03.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="40,34 40,84 130,84"/>
+              <polyline points="139,34 139,84 229,84"/>
+              <polyline points="295,34 295,84 385,84"/>
+            </g>
+            <line x1="44" y1="56.5" x2="126" y2="56.5" class="sv-stroke-acc" stroke-width="3.5" stroke-linecap="round"/>
+            <polyline points="143,79.8 153,79.3 161,78.1 168,75.6 174,71.2 179,65.8 184,59 189,52.2 194,46.8 200,42.4 207,39.9 215,38.7 225,38.2" class="sv-stroke-acc" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="299,80 332,80 332,38 381,38" class="sv-stroke-acc" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="85" y="24" text-anchor="middle" class="sv-ts">p = 0.56</text>
+            <text x="184" y="24" text-anchor="middle" class="sv-ts">squiggle</text>
+            <text x="340" y="24" text-anchor="middle" class="sv-ts">perfect</text>
+            <line x1="85" y1="92" x2="85" y2="114" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="184" y1="92" x2="184" y2="114" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="340" y1="92" x2="340" y2="114" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <rect x="85" y="124" width="255" height="20" rx="6" class="sv-paper"/>
+              <rect x="85" y="124" width="99" height="20" rx="6" class="sv-key"/>
+            </g>
+            <text x="85" y="168" text-anchor="middle" class="sv-tb">−6.18</text>
+            <text x="184" y="168" text-anchor="middle" class="sv-tb">−3.77</text>
+            <text x="340" y="168" text-anchor="middle" class="sv-tb">0</text>
+            <text x="200" y="204" text-anchor="middle" class="sv-tb">R² = 2.41 / 6.18 = 0.39</text>
+            <text x="200" y="234" text-anchor="middle" class="sv-t">χ² = 2 × 2.41 = 4.82 → p = 0.03</text>
+          </svg>
+          <p>Residuals are infinite, so score fits by log likelihood. R² asks how far the squiggle moves from the flat baseline toward a perfect 0: 2.41 of 6.18. Twice that gap is χ², which gives the p-value.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>LL(fit)</dt><dd>Log likelihood under the fitted squiggle.</dd>
+            <dt>LL(overall probability)</dt><dd>Log likelihood under a flat line that ignores weight.</dd>
+            <dt>McFadden's pseudo R²</dt><dd>Effect size: 0 useless, 1 perfect.</dd>
+            <dt>Degrees of freedom</dt><dd>The fit's 2 parameters minus the baseline's 1, so 1.</dd>
+            <dt>Saturated model</dt><dd>One parameter per data point. Its LL is 0 here, so it cancels.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Fit the squiggle</b>maximum likelihood, as in Part 2</li>
+            <li><b>LL(fit)</b>add the logs: −3.77</li>
+            <li><b>Flat baseline</b>log odds 0.22, p = 0.56</li>
+            <li><b>LL(overall)</b>add the logs again: −6.18</li>
+            <li><b>R²</b>2.41 / 6.18 = 0.39</li>
+            <li><b>p-value</b>χ² 4.82, 1 df → 0.03</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$R^2=\frac{LL(\text{overall})-LL(\text{fit})}{LL(\text{overall})}$$
+          $$\chi^2=2\big(LL(\text{fit})-LL(\text{overall})\big)$$
+          <ul class="keys">
+            <li>\(LL(\text{overall})\) gives every mouse the overall probability, 0.56.</li>
+            <li>\(df=2-1=1\): intercept and slope against intercept only.</li>
+            <li>Every LL is 0 or below; a perfect fit gives 0.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>what</th><th>from</th><th>value</th></tr>
+            <tr><td>LL(fit)</td><td>squiggle</td><td>−3.77</td></tr>
+            <tr><td>LL(overall)</td><td>flat p = 0.56</td><td>−6.18</td></tr>
+            <tr><td>R²</td><td>2.41 / 6.18</td><td>0.39</td></tr>
+            <tr><td>χ²</td><td>2 × 2.41</td><td>4.82</td></tr>
+            <tr class="final"><td>p-value</td><td>1 df</td><td>0.03 ✓</td></tr>
+          </table>
+          <p class="hand">R² of 0.39 says how strong; p = 0.03 says unlikely to be chance.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Logistic regression has one standard R-squared.</span><span class="yes">More than ten versions give different numbers. Say which one you used.</span></li>
+            <li><span class="no">Compute residuals on the log odds scale.</span><span class="yes">The data sit at ±∞ there, so every residual is infinite. Log likelihoods replace them.</span></li>
+            <li><span class="no">R-squared and the p-value tell you the same thing.</span><span class="yes">R-squared is effect size: how much weight helps. The p-value is significance: how likely by chance.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="18-logistic-regression-details-pt-2-maximum-likelihood.html"><small>Previous</small>Logistic Regression Details Pt 2: Maximum Likelihood</a> <a href="20-saturated-models-and-deviance.html"><small>Next</small>Saturated Models and Deviance</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PCA in R — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>33</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 33 · 8.9 min</div>
+    <h1>PCA in R</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=0Jp4gsfOLMs" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Josh runs a complete PCA in R with one function, <code>prcomp</code>. He builds a small fake gene data set, draws the PCA plot, measures how much variation each component holds, and finds the genes that drive the split.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>The <code>prcomp</code> function does the whole PCA in a single call. It expects samples as rows, so a gene matrix has to be transposed first. It returns three things you use: <code>x</code> holds the sample coordinates, <code>sdev</code> holds the spread of each component, and <code>rotation</code> holds the loading scores. Squaring <code>sdev</code> and turning the values into percentages gives the scree plot, and here PC1 holds about 92% of the variation. Sorting the loading scores by absolute value names the genes that push samples to the left and to the right.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>PCA takes many measurements per sample and draws a picture that shows which samples are alike. Here each sample is measured on 100 genes, so each sample is a point in 100 dimensions. PCA finds new axes, called principal components, that carry as much of the spread as possible. The first two axes usually make a readable 2D plot.</p>
+    <p>In R the whole job is one call to <code>prcomp</code>. The only care you need is the shape of your data. By default <code>prcomp</code> reads rows as samples and columns as variables. Gene data usually arrives the other way round, with samples in columns and genes in rows, so you transpose it with <code>t</code>. If you skip that step you get a plot of how the genes relate to each other, which is not the question here.</p>
+    <p>The result object holds three parts. <code>x</code> gives the coordinates you plot. <code>sdev</code> gives the standard deviation along each component, which turns into the scree plot. <code>rotation</code> gives the loading scores, which say how much each gene contributed to each component.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="A gene matrix is transposed so samples become rows, then prcomp returns x, sdev and rotation">
+        <defs>
+          <marker id="arA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" class="sv-ink3"></path>
+          </marker>
+        </defs>
+        <text x="28" y="30" class="sv-tb">One call, three outputs</text>
+
+        <rect x="28" y="64" width="180" height="104" rx="6" class="sv-paper2"></rect>
+        <text x="40" y="90" class="sv-tm">data.matrix</text>
+        <text x="40" y="114" class="sv-ts">rows = 100 genes</text>
+        <text x="40" y="136" class="sv-ts">cols = 10 samples</text>
+        <text x="28" y="190" class="sv-warn" font-size="12">samples are in the columns,</text>
+        <text x="28" y="206" class="sv-warn" font-size="12">which prcomp does not want</text>
+
+        <line x1="214" y1="116" x2="258" y2="116" class="sv-line" stroke-width="2" marker-end="url(#arA)"></line>
+        <text x="236" y="104" class="sv-tm" text-anchor="middle">t()</text>
+
+        <rect x="264" y="64" width="180" height="104" rx="6" class="sv-acc-soft"></rect>
+        <text x="276" y="90" class="sv-tm">t(data.matrix)</text>
+        <text x="276" y="114" class="sv-ts">rows = 10 samples</text>
+        <text x="276" y="136" class="sv-ts">cols = 100 genes</text>
+        <text x="264" y="190" class="sv-good" font-size="12">now the samples are rows</text>
+
+        <line x1="450" y1="116" x2="498" y2="116" class="sv-line" stroke-width="2" marker-end="url(#arA)"></line>
+        <text x="474" y="104" class="sv-tm" text-anchor="middle">prcomp()</text>
+
+        <rect x="504" y="52" width="232" height="48" rx="6" class="sv-paper2"></rect>
+        <text x="516" y="72" class="sv-tm">pca$x</text>
+        <text x="516" y="90" class="sv-ts">sample coordinates, 10 by 10</text>
+
+        <rect x="504" y="108" width="232" height="48" rx="6" class="sv-paper2"></rect>
+        <text x="516" y="128" class="sv-tm">pca$sdev</text>
+        <text x="516" y="146" class="sv-ts">spread along each component</text>
+
+        <rect x="504" y="164" width="232" height="48" rx="6" class="sv-paper2"></rect>
+        <text x="516" y="184" class="sv-tm">pca$rotation</text>
+        <text x="516" y="202" class="sv-ts">loading scores per gene</text>
+
+        <rect x="28" y="234" width="708" height="46" rx="6" class="sv-paper"></rect>
+        <rect x="28" y="234" width="4" height="46" class="sv-acc"></rect>
+        <text x="46" y="254" class="sv-t">Ten samples give ten principal components.</text>
+        <text x="46" y="272" class="sv-ts">PC1 carries the most variation, PC2 the next, and so on down the list.</text>
+      </svg>
+      <figcaption>Notice that the transpose is the only preparation step, and that all three later plots read from one of the three outputs.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Build a fake data set: 10 samples measured on 100 genes. Five samples are wild type (normal) and five are knockout (a gene removed).</li>
+      <li>Transpose the matrix and call <code>prcomp</code>, so that samples sit in rows.</li>
+      <li>Plot the first two columns of <code>pca$x</code>. That is the PCA plot.</li>
+      <li>Square <code>pca$sdev</code>, turn the values into percentages, and draw the scree plot to see how much each component is worth.</li>
+      <li>Redraw the plot with ggplot2 so the points carry sample names and the axes carry the percentages.</li>
+      <li>Read <code>pca$rotation</code> to find the genes with the largest effect on where samples land.</li>
+    </ol>
+
+    <h3>1. Make the data</h3>
+    <p>Each gene gets fake read counts drawn from a Poisson distribution, with a different mean for the wild type and knockout groups. The details of the biology do not matter; you will bring your own data.</p>
+<pre><code>data.matrix &lt;- matrix(nrow=100, ncol=10)
+colnames(data.matrix) &lt;- c(paste("wt", 1:5, sep=""), paste("ko", 1:5, sep=""))
+rownames(data.matrix) &lt;- paste("gene", 1:100, sep="")
+
+for (i in 1:100) {
+  wt.values &lt;- rpois(5, lambda=sample(x=10:1000, size=1))
+  ko.values &lt;- rpois(5, lambda=sample(x=10:1000, size=1))
+  data.matrix[i,] &lt;- c(wt.values, ko.values)
+}
+head(data.matrix)     # samples are columns, genes are rows</code></pre>
+    <p>In Python you would build the same array with <code>numpy.random.poisson</code> and wrap it in a <code>pandas.DataFrame</code>.</p>
+
+    <h3>2. Run the PCA and draw the plot</h3>
+    <p>Transpose first, then call <code>prcomp</code>. The first two columns of <code>x</code> are the coordinates of the ten samples on PC1 and PC2.</p>
+<pre><code>pca &lt;- prcomp(t(data.matrix), scale=TRUE)
+plot(pca$x[,1], pca$x[,2], xlab="PC1", ylab="PC2")</code></pre>
+    <p><b>The same thing in Python.</b> Scikit-learn centres the data but does not scale it, so put a <code>StandardScaler</code> in front to match <code>scale=TRUE</code>. Rows must already be samples, so no transpose is needed if your frame is in that shape.</p>
+<pre><code>import numpy as np, matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+
+X = df.T.values                      # rows = samples, cols = genes
+Xs = StandardScaler().fit_transform(X)
+pca = PCA()                          # keeps all components
+scores = pca.fit_transform(Xs)       # same role as pca$x in R
+
+plt.scatter(scores[:, 0], scores[:, 1])
+plt.xlabel("PC1"); plt.ylabel("PC2")</code></pre>
+
+    <h3>3. Check how much each component is worth</h3>
+    <p>The <code>sdev</code> values are standard deviations, so square them to get variances. Divide by the total and multiply by 100 to get percentages, then draw the bar chart.</p>
+<pre><code>pca.var &lt;- pca$sdev^2
+pca.var.per &lt;- round(pca.var/sum(pca.var)*100, 1)
+barplot(pca.var.per, main="Scree Plot",
+        xlab="Principal Component", ylab="Percent Variation")</code></pre>
+    <p><b>The same thing in Python.</b> Scikit-learn already divides for you, so <code>explained_variance_ratio_</code> replaces the squaring and the division.</p>
+<pre><code>per = np.round(pca.explained_variance_ratio_ * 100, 1)
+plt.bar(range(1, len(per) + 1), per)
+plt.xlabel("Principal Component"); plt.ylabel("Percent Variation")</code></pre>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 280" role="img" aria-label="The PCA plot shows two clusters split along PC1, and the scree plot shows PC1 holding about 92 percent of the variation">
+        <text x="28" y="34" class="sv-tb">The PCA plot</text>
+        <text x="430" y="34" class="sv-tb">The scree plot</text>
+
+        <line x1="60" y1="230" x2="360" y2="230" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <line x1="60" y1="60" x2="60" y2="230" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <line x1="210" y1="60" x2="210" y2="230" class="sv-line" stroke-width="1.5" stroke-dasharray="5 5"></line>
+
+        <circle cx="103" cy="108" r="5.5" class="sv-acc"></circle>
+        <circle cx="93" cy="150" r="5.5" class="sv-acc"></circle>
+        <circle cx="116" cy="178" r="5.5" class="sv-acc"></circle>
+        <circle cx="99" cy="200" r="5.5" class="sv-acc"></circle>
+        <circle cx="121" cy="132" r="5.5" class="sv-acc"></circle>
+
+        <circle cx="308" cy="112" r="5.5" class="sv-key"></circle>
+        <circle cx="296" cy="146" r="5.5" class="sv-key"></circle>
+        <circle cx="319" cy="172" r="5.5" class="sv-key"></circle>
+        <circle cx="302" cy="198" r="5.5" class="sv-key"></circle>
+        <circle cx="325" cy="134" r="5.5" class="sv-key"></circle>
+
+        <rect x="72" y="66" width="94" height="22" rx="4" class="sv-paper"></rect>
+        <text x="78" y="82" class="sv-ts">5 WT samples</text>
+        <rect x="266" y="66" width="94" height="22" rx="4" class="sv-paper"></rect>
+        <text x="272" y="82" class="sv-ts">5 KO samples</text>
+
+        <text x="210" y="252" class="sv-ts" text-anchor="middle">PC1 - 92%</text>
+        <text x="38" y="145" class="sv-ts" text-anchor="middle" transform="rotate(-90 38 145)">PC2</text>
+
+        <line x1="430" y1="230" x2="740" y2="230" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <rect x="440" y="92" width="22" height="138" class="sv-acc"></rect>
+        <rect x="469" y="223" width="22" height="7" class="sv-ink3"></rect>
+        <rect x="498" y="225" width="22" height="5" class="sv-ink3"></rect>
+        <rect x="527" y="226" width="22" height="4" class="sv-ink3"></rect>
+        <rect x="556" y="226" width="22" height="4" class="sv-ink3"></rect>
+        <rect x="585" y="227" width="22" height="3" class="sv-ink3"></rect>
+        <rect x="614" y="227" width="22" height="3" class="sv-ink3"></rect>
+        <rect x="643" y="228" width="22" height="2" class="sv-ink3"></rect>
+        <rect x="672" y="228" width="22" height="2" class="sv-ink3"></rect>
+        <rect x="701" y="228" width="22" height="2" class="sv-ink3"></rect>
+        <text x="451" y="82" class="sv-tm" text-anchor="middle">92%</text>
+        <text x="451" y="252" class="sv-ts" text-anchor="middle">PC1</text>
+        <text x="596" y="252" class="sv-ts" text-anchor="middle">PC2 to PC10</text>
+      </svg>
+      <figcaption>Notice that the split runs left to right, and the scree plot says PC1 holds almost all the variation, so the split is real.</figcaption>
+    </figure>
+
+    <h3>4. A nicer plot with ggplot2</h3>
+    <p>ggplot2 wants a data frame with one row per sample. Build it from the sample names and the first two columns of <code>x</code>, then paste the percentages into the axis labels.</p>
+<pre><code>library(ggplot2)
+pca.data &lt;- data.frame(Sample=rownames(pca$x), X=pca$x[,1], Y=pca$x[,2])
+
+ggplot(data=pca.data, aes(x=X, y=Y, label=Sample)) +
+  geom_text() +
+  xlab(paste("PC1 - ", pca.var.per[1], "%", sep="")) +
+  ylab(paste("PC2 - ", pca.var.per[2], "%", sep="")) +
+  theme_bw() +
+  ggtitle("My PCA Graph")</code></pre>
+    <p><b>The same thing in Python.</b> Matplotlib has no <code>geom_text</code>, so you annotate each point with its sample name.</p>
+<pre><code>for name, (x, y) in zip(df.columns, scores[:, :2]):
+    plt.annotate(name, (x, y))
+plt.xlabel(f"PC1 - {per[0]}%"); plt.ylabel(f"PC2 - {per[1]}%")
+plt.title("My PCA Graph")</code></pre>
+
+    <h3>5. Find the genes that matter</h3>
+    <p>The loading scores live in <code>rotation</code>, one column per component. Take the PC1 column, sort by absolute value so that strong pushes in both directions rank high, and read off the top ten names.</p>
+<pre><code>loading_scores &lt;- pca$rotation[,1]
+gene_scores &lt;- abs(loading_scores)
+gene_score_ranked &lt;- sort(gene_scores, decreasing=TRUE)
+top_10_genes &lt;- names(gene_score_ranked[1:10])
+
+pca$rotation[top_10_genes, 1]   # positive push right, negative push left</code></pre>
+    <p><b>The same thing in Python.</b> The loadings sit in <code>components_</code>, but transposed: row 0 is PC1 and each column is a gene.</p>
+<pre><code>import pandas as pd
+loadings = pd.Series(pca.components_[0], index=df.index)
+top_10 = loadings.abs().sort_values(ascending=False).head(10).index
+loadings[top_10]</code></pre>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Variance of a component</span>
+      <div class="math">$$ \mathrm{Var}_i = (\mathrm{sdev}_i)^2 $$</div>
+      <p class="explain"><b>Symbols:</b> \(\mathrm{sdev}_i\) is the standard deviation that <code>prcomp</code> reports for principal component \(i\). <b>What it tells you:</b> squaring turns the spread along that component into a variance, which is the quantity you can add up across components.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Percent variation per component</span>
+      <div class="math">$$ \mathrm{pct}_i = 100 \times \frac{(\mathrm{sdev}_i)^2}{\sum_{j=1}^{10} (\mathrm{sdev}_j)^2} $$</div>
+      <p class="explain"><b>Symbols:</b> the top is the variance of component \(i\); the bottom adds the variances of all ten components. <b>What it tells you:</b> the share of the original variation that this component accounts for, which is the height of its bar in the scree plot.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Ranking the loading scores</span>
+      <div class="math">$$ \text{rank genes by } \left| r_{g,1} \right| $$</div>
+      <p class="explain"><b>Symbols:</b> \(r_{g,1}\) is the loading score of gene \(g\) on PC1, the value in <code>pca$rotation[g, 1]</code>. <b>What it tells you:</b> the size says how strongly the gene moves samples along PC1, and the sign says which side it moves them to.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>The data set has 10 samples and 100 genes: <code>wt1</code> to <code>wt5</code> and <code>ko1</code> to <code>ko5</code>. After the transpose, <code>prcomp</code> sees 10 rows and 100 columns, so it returns 10 principal components.</p>
+      <p>Plotting <code>pca$x[,1]</code> against <code>pca$x[,2]</code> puts five samples on one side and five on the other. On its own that picture proves nothing, because any data can be split somehow. The scree plot settles it: PC1 accounts for about 92% of the variation, so almost all of the difference between the samples runs along that left-to-right axis. The gap between the two clusters is therefore a big, real difference.</p>
+      <p>Because PC1 carries 92%, only its loading scores are worth reading. Sorting the 100 genes by <code>abs(pca$rotation[,1])</code> and taking the top ten gives the genes with the largest effect on the plot. Among those ten, the ones with positive scores push the KO samples to the right, and the ones with negative scores push the WT samples to the left.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Forgetting the transpose is the classic error. <code>prcomp</code> treats rows as samples, so a gene-by-sample matrix passed straight in gives you a plot of genes, not samples. The code still runs and the graph still looks fine, which is what makes this mistake easy to miss.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Do not read a PCA plot without its scree plot. Two clean clusters mean little if PC1 only holds a small share of the variation. Here PC1 holds 92%, so the clusters are worth trusting.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Sort loading scores by absolute value, not from high to low. Sorting from high to low returns only the genes that push samples one way and hides the equally important genes that push the other way.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Scaling differs between the two languages. R's <code>prcomp</code> only scales when you pass <code>scale=TRUE</code>, and scikit-learn's <code>PCA</code> never scales at all. If you want the same answer in Python, run <code>StandardScaler</code> first.</p>
+    </div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open>
+      <summary>Why do you transpose the matrix before calling prcomp?</summary>
+      <div class="a">Because <code>prcomp</code> expects one row per sample and one column per variable. Gene expression data usually arrives the other way round, with samples in columns. If you do not transpose, you get a PCA of the genes instead of the samples, and the plot answers a question you did not ask.</div>
+    </details>
+
+    <details class="qa" open>
+      <summary>How do you decide whether a PCA plot is meaningful?</summary>
+      <div class="a">I look at the percent variation for each component before I read the picture. I square the standard deviations, turn them into percentages, and draw a scree plot. If the first two components carry most of the variation, the 2D picture is a fair summary. In this example PC1 alone carried about 92%, so a wide gap along PC1 is a real difference.</div>
+    </details>
+
+    <details class="qa" open>
+      <summary>What are loading scores and how do you use them?</summary>
+      <div class="a">Loading scores say how much each original variable contributed to a principal component. In R they are in <code>pca$rotation</code>, one column per component. I sort them by absolute value to find the variables with the biggest effect, then look at the signs to see which side of the plot each one pushes samples toward.</div>
+    </details>
+
+    <details class="qa" open>
+      <summary>How many principal components can you get?</summary>
+      <div class="a">You never get more than the number of samples, whatever the number of variables. In this example there are 10 samples and 100 genes, and PCA returns 10 components. They come out ordered, with the first holding the most variation and each later one holding less.</div>
+    </details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap">
+      <ul>
+        <li>One call to <code>prcomp</code> does the whole PCA in R.</li>
+        <li>Transpose the data first, because <code>prcomp</code> reads rows as samples and columns as variables.</li>
+        <li><code>pca$x</code> holds the coordinates, so plot its first two columns to get the PCA plot.</li>
+        <li>Square <code>pca$sdev</code> and turn the values into percentages to build the scree plot.</li>
+        <li>Ten samples give ten components, and here PC1 accounts for about 92% of the variation.</li>
+        <li><code>pca$rotation</code> holds the loading scores, so sort them by absolute value to find the genes that matter most.</li>
+        <li>Positive loading scores push samples to the right of the plot, and negative ones push them to the left.</li>
+        <li>In Python use <code>StandardScaler</code> then <code>PCA</code>, and read <code>explained_variance_ratio_</code> and <code>components_</code>.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">PCA with prcomp</span><span class="board-tag">samples as rows, one call, three outputs</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 280" role="img" aria-label="A gene matrix with genes as rows is transposed with t() so the samples become rows. prcomp() then returns three outputs: pca$x for the PCA plot, where five wild type and five knockout samples split left and right; pca$sdev for the scree plot, where PC1 holds 92%; and pca$rotation, the loading scores sorted by size, with positive ones pushing right and negative ones pushing left.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <rect x="46" y="40" width="36" height="72" rx="2" class="sv-paper"/>
+              <path d="M55 40 V112 M64 40 V112 M73 40 V112 M46 52 H82 M46 64 H82 M46 76 H82 M46 88 H82 M46 100 H82"/>
+              <rect x="164" y="58" width="72" height="36" rx="2" class="sv-paper"/>
+              <path d="M176 58 V94 M188 58 V94 M200 58 V94 M212 58 V94 M224 58 V94 M164 67 H236 M164 76 H236 M164 85 H236"/>
+            </g>
+            <line x1="90" y1="76" x2="154" y2="76" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="3" stroke-linecap="round">
+              <line x1="200" y1="94" x2="200" y2="160" marker-end="url(#board-arr)"/>
+              <line x1="200" y1="124" x2="70" y2="160" marker-end="url(#board-arr)"/>
+              <line x1="200" y1="124" x2="330" y2="160" marker-end="url(#board-arr)"/>
+            </g>
+            <path d="M16 196 V262 H124" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="30" cy="210" r="5" class="sv-acc"/>
+              <circle cx="48" cy="216" r="5" class="sv-acc"/>
+              <circle cx="34" cy="230" r="5" class="sv-acc"/>
+              <circle cx="52" cy="238" r="5" class="sv-acc"/>
+              <circle cx="38" cy="250" r="5" class="sv-acc"/>
+              <circle cx="92" cy="210" r="5" class="sv-key"/>
+              <circle cx="110" cy="216" r="5" class="sv-key"/>
+              <circle cx="96" cy="230" r="5" class="sv-key"/>
+              <circle cx="114" cy="238" r="5" class="sv-key"/>
+              <circle cx="100" cy="250" r="5" class="sv-key"/>
+            </g>
+            <line x1="148" y1="262" x2="256" y2="262" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2"><rect x="152" y="206" width="14" height="55" class="sv-good"/></g>
+            <g class="sv-ink3">
+              <rect x="172" y="255" width="6" height="6"/>
+              <rect x="181" y="256" width="6" height="5"/>
+              <rect x="190" y="256" width="6" height="5"/>
+              <rect x="199" y="257" width="6" height="4"/>
+              <rect x="208" y="257" width="6" height="4"/>
+              <rect x="217" y="257" width="6" height="4"/>
+              <rect x="226" y="258" width="6" height="3"/>
+              <rect x="235" y="258" width="6" height="3"/>
+              <rect x="244" y="258" width="6" height="3"/>
+            </g>
+            <line x1="330" y1="194" x2="330" y2="268" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <rect x="330" y="198" width="50" height="8" class="sv-key"/>
+              <rect x="284" y="210" width="46" height="8" class="sv-acc"/>
+              <rect x="330" y="222" width="40" height="8" class="sv-key"/>
+              <rect x="296" y="234" width="34" height="8" class="sv-acc"/>
+              <rect x="330" y="246" width="26" height="8" class="sv-key"/>
+              <rect x="312" y="258" width="18" height="8" class="sv-acc"/>
+            </g>
+            <text x="64" y="28" text-anchor="middle" class="sv-ts">rows = genes</text>
+            <text x="200" y="28" text-anchor="middle" class="sv-ts">rows = samples</text>
+            <text x="122" y="64" text-anchor="middle" class="sv-tm">t()</text>
+            <text x="210" y="114" class="sv-tm">prcomp()</text>
+            <text x="70" y="182" text-anchor="middle" class="sv-tm">pca$x</text>
+            <text x="200" y="182" text-anchor="middle" class="sv-tm">pca$sdev</text>
+            <text x="330" y="182" text-anchor="middle" class="sv-tm">pca$rotation</text>
+            <text x="174" y="228" class="sv-tb">PC1 92%</text>
+          </svg>
+          <p><code>prcomp</code> does the whole PCA in one call but reads rows as samples, so transpose the gene matrix with <code>t()</code> first. Then plot <code>x</code>, square <code>sdev</code> for the scree plot, and read <code>rotation</code> for the loading scores.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt><code>prcomp</code></dt><dd>R's one-call PCA; rows must be samples.</dd>
+            <dt><code>pca$x</code></dt><dd>Sample coordinates; plot the first two columns.</dd>
+            <dt><code>pca$sdev</code></dt><dd>Spread along each component; square it for variance.</dd>
+            <dt><code>pca$rotation</code></dt><dd>Loading scores, one column per component.</dd>
+            <dt>WT and KO</dt><dd>Wild type (normal) and knockout (a gene removed) samples.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Make data</b>10 samples, 100 genes, Poisson</li>
+            <li><b>Run prcomp</b>on t(data.matrix), samples as rows</li>
+            <li><b>Plot</b>first two columns of pca$x</li>
+            <li><b>Scree plot</b>square sdev, turn into percentages</li>
+            <li><b>ggplot2</b>sample names, % on the axes</li>
+            <li><b>Top genes</b>sort rotation by absolute value</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\mathrm{Var}_i=(\mathrm{sdev}_i)^2$$
+          $$\mathrm{pct}_i=100\times\frac{(\mathrm{sdev}_i)^2}{\sum_{j=1}^{10}(\mathrm{sdev}_j)^2}$$
+          $$\text{rank genes by }\left|r_{g,1}\right|$$
+          <ul class="keys">
+            <li>\(\mathrm{sdev}_i\) is the standard deviation <code>prcomp</code> reports for PC \(i\).</li>
+            <li>\(\mathrm{pct}_i\) is the height of PC \(i\)'s bar in the scree plot.</li>
+            <li>\(r_{g,1}\) is gene \(g\)'s loading score on PC1; its sign says which side.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>R</th><th>gives</th></tr>
+            <tr><td>t(data.matrix)</td><td>10 rows × 100 cols</td></tr>
+            <tr><td>prcomp()</td><td>10 PCs</td></tr>
+            <tr><td>sdev^2 as %</td><td>PC1 ≈ 92%</td></tr>
+            <tr class="final"><td>top 10 |loading|</td><td>+ KO right, − WT left</td></tr>
+          </table>
+          <p class="hand">Ten samples give ten PCs. PC1 holds 92%, so the WT versus KO split along it is real.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Pass the gene matrix straight in.</span><span class="yes"><code>prcomp</code> reads rows as samples. Skip <code>t()</code> and you plot genes, and the code still runs.</span></li>
+            <li><span class="no">Sort loading scores high to low.</span><span class="yes">Sort by absolute value, or you hide the genes that push the other way.</span></li>
+            <li><span class="no">R and Python scale the same way.</span><span class="yes"><code>prcomp</code> scales only with <code>scale=TRUE</code>; scikit-learn's PCA never does, so add <code>StandardScaler</code>.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="32-pca-practical-tips.html"><small>Previous</small>PCA - Practical Tips</a> <a href="34-pca-in-python.html"><small>Next</small>PCA in Python</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>K-means clustering — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>41</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 41 · 8.5 min</div>
+    <h1>K-means clustering</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=4b5d3muPQmA" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">K-means clustering splits your data into a number of groups that you choose first. Josh shows the small loop the computer repeats, and how to pick that number.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>You tell K-means how many clusters you want, and that number is K. It picks K random data points as the first clusters, gives every other point to its nearest cluster, then moves each cluster to the mean of its members. It repeats this until the grouping stops changing. Because a random start can end badly, K-means runs the whole thing several times and keeps the run with the smallest total variation inside the clusters. To choose K itself, you try several values and look for the elbow in a plot of total variation against K.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh starts with data that sit on a single line. These could be measurements from three different types of tumours. Your eye sees three obvious groups at once. The point of the video is to make a computer find the same three groups without eyes.</p>
+    <p>K-means does this with one simple rule, applied again and again. Every point belongs to whichever cluster centre is nearest to it. Once the points are assigned, each cluster moves to the mean of the points it now holds. Moving the centres can change which centre is nearest, so the assignment is done again. When one full pass changes nothing, the answer is stable and the loop stops.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 336" role="img" aria-label="Four number lines showing raw data, three random starting clusters, the assignment of every point to its nearest cluster, and the cluster means after one pass">
+        <text class="sv-tb" x="24" y="26">1. Raw data on a line. We want K = 3 clusters.</text>
+        <line class="sv-line" x1="24" y1="52" x2="736" y2="52" stroke-width="2"/>
+        <circle class="sv-ink3" cx="110" cy="52" r="7"/><circle class="sv-ink3" cx="142" cy="52" r="7"/><circle class="sv-ink3" cx="174" cy="52" r="7"/>
+        <circle class="sv-ink3" cx="330" cy="52" r="7"/><circle class="sv-ink3" cx="362" cy="52" r="7"/><circle class="sv-ink3" cx="394" cy="52" r="7"/>
+        <circle class="sv-ink3" cx="566" cy="52" r="7"/><circle class="sv-ink3" cx="598" cy="52" r="7"/><circle class="sv-ink3" cx="630" cy="52" r="7"/>
+
+        <text class="sv-tb" x="24" y="98">2. Pick 3 random points. These are the first clusters.</text>
+        <line class="sv-line" x1="24" y1="124" x2="736" y2="124" stroke-width="2"/>
+        <circle class="sv-ink3" cx="110" cy="124" r="7"/><circle class="sv-acc" cx="142" cy="124" r="8"/><circle class="sv-ink3" cx="174" cy="124" r="7"/>
+        <circle class="sv-ink3" cx="330" cy="124" r="7"/><circle class="sv-good" cx="362" cy="124" r="8"/><circle class="sv-ink3" cx="394" cy="124" r="7"/>
+        <circle class="sv-ink3" cx="566" cy="124" r="7"/><circle class="sv-ink3" cx="598" cy="124" r="7"/><circle class="sv-key" cx="630" cy="124" r="8"/>
+
+        <text class="sv-tb" x="24" y="170">3 and 4. Measure the distances. Give each point to its nearest cluster.</text>
+        <line class="sv-line" x1="24" y1="196" x2="736" y2="196" stroke-width="2"/>
+        <circle class="sv-acc" cx="110" cy="196" r="7"/><circle class="sv-acc" cx="142" cy="196" r="7"/><circle class="sv-acc" cx="174" cy="196" r="7"/>
+        <circle class="sv-good" cx="330" cy="196" r="7"/><circle class="sv-good" cx="362" cy="196" r="7"/><circle class="sv-good" cx="394" cy="196" r="7"/>
+        <circle class="sv-key" cx="566" cy="196" r="7"/><circle class="sv-key" cx="598" cy="196" r="7"/><circle class="sv-key" cx="630" cy="196" r="7"/>
+
+        <text class="sv-tb" x="24" y="242">5. Move each cluster to the mean of its points, then repeat.</text>
+        <line class="sv-line" x1="24" y1="268" x2="736" y2="268" stroke-width="2"/>
+        <circle class="sv-acc" cx="110" cy="268" r="7"/><circle class="sv-acc" cx="142" cy="268" r="7"/><circle class="sv-acc" cx="174" cy="268" r="7"/>
+        <circle class="sv-good" cx="330" cy="268" r="7"/><circle class="sv-good" cx="362" cy="268" r="7"/><circle class="sv-good" cx="394" cy="268" r="7"/>
+        <circle class="sv-key" cx="566" cy="268" r="7"/><circle class="sv-key" cx="598" cy="268" r="7"/><circle class="sv-key" cx="630" cy="268" r="7"/>
+        <polygon class="sv-acc" points="136,252 148,252 142,261"/>
+        <polygon class="sv-good" points="356,252 368,252 362,261"/>
+        <polygon class="sv-key" points="592,252 604,252 598,261"/>
+        <text class="sv-ts" x="24" y="292">The three triangles are the cluster means.</text>
+        <text class="sv-ts" x="24" y="314">Nothing changed in this pass, so K-means stops here.</text>
+      </svg>
+      <figcaption>Notice that only two things ever happen: points join the nearest centre, then centres move to the mean.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Select the number of clusters you want to find. That number is the K in K-means.</li>
+      <li>Randomly select K distinct data points. These points act as the first clusters.</li>
+      <li>Measure the distance from the first data point to each of the K clusters.</li>
+      <li>Assign that point to the nearest cluster. Repeat steps 3 and 4 for every remaining point.</li>
+      <li>Calculate the mean of each cluster once all points are assigned.</li>
+      <li>Measure and assign every point again, this time using the mean values as the clusters.</li>
+      <li>Stop when a full pass does not change the clustering. The result is one finished run.</li>
+      <li>Add up the variation inside each cluster. This single number scores how good the run is.</li>
+      <li>Start over with new random points and run it again. K-means does as many runs as you ask for. It then returns the run with the smallest total variation.</li>
+    </ol>
+    <p>Step 9 is the part people forget. K-means cannot see the best clustering the way your eye can. An unlucky first pick can lock it into a poor answer, and that answer is still stable. Fresh random starts are the only defence, and the total variation compares the runs.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 250" role="img" aria-label="Two runs of K-means compared, one from an unlucky start with large total variation and one from a lucky start with small total variation">
+        <text class="sv-tb" x="24" y="26">Run 1: unlucky start</text>
+        <line class="sv-line" x1="30" y1="80" x2="355" y2="80" stroke-width="2"/>
+        <circle class="sv-acc" cx="60" cy="80" r="7"/><circle class="sv-good" cx="76" cy="80" r="7"/><circle class="sv-good" cx="92" cy="80" r="7"/>
+        <circle class="sv-good" cx="170" cy="80" r="7"/><circle class="sv-good" cx="186" cy="80" r="7"/><circle class="sv-key" cx="202" cy="80" r="7"/>
+        <circle class="sv-key" cx="288" cy="80" r="7"/><circle class="sv-key" cx="304" cy="80" r="7"/><circle class="sv-key" cx="320" cy="80" r="7"/>
+        <rect class="sv-paper2" x="30" y="140" width="325" height="20" rx="4"/>
+        <rect class="sv-warn" x="30" y="140" width="300" height="20" rx="4"/>
+        <text class="sv-ts" x="30" y="180">Total variation inside the clusters: large</text>
+
+        <text class="sv-tb" x="404" y="26">Run 2: lucky start</text>
+        <line class="sv-line" x1="404" y1="80" x2="730" y2="80" stroke-width="2"/>
+        <circle class="sv-acc" cx="440" cy="80" r="7"/><circle class="sv-acc" cx="456" cy="80" r="7"/><circle class="sv-acc" cx="472" cy="80" r="7"/>
+        <circle class="sv-good" cx="550" cy="80" r="7"/><circle class="sv-good" cx="566" cy="80" r="7"/><circle class="sv-good" cx="582" cy="80" r="7"/>
+        <circle class="sv-key" cx="668" cy="80" r="7"/><circle class="sv-key" cx="684" cy="80" r="7"/><circle class="sv-key" cx="700" cy="80" r="7"/>
+        <rect class="sv-paper2" x="404" y="140" width="325" height="20" rx="4"/>
+        <rect class="sv-good" x="404" y="140" width="92" height="20" rx="4"/>
+        <text class="sv-ts" x="404" y="180">Total variation inside the clusters: small</text>
+
+        <text class="sv-ts" x="24" y="222">Both runs are stable, so both stop. K-means keeps the one with the shorter bar.</text>
+      </svg>
+      <figcaption>Notice that a stable answer is not the same as a good answer, which is why the runs are compared by total variation.</figcaption>
+    </figure>
+    <p>The last question is how to choose K when the answer is not obvious. Try several values and record the total variation for each. K = 1 is the worst case, and each extra cluster lowers the total variation a little more. When every point sits alone in its own cluster, the variation reaches zero. So the useful signal is not the value itself but the size of the drop. Plot the total variation against K and look for the point where the drops become small. That corner is called the elbow.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 290" role="img" aria-label="Elbow plot of total variation against K, falling steeply until K equals three and then flattening">
+        <line class="sv-line" x1="90" y1="240" x2="730" y2="240" stroke-width="2"/>
+        <line class="sv-line" x1="90" y1="30" x2="90" y2="240" stroke-width="2"/>
+        <polyline class="sv-stroke-acc" stroke-width="2.5" points="120,50 236,136 352,202 468,212 584,219 700,225"/>
+        <circle class="sv-acc" cx="120" cy="50" r="5"/>
+        <circle class="sv-acc" cx="236" cy="136" r="5"/>
+        <circle class="sv-key" cx="352" cy="202" r="7"/>
+        <circle class="sv-acc" cx="468" cy="212" r="5"/>
+        <circle class="sv-acc" cx="584" cy="219" r="5"/>
+        <circle class="sv-acc" cx="700" cy="225" r="5"/>
+        <line class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="4 4" x1="352" y1="202" x2="352" y2="240"/>
+        <rect class="sv-paper" x="374" y="150" width="200" height="26" rx="4"/>
+        <text class="sv-t" x="384" y="168">The elbow: pick K = 3</text>
+        <text class="sv-ts" x="120" y="262" text-anchor="middle">K=1</text>
+        <text class="sv-ts" x="236" y="262" text-anchor="middle">K=2</text>
+        <text class="sv-ts" x="352" y="262" text-anchor="middle">K=3</text>
+        <text class="sv-ts" x="468" y="262" text-anchor="middle">K=4</text>
+        <text class="sv-ts" x="584" y="262" text-anchor="middle">K=5</text>
+        <text class="sv-ts" x="700" y="262" text-anchor="middle">K=6</text>
+        <text class="sv-ts" x="40" y="140" text-anchor="middle" transform="rotate(-90 40 140)">total variation</text>
+      </svg>
+      <figcaption>Notice that the curve never rises, so you read the bend and not the lowest point.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>The video keeps the maths light. It gives the distance rule in full and describes the rest in words.</p>
+    <div class="formula"><span class="lbl">Euclidean distance, two axes</span><div class="math">$$ d = \sqrt{x^{2} + y^{2}} $$</div><p class="explain"><b>Symbols:</b> \(x\) is the gap between the two things along the first axis. \(y\) is the gap along the second axis. \(d\) is the straight-line distance between them. <b>What it tells you:</b> in two dimensions the Euclidean distance is exactly the Pythagorean theorem.</p></div>
+    <div class="formula"><span class="lbl">Euclidean distance, more axes</span><div class="math">$$ d = \sqrt{x^{2} + y^{2} + z^{2} + a^{2} + \cdots} $$</div><p class="explain"><b>Symbols:</b> \(x, y, z, a, \ldots\) are the gaps along the third, fourth and every further axis. Each sample in your data adds one axis. <b>What it tells you:</b> the rule keeps its shape however many measurements you have, so you never have to draw the data to cluster it.</p></div>
+    <div class="formula"><span class="lbl">Mean of a cluster</span><div class="math">$$ \bar{c} = \frac{1}{n}\sum_{i=1}^{n} p_i $$</div><p class="explain"><b>Symbols:</b> \(p_i\) is the \(i\)-th point in the cluster. \(n\) is how many points the cluster holds. \(\bar{c}\) is the mean, which becomes the new cluster centre. <b>What it tells you:</b> the centre is just the average position of its members, which is where the "means" in K-means comes from.</p></div>
+    <div class="formula"><span class="lbl">Total variation within the clusters</span><div class="math">$$ V = \sum_{k=1}^{K} \; \sum_{p \,\in\, C_k} \left( p - \bar{c}_k \right)^{2} $$</div><p class="explain"><b>Symbols:</b> \(C_k\) is the set of points in cluster \(k\). \(\bar{c}_k\) is that cluster's mean. \(p\) is one point in it. \(K\) is the number of clusters. \(V\) is the score for the whole run. <b>What it tells you:</b> \(V\) measures how tightly the points sit around their own centres, so a smaller \(V\) is a better run at the same K.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh plots measurements from three cell types on a single line, and sets K = 3. The computer picks three data points at random and calls them the blue, green and orange clusters. It measures three distances from the first point, one to each cluster. The smallest wins, and here that is blue. The second and third points follow, and the remaining points all turn out to be closest to orange.</p>
+      <p>Every point now has a cluster, so each cluster is replaced by the mean of its own points. The measure-and-assign pass runs again against those three means. This time no point changes cluster, so the run is finished. Josh points out that the result is worse than what the eye sees, so K-means notes the total variation, starts again from new random points, and keeps the best run at the end.</p>
+      <p>When the data sit on an XY graph instead of a line, only the distance step changes. It becomes the Euclidean distance, \( d = \sqrt{x^{2}+y^{2}} \). A heat map works the same way: with two samples, rename them x and y and treat them as two axes.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not pick K by minimising the total variation. The variation falls every time you add a cluster, and it reaches zero when each point is alone. Minimising it would always choose K equal to the number of data points, which tells you nothing. Read the elbow instead.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A single run is not trustworthy. K-means stops as soon as the clustering stops changing, and a poor start can stop at a poor answer. Always allow several runs from different random starting points.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> K-means always returns exactly K clusters, and it puts every point in one of them. It will not tell you that K was a bad choice, and it will not leave an odd point out.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>Walk me through how K-means clustering works.</summary><div class="a">You choose K, the number of clusters you want. The algorithm picks K data points at random and treats them as the first cluster centres. Then it repeats two steps: assign every point to its nearest centre, and move each centre to the mean of the points assigned to it. It stops when a pass changes nothing, and it repeats the whole run from new random starts to avoid a bad answer.</div></details>
+    <details class="qa" open><summary>How is K-means different from hierarchical clustering?</summary><div class="a">K-means specifically tries to put the data into the number of clusters you asked for. Hierarchical clustering does not commit to a number. It just tells you, pairwise, which two things are most similar, and you cut the tree wherever you like afterwards.</div></details>
+    <details class="qa" open><summary>How do you choose K?</summary><div class="a">I run the clustering for a range of K values and record the total variation within the clusters for each one. That value always falls as K rises, so I plot it against K and look for the elbow. The elbow is where the extra clusters stop buying a big reduction, and that is the K I take.</div></details>
+    <details class="qa" open><summary>What if the data is not on a number line, for example a heat map?</summary><div class="a">Nothing about the method changes except how distance is measured. With two samples I treat them as an x axis and a y axis, and the distance is the square root of x squared plus y squared. With three or four samples I just add the extra squared terms under the root. I do not have to plot anything, because only the distances matter.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>K-means splits data into K clusters, and you choose K before it starts.</li>
+      <li>It begins by picking K data points at random as the first cluster centres.</li>
+      <li>It then assigns every point to its nearest centre using Euclidean distance.</li>
+      <li>It moves each centre to the mean of its points and repeats until nothing changes.</li>
+      <li>Because a random start can end badly, it scores each run by the total variation inside the clusters.</li>
+      <li>It repeats from fresh starts and returns the run with the smallest total variation.</li>
+      <li>To choose K, plot total variation against K and pick the elbow, since the variation always falls as K grows.</li>
+      <li>The method works on a line, on an XY graph, or on a heat map, because only distances are needed.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">K-means clustering</span><span class="board-tag">assign to nearest, move to mean, repeat</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 286" role="img" aria-label="Three clusters for K = 3. Each centre starts at a random data point, every point joins its nearest centre, and each centre moves to the mean of its points. This repeats until nothing changes.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <path d="M104 104 L88.5 140.5 M82 176 L88.5 140.5 M130 158 L88.5 140.5" class="sv-stroke-acc" stroke-width="2" stroke-dasharray="4 4" stroke-linecap="round"/>
+            <path d="M160 196 L204.5 207.5 M204 166 L204.5 207.5 M196 232 L204.5 207.5" class="sv-stroke-good" stroke-width="2" stroke-dasharray="4 4" stroke-linecap="round"/>
+            <path d="M286 96 L324.5 95.5 M360 104 L324.5 95.5 M322 136 L324.5 95.5" class="sv-stroke-key" stroke-width="2" stroke-dasharray="4 4" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-dasharray="4 3">
+              <circle cx="38" cy="124" r="12"/>
+              <circle cx="258" cy="236" r="12"/>
+              <circle cx="330" cy="46" r="12"/>
+            </g>
+            <line x1="52" y1="129" x2="77" y2="137" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="245" y1="229" x2="219" y2="215" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="328" y1="61" x2="326" y2="80" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <circle cx="38" cy="124" r="7" class="sv-acc"/>
+              <circle cx="104" cy="104" r="7" class="sv-acc"/>
+              <circle cx="82" cy="176" r="7" class="sv-acc"/>
+              <circle cx="130" cy="158" r="7" class="sv-acc"/>
+              <circle cx="258" cy="236" r="7" class="sv-good"/>
+              <circle cx="160" cy="196" r="7" class="sv-good"/>
+              <circle cx="204" cy="166" r="7" class="sv-good"/>
+              <circle cx="196" cy="232" r="7" class="sv-good"/>
+              <circle cx="330" cy="46" r="7" class="sv-key"/>
+              <circle cx="286" cy="96" r="7" class="sv-key"/>
+              <circle cx="360" cy="104" r="7" class="sv-key"/>
+              <circle cx="322" cy="136" r="7" class="sv-key"/>
+              <path d="M88.5 129.5 L98.5 147.5 L78.5 147.5 Z" class="sv-acc"/>
+              <path d="M204.5 196.5 L214.5 214.5 L194.5 214.5 Z" class="sv-good"/>
+              <path d="M324.5 84.5 L334.5 102.5 L314.5 102.5 Z" class="sv-key"/>
+            </g>
+            <text x="20" y="32" class="sv-tb">K = 3</text>
+            <text x="312" y="52" text-anchor="end" class="sv-t">random start</text>
+            <text x="20" y="82" class="sv-t">join nearest centre</text>
+            <text x="218" y="200" class="sv-t">mean of its points</text>
+            <text x="20" y="270" class="sv-tb">↺ repeat until nothing changes</text>
+          </svg>
+          <p>Every point joins its nearest centre, then each centre moves to the mean of its points, until a pass changes nothing. A stable answer can still be poor, so K-means reruns from new random starts and keeps the run with the smallest total variation.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>K</dt><dd>How many clusters you want, chosen before K-means starts.</dd>
+            <dt>Cluster centre</dt><dd>Starts as a random data point, then moves to the mean of its points.</dd>
+            <dt>Total variation</dt><dd>Spread of points around their own centres, added over all clusters; scores a run.</dd>
+            <dt>Elbow</dt><dd>The bend in total variation against K, where the drops become small.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Choose K</b>how many clusters you want</li>
+            <li><b>Random start</b>K distinct data points</li>
+            <li><b>Assign</b>each point to nearest cluster</li>
+            <li><b>Move</b>each cluster to its mean</li>
+            <li><b>Score</b>total variation inside clusters</li>
+            <li><b>Rerun</b>new starts, keep smallest variation</li>
+          </ol>
+          <p class="loop">↺ steps 3 and 4 repeat until a pass changes nothing</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$d=\sqrt{x^{2}+y^{2}}$$
+          $$\bar{c}=\frac{1}{n}\sum_{i=1}^{n}p_i$$
+          $$V=\sum_{k=1}^{K}\sum_{p\in C_k}\left(p-\bar{c}_k\right)^{2}$$
+          <ul class="keys">
+            <li>\(x, y\): gaps along each axis; more axes add squares.</li>
+            <li>\(\bar{c}\): the mean of the cluster's \(n\) points, its new centre.</li>
+            <li>\(V\): the run's score; smaller is better at the same K.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>step</th><th>what happens</th></tr>
+            <tr><td>K</td><td>3</td></tr>
+            <tr><td>random picks</td><td>blue, green, orange</td></tr>
+            <tr><td>point 1</td><td>nearest is blue</td></tr>
+            <tr><td>remaining points</td><td>closest to orange</td></tr>
+            <tr class="final"><td>means, reassign</td><td>no change: run done</td></tr>
+          </table>
+          <p class="hand">Stable, but worse than the eye sees: K-means notes its total variation, restarts and keeps the best run.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Pick the K with the lowest total variation.</span><span class="yes">It falls with every extra cluster and hits zero with one point per cluster. Read the elbow.</span></li>
+            <li><span class="no">One run is enough.</span><span class="yes">A poor start can stop at a poor but stable answer. Allow several random starts.</span></li>
+            <li><span class="no">K-means will warn you about a bad K.</span><span class="yes">It always returns exactly K clusters and puts every point in one of them.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="40-hierarchical-clustering.html"><small>Previous</small>Hierarchical Clustering</a> <a href="42-clustering-with-dbscan.html"><small>Next</small>Clustering with DBSCAN</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

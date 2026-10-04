@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lowess and Loess — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>39</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 39 · 10.2 min</div>
+    <h1>Lowess and Loess</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=Vf7oJ6z2LCc" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video shows how to fit a smooth curve to data instead of one straight line. The method is called lowess, or loess.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Last time we fit one line to all the data with least squares. Lowess keeps that idea but applies it many times, in small local windows. For every data point, we take the nearest points on the x axis, give the near ones more weight, and fit a weighted least squares line. The height of that line above the focal point becomes one point of the new curve. We then add a second weight that pulls the curve away from outliers, and repeat until the curve is smooth.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>There are two main ideas. The first is a sliding window that cuts the data into small blobs. The second is that at each data point we fit a line with a type of least squares. If you know least squares, the rest is small extra detail.</p>
+    <p>Pick one data point and call it the <strong>focal point</strong>. Its window holds the points that are closest to it along the x axis. Inside that window every point gets a <strong>weight</strong>, which is how much influence it has on the fit. The focal point gets the most weight. The furthest point in the window gets the least.</p>
+    <p>Now fit a line through the window with those weights. Read the height of that line at the focal point's x value. That height is one point of the new, fitted curve. Then move on to the next data point and do it again.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 340" role="img" aria-label="A scatter plot with a five point window around the leftmost focal point, dot size showing weight, a plain least squares line and a shallower weighted line, and the new curve point read off the weighted line">
+        <defs>
+          <marker id="arrowA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" class="sv-ink"></path>
+          </marker>
+        </defs>
+        <rect x="52" y="44" width="240" height="246" class="sv-acc-soft"></rect>
+        <text x="58" y="62" class="sv-ts">window = 5 nearest points on x</text>
+        <line x1="60" y1="36" x2="60" y2="292" class="sv-line" stroke-width="1.5"></line>
+        <line x1="60" y1="292" x2="500" y2="292" class="sv-line" stroke-width="1.5"></line>
+        <text x="505" y="297" class="sv-ts">x</text>
+        <text x="50" y="32" class="sv-ts">y</text>
+
+        <line x1="60" y1="246" x2="300" y2="146" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="6 4"></line>
+        <line x1="60" y1="238" x2="300" y2="168" class="sv-stroke-key" stroke-width="2.5"></line>
+
+        <circle cx="320" cy="165" r="4.5" class="sv-ink3"></circle>
+        <circle cx="370" cy="130" r="4.5" class="sv-ink3"></circle>
+        <circle cx="420" cy="110" r="4.5" class="sv-ink3"></circle>
+        <circle cx="470" cy="120" r="4.5" class="sv-ink3"></circle>
+
+        <circle cx="70" cy="244" r="9" class="sv-ink"></circle>
+        <circle cx="120" cy="222" r="7" class="sv-ink"></circle>
+        <circle cx="170" cy="214" r="5.5" class="sv-ink"></circle>
+        <circle cx="220" cy="196" r="4" class="sv-ink"></circle>
+        <circle cx="270" cy="150" r="2.8" class="sv-ink"></circle>
+
+        <circle cx="70" cy="235" r="7" class="sv-paper"></circle>
+        <circle cx="70" cy="235" r="5" class="sv-key"></circle>
+
+        <line x1="146" y1="254" x2="80" y2="238" class="sv-stroke-ink" stroke-width="1.2" marker-end="url(#arrowA)"></line>
+        <text x="150" y="258" class="sv-ts">new point on the curve</text>
+        <text x="70" y="274" text-anchor="middle" class="sv-ts">focal point</text>
+
+        <rect x="516" y="44" width="224" height="200" class="sv-paper2"></rect>
+        <text x="528" y="64" class="sv-tb">Legend</text>
+        <circle cx="534" cy="84" r="8" class="sv-ink"></circle>
+        <circle cx="558" cy="84" r="3" class="sv-ink"></circle>
+        <text x="578" y="88" class="sv-ts">dot size = weight</text>
+        <line x1="526" y1="116" x2="566" y2="116" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="6 4"></line>
+        <text x="578" y="120" class="sv-ts">plain least squares</text>
+        <line x1="526" y1="148" x2="566" y2="148" class="sv-stroke-key" stroke-width="2.5"></line>
+        <text x="578" y="152" class="sv-ts">weighted least squares</text>
+        <circle cx="546" cy="180" r="5" class="sv-key"></circle>
+        <text x="578" y="184" class="sv-ts">new curve point</text>
+        <circle cx="546" cy="212" r="4.5" class="sv-ink3"></circle>
+        <text x="578" y="216" class="sv-ts">outside the window</text>
+      </svg>
+      <figcaption>Notice that the far point in the window pulls the plain line up hard, while the weighted line barely moves; the new curve point sits on the weighted line.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Choose a window size. In the video the window holds five points. In practice you give a proportion of the points, not an exact count.</li>
+      <li>Take the first data point as the focal point. Collect the points closest to it along the x axis. Distance along the y axis is never used here.</li>
+      <li>Turn each x distance into a weight. The focal point is zero units away, so it gets the most weight. The furthest point gets the least.</li>
+      <li>Fit a weighted least squares line through the window. It follows the near points and mostly ignores the far ones.</li>
+      <li>Read the height of that line at the focal point's x value. Save it as the first point of the new curve. It is only a draft.</li>
+      <li>Repeat with the next data point as the focal point. The window often holds the same points, because they are still the closest. The distances change, so the line changes too.</li>
+      <li>When every point has a draft value, measure the vertical gap between each original point and its new point. Turn that gap into a second weight. A small gap gives a high weight.</li>
+      <li>Run the whole procedure again with both sets of weights multiplied together. Repeat until the curve stops changing.</li>
+    </ol>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 312" role="img" aria-label="Two panels: the first draft curve is pulled up towards an outlier, the second curve after re-weighting by the gap between old and new points is smooth">
+        <defs>
+          <marker id="arrowB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" class="sv-ink"></path>
+          </marker>
+        </defs>
+        <text x="215" y="26" text-anchor="middle" class="sv-tb">Pass 1 — weights from x distance</text>
+        <text x="585" y="26" text-anchor="middle" class="sv-tb">Pass 2 — add weights from y distance</text>
+
+        <line x1="60" y1="40" x2="60" y2="250" class="sv-line" stroke-width="1.5"></line>
+        <line x1="60" y1="250" x2="372" y2="250" class="sv-line" stroke-width="1.5"></line>
+        <line x1="430" y1="40" x2="430" y2="250" class="sv-line" stroke-width="1.5"></line>
+        <line x1="430" y1="250" x2="742" y2="250" class="sv-line" stroke-width="1.5"></line>
+
+        <line x1="215" y1="80" x2="215" y2="143" class="sv-stroke-ink" stroke-width="1.2" stroke-dasharray="4 4"></line>
+        <text x="225" y="112" class="sv-ts">big gap = small weight</text>
+
+        <path d="M75 203 L110 194 L145 180 L180 162 L215 145 L250 155 L285 165 L320 159 L355 151" class="sv-stroke-key" stroke-width="2.5"></path>
+        <circle cx="75" cy="205" r="4.5" class="sv-ink"></circle>
+        <circle cx="110" cy="196" r="4.5" class="sv-ink"></circle>
+        <circle cx="145" cy="190" r="4.5" class="sv-ink"></circle>
+        <circle cx="180" cy="184" r="4.5" class="sv-ink"></circle>
+        <circle cx="215" cy="70" r="6" class="sv-warn"></circle>
+        <circle cx="250" cy="176" r="4.5" class="sv-ink"></circle>
+        <circle cx="285" cy="168" r="4.5" class="sv-ink"></circle>
+        <circle cx="320" cy="158" r="4.5" class="sv-ink"></circle>
+        <circle cx="355" cy="152" r="4.5" class="sv-ink"></circle>
+        <text x="215" y="58" text-anchor="middle" class="sv-ts">outlier</text>
+        <text x="95" y="228" class="sv-ts">draft curve</text>
+
+        <path d="M445 204 L480 198 L515 192 L550 186 L585 180 L620 174 L655 167 L690 159 L725 152" class="sv-stroke-good" stroke-width="2.5"></path>
+        <circle cx="445" cy="205" r="4.5" class="sv-ink"></circle>
+        <circle cx="480" cy="196" r="4.5" class="sv-ink"></circle>
+        <circle cx="515" cy="190" r="4.5" class="sv-ink"></circle>
+        <circle cx="550" cy="184" r="4.5" class="sv-ink"></circle>
+        <circle cx="585" cy="70" r="6" class="sv-warn"></circle>
+        <circle cx="620" cy="176" r="4.5" class="sv-ink"></circle>
+        <circle cx="655" cy="168" r="4.5" class="sv-ink"></circle>
+        <circle cx="690" cy="158" r="4.5" class="sv-ink"></circle>
+        <circle cx="725" cy="152" r="4.5" class="sv-ink"></circle>
+        <text x="585" y="58" text-anchor="middle" class="sv-ts">outlier</text>
+        <text x="450" y="228" class="sv-ts">final curve</text>
+
+        <line x1="382" y1="145" x2="422" y2="145" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#arrowB)"></line>
+        <text x="380" y="284" text-anchor="middle" class="sv-ts">Re-weight by the gap between each old point and its new point, then fit everything again.</text>
+      </svg>
+      <figcaption>Notice that the outlier lifts the draft curve, and the second set of weights lets the curve settle back onto the rest of the data.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>Josh shows the weight functions as graphs, not as algebra. He says plainly that the shapes were chosen because they work well. There is no physical or biological reason for them. Below are the standard formulas behind those graphs.</p>
+
+    <div class="formula"><span class="lbl">Weighted least squares in one window</span><div class="math">$$ \min_{a,\;b}\; \sum_{i=1}^{n} w_i \left( y_i - (a + b\,x_i) \right)^2 $$</div><p class="explain"><b>Symbols:</b> \(x_i\) and \(y_i\) are the coordinates of point \(i\). \(n\) is the number of points in the window. \(a\) is the intercept and \(b\) is the slope. \(w_i\) is the weight of point \(i\). <b>What it tells you:</b> it is ordinary least squares, but each squared error is multiplied by a weight. Heavy points steer the line and light points hardly matter.</p></div>
+
+    <div class="formula"><span class="lbl">Weight from distance along x (tricube)</span><div class="math">$$ w_i = \left( 1 - \left| \frac{x_i - x_0}{d} \right|^{3} \right)^{3} $$</div><p class="explain"><b>Symbols:</b> \(x_0\) is the x value of the focal point. \(d\) is the distance to the furthest point in the window. Points outside the window get a weight of zero. <b>What it tells you:</b> the weight is 1 at the focal point and falls away fast, so the edge of the window barely pulls the line.</p></div>
+
+    <div class="formula"><span class="lbl">Weight from distance along y (robustness)</span><div class="math">$$ r_i = y_i - \hat{y}_i, \qquad \delta_i = \left( 1 - \left( \frac{r_i}{6s} \right)^{2} \right)^{2} $$</div><p class="explain"><b>Symbols:</b> \(\hat{y}_i\) is the draft point on the new curve. \(r_i\) is the vertical gap between old and new. \(s\) is the median of the absolute gaps, which sets the scale. <b>What it tells you:</b> a point far from the draft curve loses its vote. That is how an outlier stops dragging the curve.</p></div>
+
+    <div class="formula"><span class="lbl">The two weights together, and the window size</span><div class="math">$$ W_i = w_i \cdot \delta_i, \qquad k = f \cdot N $$</div><p class="explain"><b>Symbols:</b> \(W_i\) is the final weight used in the refit. \(f\) is the span, the proportion of the data in each window. \(N\) is the total number of points, and \(k\) is the window size. <b>What it tells you:</b> every refit uses both weights at once, and the span decides how local the curve is.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh uses evenly spaced points and a window of five. The first focal point is the leftmost point. The other four points are 1, 2, 3 and 4 units away on the x axis, so their weights fall in that order. The furthest point barely moves the line, so the fit is less steep than a plain least squares line.</p>
+      <p>Now move to the second point. The five closest points are the same five, so the window does not move. Only the distances change, to 1, 0, 1, 2 and 3. New distances give new weights, so the line and the new point are different. The third point gives the same window again. Only at the fourth point does the window slide one place to the right.</p>
+      <p>When all the draft points exist, one outlier has clearly lifted several of them. The vertical gaps between old and new points become the second weights. The outlier gets a very low weight. Repeat the fit with both weights and the curve settles into a smooth progression.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Window membership uses distance along the x axis only. The video is explicit about this: a point that is far away vertically can still sit in the window. The y distance only matters later, in the second set of weights.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The window does not slide one place per step. It stays where it is until a different set of points becomes the closest set. The distances inside it still change every step, so the fit changes every step.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> <code>lowess</code> and <code>loess</code> in R run the same idea but have different settings. <code>lowess</code> fits lines only. <code>loess</code> fits a line or a parabola, defaults to a parabola, and can draw confidence intervals around the curve. Check the data first and decide which shape suits it.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The span decides how the curve looks. The video compares windows holding a fifth of the points, a third, and the default of 75 per cent. A small span follows every wiggle; a large span flattens real structure.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The weight functions are conventions, not laws. Josh says there is no physical or biological reason for them, and another sensible shape would also work.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is lowess, in plain terms?</summary><div class="a">It is local regression. Instead of one line for all the data, you slide a window along the x axis and fit a small weighted least squares line in each one. The height of that line at the focal point becomes one point on a smooth curve. It shows the shape of a relationship without assuming that shape.</div></details>
+    <details class="qa" open><summary>There are two sets of weights. What does each one do?</summary><div class="a">The first set comes from distance along the x axis. It makes the fit local, so nearby points dominate. The second set comes from the vertical gap between each original point and its fitted point. It makes the fit robust, because outliers lose influence. You multiply the two and refit a few times.</div></details>
+    <details class="qa" open><summary>How do you choose the window size?</summary><div class="a">You set it as a proportion of the data, not a count, so it scales with sample size. A small span gives a wiggly curve that chases noise. A large span gives a near straight line that hides real curvature. I plot two or three spans and pick the one that shows structure.</div></details>
+    <details class="qa" open><summary>When would you use this instead of linear regression?</summary><div class="a">I use it for exploration and diagnostics, when I do not want to commit to a functional form. It is good for showing the trend in a scatter plot, or for checking whether residuals drift. It has no coefficients to interpret, so for explanation or extrapolation I go back to a parametric fit.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Lowess fits a curve by fitting many small lines instead of one big line.</li>
+      <li>A sliding window picks the points nearest the focal point along the x axis only.</li>
+      <li>Inside the window, closer points get more weight and the focal point gets the most.</li>
+      <li>A weighted least squares fit gives one new curve point at the focal point's x value.</li>
+      <li>The window often stays still for several steps, but the distances and weights still change.</li>
+      <li>A second weight, based on the vertical gap between old and new points, removes the pull of outliers.</li>
+      <li>You repeat the weighted fit a few times until the curve is smooth.</li>
+      <li>You can fit lines or parabolas, and the span is the main setting you have to choose.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Lowess and loess</span><span class="board-tag">many small weighted lines, one smooth curve</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 284" role="img" aria-label="Ten points along x and one high outlier. The five points nearest a focal point form its window, with bigger dots for more weight. A weighted line through the window gives the new curve point straight above the focal point, and the smooth curve passes well below the outlier.">
+            <line x1="24" y1="226" x2="386" y2="226" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="24" y1="30" x2="24" y2="226" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <path d="M46 206 C 110 200, 150 176, 190 150 S 300 104, 370 94" class="sv-stroke-good" stroke-width="3" stroke-dasharray="7 6"/>
+            <line x1="106" y1="196.2" x2="274" y2="103.8" class="sv-stroke-key" stroke-width="4" stroke-linecap="round"/>
+            <line x1="190" y1="224" x2="190" y2="158" class="sv-stroke-good" stroke-width="2" stroke-dasharray="4 4"/>
+            <path d="M118 234 L118 242 L262 242 L262 234" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="46" cy="192" r="3.5" class="sv-ink3"/>
+            <circle cx="298" cy="122" r="3.5" class="sv-ink3"/>
+            <circle cx="334" cy="86" r="3.5" class="sv-ink3"/>
+            <circle cx="370" cy="108" r="3.5" class="sv-ink3"/>
+            <circle cx="118" cy="206" r="4.5" class="sv-ink"/>
+            <circle cx="154" cy="150" r="6.5" class="sv-ink"/>
+            <circle cx="190" cy="172" r="9" class="sv-ink"/>
+            <circle cx="226" cy="112" r="6.5" class="sv-ink"/>
+            <circle cx="262" cy="134" r="4.5" class="sv-ink"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="82" cy="60" r="4.5" class="sv-warn"/>
+              <circle cx="190" cy="150" r="7" class="sv-good"/>
+            </g>
+            <text x="96" y="65" class="sv-ts">outlier: low 2nd weight</text>
+            <text x="262" y="98" text-anchor="end" class="sv-t">weighted line</text>
+            <text x="214" y="156" class="sv-tb">new curve point</text>
+            <text x="210" y="182" class="sv-t">focal point</text>
+            <text x="386" y="212" text-anchor="end" class="sv-ts">big dot = more weight</text>
+            <text x="190" y="266" text-anchor="middle" class="sv-t">5-point window, x only</text>
+          </svg>
+          <p>Each point takes a turn as the focal point. A weighted line through its nearest points on x gives the curve's height there. A second weight then stops outliers pulling the curve.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Focal point</dt><dd>The data point the current window is built around.</dd>
+            <dt>Window</dt><dd>The points nearest the focal point along x.</dd>
+            <dt>Weighted least squares</dt><dd>Least squares with each squared error multiplied by a weight.</dd>
+            <dt>Span</dt><dd>The proportion of the data in each window.</dd>
+            <dt>Second weight</dt><dd>Set by the vertical gap to the draft curve.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Window size</b>5 points in the video</li>
+            <li><b>Focal point</b>its nearest points on x</li>
+            <li><b>Weight</b>nearer points count more</li>
+            <li><b>Fit a line</b>weighted least squares</li>
+            <li><b>Read the height</b>at focal x: one draft point</li>
+            <li><b>Re-weight</b>vertical gap sets a second weight</li>
+          </ol>
+          <p class="loop">↺ steps 2 to 5 at every point, then refit with both weights until the curve stops changing</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\min_{a,\,b}\sum_i w_i\big(y_i-(a+b\,x_i)\big)^2$$
+          $$w_i=\left(1-\left|\frac{x_i-x_0}{d}\right|^3\right)^3$$
+          $$W_i=w_i\,\delta_i,\qquad k=f\cdot N$$
+          <ul class="keys">
+            <li>\(a\), \(b\): intercept and slope; \(x_0\): the focal point's x.</li>
+            <li>\(d\): distance to the furthest window point; \(\delta_i\): the second weight.</li>
+            <li>\(f\): the span; \(N\): all points; \(k\): the window size.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>focal point</th><th>window</th><th>x distances</th></tr>
+            <tr><td>1st</td><td>5 leftmost</td><td>0, 1, 2, 3, 4</td></tr>
+            <tr><td>2nd</td><td>same 5</td><td>1, 0, 1, 2, 3</td></tr>
+            <tr><td>3rd</td><td>same 5</td><td>change again</td></tr>
+            <tr><td>4th</td><td>slides 1 right</td><td>…</td></tr>
+            <tr class="final"><td>pass 2</td><td>both weights</td><td>smooth ✓</td></tr>
+          </table>
+          <p class="hand">Same window for three focal points; only the distances change. Pass 2 gives the outlier a very low weight.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">A point far away vertically leaves the window.</span><span class="yes">Only x distance picks the window; y matters later, in the second weights.</span></li>
+            <li><span class="no">R's lowess and loess behave the same.</span><span class="yes">In R, lowess fits lines only; loess defaults to a parabola.</span></li>
+            <li><span class="no">Any span gives about the same curve.</span><span class="yes">A small span follows every wiggle; a large one flattens real structure.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="38-the-main-ideas-of-fitting-a-line-to-data-the-main-ideas-of-l.html"><small>Previous</small>The Main Ideas of Fitting a Line to Data (The Main Ideas of Least Squares and Linear Regression.)</a> <a href="40-linear-regression.html"><small>Next</small>Linear Regression</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

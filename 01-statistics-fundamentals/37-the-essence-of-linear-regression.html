@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Essence of Linear Regression — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>37</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 37 · 32 min</div>
+    <h1>The Essence of Linear Regression</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=aFDOzpTeg0s" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Linear regression fits a straight line to data so you can predict one thing from another. This video also shows how to say how much confidence you should have in that prediction.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh works for a food store chain. The boss asks whether the company should build three new stores, and how confident the answer is. Josh fits a line to store counts and revenue, and picks the line that makes the sum of the squared residuals as small as possible. He then measures accuracy with \(R^2\), and measures luck with a p&nbsp;value. The line predicts higher revenue, but the p&nbsp;value is 0.53, so the honest answer is to collect more data first.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Three companies are in the data. Squatch owns 2 stores and makes 3 units of revenue. Norm owns 12 stores and makes 12.5. Gamma owns 15 stores and makes 7. More stores seem to bring more revenue, but the trend is not perfect. Norm has the most revenue with fewer stores than Gamma.</p>
+    <p>Because the trend is not perfect, no line goes through all three points. A line through Norm and Squatch predicts 15.3 for Gamma, whose real revenue is 7. A line through Norm and Gamma sends Squatch's prediction off the screen. So we need a score that says how good a line is, instead of guessing by eye.</p>
+    <p>That score starts with a <strong>residual</strong>. A residual is the observed value minus the value the line predicts. We draw it as a vertical gap between a point and the line. A line that fits well has small residuals everywhere.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 348" role="img" aria-label="Scatter plot of three companies with the best fitting line and the vertical residual for each point">
+        <defs><marker id="arw1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker></defs>
+        <line x1="90" y1="210" x2="600" y2="210" class="sv-line" stroke-width="1"/>
+        <line x1="90" y1="135" x2="600" y2="135" class="sv-line" stroke-width="1"/>
+        <line x1="90" y1="60" x2="600" y2="60" class="sv-line" stroke-width="1"/>
+        <line x1="90" y1="40" x2="90" y2="285" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="90" y1="285" x2="600" y2="285" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="80" y="289" class="sv-ts" text-anchor="end">0</text>
+        <text x="80" y="214" class="sv-ts" text-anchor="end">5</text>
+        <text x="80" y="139" class="sv-ts" text-anchor="end">10</text>
+        <text x="80" y="64" class="sv-ts" text-anchor="end">15</text>
+        <text x="90" y="303" class="sv-ts" text-anchor="middle">0</text>
+        <text x="221" y="303" class="sv-ts" text-anchor="middle">5</text>
+        <text x="351" y="303" class="sv-ts" text-anchor="middle">10</text>
+        <text x="482" y="303" class="sv-ts" text-anchor="middle">15</text>
+        <text x="345" y="325" class="sv-t" text-anchor="middle">Number of stores</text>
+        <text x="40" y="170" class="sv-t" text-anchor="middle" transform="rotate(-90 40 170)">Revenue</text>
+        <line x1="90" y1="240" x2="560" y2="105" class="sv-stroke-acc" stroke-width="2.5"/>
+        <line x1="142" y1="240" x2="142" y2="225" class="sv-stroke-key" stroke-width="2" stroke-dasharray="4 3"/>
+        <line x1="403" y1="97" x2="403" y2="150" class="sv-stroke-key" stroke-width="2" stroke-dasharray="4 3"/>
+        <line x1="482" y1="180" x2="482" y2="127" class="sv-stroke-key" stroke-width="2" stroke-dasharray="4 3"/>
+        <circle cx="142" cy="240" r="6" class="sv-ink"/>
+        <circle cx="403" cy="97" r="6" class="sv-ink"/>
+        <circle cx="482" cy="180" r="6" class="sv-ink"/>
+        <text x="152" y="262" class="sv-ts">Squatch (2, 3)</text>
+        <text x="393" y="92" class="sv-ts" text-anchor="end">Norm (12, 12.5)</text>
+        <text x="494" y="196" class="sv-ts">Gamma (15, 7)</text>
+        <text x="150" y="234" class="sv-tm">−1</text>
+        <text x="411" y="128" class="sv-tm">+3.5</text>
+        <text x="490" y="156" class="sv-tm">−3.5</text>
+        <rect x="300" y="26" width="300" height="26" rx="5" class="sv-paper2"/>
+        <text x="310" y="44" class="sv-tm">line: revenue = 3 + 0.5 × stores</text>
+        <rect x="608" y="150" width="132" height="56" rx="6" class="sv-paper2"/>
+        <text x="620" y="172" class="sv-ts">sum of squares</text>
+        <text x="620" y="194" class="sv-tb">SSR = 25.5</text>
+        <line x1="606" y1="178" x2="500" y2="155" class="sv-stroke-ink" stroke-width="1.4" marker-end="url(#arw1)"/>
+      </svg>
+      <figcaption>Notice that the dashed residuals are vertical, and that squaring them and adding them gives the score 25.5 for this line.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Plot the data and draw a candidate line. For each point, read the predicted revenue off the line at the same number of stores.</li>
+      <li>Calculate each residual as observed minus predicted. For one early line in the video the residuals are −4.5 for Gamma, +2 for Norm and −3 for Squatch.</li>
+      <li>Do not simply add the residuals. Their sum is −5.5, and a much worse black line gives the same sum, because negatives cancel positives.</li>
+      <li>Square each residual first, then add them. Squaring makes every term positive, and it keeps the later calculus easy. The blue line scores 33.25 and the black line scores 355.125, so the blue line wins.</li>
+      <li>Now search for the best line. Keep the slope fixed, move the y-axis intercept up in small steps, and plot the sum of squared residuals for each intercept. The scores fall, reach a bottom, then rise again.</li>
+      <li>Find the bottom of that curve by taking the derivative and solving for derivative equal to zero. Do the same for the slope. This method is called <strong>least squares</strong>.</li>
+      <li>The solutions are exact formulas. They look messy, so a computer plugs the data in for you. Here they give intercept 3 and slope 0.5.</li>
+      <li>Judge the line. Use \(R^2\) to measure how much the line improves on the mean, and a p&nbsp;value to measure how often random data would do as well.</li>
+    </ol>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 316" role="img" aria-label="U shaped curve of the sum of squared residuals against the value of the y-axis intercept">
+        <defs><marker id="arw2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker></defs>
+        <line x1="100" y1="40" x2="100" y2="250" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="100" y1="250" x2="680" y2="250" class="sv-stroke-ink" stroke-width="1.5"/>
+        <path d="M 110 66 Q 380 306 650 66" class="sv-stroke-acc" stroke-width="2.5"/>
+        <circle cx="191" cy="127" r="5" class="sv-acc"/>
+        <circle cx="272" cy="167" r="5" class="sv-acc"/>
+        <circle cx="488" cy="167" r="5" class="sv-acc"/>
+        <circle cx="569" cy="127" r="5" class="sv-acc"/>
+        <circle cx="380" cy="186" r="7" class="sv-key"/>
+        <line x1="380" y1="186" x2="380" y2="250" class="sv-line" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <text x="380" y="270" class="sv-tm" text-anchor="middle">intercept = 3</text>
+        <text x="118" y="56" class="sv-ts">high score = worse fit</text>
+        <text x="390" y="292" class="sv-t" text-anchor="middle">Value of the y-axis intercept</text>
+        <text x="72" y="145" class="sv-t" text-anchor="middle" transform="rotate(-90 72 145)">Sum of squared residuals</text>
+        <rect x="446" y="200" width="240" height="48" rx="6" class="sv-paper2"/>
+        <text x="458" y="220" class="sv-ts">bottom of the curve: the</text>
+        <text x="458" y="238" class="sv-ts">derivative here is zero</text>
+        <line x1="444" y1="216" x2="392" y2="190" class="sv-stroke-ink" stroke-width="1.4" marker-end="url(#arw2)"/>
+      </svg>
+      <figcaption>Notice that the score falls and then rises, so exactly one intercept sits at the bottom, and least squares finds it.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">The fitted line</span>
+      <div class="math">$$ \hat{y} = b + m\,x \qquad\text{here}\qquad \hat{y} = 3 + 0.5\,x $$</div>
+      <p class="explain"><b>Symbols:</b> \(x\) is the number of stores, the input. \(\hat{y}\) is the revenue the line predicts. \(b\) is the y-axis intercept, the predicted revenue when \(x\) is zero. \(m\) is the slope, the extra revenue for one more store. <b>What it tells you:</b> once you know \(b\) and \(m\), any store count gives a revenue prediction.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Residual and sum of squared residuals</span>
+      <div class="math">$$ r_i = y_i - \hat{y}_i \qquad\qquad \text{SSR} = \sum_{i=1}^{n}\left(y_i - \hat{y}_i\right)^2 $$</div>
+      <p class="explain"><b>Symbols:</b> \(y_i\) is the observed revenue of company \(i\). \(\hat{y}_i\) is the revenue the line predicts for it. \(r_i\) is the residual, the vertical gap. \(n\) is the number of data points, three here. The \(\sum\) sign means add over all points. <b>What it tells you:</b> SSR is one number that scores a whole line, and a smaller SSR means better predictions.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Least squares condition</span>
+      <div class="math">$$ \frac{d\,\text{SSR}}{d\,b} = 0 \qquad\text{and}\qquad \frac{d\,\text{SSR}}{d\,m} = 0 $$</div>
+      <p class="explain"><b>Symbols:</b> the derivative \(d\,\text{SSR}/d\,b\) is the slope of the score curve as the intercept \(b\) changes. The second one is the same idea for the slope \(m\). <b>What it tells you:</b> the score curve is flat at its lowest point, so setting both derivatives to zero gives the best intercept and slope. The answers are exact formulas, and a computer evaluates them for you.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">R squared</span>
+      <div class="math">$$ R^2 = \frac{\text{SSR}_{\text{mean}} - \text{SSR}_{\text{line}}}{\text{SSR}_{\text{mean}}} $$</div>
+      <p class="explain"><b>Symbols:</b> \(\text{SSR}_{\text{mean}}\) is the sum of squared residuals around the mean revenue, that is, predictions made without the store count. \(\text{SSR}_{\text{line}}\) is the same sum around the fitted line. <b>What it tells you:</b> the share of the error that disappears when you use the store count. It runs from 0, when the line is no better than the mean, to 1, when the line fits perfectly.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">The p value, as Josh builds it</span>
+      <div class="math">$$ p = \Pr\!\left(R^2_{\text{random}} \ge R^2_{\text{observed}}\right) $$</div>
+      <p class="explain"><b>Symbols:</b> \(R^2_{\text{observed}}\) is the value from your real data. \(R^2_{\text{random}}\) is the value from the same number of random points, repeated thousands of times to make a histogram. <b>What it tells you:</b> the share of random data sets that match or beat your fit. A large p&nbsp;value means luck alone often does as well, so trust the line less.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Least squares gives the line <em>revenue = 3 + 0.5 × stores</em>. The predictions are 4 for Squatch, 9 for Norm and 10.5 for Gamma. The residuals are −1, +3.5 and −3.5, so \(\text{SSR}_{\text{line}} = 1 + 12.25 + 12.25 = 25.5\).</p>
+      <p>The mean revenue is 7.5. Around the mean the residuals are −4.5, +5 and −0.5, so \(\text{SSR}_{\text{mean}} = 20.25 + 25 + 0.25 = 45.5\). Then \(R^2 = (45.5 - 25.5)/45.5 = 0.44\). Using the store count removes 44% of the error.</p>
+      <p>Josh then fits lines to three random points thousands of times. In that histogram, 53% of the random \(R^2\) values reach 0.44 or more, so the p&nbsp;value is 0.53.</p>
+      <p>The business answer: with 4 stores now and 3 more, the company would have 7 stores, and the line predicts \(3 + 0.5 \times 7 = 6.5\) revenue. But \(R^2\) is only middling and the p&nbsp;value is high. So tell the boss that revenue may rise, and that you should gather more data before you build.</p>
+    </div>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 324" role="img" aria-label="Two panels comparing the squared residuals around the mean revenue and around the fitted line">
+        <defs><marker id="arw3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker></defs>
+        <rect x="30" y="60" width="330" height="195" rx="6" class="sv-paper2"/>
+        <rect x="400" y="60" width="330" height="195" rx="6" class="sv-paper2"/>
+        <text x="195" y="44" class="sv-tb" text-anchor="middle">Predict with the mean only</text>
+        <text x="565" y="44" class="sv-tb" text-anchor="middle">Predict with the line</text>
+        <line x1="55" y1="152" x2="330" y2="152" class="sv-stroke-good" stroke-width="2.5"/>
+        <text x="330" y="145" class="sv-ts" text-anchor="end">mean = 7.5</text>
+        <line x1="90" y1="211" x2="90" y2="152" class="sv-stroke-key" stroke-width="2" stroke-dasharray="4 3"/>
+        <line x1="240" y1="87" x2="240" y2="152" class="sv-stroke-key" stroke-width="2" stroke-dasharray="4 3"/>
+        <line x1="285" y1="159" x2="285" y2="152" class="sv-stroke-key" stroke-width="2" stroke-dasharray="4 3"/>
+        <circle cx="90" cy="211" r="5" class="sv-ink"/>
+        <circle cx="240" cy="87" r="5" class="sv-ink"/>
+        <circle cx="285" cy="159" r="5" class="sv-ink"/>
+        <text x="195" y="280" class="sv-tb" text-anchor="middle">SSR = 45.5</text>
+        <line x1="420" y1="211" x2="690" y2="94" class="sv-stroke-acc" stroke-width="2.5"/>
+        <line x1="450" y1="211" x2="450" y2="198" class="sv-stroke-key" stroke-width="2" stroke-dasharray="4 3"/>
+        <line x1="600" y1="87" x2="600" y2="133" class="sv-stroke-key" stroke-width="2" stroke-dasharray="4 3"/>
+        <line x1="645" y1="159" x2="645" y2="113" class="sv-stroke-key" stroke-width="2" stroke-dasharray="4 3"/>
+        <circle cx="450" cy="211" r="5" class="sv-ink"/>
+        <circle cx="600" cy="87" r="5" class="sv-ink"/>
+        <circle cx="645" cy="159" r="5" class="sv-ink"/>
+        <text x="565" y="280" class="sv-tb" text-anchor="middle">SSR = 25.5</text>
+        <line x1="364" y1="158" x2="396" y2="158" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#arw3)"/>
+        <text x="380" y="302" class="sv-tm" text-anchor="middle">R² = (45.5 − 25.5) / 45.5 = 0.44</text>
+      </svg>
+      <figcaption>Notice that the dashed gaps shrink when the store count is used, and \(R^2\) simply reports how much of the squared error that shrinking removes.</figcaption>
+    </figure>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Never score a line by adding raw residuals. A negative residual can cancel a positive one. In the video a good line and a clearly bad line both sum to −5.5. Square first, then add.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Residuals are vertical, not perpendicular to the line. The vertical gap compares the observed and predicted revenue at the <em>same</em> number of stores, which is the comparison you care about.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A perfect \(R^2\) can be meaningless. Any two random points sit on a line exactly, so their \(R^2\) is always 1 and the p&nbsp;value is 1.0. \(R^2\) alone says nothing about confidence, so always read it with the p&nbsp;value.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not memorise the least squares formulas. Josh is clear that you only need to know they exist and that software evaluates them. Spend your effort on reading \(R^2\) and the p&nbsp;value instead.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>Why square the residuals instead of taking absolute values?</summary><div class="a">Both tricks stop positive and negative errors from cancelling. Squaring wins because the maths is easier later. A squared term has a clean derivative, so least squares has an exact formula. Absolute values give a kink that is harder to differentiate.</div></details>
+
+    <details class="qa" open><summary>What does R squared actually measure, and why compare against the mean?</summary><div class="a">R squared is the fraction of the squared error that disappears when you use the predictor instead of ignoring it. We compare against the mean because the mean is the best possible prediction when you have no predictor. It is the horizontal line with the smallest sum of squared residuals, so it is a fair baseline.</div></details>
+
+    <details class="qa" open><summary>The R squared is high. Why do you still report a p value?</summary><div class="a">Because a high R squared can come from luck, especially with few points. Two random points always give an R squared of 1. The p value asks how often random data of the same size would match or beat your fit. Only a small p value lets you say the relationship is more than chance.</div></details>
+
+    <details class="qa" open><summary>How would you explain the p value here to a non technical manager?</summary><div class="a">I would say we shuffled the world thousands of times and fitted a line to random points each time. Then we counted how often the random fit was as good as ours. In this example that happened 53% of the time, so our result is well inside what chance produces, and we should collect more data before we act on it.</div></details>
+
+    <details class="qa" open><summary>Your model says revenue rises with stores. Do you recommend building?</summary><div class="a">Not yet on this evidence. The line predicts revenue of 6.5 at seven stores, which is encouraging. But R squared is 0.44, so the predictions are only moderately accurate, and the p value of 0.53 means chance explains the fit just as well. I would recommend more data, or more predictors, before we commit capital.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Linear regression fits a straight line so one variable can predict another.</li>
+      <li>A residual is the observed value minus the value the line predicts, measured vertically.</li>
+      <li>Raw residuals cancel each other, so we square them and add them to get the SSR.</li>
+      <li>Least squares is the method that picks the intercept and slope with the smallest SSR, found where the derivative is zero.</li>
+      <li>R squared compares the SSR around the line with the SSR around the mean, and runs from 0 to 1.</li>
+      <li>The p value tells you how often random data of the same size would fit at least as well.</li>
+      <li>In the store example the fit is revenue = 3 + 0.5 × stores, with R squared 0.44 and a p value of 0.53.</li>
+      <li>Those numbers together say the trend may be real but is not yet trustworthy, so gather more data.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Linear Regression</span><span class="board-tag">fit by least squares, judge by R² and p</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 300" role="img" aria-label="Three companies plotted as revenue against stores, with the least squares line 3 + 0.5 × stores. A square is drawn on each vertical residual; the squares add up to 1 + 12.25 + 12.25 = 25.5, the SSR. The fit has R squared 0.44 and p value 0.53.">
+            <line x1="36" y1="20" x2="36" y2="200" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="36" y1="200" x2="384" y2="200" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <text x="46" y="32" class="sv-ts">revenue</text>
+            <text x="384" y="222" text-anchor="end" class="sv-ts">stores →</text>
+            <g class="sv-stroke-key" stroke-width="2" stroke-linejoin="round">
+              <rect x="74" y="152" width="12" height="12" class="sv-key-soft"/>
+              <rect x="222" y="50" width="42" height="42" class="sv-key-soft"/>
+              <rect x="321" y="74" width="42" height="42" class="sv-key-soft"/>
+            </g>
+            <line x1="36" y1="164" x2="370" y2="58.5" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round"/>
+            <g class="sv-stroke-key" stroke-width="3" stroke-linecap="round">
+              <line x1="74" y1="152" x2="74" y2="164"/>
+              <line x1="264" y1="50" x2="264" y2="92"/>
+              <line x1="321" y1="74" x2="321" y2="116"/>
+            </g>
+            <g class="sv-ink">
+              <circle cx="74" cy="164" r="6"/>
+              <circle cx="264" cy="50" r="6"/>
+              <circle cx="321" cy="116" r="6"/>
+            </g>
+            <text x="214" y="76" text-anchor="end" class="sv-ts">residual²</text>
+            <text x="100" y="174" class="sv-t">least squares: 3 + 0.5 × stores</text>
+            <text x="200" y="252" text-anchor="middle" class="sv-t">SSR = 1 + 12.25 + 12.25 = 25.5</text>
+            <text x="200" y="282" text-anchor="middle" class="sv-tb">R² = 0.44 · p = 0.53</text>
+          </svg>
+          <p>Each residual is a vertical gap to the line. Square and add them: 1 + 12.25 + 12.25 = 25.5, the lowest SSR possible. R² is 0.44, but random data fit as well 53% of the time, so gather more data.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Residual</dt><dd>Observed minus predicted: a vertical gap.</dd>
+            <dt>SSR</dt><dd>Sum of squared residuals; one score per line.</dd>
+            <dt>Least squares</dt><dd>Picks the intercept and slope with the smallest SSR.</dd>
+            <dt>R²</dt><dd>Share of the error around the mean the line removes.</dd>
+            <dt>p value</dt><dd>How often random data fit as well.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Draw a line</b>read predictions off it</li>
+            <li><b>Residuals</b>observed minus predicted</li>
+            <li><b>Square, add</b>raw sums cancel, so square</li>
+            <li><b>Slide the line</b>SSR falls, then rises</li>
+            <li><b>Derivative = 0</b>intercept 3, slope 0.5</li>
+            <li><b>Judge it</b>R² for accuracy, p for luck</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\hat{y}=b+m\,x=3+0.5\,x$$
+          $$\text{SSR}=\sum_{i}\big(y_i-\hat{y}_i\big)^2$$
+          $$R^2=\frac{\text{SSR}_{\text{mean}}-\text{SSR}_{\text{line}}}{\text{SSR}_{\text{mean}}}$$
+          <ul class="keys">
+            <li>\(b\) intercept, \(m\) slope, \(x\) stores, \(\hat{y}\) predicted revenue.</li>
+            <li>Least squares sets \(d\,\text{SSR}/db\) and \(d\,\text{SSR}/dm\) to 0.</li>
+            <li>\(p\): share of random fits whose \(R^2\) is at least as high.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>company</th><th>stores, revenue</th><th>residual</th></tr>
+            <tr><td>Squatch</td><td>2, 3</td><td>−1</td></tr>
+            <tr><td>Norm</td><td>12, 12.5</td><td>+3.5</td></tr>
+            <tr><td>Gamma</td><td>15, 7</td><td>−3.5</td></tr>
+            <tr><td>SSR</td><td>mean 45.5</td><td>line 25.5</td></tr>
+            <tr class="final"><td>verdict</td><td>R² 0.44</td><td>p 0.53</td></tr>
+          </table>
+          <p class="hand">At 7 stores the line predicts 6.5. Middling R² and a high p value: gather more data before building.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Add the raw residuals to score a line.</span><span class="yes">Negatives cancel: a good and a bad line both sum to −5.5. Square first.</span></li>
+            <li><span class="no">Residuals are perpendicular to the line.</span><span class="yes">Vertical: observed against predicted at the same store count.</span></li>
+            <li><span class="no">A perfect R² means a trustworthy line.</span><span class="yes">Two random points always give R² = 1, with p = 1.0. Always read R² with p.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="36-r-squared.html"><small>Previous</small>R-squared</a> <a href="38-the-main-ideas-of-fitting-a-line-to-data-the-main-ideas-of-l.html"><small>Next</small>The Main Ideas of Fitting a Line to Data (The Main Ideas of Least Squares and Linear Regression.)</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

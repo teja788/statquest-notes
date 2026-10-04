@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>XGBoost in Python from Start to Finish — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>68</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 68 · 56.7 min</div>
+    <h1>XGBoost in Python from Start to Finish</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=GrJP9FLV3FE" target="_blank" rel="noopener">▶ Watch on YouTube</a>    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Josh walks through a full Jupyter notebook that predicts customer churn with XGBoost. It covers cleaning, missing data, one-hot encoding, early stopping, grid search, and reading the final tree.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>The data is the IBM Telco churn data set, where the goal is to predict who stops using the company's service. Josh removes columns that leak the answer or carry no information, sets blank values to zero, and one-hot encodes the categories. He splits the data with stratification because only 27% of customers left. A first XGBoost model catches only 51% of the people who left. After tuning with cross-validated grid search, including the <code>scale_pos_weight</code> setting for imbalanced data, the final model catches 84% of them.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Most of the work in a real project is getting the data into the right shape. XGBoost only accepts int, float, and boolean columns. So every text column must be checked, cleaned, and turned into numbers before any tree is built.</p>
+    <p>XGBoost has one unusual strength here. It has a default way to handle missing data. You only need to find the missing values and set them to zero. When the trees are built, XGBoost decides which branch the missing values should follow.</p>
+    <p>The second theme is class imbalance. This means one class is much rarer than the other. Only 27% of customers left, so a default model does well on people who stay and poorly on people who leave. Josh fixes this with stratified splitting, the AUC as the score, and a penalty for misclassifying the rare class.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 260" role="img" aria-label="The six stages of the churn pipeline, from cleaning the data to the tuned model">
+        <defs><marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker></defs>
+        <rect x="30" y="30" width="200" height="70" rx="8" class="sv-paper2"/>
+        <text x="130" y="60" text-anchor="middle" class="sv-tb">1. Clean the data</text>
+        <text x="130" y="82" text-anchor="middle" class="sv-ts">drop columns, blanks set to 0</text>
+        <rect x="280" y="30" width="200" height="70" rx="8" class="sv-paper2"/>
+        <text x="380" y="60" text-anchor="middle" class="sv-tb">2. Split X and y</text>
+        <text x="380" y="82" text-anchor="middle" class="sv-ts">y = Churn_Value (1 = left)</text>
+        <rect x="530" y="30" width="200" height="70" rx="8" class="sv-paper2"/>
+        <text x="630" y="60" text-anchor="middle" class="sv-tb">3. One-hot encode</text>
+        <text x="630" y="82" text-anchor="middle" class="sv-ts">X grows to 1,178 columns</text>
+        <rect x="530" y="160" width="200" height="70" rx="8" class="sv-acc-soft"/>
+        <text x="630" y="190" text-anchor="middle" class="sv-tb">4. Stratified split</text>
+        <text x="630" y="212" text-anchor="middle" class="sv-ts">27% left in train and test</text>
+        <rect x="280" y="160" width="200" height="70" rx="8" class="sv-key-soft"/>
+        <text x="380" y="190" text-anchor="middle" class="sv-tb">5. First model</text>
+        <text x="380" y="212" text-anchor="middle" class="sv-ts">early stopping: 45 trees</text>
+        <rect x="30" y="160" width="200" height="70" rx="8" class="sv-good-soft"/>
+        <text x="130" y="190" text-anchor="middle" class="sv-tb">6. Tune, then refit</text>
+        <text x="130" y="212" text-anchor="middle" class="sv-ts">grid search CV: 55 trees</text>
+        <line x1="232" y1="65" x2="276" y2="65" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <line x1="482" y1="65" x2="526" y2="65" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <line x1="630" y1="102" x2="630" y2="156" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <line x1="528" y1="195" x2="484" y2="195" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <line x1="278" y1="195" x2="234" y2="195" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"/>
+      </svg>
+      <figcaption>Three stages prepare the data and three build and tune the model; the model itself is only the last half.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>
+        <p>Load the modules, read the file into a data frame called <code>df</code>, and look at the first five rows. The data has 33 columns.</p>
+        <pre><code>import pandas as pd
+import numpy as np
+import xgboost as xgb
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.metrics import plot_confusion_matrix
+
+df = pd.read_csv('Telco_customer_churn.csv')
+df.head()   # 5 rows x 33 columns</code></pre>
+      </li>
+      <li>
+        <p>Drop the last four columns. They come from exit interviews with people who already left, so they would give perfect predictions that are not possible in practice.</p>
+        <pre><code>df.drop(['Churn Label', 'Churn Score', 'CLTV', 'Churn Reason'],
+        axis=1, inplace=True)</code></pre>
+      </li>
+      <li>
+        <p>Drop columns that cannot help. <code>Count</code>, <code>Country</code>, and <code>State</code> hold one value each. <code>CustomerID</code> is different for every person, and <code>Lat Long</code> repeats the separate latitude and longitude columns. City has many values, so it stays.</p>
+        <pre><code>df['Count'].unique()     # [1]
+df['Country'].unique()   # ['United States']
+df['State'].unique()     # ['California']
+
+df.drop(['CustomerID', 'Count', 'Country', 'State', 'Lat Long'],
+        axis=1, inplace=True)   # 24 columns left</code></pre>
+      </li>
+      <li>
+        <p>Replace spaces with underscores in the city names and the column names. XGBoost does not care about spaces, but the tree drawing at the end fails with them.</p>
+        <pre><code>df['City'].replace(' ', '_', regex=True, inplace=True)
+df.columns = df.columns.str.replace(' ', '_')</code></pre>
+      </li>
+      <li>
+        <p>Look for missing data. <code>Total_Charges</code> looks numeric but has type <code>object</code>. Converting it gives an error that says it cannot parse a blank space, and 11 rows hold that blank.</p>
+        <pre><code>df.dtypes
+df['Phone_Service'].unique()   # ['Yes', 'No']
+# pd.to_numeric(df['Total_Charges'])  -> Unable to parse string " "
+len(df.loc[df['Total_Charges'] == ' '])   # 11</code></pre>
+      </li>
+      <li>
+        <p>All 11 people have zero tenure months, so they have not been charged yet. Set their total charges to zero, convert the column to numbers, and replace any other spaces in the whole data frame.</p>
+        <pre><code>df.loc[(df['Total_Charges'] == ' '), 'Total_Charges'] = 0
+df.loc[df['Tenure_Months'] == 0]        # check the fix
+df['Total_Charges'] = pd.to_numeric(df['Total_Charges'])   # float64
+df.replace(' ', '_', regex=True, inplace=True)</code></pre>
+      </li>
+      <li>
+        <p>Split the columns. Capital <code>X</code> holds the features used to predict, and lowercase <code>y</code> holds <code>Churn_Value</code>, which is 1 for people who left.</p>
+        <pre><code>X = df.drop('Churn_Value', axis=1).copy()
+y = df['Churn_Value'].copy()</code></pre>
+      </li>
+      <li>
+        <p>One-hot encode the categorical columns with <code>get_dummies</code>. Each category becomes its own column of ones and zeros. The result has 1,178 columns, mostly because every city gets a column.</p>
+        <pre><code>X_encoded = pd.get_dummies(X, columns=['City', 'Gender', 'Senior_Citizen',
+    'Partner', 'Dependents', 'Phone_Service', 'Multiple_Lines',
+    'Internet_Service', 'Online_Security', 'Online_Backup',
+    'Device_Protection', 'Tech_Support', 'Streaming_TV',
+    'Streaming_Movies', 'Contract', 'Paperless_Billing',
+    'Payment_Method'])
+y.unique()   # [1, 0]</code></pre>
+      </li>
+      <li>
+        <p>Josh then explains how zeros for missing data work with one-hot encoding. Imagine a favourite colour column: two people like blue, two like green, and two are missing. After encoding, the missing people have zero in both the blue and green columns.</p>
+        <p>XGBoost compares two splits. One separates blue from everyone else, so missing joins green. The other separates green, so missing joins blue. It keeps the split with the best gain. Because XGBoost stores a sparse matrix, it keeps only the ones, so the zeros cost no memory.</p>
+      </li>
+      <li>
+        <p>Check the imbalance, then split with <code>stratify=y</code>. This keeps 27% of people who left in both the training and the testing sets.</p>
+        <pre><code>sum(y) / len(y)   # 0.27
+X_train, X_test, y_train, y_test = train_test_split(
+    X_encoded, y, random_state=42, stratify=y)
+sum(y_train) / len(y_train)   # 0.27
+sum(y_test) / len(y_test)     # 0.27</code></pre>
+      </li>
+      <li>
+        <p>Build a first model with early stopping. XGBoost trains on the training set. It scores each new tree on the testing set with the AUC, the area under the ROC curve. It stops when 10 more trees bring no improvement, and the best result came at 45 trees.</p>
+        <pre><code>clf_xgb = xgb.XGBClassifier(objective='binary:logistic', missing=None, seed=42)
+clf_xgb.fit(X_train, y_train,
+            verbose=True,
+            early_stopping_rounds=10,
+            eval_metric='auc',
+            eval_set=[(X_test, y_test)])</code></pre>
+      </li>
+      <li>
+        <p>Draw the confusion matrix on the testing set. The model is right for 1,178 of 1,294 people who stayed, but for only 239 of 467 people who left.</p>
+        <pre><code>plot_confusion_matrix(clf_xgb, X_test, y_test,
+                      values_format='d',
+                      display_labels=["Did not leave", "Left"])</code></pre>
+      </li>
+      <li>
+        <p>Tune the hyperparameters, the settings you choose by hand, with cross-validated grid search. Josh tries three values each for tree depth, learning rate, gamma, lambda, and <code>scale_pos_weight</code>. Gamma encourages pruning, and lambda is the regularization penalty. Each tree uses a random subset of rows and half the columns, and scoring uses the AUC with 3-fold cross-validation.</p>
+        <pre><code>param_grid = {
+    'max_depth': [3, 4, 5],
+    'learning_rate': [0.1, 0.01, 0.05],
+    'gamma': [0, 0.25, 1.0],
+    'reg_lambda': [0, 1.0, 10.0],
+    'scale_pos_weight': [1, 3, 5]
+}
+optimal_params = GridSearchCV(
+    estimator=xgb.XGBClassifier(objective='binary:logistic', seed=42,
+                                subsample=0.9, colsample_bytree=0.5),
+    param_grid=param_grid,
+    scoring='roc_auc',
+    cv=3)
+optimal_params.fit(X_train, y_train)
+print(optimal_params.best_params_)</code></pre>
+      </li>
+      <li>
+        <p>Build the final model with the tuned values. Early stopping still picks the number of trees: it stops at 65, and the best was 55.</p>
+        <pre><code>clf_xgb = xgb.XGBClassifier(seed=42, objective='binary:logistic',
+                            gamma=0.25, learning_rate=0.1, max_depth=4,
+                            reg_lambda=10, scale_pos_weight=3,
+                            subsample=0.9, colsample_bytree=0.5)
+clf_xgb.fit(X_train, y_train, verbose=True, early_stopping_rounds=10,
+            eval_metric='auc', eval_set=[(X_test, y_test)])</code></pre>
+      </li>
+      <li>
+        <p>Draw one tree by setting <code>n_estimators=1</code>, and print its weight, gain, and cover. These numbers suggest sensible ranges for tuning. The root asks if <code>Contract_Month-to-month &lt; 1</code>, and the "yes, missing" branch goes left.</p>
+        <pre><code>clf_xgb = xgb.XGBClassifier(seed=42, objective='binary:logistic',
+                            gamma=0.25, learning_rate=0.1, max_depth=4,
+                            reg_lambda=10, scale_pos_weight=3,
+                            subsample=0.9, colsample_bytree=0.5,
+                            n_estimators=1)
+clf_xgb.fit(X_train, y_train)
+
+bst = clf_xgb.get_booster()
+for t in ('weight', 'gain', 'cover'):
+    print(t, bst.get_score(importance_type=t))
+xgb.to_graphviz(clf_xgb, num_trees=0, size="10,10")</code></pre>
+      </li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Confusion matrices on the testing set before and after tuning">
+        <text x="280" y="36" text-anchor="middle" class="sv-tb">Before tuning</text>
+        <text x="580" y="36" text-anchor="middle" class="sv-tb">After tuning</text>
+        <text x="230" y="72" text-anchor="middle" class="sv-ts">pred. stay</text>
+        <text x="330" y="72" text-anchor="middle" class="sv-ts">pred. left</text>
+        <text x="530" y="72" text-anchor="middle" class="sv-ts">pred. stay</text>
+        <text x="630" y="72" text-anchor="middle" class="sv-ts">pred. left</text>
+        <text x="165" y="124" text-anchor="end" class="sv-t">Stayed (1,294)</text>
+        <text x="165" y="194" text-anchor="end" class="sv-t">Left (467)</text>
+        <rect x="180" y="85" width="98" height="63" class="sv-good-soft"/>
+        <rect x="280" y="85" width="98" height="63" class="sv-paper2"/>
+        <rect x="180" y="150" width="98" height="63" class="sv-paper2"/>
+        <rect x="280" y="150" width="98" height="63" class="sv-acc-soft"/>
+        <text x="230" y="123" text-anchor="middle" class="sv-tb">1,178 (91%)</text>
+        <text x="330" y="123" text-anchor="middle" class="sv-t">116</text>
+        <text x="230" y="188" text-anchor="middle" class="sv-t">228</text>
+        <text x="330" y="188" text-anchor="middle" class="sv-tb">239 (51%)</text>
+        <rect x="480" y="85" width="98" height="63" class="sv-paper2"/>
+        <rect x="580" y="85" width="98" height="63" class="sv-paper2"/>
+        <rect x="480" y="150" width="98" height="63" class="sv-paper2"/>
+        <rect x="580" y="150" width="98" height="63" class="sv-good-soft"/>
+        <text x="530" y="123" text-anchor="middle" class="sv-ts">fewer</text>
+        <text x="630" y="123" text-anchor="middle" class="sv-ts">more</text>
+        <text x="530" y="188" text-anchor="middle" class="sv-t">77</text>
+        <text x="630" y="188" text-anchor="middle" class="sv-tb">390 (84%)</text>
+        <text x="380" y="262" text-anchor="middle" class="sv-ts">Rows are the actual class; columns are the prediction on the testing set.</text>
+      </svg>
+      <figcaption>Tuning lifts correct calls for leavers from 239 to 390 of 467, at some cost to the people who stayed.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>This coding video has no model equations, only three small calculations.</p>
+    <div class="formula"><span class="lbl">Share of customers who left</span><div class="math">$$ \text{share left} = \frac{\sum_{i=1}^{n} y_i}{n} \approx 0.27 $$</div><p class="explain"><b>Symbols:</b> \(y_i\) is 1 if customer \(i\) left and 0 if not; \(n\) is the number of customers. <b>What it tells you:</b> because \(y\) is only ones and zeros, its sum counts the leavers, so this shows how imbalanced the data is.</p></div>
+    <div class="formula"><span class="lbl">Share of one row classified correctly</span><div class="math">$$ \text{share correct} = \frac{\text{correct predictions in the row}}{\text{people in the row}} $$</div><p class="explain"><b>Symbols:</b> a row of the confusion matrix is all the people with one true class. <b>What it tells you:</b> how well the model does on each class alone, which matters when one class is rare.</p></div>
+    <div class="formula"><span class="lbl">Early stopping</span><div class="math">$$ T_{\text{best}} = T_{\text{stop}} - 10 $$</div><p class="explain"><b>Symbols:</b> \(T_{\text{stop}}\) is the tree count when training stops; 10 is <code>early_stopping_rounds</code>; \(T_{\text{best}}\) is the tree count with the best testing AUC. <b>What it tells you:</b> training stops only after 10 trees in a row fail to improve the AUC.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p><b>First model.</b> Of 1,294 people who did not leave, 1,178 were correct: \(1178/1294 \approx 0.91\). Of 467 people who left, only 239 were correct: \(239/467 \approx 0.51\). The best result came at 45 trees, and training stopped 10 trees later.</p>
+      <p><b>Tuning.</b> Round one gave <code>max_depth</code> 4, the middle value, and gamma 0.25, also the middle. Learning rate and lambda landed on the edge of their ranges, so round two tried larger values. The final values were gamma 0.25, learning rate 0.1, max depth 4, lambda 10, and <code>scale_pos_weight</code> 3.</p>
+      <p><b>Final model.</b> Training stopped at 65 trees, so \(65 - 10 = 55\) trees were kept. Now 390 of 467 leavers are correct: \(390/467 \approx 0.84\), up from 0.51. Josh accepts more errors on people who stay. A free milkshake coupon sent to a loyal customer costs less than a lost customer.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Columns filled in after the outcome, such as exit interview answers, leak the answer. Only people who left have them, so drop them before you build the model.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> An <code>object</code> type on a column that looks numeric often hides blanks or placeholders. Josh checks the fix with zero tenure months, not zero total charges, because some real customers may already have zero charges.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> If grid search picks a value on the edge of a range, the best value may lie beyond it. Search again in that direction. A value in the middle can be fixed for the next round.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Zero now means both "missing" and "not this category". Josh shows it still works, and notes that the XGBoost author says performance holds up.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>How does XGBoost handle missing values?</summary><div class="a">It has a default behaviour for missing data, so I just set missing values to zero. At each split, XGBoost tries sending the missing values down each branch and keeps the choice with the best gain. It stores the data as a sparse matrix, so the zeros do not use memory.</div></details>
+    <details class="qa" open><summary>Why one-hot encode instead of numbering the categories?</summary><div class="a">If I code payment methods as 1 to 4, the trees treat 4 as closer to 3 than to 1. That makes them more likely to group credit card with bank transfer for no real reason. One-hot encoding makes each category its own column, so no category is closer to another.</div></details>
+    <details class="qa" open><summary>How did you deal with the imbalanced churn data?</summary><div class="a">Only 27% of customers left, so I split with stratification to keep that share in both sets. I scored with the AUC and tuned <code>scale_pos_weight</code>, which adds a penalty for misclassifying the rare class. That raised correct calls for leavers from 51% to 84%, at some cost on people who stayed.</div></details>
+    <details class="qa" open><summary>What does early stopping do?</summary><div class="a">It adds trees while checking a score, here the AUC, on held-out data. If 10 more trees bring no improvement, it stops and keeps the best number of trees. That means I do not have to tune the number of trees in the grid search.</div></details>  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Drop columns that leak the answer, hold one value, or are unique for every row.</li>
+      <li>Find hidden blanks by checking data types, then set missing values to zero for XGBoost.</li>
+      <li>One-hot encode categories, because XGBoost only accepts int, float, and boolean columns.</li>      <li>Split with stratification when the classes are imbalanced, here 27% left.</li>
+      <li>Early stopping picks the number of trees by stopping after 10 trees without improvement.</li>
+      <li>Grid search with cross-validation and <code>scale_pos_weight</code> lifted correct calls for leavers from 51% to 84%.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">XGBoost for churn</span><span class="board-tag">clean the data, then tune for leavers</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 256" role="img" aria-label="Only 27% of customers left. Of the 467 leavers in the testing set, the first model catches 239, or 51%; the final model, tuned with scale_pos_weight = 3, catches 390, or 84%.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <text x="20" y="32" class="sv-tb">only 27% left</text>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <rect x="20" y="46" width="97" height="18" class="sv-key"/>
+              <rect x="117" y="46" width="263" height="18" class="sv-paper"/>
+            </g>
+            <text x="20" y="94" class="sv-t">first model: leavers caught</text>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <rect x="20" y="104" width="184" height="36" class="sv-good-soft"/>
+              <rect x="204" y="104" width="176" height="36" class="sv-paper"/>
+            </g>
+            <text x="112" y="128" text-anchor="middle" class="sv-t">239 of 467</text>
+            <text x="212" y="129" class="sv-tb">51%</text>
+            <path d="M208 146 Q 282 150 316 200" class="sv-stroke-key" stroke-width="2.5" stroke-dasharray="6 5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="20" y="174" class="sv-tm">scale_pos_weight = 3</text>
+            <text x="20" y="200" class="sv-t">final model</text>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <rect x="20" y="208" width="300.6" height="36" class="sv-good-soft"/>
+              <rect x="320.6" y="208" width="59.4" height="36" class="sv-paper"/>
+            </g>
+            <text x="170" y="232" text-anchor="middle" class="sv-t">390 of 467</text>
+            <text x="328" y="233" class="sv-tb">84%</text>
+          </svg>
+          <p>Most of the work is shaping the data: XGBoost takes only int, float and boolean columns, and missing values are simply set to zero. Only 27% left, so Josh splits with stratification, and grid search with scale_pos_weight lifts leavers caught from 51% to 84%.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>One-hot encoding</dt><dd>Each category becomes its own column of ones and zeros.</dd>
+            <dt>Stratified split</dt><dd>Keeps the share who left, 27%, the same in training and testing.</dd>
+            <dt>AUC</dt><dd>Area under the ROC curve; the score for early stopping and tuning.</dd>
+            <dt>Early stopping</dt><dd>Stops after 10 trees in a row fail to improve the AUC.</dd>
+            <dt>scale_pos_weight</dt><dd>A penalty for misclassifying the rare class; 3 after tuning.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Clean the data</b>drop leaks, blanks set to 0</li>
+            <li><b>One-hot encode</b>1,178 columns, mostly cities</li>
+            <li><b>Stratified split</b>27% left in both sets</li>
+            <li><b>First model</b>45 trees; 51% of leavers caught</li>
+            <li><b>Tune, refit</b>grid search CV: 55 trees, 84%</li>
+            <li><b>Draw one tree</b>weight, gain, cover hint tuning ranges</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{share left}=\frac{\sum_{i=1}^{n} y_i}{n}\approx 0.27$$
+          $$\text{share correct}=\frac{\text{correct in row}}{\text{people in row}}$$
+          $$T_{\text{best}}=T_{\text{stop}}-10$$
+          <ul class="keys">
+            <li>\(y_i\) is 1 if customer \(i\) left, else 0; \(n\) is the number of customers.</li>
+            <li>A row of the confusion matrix is everyone with one true class.</li>
+            <li>10 is <code>early_stopping_rounds</code>; \(T_{\text{best}}\) has the best testing AUC.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>test set</th><th>first</th><th>final</th></tr>
+            <tr><td>trees kept</td><td>45</td><td>55</td></tr>
+            <tr><td>stayers right</td><td>1,178/1,294</td><td>fewer</td></tr>
+            <tr><td>leavers right</td><td>239/467</td><td>390/467</td></tr>
+            <tr class="final"><td>leavers caught</td><td>51%</td><td>84% ✓</td></tr>
+          </table>
+          <p class="hand">Tuned: gamma 0.25, learning rate 0.1, max depth 4, lambda 10, scale_pos_weight 3. More leavers caught, at some cost to stayers.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Every column in the file is fair to use.</span><span class="yes">Exit interview columns leak the answer; only leavers have them. Drop them.</span></li>
+            <li><span class="no">A column that looks numeric is numeric.</span><span class="yes">Type object hid 11 blanks. Check the fix with zero tenure, not zero charges.</span></li>
+            <li><span class="no">Grid search's best value is final.</span><span class="yes">A best value on the edge of its range? Search again beyond it.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="67-xgboost-part-4-crazy-cool-optimizations.html"><small>Previous</small>XGBoost Part 4 (of 4): Crazy Cool Optimizations</a> <a href="69-catboost-part-1-ordered-target-encoding.html"><small>Next</small>CatBoost Part 1: Ordered Target Encoding</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

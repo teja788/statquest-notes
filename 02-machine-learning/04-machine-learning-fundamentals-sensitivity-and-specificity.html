@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Machine Learning Fundamentals: Sensitivity and Specificity — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>04</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 04 · 11.8 min</div>
+    <h1>Machine Learning Fundamentals: Sensitivity and Specificity</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=vP06aMoz4v8" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">A confusion matrix holds a lot of counts. Sensitivity and specificity squeeze those counts into two numbers that tell you how well a model finds positives and how well it finds negatives.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Sensitivity is the share of true positives that the model actually caught. Specificity is the share of true negatives that the model actually caught. Josh computes both for a heart disease confusion matrix, once for logistic regression and once for a random forest. The two models score almost the same, so you pick the one whose strength matters more for your problem. When the matrix has three or more categories, you get one sensitivity and one specificity per category, not one pair for the whole table.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>This video follows on from the confusion matrix video. Remember the layout: the rows are what the model predicted, and the columns are the known truth. With two categories, here "has heart disease" and "does not have heart disease", the table has four cells.</p>
+    <p>The top left cell holds the <strong>true positives</strong>. These are patients who had heart disease and were predicted to have it. The bottom right cell holds the <strong>true negatives</strong>: patients without heart disease who were predicted not to have it. The bottom left cell holds the <strong>false negatives</strong>, meaning the patient had the disease but the model said no. The top right cell holds the <strong>false positives</strong>, meaning the patient was healthy but the model said yes.</p>
+    <p>Now look at the columns one at a time. The left column contains every patient who truly has the disease. Sensitivity asks what fraction of that column the model got right. The right column contains every healthy patient. Specificity asks what fraction of that column the model got right. Each metric lives inside one column of truth, so neither one is disturbed by the other.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 350" role="img" aria-label="A two by two confusion matrix for heart disease, with sensitivity computed from the left truth column and specificity from the right truth column">
+        <g transform="translate(105,0)">
+        <rect x="60" y="86" width="130" height="80" class="sv-acc-soft"></rect>
+        <rect x="60" y="166" width="130" height="80" class="sv-acc-soft"></rect>
+        <rect x="190" y="52" width="180" height="34" class="sv-acc-soft"></rect>
+        <rect x="370" y="52" width="180" height="34" class="sv-acc-soft"></rect>
+
+        <text x="280" y="34" text-anchor="middle" class="sv-tb">Known truth</text>
+        <text x="280" y="74" text-anchor="middle" class="sv-ts">Has heart disease</text>
+        <text x="460" y="74" text-anchor="middle" class="sv-ts">No heart disease</text>
+        <text x="125" y="132" text-anchor="middle" class="sv-ts">Predicted: yes</text>
+        <text x="125" y="212" text-anchor="middle" class="sv-ts">Predicted: no</text>
+
+        <rect x="190" y="86" width="180" height="80" class="sv-good-soft"></rect>
+        <rect x="370" y="86" width="180" height="80" class="sv-key-soft"></rect>
+        <rect x="190" y="166" width="180" height="80" class="sv-key-soft"></rect>
+        <rect x="370" y="166" width="180" height="80" class="sv-good-soft"></rect>
+
+        <text x="280" y="120" text-anchor="middle" class="sv-tb">139</text>
+        <text x="280" y="142" text-anchor="middle" class="sv-ts">true positives</text>
+        <text x="460" y="120" text-anchor="middle" class="sv-tb">20</text>
+        <text x="460" y="142" text-anchor="middle" class="sv-ts">false positives</text>
+        <text x="280" y="200" text-anchor="middle" class="sv-tb">32</text>
+        <text x="280" y="222" text-anchor="middle" class="sv-ts">false negatives</text>
+        <text x="460" y="200" text-anchor="middle" class="sv-tb">112</text>
+        <text x="460" y="222" text-anchor="middle" class="sv-ts">true negatives</text>
+
+        <rect x="60" y="86" width="490" height="160" class="sv-line" stroke-width="1.5"></rect>
+        <rect x="190" y="52" width="360" height="194" class="sv-line" stroke-width="1.5"></rect>
+        <path d="M190 86 H550 M190 166 H550 M370 52 V246" class="sv-line" stroke-width="1.5"></path>
+
+        <path d="M190 258 V270 H370 V258" class="sv-stroke-acc" stroke-width="1.6"></path>
+        <path d="M370 258 V270 H550 V258" class="sv-stroke-acc" stroke-width="1.6"></path>
+        <text x="280" y="294" text-anchor="middle" class="sv-tb">Sensitivity</text>
+        <text x="280" y="316" text-anchor="middle" class="sv-tm">139 / (139 + 32) = 0.81</text>
+        <text x="460" y="294" text-anchor="middle" class="sv-tb">Specificity</text>
+        <text x="460" y="316" text-anchor="middle" class="sv-tm">112 / (112 + 20) = 0.85</text>
+        </g>
+      </svg>
+      <figcaption>Notice that each metric uses only one column of the truth: sensitivity reads the left column, specificity reads the right column.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Build the confusion matrix on your testing data. Rows are the predictions, columns are the known truth.</li>
+      <li>Name the four cells: true positives, false positives, false negatives, true negatives. Everything after this is arithmetic on those four counts.</li>
+      <li>Compute sensitivity. Divide the true positives by the whole "truly positive" column, which is the true positives plus the false negatives.</li>
+      <li>Compute specificity. Divide the true negatives by the whole "truly negative" column, which is the true negatives plus the false positives.</li>
+      <li>Repeat for the other candidate model and compare. Decide which error hurts your users more, then favour the model that is stronger there.</li>
+      <li>If the matrix has three or more categories, pick one category at a time. Treat that category as "positive" and everything else as "negative", then apply the same two formulas.</li>
+    </ol>
+    <p>The second half of the video shows that last step on a three by three matrix. Josh predicts a person's favourite movie out of Troll 2, Gore Police and Cool as Ice. There is no single sensitivity for the whole table, so he works out a separate pair for each movie.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 340" role="img" aria-label="A three by three confusion matrix for favourite movie, shaded to show the true positive, false negative, false positive and true negative regions for Troll 2">
+        <text x="395" y="38" text-anchor="middle" class="sv-tb">Known truth</text>
+        <text x="265" y="78" text-anchor="middle" class="sv-ts">Troll 2</text>
+        <text x="395" y="78" text-anchor="middle" class="sv-ts">Gore Police</text>
+        <text x="525" y="78" text-anchor="middle" class="sv-ts">Cool as Ice</text>
+
+        <text x="120" y="130" text-anchor="middle" class="sv-ts">Pred: Troll 2</text>
+        <text x="120" y="200" text-anchor="middle" class="sv-ts">Pred: Gore Police</text>
+        <text x="120" y="270" text-anchor="middle" class="sv-ts">Pred: Cool as Ice</text>
+
+        <rect x="200" y="90" width="130" height="70" class="sv-good-soft"></rect>
+        <rect x="330" y="90" width="130" height="70" class="sv-acc-soft"></rect>
+        <rect x="460" y="90" width="130" height="70" class="sv-acc-soft"></rect>
+        <rect x="200" y="160" width="130" height="70" class="sv-key-soft"></rect>
+        <rect x="330" y="160" width="130" height="70" class="sv-paper2"></rect>
+        <rect x="460" y="160" width="130" height="70" class="sv-paper2"></rect>
+        <rect x="200" y="230" width="130" height="70" class="sv-key-soft"></rect>
+        <rect x="330" y="230" width="130" height="70" class="sv-paper2"></rect>
+        <rect x="460" y="230" width="130" height="70" class="sv-paper2"></rect>
+
+        <text x="265" y="132" text-anchor="middle" class="sv-tb">12</text>
+        <text x="395" y="132" text-anchor="middle" class="sv-tb">102</text>
+        <text x="525" y="132" text-anchor="middle" class="sv-tb">93</text>
+        <text x="265" y="202" text-anchor="middle" class="sv-tb">112</text>
+        <text x="395" y="202" text-anchor="middle" class="sv-tb">23</text>
+        <text x="525" y="202" text-anchor="middle" class="sv-tb">77</text>
+        <text x="265" y="272" text-anchor="middle" class="sv-tb">83</text>
+        <text x="395" y="272" text-anchor="middle" class="sv-tb">92</text>
+        <text x="525" y="272" text-anchor="middle" class="sv-tb">17</text>
+
+        <rect x="40" y="56" width="550" height="244" class="sv-line" stroke-width="1.5"></rect>
+        <path d="M200 90 H590 M200 160 H590 M200 230 H590 M200 56 V300 M330 56 V300 M460 56 V300" class="sv-line" stroke-width="1.5"></path>
+
+        <text x="610" y="102" class="sv-tb">Troll 2</text>
+        <rect x="610" y="118" width="16" height="16" class="sv-good-soft"></rect>
+        <text x="634" y="131" class="sv-ts">TP = 12</text>
+        <rect x="610" y="148" width="16" height="16" class="sv-key-soft"></rect>
+        <text x="634" y="161" class="sv-ts">FN = 195</text>
+        <rect x="610" y="178" width="16" height="16" class="sv-acc-soft"></rect>
+        <text x="634" y="191" class="sv-ts">FP = 195</text>
+        <rect x="610" y="208" width="16" height="16" class="sv-paper2"></rect>
+        <text x="634" y="221" class="sv-ts">TN = 209</text>
+      </svg>
+      <figcaption>For Troll 2 the matrix splits into four regions, which give a sensitivity of 0.06 and a specificity of 0.52; shifting the focus to another movie re-shades the same table.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">Sensitivity</span>
+      <div class="math">$$ \text{Sensitivity} = \frac{TP}{TP + FN} $$</div>
+      <p class="explain"><b>Symbols:</b> \(TP\) is the number of true positives, the positive cases the model called positive. \(FN\) is the number of false negatives, the positive cases the model missed. The denominator \(TP+FN\) is every case that is truly positive. <b>What it tells you:</b> the fraction of real positives the model correctly identified.</p>
+    </div>
+    <div class="formula"><span class="lbl">Specificity</span>
+      <div class="math">$$ \text{Specificity} = \frac{TN}{TN + FP} $$</div>
+      <p class="explain"><b>Symbols:</b> \(TN\) is the number of true negatives, the negative cases the model called negative. \(FP\) is the number of false positives, the negative cases the model wrongly flagged. The denominator \(TN+FP\) is every case that is truly negative. <b>What it tells you:</b> the fraction of real negatives the model correctly identified.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh reuses the heart disease confusion matrix from the confusion matrix video. Logistic regression gave 139 true positives, 32 false negatives, 112 true negatives and 20 false positives.</p>
+      <div class="math">$$ \text{Sensitivity} = \frac{139}{139 + 32} = \frac{139}{171} = 0.81 $$</div>
+      <p>So 81% of the people with heart disease were correctly identified.</p>
+      <div class="math">$$ \text{Specificity} = \frac{112}{112 + 20} = \frac{112}{132} = 0.85 $$</div>
+      <p>So 85% of the people without heart disease were correctly identified. Doing the same arithmetic on the random forest matrix gives a sensitivity of 0.83 and a specificity of 0.83.</p>
+      <p>The random forest is slightly better at finding patients who have heart disease. Logistic regression is slightly better at clearing patients who do not. Choose logistic regression if the second job matters more, and the random forest if the first job matters more.</p>
+      <p>For the three by three movie matrix, Troll 2 has 12 true positives and \(112+83=195\) false negatives, so sensitivity is \(12/207 = 0.06\). It has \(23+77+92+17=209\) true negatives and \(102+93=195\) false positives, so specificity is \(209/404 = 0.52\). Gore Police works out at 0.11 and 0.52, and Cool as Ice follows the same steps.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Sensitivity and specificity are easy to swap when you are nervous. Anchor them to the column of truth: sensitivity is scored among the people who really are positive, specificity among the people who really are negative.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A high sensitivity on its own means nothing. A model that calls everyone positive has perfect sensitivity and zero specificity. Always report and read the pair together.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> With three or more categories there is no single sensitivity for the table. You get one value per category, and Josh's movie example shows they can differ a lot between categories.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The row and column convention matters. Josh puts predictions on the rows and truth on the columns. Some tools do the opposite, so check the layout before you plug numbers into the formulas.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is the difference between sensitivity and specificity?</summary><div class="a">Sensitivity is true positives divided by true positives plus false negatives. It measures how much of the truly positive group the model found. Specificity is true negatives divided by true negatives plus false positives, so it measures how much of the truly negative group the model found. Each one is calculated inside a single column of the confusion matrix, so improving one does not automatically change the other.</div></details>
+    <details class="qa" open><summary>Two models score about the same. How do you pick one?</summary><div class="a">I look at which kind of mistake costs more. In the heart disease example the random forest had slightly higher sensitivity and logistic regression slightly higher specificity. If missing a sick patient is the worse outcome, I take the higher sensitivity. If a false alarm leads to expensive or risky follow up, I take the higher specificity.</div></details>
+    <details class="qa" open><summary>How do these metrics work with more than two classes?</summary><div class="a">You compute them one class at a time. You treat the class of interest as positive and everything else as negative, so the matrix collapses into four regions for that class. In the movie example Troll 2 came out at 0.06 sensitivity and 0.52 specificity, while Gore Police was 0.11 and 0.52. With four classes you would report four pairs.</div></details>
+    <details class="qa" open><summary>Can a model have high specificity and still be useless?</summary><div class="a">Yes, and that happens often with rare events. If only one percent of cases are positive, a model that predicts negative for everyone gets nearly perfect specificity while its sensitivity is zero. That is why I always look at both numbers next to the raw confusion matrix counts.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>The confusion matrix puts predictions on the rows and the known truth on the columns.</li>
+      <li>Sensitivity is the true positives divided by the true positives plus the false negatives.</li>
+      <li>Specificity is the true negatives divided by the true negatives plus the false positives.</li>
+      <li>For the heart disease data, logistic regression scored 0.81 sensitivity and 0.85 specificity.</li>
+      <li>The random forest scored 0.83 on both, so it found more sick patients and cleared fewer healthy ones.</li>
+      <li>Pick the model whose stronger metric matches the mistake you care about avoiding.</li>
+      <li>For three or more categories, calculate a separate sensitivity and specificity for every category.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Sensitivity and Specificity</span><span class="board-tag">sensitivity finds the sick, specificity clears the healthy</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 264" role="img" aria-label="The logistic regression matrix split into its two columns of truth, drawn to scale. The truly positive column holds 139 true positives and 32 false negatives, so sensitivity is 0.81. The truly negative column holds 20 false positives and 112 true negatives, so specificity is 0.85.">
+            <g class="sv-stroke-ink" stroke-width="3" stroke-linejoin="round">
+              <rect x="50" y="48" width="110" height="139" class="sv-good-soft"/>
+              <rect x="50" y="187" width="110" height="32" class="sv-key-soft"/>
+              <rect x="210" y="48" width="110" height="20" class="sv-key-soft"/>
+              <rect x="210" y="68" width="110" height="112" class="sv-good-soft"/>
+            </g>
+            <text x="105" y="34" text-anchor="middle" class="sv-t">truly positive</text>
+            <text x="265" y="34" text-anchor="middle" class="sv-t">truly negative</text>
+            <text x="105" y="124" text-anchor="middle" class="sv-tb">TP 139</text>
+            <text x="105" y="210" text-anchor="middle" class="sv-tb">FN 32</text>
+            <text x="328" y="65" class="sv-tb">FP 20</text>
+            <text x="265" y="131" text-anchor="middle" class="sv-tb">TN 112</text>
+            <text x="265" y="206" text-anchor="middle" class="sv-tb">specificity 0.85</text>
+            <text x="105" y="246" text-anchor="middle" class="sv-tb">sensitivity 0.81</text>
+          </svg>
+          <p>Each metric lives in one column of truth. Sensitivity is the share of the truly positive column the model got right; specificity is the same share for the truly negative column.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Sensitivity</dt><dd>Share of truly positive cases the model got right.</dd>
+            <dt>Specificity</dt><dd>Share of truly negative cases the model got right.</dd>
+            <dt>TP and TN</dt><dd>Correct calls: positives called positive, negatives called negative.</dd>
+            <dt>False negative (FN)</dt><dd>A positive case the model missed.</dd>
+            <dt>False positive (FP)</dt><dd>A negative case the model wrongly flagged.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Build the matrix</b>rows predicted, columns truth</li>
+            <li><b>Name the cells</b>TP, FP, FN, TN</li>
+            <li><b>Sensitivity</b>TP over the positive column</li>
+            <li><b>Specificity</b>TN over the negative column</li>
+            <li><b>Compare models</b>which error hurts more?</li>
+          </ol>
+          <p class="loop">↺ three or more categories: one category is positive, the rest negative; repeat steps 3 and 4 for each</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{Sensitivity}=\frac{TP}{TP+FN}$$
+          $$\text{Specificity}=\frac{TN}{TN+FP}$$
+          <ul class="keys">
+            <li>\(TP+FN\) is every truly positive case: the whole left column.</li>
+            <li>\(TN+FP\) is every truly negative case: the whole right column.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th></th><th>sensitivity</th><th>specificity</th></tr>
+            <tr><td>caught</td><td>TP 139</td><td>TN 112</td></tr>
+            <tr><td>rest of column</td><td>FN 32</td><td>FP 20</td></tr>
+            <tr><td>column total</td><td>171</td><td>132</td></tr>
+            <tr class="final"><td>share</td><td>0.81</td><td>0.85</td></tr>
+          </table>
+          <p class="hand">Logistic regression's counts. The random forest gets 0.83 on both: slightly better at finding the sick, slightly worse at clearing the healthy.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Specificity measures how well we find positives.</span><span class="yes">That is sensitivity. Anchor to the truth: sensitivity among real positives, specificity among real negatives.</span></li>
+            <li><span class="no">High sensitivity alone means a good model.</span><span class="yes">Calling everyone positive gives perfect sensitivity and zero specificity. Read the pair together.</span></li>
+            <li><span class="no">A 3 × 3 table has one sensitivity.</span><span class="yes">One pair per category, and they differ: Troll 2 has sensitivity 0.06, Gore Police 0.11.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="03-machine-learning-fundamentals-the-confusion-matrix.html"><small>Previous</small>Machine Learning Fundamentals: The Confusion Matrix</a> <a href="06-machine-learning-fundamentals-bias-and-variance.html"><small>Next</small>Machine Learning Fundamentals: Bias and Variance</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

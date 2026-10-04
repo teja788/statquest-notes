@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Multiple Regression — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>42</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 42 · 5.4 min</div>
+    <h1>Multiple Regression</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=zITIFTsivN8" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: Machine Learning (video 11)</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Multiple regression fits a plane instead of a line. Josh shows that the maths from simple regression carries over almost unchanged.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>People make a big deal of the difference between simple and multiple regression. There is not much difference. Simple regression fits a line from one predictor. Multiple regression fits a plane, because you added more data. R² and the p-value work the same way, with one change to the parameter count. The new part is that you can compare the two fits against each other.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>In simple regression you predict one thing from one other thing. Josh predicts mouse body length from mouse weight. He fits a line and asks two questions. How much variation does the line explain? That is R². Could a fit this good happen by chance? That is the p-value.</p>
+    <p>Multiple regression adds more data to the same equation. Josh predicts body length from weight <em>and</em> tail length. With two predictors the fit is a flat plane, not a line. Add food eaten or wheel time, and the fit becomes a higher-dimensional object. That phrase only means more columns of data. The thing you predict never changes, so every sum of squares is still measured around body length.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 312" role="img" aria-label="Left: a line fitted to body length against weight. Right: a plane fitted to body length against weight and tail length.">
+        <text class="sv-tb" x="70" y="28">Simple regression: a line</text>
+        <text class="sv-tb" x="440" y="28">Multiple regression: a plane</text>
+
+        <path d="M70 50 V240 H350" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text class="sv-ts" transform="rotate(-90 40 160)" x="40" y="160" text-anchor="middle">body length</text>
+        <text class="sv-ts" x="210" y="258" text-anchor="middle">weight</text>
+        <path d="M85 222 L340 78" class="sv-stroke-acc" stroke-width="2.5"/>
+        <circle cx="100" cy="215" r="4" class="sv-ink"/>
+        <circle cx="135" cy="198" r="4" class="sv-ink"/>
+        <circle cx="165" cy="182" r="4" class="sv-ink"/>
+        <circle cx="200" cy="160" r="4" class="sv-ink"/>
+        <circle cx="232" cy="142" r="4" class="sv-ink"/>
+        <circle cx="262" cy="122" r="4" class="sv-ink"/>
+        <circle cx="295" cy="100" r="4" class="sv-ink"/>
+        <circle cx="325" cy="82" r="4" class="sv-ink"/>
+        <rect x="70" y="268" width="280" height="24" rx="4" class="sv-paper2"/>
+        <text class="sv-ts" x="80" y="284">2 parameters: intercept and slope</text>
+
+        <path d="M500 60 V225 H720" class="sv-stroke-ink" stroke-width="1.5"/>
+        <path d="M500 225 L440 262" class="sv-stroke-ink" stroke-width="1.5"/>
+        <polygon points="480,190 700,148 660,100 440,142" class="sv-acc-soft"/>
+        <polygon points="480,190 700,148 660,100 440,142" class="sv-stroke-acc" stroke-width="2"/>
+        <circle cx="520" cy="175" r="3.5" class="sv-ink"/>
+        <circle cx="580" cy="163" r="3.5" class="sv-ink"/>
+        <circle cx="640" cy="150" r="3.5" class="sv-ink"/>
+        <circle cx="560" cy="140" r="3.5" class="sv-ink"/>
+        <circle cx="620" cy="128" r="3.5" class="sv-ink"/>
+        <text class="sv-ts" transform="rotate(-90 472 150)" x="472" y="150" text-anchor="middle">body length</text>
+        <text class="sv-ts" x="640" y="245" text-anchor="middle">weight</text>
+        <text class="sv-ts" x="418" y="262" text-anchor="end">tail length</text>
+        <rect x="440" y="268" width="280" height="24" rx="4" class="sv-paper2"/>
+        <text class="sv-ts" x="450" y="284">3 parameters: intercept and 2 slopes</text>
+      </svg>
+      <figcaption>Notice that only the shape of the fit changes. Body length stays on the vertical axis in both pictures.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Fit the simple regression. Least squares finds the line from weight, estimating two parameters.</li>
+      <li>Fit the multiple regression. Least squares finds the plane from weight and tail length, estimating three parameters.</li>
+      <li>Calculate R² for each fit. The formula is identical for both.</li>
+      <li>Calculate F and the p-value for each fit against the mean. Only the parameter count changes.</li>
+      <li>Compare the two fits to each other. Replace the mean terms in the F formula with the simple regression terms. This says whether tail length earns its place.</li>
+    </ol>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 250" role="img" aria-label="Bar chart of shrinking sums of squares for the mean, the simple regression and the multiple regression, with two F tests marked by brackets.">
+        <defs>
+          <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" class="sv-ink"/>
+          </marker>
+        </defs>
+        <text class="sv-tb" x="20" y="26">Three fits to the same body lengths, and the two F tests</text>
+
+        <text class="sv-ts" x="20" y="78">Mean only (p = 1)</text>
+        <rect x="200" y="60" width="370" height="26" rx="3" class="sv-key-soft"/>
+        <rect x="200" y="60" width="370" height="26" rx="3" class="sv-stroke-key" stroke-width="1.5"/>
+        <text class="sv-tm" x="212" y="78">SS(mean)</text>
+
+        <text class="sv-ts" x="20" y="138">Simple: weight (p = 2)</text>
+        <rect x="200" y="120" width="240" height="26" rx="3" class="sv-acc-soft"/>
+        <rect x="200" y="120" width="240" height="26" rx="3" class="sv-stroke-acc" stroke-width="1.5"/>
+        <text class="sv-tm" x="212" y="138">SS(simple)</text>
+
+        <text class="sv-ts" x="20" y="198">Multiple: + tail (p = 3)</text>
+        <rect x="200" y="180" width="150" height="26" rx="3" class="sv-good-soft"/>
+        <rect x="200" y="180" width="150" height="26" rx="3" class="sv-stroke-good" stroke-width="1.5"/>
+        <text class="sv-tm" x="212" y="198">SS(multiple)</text>
+
+        <path d="M566 92 L448 114" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <path d="M436 152 L358 174" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar2)"/>
+
+        <path d="M600 73 H612 V133 H600" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text class="sv-ts" x="620" y="96">F₁: does weight</text>
+        <text class="sv-ts" x="620" y="112">beat the mean?</text>
+        <path d="M600 133 H612 V193 H600" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text class="sv-ts" x="620" y="156">F₂: is tail length</text>
+        <text class="sv-ts" x="620" y="172">worth adding?</text>
+      </svg>
+      <figcaption>Notice that each extra predictor shrinks the sum of squares. The F tests ask whether each drop beats chance.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">The multiple regression equation</span>
+      <div class="math">$$ \text{body length} = b_0 + b_1 \cdot \text{weight} + b_2 \cdot \text{tail length} $$</div>
+      <p class="explain"><b>Symbols:</b> \(b_0\) is the intercept, the predicted body length when both predictors are zero. \(b_1\) is the slope for weight and \(b_2\) is the slope for tail length. <b>What it tells you:</b> each new piece of data is one more term with one more slope to estimate.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">R² — identical for both</span>
+      <div class="math">$$ R^2 = \frac{SS(\text{mean}) - SS(\text{fit})}{SS(\text{mean})} $$</div>
+      <p class="explain"><b>Symbols:</b> \(SS(\text{mean})\) is the sum of squared distances to the average body length. \(SS(\text{fit})\) is the same sum around the line or plane. <b>What it tells you:</b> the share of the variation in body length that the fit explains.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">F, to get a p-value for R²</span>
+      <div class="math">$$ F = \frac{\big(SS(\text{mean}) - SS(\text{fit})\big) \big/ (p_{\text{fit}} - p_{\text{mean}})}{SS(\text{fit}) \big/ (n - p_{\text{fit}})} $$</div>
+      <p class="explain"><b>Symbols:</b> \(p_{\text{fit}}\) is the number of parameters least squares estimates. \(p_{\text{mean}}\) is 1. \(n\) is the number of mice. <b>What it tells you:</b> whether the drop in the sum of squares is large for the parameters it cost.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">F, comparing the two fits</span>
+      <div class="math">$$ F = \frac{\big(SS(\text{simple}) - SS(\text{multiple})\big) \big/ (p_{\text{multiple}} - p_{\text{simple}})}{SS(\text{multiple}) \big/ (n - p_{\text{multiple}})} $$</div>
+      <p class="explain"><b>Symbols:</b> the mean terms are swapped for the simple regression terms. \(SS(\text{simple})\) is the sum of squares around the line, with \(p_{\text{simple}} = 2\). \(SS(\text{multiple})\) is the sum around the plane, with \(p_{\text{multiple}} = 3\). <b>What it tells you:</b> whether tail length is worth collecting.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh models mouse body length. The simple regression uses weight alone, so \(p_{\text{fit}} = 2\). The multiple regression adds tail length, so \(p_{\text{fit}} = 3\). In both cases \(p_{\text{mean}} = 1\), because you only estimate the average body length.</p>
+      <p>To compare the fits directly, plug in \(p_{\text{simple}} = 2\) and \(p_{\text{multiple}} = 3\). The numerator is then divided by \(3 - 2 = 1\). If the R² values differ a lot and the p-value is small, tail length is worth measuring. Add time on the running wheel and \(p_{\text{fit}}\) becomes 4.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Plain R² never goes down when you add data. That is why multiple regression uses an adjusted R², which pays a penalty for every extra parameter.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The parameter count is not fixed at 2 or 3. Every predictor you add changes \(p_{\text{fit}}\), and the F statistic is wrong if you forget to update it.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A bigger R² alone is not proof. You need the gain in R² to be large <em>and</em> the p-value to be small before you keep the extra variable.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is the real difference between simple and multiple regression?</summary><div class="a">Very little. Simple regression fits a line using one predictor, and multiple regression fits a plane or a higher-dimensional object using several. R² and the F test are calculated the same way, and only the parameter count changes.</div></details>
+    <details class="qa" open><summary>Why do you adjust R² in multiple regression?</summary><div class="a">Because plain R² can only go up when you add a predictor, even a useless one. The adjusted version pays a penalty for the extra parameters, so it can go down when a variable adds nothing.</div></details>
+    <details class="qa" open><summary>How do you decide if a new variable is worth collecting?</summary><div class="a">Fit the model without it and the model with it, then run an F test between the two. The mean terms in the formula are replaced by the smaller model's sum of squares and parameter count. A big R² gain with a small p-value says it earns its place.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Multiple regression is simple regression with more data added to the equation.</li>
+      <li>One predictor gives a line, two give a plane, and more give a higher-dimensional object.</li>
+      <li>R² is calculated exactly the same way in both cases, but you adjust it for the extra parameters.</li>
+      <li>The F test also stays the same, except that p-fit counts the parameters in your equation.</li>
+      <li>P-mean is always 1, and the best part is comparing the small model with the big one directly.</li>
+      <li>Keep the extra variable when the R² gain is large and the p-value is small.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Multiple regression</span><span class="board-tag">same maths, a plane instead of a line</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 290" role="img" aria-label="Three fits to the same body lengths. Top: a flat dashed line at the mean, p = 1. Middle: a line from weight, p = 2. Bottom: a plane from weight and tail length, p = 3. Arrows between them ask, with F, whether weight beats the mean and whether tail length is worth adding.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <path d="M24 16 V78 H146" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="32" y1="46" x2="142" y2="46" class="sv-stroke-key" stroke-width="3" stroke-dasharray="7 5"/>
+            <circle cx="44" cy="68" r="4.5" class="sv-ink"/>
+            <circle cx="66" cy="60" r="4.5" class="sv-ink"/>
+            <circle cx="88" cy="36" r="4.5" class="sv-ink"/>
+            <circle cx="110" cy="36" r="4.5" class="sv-ink"/>
+            <circle cx="132" cy="30" r="4.5" class="sv-ink"/>
+            <path d="M24 114 V176 H146" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="32" y1="169.5" x2="142" y2="119.5" class="sv-stroke-acc" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="44" cy="166" r="4.5" class="sv-ink"/>
+            <circle cx="66" cy="158" r="4.5" class="sv-ink"/>
+            <circle cx="88" cy="134" r="4.5" class="sv-ink"/>
+            <circle cx="110" cy="134" r="4.5" class="sv-ink"/>
+            <circle cx="132" cy="128" r="4.5" class="sv-ink"/>
+            <path d="M24 212 V274 H146 M24 274 L54 250" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <g class="sv-stroke-acc" stroke-width="3" stroke-linejoin="round"><polygon points="33,260 114,250 144,210 63,220" class="sv-paper"/></g>
+            <circle cx="64" cy="238" r="4.5" class="sv-ink"/>
+            <circle cx="83" cy="243" r="4.5" class="sv-ink"/>
+            <circle cx="99" cy="227" r="4.5" class="sv-ink"/>
+            <circle cx="111" cy="234" r="4.5" class="sv-ink"/>
+            <line x1="86" y1="84" x2="86" y2="104" class="sv-stroke-ink" stroke-width="2.5" marker-end="url(#board-arr)"/>
+            <line x1="86" y1="182" x2="86" y2="202" class="sv-stroke-ink" stroke-width="2.5" marker-end="url(#board-arr)"/>
+            <text x="164" y="53" class="sv-tb">mean only</text>
+            <text x="384" y="53" text-anchor="end" class="sv-tm">p = 1</text>
+            <text x="164" y="151" class="sv-tb">weight: a line</text>
+            <text x="384" y="151" text-anchor="end" class="sv-tm">p = 2</text>
+            <text x="164" y="248" class="sv-tb">+ tail: a plane</text>
+            <text x="384" y="248" text-anchor="end" class="sv-tm">p = 3</text>
+            <text x="100" y="101" class="sv-ts">F: beats the mean?</text>
+            <text x="100" y="199" class="sv-ts">F: tail worth adding?</text>
+          </svg>
+          <p>One predictor gives a line, two give a plane. Body length stays the y, so R² and F keep their formulas; only the parameter count changes.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Simple regression</dt><dd>One predictor, fitted with a line.</dd>
+            <dt>Multiple regression</dt><dd>Several predictors; two give a plane.</dd>
+            <dt>Higher-dimensional object</dt><dd>The fit with more predictors; it just means more data columns.</dd>
+            <dt>\(p_{\text{fit}}\)</dt><dd>Parameters the fit estimates: 2 for a line, 3 for a plane.</dd>
+            <dt>Adjusted R²</dt><dd>R² with a penalty for each extra parameter.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Fit simple</b>weight only: a line, p = 2</li>
+            <li><b>Fit multiple</b>weight + tail: a plane, p = 3</li>
+            <li><b>R² for each</b>the same formula</li>
+            <li><b>F vs mean</b>only the parameter count changes</li>
+            <li><b>F between fits</b>simple terms replace mean terms</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$y=b_0+b_1w+b_2t$$
+          $$F=\frac{(SS_{\text{line}}-SS_{\text{plane}})/(3-2)}{SS_{\text{plane}}/(n-3)}$$
+          <ul class="keys">
+            <li>\(y\): body length; \(w\), \(t\): weight and tail length; \(b_0\): intercept; \(b_1\), \(b_2\): slopes.</li>
+            <li>\(SS_{\text{line}}\), \(SS_{\text{plane}}\): SS(simple) and SS(multiple); \(n\): number of mice.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>fit</th><th>predictors</th><th>parameters</th></tr>
+            <tr><td>mean</td><td>none</td><td>1</td></tr>
+            <tr><td>simple</td><td>weight</td><td>2</td></tr>
+            <tr><td>multiple</td><td>weight, tail</td><td>3</td></tr>
+            <tr class="final"><td>plane vs line</td><td>numerator ÷</td><td>3 − 2 = 1</td></tr>
+          </table>
+          <p class="hand">Add wheel time and the parameter count becomes 4. The mean always has 1: just the average.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Plain R² can drop when you add a predictor.</span><span class="yes">It never goes down, so use adjusted R², which pays a penalty per extra parameter.</span></li>
+            <li><span class="no">The parameter count is fixed at 2 or 3.</span><span class="yes">Each added predictor raises it; forget to update it and F is wrong.</span></li>
+            <li><span class="no">A bigger R² alone proves the variable matters.</span><span class="yes">Keep it only if the R² gain is large and the p-value is small.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="41-linear-regression-in-r-step-by-step.html"><small>Previous</small>Linear Regression in R, Step-by-Step</a> <a href="43-multiple-regression-in-r-step-by-step.html"><small>Next</small>Multiple Regression in R, Step-by-Step</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

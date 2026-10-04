@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>p-hacking: What it is and how to avoid it — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>14</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 14 · 13.8 min</div>
+    <h1>p-hacking: What it is and how to avoid it</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=HDCOUXE3HMM" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">p-hacking is the misuse of analysis techniques that leaves you fooled by a false positive. This video shows the two easiest ways to do it by accident, and the two fixes.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>If you test many things and report only the one with a small p-value, you are cherry-picking. A threshold of 0.05 means about 5% of tests on data from the same distribution give false positives, so many tests give many false positives. That is the multiple testing problem, and methods like the false discovery rate fix it, but only if you feed them every p-value. The second trap is adding more data because your p-value landed near 0.05. The fix there is a power analysis before the experiment, which tells you the sample size to collect.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh starts with a story. A virus is going around and we want a drug that shortens recovery time. We build many candidate drugs and test each one. Each test measures three people with no drug and three people with the drug.</p>
+    <p>Drug A does not look better. Drug B does not look better. We keep going until one drug finally looks great. We compare the two means, get a p-value of 0.02, and reject the null hypothesis. That feels like a win, but we just p-hacked.</p>
+    <p>To see why, forget the drugs. Imagine we measured recovery times for a huge number of people who took nothing, and fitted a normal distribution to those times. In that distribution, 95% of people recover between 5 and 15 days, and 2.5% recover in less than 5 days.</p>
+    <p>Now draw two groups of three people from that single distribution. Both groups come from the same place, so any difference between their means is pure luck. The first test gives a p-value of 0.86. The next gives 0.63. Another gives 0.06, which looks close but is still above 0.05. Keep going and sooner or later you get 0.02.</p>
+    <p>That 0.02 says the two groups came from different distributions. We know that is wrong, because we drew them from the same one. It is a false positive, and it appeared only because we kept testing.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 366" role="img" aria-label="One normal distribution of recovery times on the left, and four repeated tests on the right whose p-values are 0.86, 0.63, 0.06 and 0.02">
+        <defs>
+          <marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/>
+          </marker>
+        </defs>
+
+        <text x="20" y="34" class="sv-tb">All recovery times come from ONE distribution</text>
+
+        <path d="M 40 210 C 130 210, 140 70, 220 70 C 300 70, 310 210, 400 210 Z" class="sv-acc-soft"/>
+        <path d="M 40 210 C 130 210, 140 70, 220 70 C 300 70, 310 210, 400 210" class="sv-stroke-acc" stroke-width="2"/>
+        <line x1="40" y1="210" x2="410" y2="210" class="sv-line" stroke-width="1.5"/>
+        <line x1="130" y1="210" x2="130" y2="118" class="sv-stroke-ink" stroke-width="1" stroke-dasharray="4 3"/>
+        <line x1="310" y1="210" x2="310" y2="118" class="sv-stroke-ink" stroke-width="1" stroke-dasharray="4 3"/>
+        <text x="112" y="226" class="sv-ts">5 days</text>
+        <text x="288" y="226" class="sv-ts">15 days</text>
+        <text x="150" y="110" class="sv-ts">95% recover in this range</text>
+
+        <circle cx="165" cy="246" r="6" class="sv-acc"/>
+        <circle cx="215" cy="246" r="6" class="sv-acc"/>
+        <circle cx="262" cy="246" r="6" class="sv-acc"/>
+        <circle cx="185" cy="270" r="6" class="sv-key"/>
+        <circle cx="238" cy="270" r="6" class="sv-key"/>
+        <circle cx="292" cy="270" r="6" class="sv-key"/>
+        <text x="20" y="250" class="sv-ts">group 1</text>
+        <text x="20" y="274" class="sv-ts">group 2</text>
+
+        <line x1="410" y1="258" x2="450" y2="258" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah1)"/>
+
+        <text x="470" y="34" class="sv-tb">Keep drawing two groups of 3 and testing</text>
+        <rect x="470" y="52" width="270" height="34" rx="5" class="sv-paper2"/>
+        <text x="484" y="74" class="sv-tm">Test 1    p = 0.86</text>
+        <rect x="470" y="94" width="270" height="34" rx="5" class="sv-paper2"/>
+        <text x="484" y="116" class="sv-tm">Test 2    p = 0.63</text>
+        <rect x="470" y="136" width="270" height="34" rx="5" class="sv-paper2"/>
+        <text x="484" y="158" class="sv-tm">Test 3    p = 0.06</text>
+        <rect x="470" y="178" width="270" height="34" rx="5" class="sv-key-soft"/>
+        <text x="484" y="200" class="sv-tm">Test 4    p = 0.02</text>
+        <text x="470" y="230" class="sv-ts">Reported as a discovery. It is a false positive.</text>
+
+        <rect x="20" y="304" width="720" height="40" rx="6" class="sv-paper2"/>
+        <text x="36" y="329" class="sv-t">Nothing about the world changed between tests. Only the sample changed.</text>
+      </svg>
+      <figcaption>Notice that every group comes from the same curve, so the small p-value in test 4 reports a difference that does not exist.</figcaption>
+    </figure>
+
+    <p>Josh reminds us of the rule from the p-values video. A threshold of 0.05 means about 5% of tests run on data from the same distribution will be false positives. Do 100 tests and expect about 5. Do 10,000 tests and expect about 500. More tests means more false positives. That is called the <strong>multiple testing problem</strong>.</p>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Decide what you want to test. In the video it is a set of candidate drugs against a no-drug group.</li>
+      <li>Run every comparison you planned and record a p-value for each one. Do not throw away the ones that looked bad.</li>
+      <li>Feed all of those p-values into a correction method such as the false discovery rate. Josh has a separate video on it.</li>
+      <li>The method returns adjusted p-values that are usually larger than the originals. Some of the old false positives now sit above 0.05 and stop looking significant.</li>
+      <li>Before you run the experiment at all, do a power analysis. It tells you how many replicates you need to have a good chance of correctly rejecting the null hypothesis.</li>
+      <li>Collect exactly that sample size, test once, and report the result. Do not add more data because the p-value was close.</li>
+    </ol>
+    <p>Step 6 covers the second, quieter form of p-hacking. Take the pair of groups that gave a p-value of 0.06. In real life we do not know whether the two groups came from the same distribution, and we usually hope they did not. So it is tempting to add one more measurement to each group and check again.</p>
+    <p>Do that here and the p-value drops to 0.02. It looks like a win. It is not. When a p-value is near 0.05, there is a surprisingly high chance that one extra measurement per group will push it under the line. The 5% error rate assumes you calculate a single p-value and decide. Here we calculated two, and the second one only got a chance because the first was tempting.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 304" role="img" aria-label="Left panel shows two groups of three points with a p-value of 0.06, right panel adds one point to each group and the p-value falls to 0.02">
+        <defs>
+          <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/>
+          </marker>
+        </defs>
+
+        <rect x="20" y="46" width="320" height="200" rx="6" class="sv-paper2"/>
+        <text x="20" y="34" class="sv-tb">Original data: p = 0.06</text>
+        <circle cx="110" cy="96" r="6" class="sv-acc"/>
+        <circle cx="110" cy="126" r="6" class="sv-acc"/>
+        <circle cx="110" cy="156" r="6" class="sv-acc"/>
+        <line x1="78" y1="126" x2="142" y2="126" class="sv-stroke-ink" stroke-width="1.5" stroke-dasharray="5 3"/>
+        <circle cx="250" cy="140" r="6" class="sv-good"/>
+        <circle cx="250" cy="176" r="6" class="sv-good"/>
+        <circle cx="250" cy="206" r="6" class="sv-good"/>
+        <line x1="218" y1="174" x2="282" y2="174" class="sv-stroke-ink" stroke-width="1.5" stroke-dasharray="5 3"/>
+        <text x="86" y="236" class="sv-ts">group 1</text>
+        <text x="226" y="236" class="sv-ts">group 2</text>
+        <text x="150" y="112" class="sv-ts">dashed line = mean</text>
+
+        <line x1="352" y1="146" x2="408" y2="146" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah2)"/>
+        <rect x="330" y="256" width="240" height="26" rx="5" class="sv-paper"/>
+        <text x="336" y="274" class="sv-ts">add one measurement to each group</text>
+
+        <rect x="420" y="46" width="320" height="200" rx="6" class="sv-key-soft"/>
+        <text x="420" y="34" class="sv-tb">After adding data: p = 0.02</text>
+        <circle cx="510" cy="96" r="6" class="sv-acc"/>
+        <circle cx="510" cy="126" r="6" class="sv-acc"/>
+        <circle cx="510" cy="156" r="6" class="sv-acc"/>
+        <circle cx="510" cy="108" r="6" class="sv-key"/>
+        <line x1="478" y1="122" x2="542" y2="122" class="sv-stroke-ink" stroke-width="1.5" stroke-dasharray="5 3"/>
+        <circle cx="650" cy="140" r="6" class="sv-good"/>
+        <circle cx="650" cy="176" r="6" class="sv-good"/>
+        <circle cx="650" cy="206" r="6" class="sv-good"/>
+        <circle cx="650" cy="196" r="6" class="sv-key"/>
+        <line x1="618" y1="180" x2="682" y2="180" class="sv-stroke-ink" stroke-width="1.5" stroke-dasharray="5 3"/>
+        <text x="556" y="104" class="sv-ts">new point</text>
+        <text x="556" y="200" class="sv-ts">new point</text>
+      </svg>
+      <figcaption>Notice that two p-values were used to make one decision, so the promised 5% error rate no longer holds.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>The video is mostly visual. It leans on two simple counting rules about false positives.</p>
+
+    <div class="formula"><span class="lbl">Expected false positives</span>
+      <div class="math">$$ E[\text{false positives}] = m \times \alpha $$</div>
+      <p class="explain"><b>Symbols:</b> \(m\) is the number of statistical tests you run on data where nothing is really different; \(\alpha\) is your significance threshold, which is 0.05 in the video; \(E[\cdot]\) means the average number you should expect. <b>What it tells you:</b> with \(\alpha = 0.05\), 100 tests give about 5 false positives and 10,000 tests give about 500.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">What a correction method does</span>
+      <div class="math">$$ p_i^{\text{adj}} \ge p_i \quad \text{for every test } i = 1, \dots, m $$</div>
+      <p class="explain"><b>Symbols:</b> \(p_i\) is the original p-value from test \(i\); \(p_i^{\text{adj}}\) is the adjusted p-value that the false discovery rate returns; \(m\) is the total number of tests you submit. <b>What it tells you:</b> adjusted p-values are usually larger, so some results that passed 0.05 before now fail, which is exactly the protection you want.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>We test one candidate drug after another. For each drug we measure three people with no medicine and three people on the drug. Drug A shows almost no change. Drug B shows almost no change. We keep going until one drug finally looks strong.</p>
+      <p>For that drug we compute the two means, run the test, and get \(p = 0.02\). Since \(0.02 < 0.05\), we reject the null hypothesis that the drug makes no difference, and we announce a result.</p>
+      <p>The simulation shows what really happened. Draw pairs of groups of three from a single distribution and the p-values come out as 0.86, then 0.63, then 0.06, then 0.02. Nothing was ever different, so the 0.02 is luck. With \(\alpha = 0.05\), roughly \(100 \times 0.05 = 5\) tests in every 100 will do this.</p>
+      <p>The second half of the example is the 0.06 pair. Adding one measurement to each group moves the p-value to 0.02. Both groups still came from the same distribution, so this too is a false positive.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not run tests only on the comparison that already looks good. A correction method can only protect you if you give it the p-values for <em>all</em> the tests you ran, not just the promising one.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not top up your sample because the p-value came out near 0.05. That turns one decision into two p-values, and the 5% error rate assumed only one.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A p-value of 0.06 is not an invitation to keep looking. It is a result. Report it as it is, and plan the next study properly.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Sample size is a decision you make before the experiment, not after. A power analysis gives you that number and removes the temptation.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>What is p-hacking?</summary>
+      <div class="a">p-hacking is the misuse or abuse of analysis techniques, and the result is that you get fooled by a false positive. The classic version is running many comparisons and reporting only the one that came out below 0.05. The other common version is adding more data after seeing a p-value near the threshold, then reporting the second p-value.</div>
+    </details>
+
+    <details class="qa" open><summary>Why does testing many things create false positives?</summary>
+      <div class="a">A threshold of 0.05 accepts a 5% false positive rate for each test on data where nothing is different. So about 5 in every 100 tests will look significant purely by chance, and about 500 in every 10,000. The more tests you run, the more of those you accumulate. That is the multiple testing problem.</div>
+    </details>
+
+    <details class="qa" open><summary>How do you correct for multiple testing?</summary>
+      <div class="a">You adjust the p-values with a method such as the false discovery rate. You give it the p-value from every comparison and it returns adjusted p-values that are usually larger. Results that were false positives often end up above 0.05 after the adjustment. The method only works if you include every test, so no cherry-picking.</div>
+    </details>
+
+    <details class="qa" open><summary>Your p-value is 0.06. Can you just collect a few more samples?</summary>
+      <div class="a">No, and this is a subtle trap. When a p-value sits near 0.05, one extra observation per group has a surprisingly high chance of pushing it under the line even when there is no real effect. You would then be using two p-values to make one decision, which breaks the 5% guarantee. The correct answer is to fix the sample size ahead of time with a power analysis.</div>
+    </details>
+
+    <details class="qa" open><summary>What does a power analysis give you?</summary>
+      <div class="a">You run it before the experiment. It tells you how many replicates you need so that you have a relatively high probability of correctly rejecting the null hypothesis when there really is an effect. You then collect that many samples and test once.</div>
+    </details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap">
+      <ul>
+        <li>p-hacking is the misuse of analysis that leaves you fooled by a false positive.</li>
+        <li>Testing many drugs and reporting only the one with p = 0.02 is cherry-picking.</li>
+        <li>Samples drawn from a single distribution still produce p-values like 0.02 now and then.</li>
+        <li>At a threshold of 0.05, about 5 tests in 100 and 500 tests in 10,000 are false positives.</li>
+        <li>Running many tests and collecting false positives is called the multiple testing problem.</li>
+        <li>The false discovery rate adjusts every p-value upward, but only if you submit them all.</li>
+        <li>Adding data because a p-value was near 0.05 is the second, quieter form of p-hacking.</li>
+        <li>A power analysis, done before the experiment, gives you the sample size and removes the temptation.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">p-hacking</span><span class="board-tag">keep testing and luck starts looking real</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 252" role="img" aria-label="Both groups are drawn from one recovery-time curve, so any difference is luck. Test after test gives p = 0.86, 0.63 and 0.06, all above the 0.05 line, until one gives 0.02 and falls below it: a false positive, which happens about 5 times in 100 tests.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <path d="M24 98 C64 98 72 34 100 34 C128 34 136 98 176 98 Z" class="sv-acc-soft"/>
+            <path d="M24 98 C64 98 72 34 100 34 C128 34 136 98 176 98" class="sv-stroke-acc" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="16" y1="98" x2="184" y2="98" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <g class="sv-acc"><circle cx="66" cy="86" r="5.5"/><circle cx="94" cy="86" r="5.5"/><circle cx="122" cy="86" r="5.5"/></g>
+            <g class="sv-key"><circle cx="80" cy="86" r="5.5"/><circle cx="108" cy="86" r="5.5"/><circle cx="136" cy="86" r="5.5"/></g>
+            <text x="196" y="62" class="sv-ts">both groups, one curve</text>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <rect x="16" y="120" width="70" height="40" rx="10" class="sv-paper"/>
+              <rect x="112" y="120" width="70" height="40" rx="10" class="sv-paper"/>
+              <rect x="208" y="120" width="70" height="40" rx="10" class="sv-paper"/>
+              <rect x="304" y="196" width="70" height="40" rx="10" class="sv-key"/>
+            </g>
+            <text x="51" y="147" text-anchor="middle" class="sv-tb">0.86</text>
+            <text x="147" y="147" text-anchor="middle" class="sv-tb">0.63</text>
+            <text x="243" y="147" text-anchor="middle" class="sv-tb">0.06</text>
+            <text x="339" y="223" text-anchor="middle" class="sv-tb">0.02</text>
+            <line x1="89" y1="140" x2="106" y2="140" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="185" y1="140" x2="202" y2="140" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <path d="M281 140 C316 140 339 156 339 189" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="16" y1="178" x2="384" y2="178" class="sv-stroke-good" stroke-width="2.5" stroke-dasharray="8 6" stroke-linecap="round"/>
+            <text x="16" y="203" class="sv-tb">p = 0.05</text>
+            <text x="292" y="214" text-anchor="end" class="sv-tb">false positive</text>
+            <text x="292" y="238" text-anchor="end" class="sv-ts">5 in 100 tests</text>
+          </svg>
+          <p>Every pair of groups comes from the same curve, so any difference is luck. Keep testing and, about 5 times in 100, p dips below 0.05 anyway. Report only that one and you have p-hacked.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>p-hacking</dt><dd>Misusing analysis so that a false positive fools you.</dd>
+            <dt>False positive</dt><dd>A small p-value when nothing is really different.</dd>
+            <dt>Multiple testing problem</dt><dd>More tests, more false positives: 5 in 100, 500 in 10,000.</dd>
+            <dt>False discovery rate</dt><dd>Adjusts every p-value, usually upward; it needs all of them.</dd>
+            <dt>Power analysis</dt><dd>Done before the experiment; gives the sample size to collect.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Plan the tests</b>drugs against a no-drug group</li>
+            <li><b>Run them all</b>keep every p-value, even bad ones</li>
+            <li><b>Correct them</b>feed all to false discovery rate</li>
+            <li><b>Adjusted p</b>some false positives now above 0.05</li>
+            <li><b>Power analysis</b>before the experiment: sample size</li>
+            <li><b>Test once</b>no topping up near 0.05</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$E[\text{false positives}]=m\times\alpha$$
+          $$p_i^{\text{adj}}\ge p_i \quad i=1,\dots,m$$
+          <ul class="keys">
+            <li>\(m\): tests run where nothing really differs; \(\alpha\): the threshold, 0.05.</li>
+            <li>So 100 tests give about 5 false positives, and 10,000 give about 500.</li>
+            <li>\(p_i^{\text{adj}}\): the false discovery rate's adjusted p-value for test \(i\).</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>test</th><th>p</th><th>verdict</th></tr>
+            <tr><td>1</td><td>0.86</td><td>not significant</td></tr>
+            <tr><td>2</td><td>0.63</td><td>not significant</td></tr>
+            <tr><td>3</td><td>0.06</td><td>close, still no</td></tr>
+            <tr class="final"><td>4</td><td>0.02</td><td>false positive</td></tr>
+          </table>
+          <p class="hand">Every pair came from one curve, so 0.02 is luck. Topping up the 0.06 pair with one point each also gave 0.02.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Only test the comparison that looks good.</span><span class="yes">The correction needs the p-values of all tests you ran, not just the promising one.</span></li>
+            <li><span class="no">p = 0.06? Just add a few more samples.</span><span class="yes">That makes two p-values for one decision; the 5% error rate assumed one.</span></li>
+            <li><span class="no">Pick the sample size after seeing the data.</span><span class="yes">Decide it before, with a power analysis. A 0.06 is a result: report it.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="13-how-to-calculate-p-values.html"><small>Previous</small>How to calculate p-values</a> <a href="15-false-discovery-rates-fdr.html"><small>Next</small>False Discovery Rates, FDR</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CatBoost Part 2: Building and Using Trees — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>70</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 70 · 16.3 min</div>
+    <h1>CatBoost Part 2: Building and Using Trees</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=3Bg2XRFOTzg" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: —</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video shows how CatBoost builds each tree, scores splits, and makes predictions. It also explains why CatBoost uses symmetric (oblivious) trees when the trees get larger.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Before each tree, CatBoost shuffles the rows and applies ordered target encoding to the categorical columns. It then runs the rows down the tree one at a time, so a row's own residual never affects its own leaf output. Each threshold is scored by the cosine similarity of residuals and leaf outputs. Predictions are updated by adding the leaf outputs times a learning rate. Larger trees are symmetric, so every node on the same level asks the same question. This makes them weaker learners, and faster to use.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>The video uses a tiny five-row data set where "Favorite Color" predicts "Height". It assumes you know two ideas from earlier videos. <strong>Ordered target encoding</strong> turns each category into a number, using only the target values of earlier rows. The <strong>cosine similarity</strong> is a score that tells how closely two columns of numbers point the same way.</p>
+    <p>The key idea is the same one from Part 1. CatBoost treats the data as if it arrives one row at a time. When it calculates a row's leaf output, it uses only the rows that went down the tree before it. So the residual in a row is never part of the prediction for that same row.</p>
+    <p>This avoids <strong>leakage</strong>. Here, leakage means a row's target value has an effect on something calculated for that same row. The figure below shows the first stump (a tree with only one split) in the video, with the threshold Favorite Color &lt; 0.04.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 332" role="img" aria-label="Five rows run down a stump one at a time; each row keeps the leaf output that existed before its own residual was added">
+        <text x="70" y="36" text-anchor="middle" class="sv-ts">Row</text>
+        <text x="170" y="36" text-anchor="middle" class="sv-ts">Leaf</text>
+        <text x="290" y="36" text-anchor="middle" class="sv-ts">Residual (A)</text>
+        <text x="430" y="36" text-anchor="middle" class="sv-ts">Leaf output kept (B)</text>
+        <text x="610" y="36" text-anchor="middle" class="sv-ts">Leaf average after row</text>
+        <g>
+          <rect x="40" y="50" width="680" height="36" rx="4" class="sv-paper2"/>
+          <text x="70" y="73" text-anchor="middle" class="sv-t">1</text><text x="170" y="73" text-anchor="middle" class="sv-t">right</text>
+          <text x="290" y="73" text-anchor="middle" class="sv-tm">1.81</text>
+          <rect x="385" y="56" width="90" height="24" rx="4" class="sv-key-soft"/><text x="430" y="73" text-anchor="middle" class="sv-tb">0</text>
+          <text x="610" y="73" text-anchor="middle" class="sv-tm">right = 1.81</text>
+
+          <rect x="40" y="94" width="680" height="36" rx="4" class="sv-paper2"/>
+          <text x="70" y="117" text-anchor="middle" class="sv-t">2</text><text x="170" y="117" text-anchor="middle" class="sv-t">right</text>
+          <text x="290" y="117" text-anchor="middle" class="sv-tm">1.56</text>
+          <rect x="385" y="100" width="90" height="24" rx="4" class="sv-acc-soft"/><text x="430" y="117" text-anchor="middle" class="sv-tb">1.81</text>
+          <text x="610" y="117" text-anchor="middle" class="sv-tm">right = 1.69</text>
+
+          <rect x="40" y="138" width="680" height="36" rx="4" class="sv-paper2"/>
+          <text x="70" y="161" text-anchor="middle" class="sv-t">3</text><text x="170" y="161" text-anchor="middle" class="sv-t">left</text>
+          <text x="290" y="161" text-anchor="middle" class="sv-tm">1.77</text>
+          <rect x="385" y="144" width="90" height="24" rx="4" class="sv-key-soft"/><text x="430" y="161" text-anchor="middle" class="sv-tb">0</text>
+          <text x="610" y="161" text-anchor="middle" class="sv-tm">left = 1.77</text>
+
+          <rect x="40" y="182" width="680" height="36" rx="4" class="sv-paper2"/>
+          <text x="70" y="205" text-anchor="middle" class="sv-t">4</text><text x="170" y="205" text-anchor="middle" class="sv-t">right</text>
+          <text x="290" y="205" text-anchor="middle" class="sv-tm">1.31</text>
+          <rect x="385" y="188" width="90" height="24" rx="4" class="sv-acc-soft"/><text x="430" y="205" text-anchor="middle" class="sv-tb">1.69</text>
+          <text x="610" y="205" text-anchor="middle" class="sv-tm">right = 1.56</text>
+
+          <rect x="40" y="226" width="680" height="36" rx="4" class="sv-paper2"/>
+          <text x="70" y="249" text-anchor="middle" class="sv-t">5</text><text x="170" y="249" text-anchor="middle" class="sv-t">right</text>
+          <text x="290" y="249" text-anchor="middle" class="sv-tm">1.64</text>
+          <rect x="385" y="232" width="90" height="24" rx="4" class="sv-acc-soft"/><text x="430" y="249" text-anchor="middle" class="sv-tb">1.56</text>
+          <text x="610" y="249" text-anchor="middle" class="sv-tm">right = 1.58</text>
+        </g>
+        <rect x="40" y="276" width="680" height="36" rx="6" class="sv-good-soft"/>
+        <text x="380" y="299" text-anchor="middle" class="sv-t">Score = cosine similarity of columns A and B = 0.71</text>
+      </svg>
+      <figcaption>Each row keeps the leaf output from before its own residual joins the leaf; rows 1 and 3 only see the starting value 0.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li><b>Shuffle and encode.</b> Each time CatBoost makes a tree, it randomizes the rows. Then it applies ordered target encoding to every discrete column with more than two options. A column with only two options is simply replaced with 1s and 0s.</li>
+      <li><b>Bin the target.</b> Ordered target encoding needs a discrete target, but "Height" is continuous. So CatBoost puts the heights into bins. With so little data, the video uses two bins: the two smallest heights get bin 0 and the three larger heights get bin 1.</li>
+      <li><b>Encode with bin numbers.</b> The bin numbers replace "Height" for ordered target encoding. Then they are ignored until the next tree.</li>
+      <li><b>Start at zero.</b> CatBoost sets every prediction to 0. The first residuals (observed minus predicted) are just the heights. For row 1, the residual is 1.81 &minus; 0 = 1.81.</li>
+      <li><b>Find thresholds.</b> Sort the encoded colors: 0.025, 0.05, 0.525. The halfway points give two candidate thresholds, 0.04 and 0.29. With lots of data, CatBoost limits the number of thresholds by putting close values in the same bin.</li>
+      <li><b>Run rows down one at a time.</b> The leaf outputs start at 0. Each row goes to a leaf, records the leaf's current output, and then the leaf output becomes the average of the residuals in it. The video builds a stump to keep it simple.</li>
+      <li><b>Score the threshold.</b> Compute the cosine similarity between the residuals and the recorded leaf outputs. Threshold 0.04 scores 0.71. Reset the leaves to 0, repeat for 0.29, and get 0.79. The higher score wins, so the root uses Favorite Color &lt; 0.29. Larger trees score every split the same way.</li>
+      <li><b>Update predictions.</b> Add each row's leaf output, times a learning rate of 0.1, to its prediction. The learning rate is a small number that shrinks each tree's effect. Then compute new residuals.</li>
+      <li><b>Build the next tree.</b> Put back the original color names, shuffle the rows again, and reuse the same bin numbers for ordered target encoding. In the video's second tree there is only one threshold, 0.29. In practice CatBoost keeps adding trees, possibly hundreds, until the predictions are good.</li>
+      <li><b>Predict new data.</b> To encode a new "Blue", CatBoost uses <em>all</em> training rows with "Blue", not only earlier rows. Then it runs the row down every tree and adds the leaf outputs times 0.1.</li>
+    </ol>
+    <p>When CatBoost builds larger trees, it builds <strong>symmetric</strong> (also called <strong>oblivious</strong>) decision trees. A symmetric tree uses the exact same threshold for every node on the same level.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="A normal tree asks different questions on level two; a symmetric tree asks Age less than 12 at both level-two nodes">
+        <text x="190" y="30" text-anchor="middle" class="sv-tb">Normal tree</text>
+        <text x="570" y="30" text-anchor="middle" class="sv-tb">Symmetric (oblivious) tree</text>
+        <line x1="380" y1="20" x2="380" y2="280" class="sv-line" stroke-width="1"/>
+        <!-- normal tree -->
+        <line x1="190" y1="80" x2="100" y2="140" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="190" y1="80" x2="280" y2="140" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="100" y1="160" x2="60" y2="230" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="100" y1="160" x2="140" y2="230" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="280" y1="160" x2="240" y2="230" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="280" y1="160" x2="320" y2="230" class="sv-stroke-ink" stroke-width="1.5"/>
+        <rect x="100" y="56" width="180" height="32" rx="6" class="sv-paper2"/>
+        <text x="190" y="77" text-anchor="middle" class="sv-t">Favorite Color &lt; 0.87</text>
+        <rect x="50" y="136" width="100" height="32" rx="6" class="sv-acc-soft"/>
+        <text x="100" y="157" text-anchor="middle" class="sv-t">Age?</text>
+        <rect x="230" y="136" width="100" height="32" rx="6" class="sv-key-soft"/>
+        <text x="280" y="157" text-anchor="middle" class="sv-t">Movie?</text>
+        <rect x="40" y="226" width="40" height="24" rx="4" class="sv-good-soft"/>
+        <rect x="120" y="226" width="40" height="24" rx="4" class="sv-good-soft"/>
+        <rect x="220" y="226" width="40" height="24" rx="4" class="sv-good-soft"/>
+        <rect x="300" y="226" width="40" height="24" rx="4" class="sv-good-soft"/>
+        <text x="190" y="275" text-anchor="middle" class="sv-ts">Must track which question comes next</text>
+        <!-- symmetric tree -->
+        <line x1="570" y1="80" x2="480" y2="140" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="570" y1="80" x2="660" y2="140" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="480" y1="160" x2="440" y2="230" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="480" y1="160" x2="520" y2="230" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="660" y1="160" x2="620" y2="230" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="660" y1="160" x2="700" y2="230" class="sv-stroke-ink" stroke-width="1.5"/>
+        <rect x="490" y="56" width="160" height="32" rx="6" class="sv-paper2"/>
+        <text x="570" y="77" text-anchor="middle" class="sv-t">Level 1 question</text>
+        <rect x="430" y="136" width="100" height="32" rx="6" class="sv-acc-soft"/>
+        <text x="480" y="157" text-anchor="middle" class="sv-t">Age &lt; 12</text>
+        <rect x="610" y="136" width="100" height="32" rx="6" class="sv-acc-soft"/>
+        <text x="660" y="157" text-anchor="middle" class="sv-t">Age &lt; 12</text>
+        <rect x="420" y="226" width="40" height="24" rx="4" class="sv-good-soft"/>
+        <rect x="500" y="226" width="40" height="24" rx="4" class="sv-good-soft"/>
+        <rect x="600" y="226" width="40" height="24" rx="4" class="sv-good-soft"/>
+        <rect x="680" y="226" width="40" height="24" rx="4" class="sv-good-soft"/>
+        <text x="570" y="275" text-anchor="middle" class="sv-ts">Same question on each level: one vector operation</text>
+      </svg>
+      <figcaption>In the symmetric tree both level-two nodes ask the same question, so the path does not change which question comes next.</figcaption>
+    </figure>
+    <p>CatBoost uses symmetric trees for two reasons. First, they are worse at making predictions. Gradient boosting combines many weak learners, and a symmetric tree is just a weaker learner. Second, they predict faster. In a normal tree, if Favorite Color &lt; 0.87 you ask about "Age", otherwise about "Movie". Keeping track of which question comes next takes time. In a symmetric tree every path asks the same questions. So all of them can be asked in a single vector operation, one fast calculation for the whole tree.</p>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">Split score: cosine similarity</span><div class="math">$$ \text{score} = \frac{\sum_{i} A_i B_i}{\sqrt{\sum_{i} A_i^2}\;\sqrt{\sum_{i} B_i^2}} $$</div><p class="explain"><b>Symbols:</b> \(A_i\) is the residual for row \(i\). \(B_i\) is the leaf output recorded for row \(i\) before its own residual joined the leaf. The sums run over the rows. <b>What it tells you:</b> a higher score means the leaf outputs line up better with the residuals, so the threshold makes better predictions.</p></div>
+    <div class="formula"><span class="lbl">Prediction update</span><div class="math">$$ \hat{y}_{\text{new}} = \hat{y}_{\text{old}} + \eta \times \text{leaf output} $$</div><p class="explain"><b>Symbols:</b> \(\hat{y}_{\text{old}}\) is the current prediction for a row. \(\eta\) is the learning rate, 0.1 in the video. The leaf output is the value recorded for that row in the new tree. <b>What it tells you:</b> each tree moves the predictions a small step toward the observed values.</p></div>
+    <div class="formula"><span class="lbl">Final prediction for new data</span><div class="math">$$ \hat{y} = \sum_{t=1}^{T} \eta \times \text{leaf output}_t $$</div><p class="explain"><b>Symbols:</b> \(T\) is the number of trees. \(\text{leaf output}_t\) is the output of the leaf the new row lands in for tree \(t\). The sum has no starting value because CatBoost starts every prediction at 0. <b>What it tells you:</b> a prediction is the scaled sum of one leaf from each tree.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p><b>Threshold 0.04.</b> The residuals are A = (1.81, 1.56, 1.77, 1.31, 1.64). Running the rows down one at a time gives recorded leaf outputs B = (0, 1.81, 0, 1.69, 1.56), as in the first figure.</p>
+      <p>Top: \(1.56(1.81) + 1.31(1.69) + 1.64(1.56) = 2.82 + 2.21 + 2.56 = 7.60\). Rows 1 and 3 add nothing because their B is 0.</p>
+      <p>Bottom: \(\sqrt{13.25} \times \sqrt{8.57} = 3.64 \times 2.93 = 10.65\).</p>
+      <p>Score: \(7.60 / 10.65 = 0.71\). Doing the same for threshold 0.29 gives 0.79, so CatBoost picks Favorite Color &lt; 0.29 for the root.</p>
+      <p><b>Update.</b> For row 1, the new prediction is \(0 + 0.1 \times 0 = 0\). The predictions after one tree are not very good, but they are better than predicting 0 for everyone.</p>
+      <p><b>New data.</b> After two trees, a new person who likes "Blue" is encoded with all the "Blue" training rows. Adding the two leaf outputs times 0.1 gives a prediction of 0.3. Josh admits this is a terrible prediction, but it comes from only two trees.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> The leaf output a row records is the value from <em>before</em> its own residual joined the leaf. This is how CatBoost keeps a row's residual out of its own prediction.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Leaf outputs of 0 are just starting values, not based on any data. The video includes them only because it has five rows. With lots of data, CatBoost ignores the first bunch of rows when it calculates the cosine similarity.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A continuous target must be binned before ordered target encoding. With more data there can be more than two bins, and then CatBoost uses a slightly different encoding equation, documented on the CatBoost website.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>How does CatBoost avoid leakage when it builds trees?</summary><div class="a">It treats the data as if the rows arrive one at a time. Each row records the leaf output that existed before its own residual was added to the leaf. So a row's residual never helps calculate that row's prediction, just as its target never helps encode its own category.</div></details>
+    <details class="qa" open><summary>How does CatBoost choose a split threshold?</summary><div class="a">For each candidate threshold, it runs the rows down the tree one at a time and records the leaf outputs. Then it computes the cosine similarity between the residuals and those leaf outputs. The threshold with the highest cosine similarity is used.</div></details>
+    <details class="qa" open><summary>What is a symmetric or oblivious tree, and why does CatBoost use it?</summary><div class="a">It is a tree where every node on the same level uses the exact same threshold. CatBoost uses them because they are weaker learners, which suits gradient boosting, and because they predict fast. Every path asks the same questions, so all questions can be asked in one vector operation.</div></details>
+    <details class="qa" open><summary>How does CatBoost do target encoding when the target is continuous?</summary><div class="a">It first puts the continuous target values into discrete bins. Then it uses the bin numbers as the target for ordered target encoding. The same bin numbers are reused when it encodes the data for later trees.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Before each tree, CatBoost shuffles the rows and applies ordered target encoding.</li>
+      <li>A continuous target is put into bins so it can be used for the encoding.</li>
+      <li>Predictions start at 0, so the first residuals equal the observed values.</li>
+      <li>Rows go down the tree one at a time, and each row records the leaf output from before its own residual joined.</li>
+      <li>Each threshold is scored by the cosine similarity of residuals and recorded leaf outputs; the highest score wins.</li>
+      <li>Predictions are updated by adding leaf outputs times a learning rate, such as 0.1.</li>
+      <li>Larger CatBoost trees are symmetric, which makes them weaker learners and faster to use.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">CatBoost trees</span><span class="board-tag">each row sees only earlier rows</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 284" role="img" aria-label="A stump splits on Favorite Color less than 0.04. Row 3 goes left and keeps 0. Rows 1, 2, 4 and 5 go right one at a time and keep 0, 1.81, 1.69 and 1.56, the leaf output from before each one joined. The cosine similarity of the residuals and the kept outputs is 0.71.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <line x1="180" y1="50" x2="62" y2="100" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round"/>
+            <line x1="220" y1="50" x2="257" y2="100" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <rect x="88" y="12" width="224" height="38" rx="8" class="sv-paper2"/>
+              <rect x="16" y="100" width="92" height="94" rx="10" class="sv-paper"/>
+              <rect x="130" y="100" width="254" height="94" rx="10" class="sv-paper"/>
+              <rect x="40" y="236" width="320" height="34" rx="8" class="sv-good-soft"/>
+            </g>
+            <line x1="181" y1="132" x2="205" y2="132" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="241" y1="132" x2="265" y2="132" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="301" y1="132" x2="325" y2="132" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="62" cy="132" r="14" class="sv-key-soft"/>
+              <circle cx="164" cy="132" r="14" class="sv-key-soft"/>
+              <circle cx="224" cy="132" r="14" class="sv-key-soft"/>
+              <circle cx="284" cy="132" r="14" class="sv-key-soft"/>
+              <circle cx="344" cy="132" r="14" class="sv-key-soft"/>
+            </g>
+            <text x="200" y="37" text-anchor="middle" class="sv-t">Favorite Color &lt; 0.04</text>
+            <text x="62" y="139" text-anchor="middle" class="sv-tb">3</text>
+            <text x="164" y="139" text-anchor="middle" class="sv-tb">1</text>
+            <text x="224" y="139" text-anchor="middle" class="sv-tb">2</text>
+            <text x="284" y="139" text-anchor="middle" class="sv-tb">4</text>
+            <text x="344" y="139" text-anchor="middle" class="sv-tb">5</text>
+            <text x="62" y="178" text-anchor="middle" class="sv-tm">0</text>
+            <text x="164" y="178" text-anchor="middle" class="sv-tm">0</text>
+            <text x="224" y="178" text-anchor="middle" class="sv-tm">1.81</text>
+            <text x="284" y="178" text-anchor="middle" class="sv-tm">1.69</text>
+            <text x="344" y="178" text-anchor="middle" class="sv-tm">1.56</text>
+            <text x="200" y="220" text-anchor="middle" class="sv-t">kept: earlier rows only</text>
+            <text x="200" y="259" text-anchor="middle" class="sv-tb">cos(residuals, kept) = 0.71</text>
+          </svg>
+          <p>Rows go down the tree one at a time. Each row keeps the leaf output from before its own residual joined, so its residual never leaks into its own prediction.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Ordered target encoding</dt><dd>Turns a category into a number, using only earlier rows' targets.</dd>
+            <dt>Residual</dt><dd>Observed minus predicted. At first it is just the height.</dd>
+            <dt>Leakage</dt><dd>A row's target affecting something calculated for that same row.</dd>
+            <dt>Symmetric (oblivious) tree</dt><dd>Same threshold on every node of a level: weaker, but faster.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Shuffle and encode</b>bin Height into 0 and 1</li>
+            <li><b>Start at 0</b>first residuals = the heights</li>
+            <li><b>Find thresholds</b>halfway points 0.04 and 0.29</li>
+            <li><b>Run rows down</b>one by one: record, then join</li>
+            <li><b>Score thresholds</b>cosine similarity: 0.79 beats 0.71</li>
+            <li><b>Update</b>add 0.1 × leaf output</li>
+          </ol>
+          <p class="loop">↺ reshuffle and repeat for each new tree, possibly hundreds, until the predictions are good</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{score}=\frac{\sum_i A_iB_i}{\sqrt{\sum_i A_i^2}\;\sqrt{\sum_i B_i^2}}$$
+          $$\hat{y}_{\text{new}}=\hat{y}_{\text{old}}+\eta\times\text{leaf output}$$
+          $$\hat{y}=\sum_{t=1}^{T}\eta\times\text{leaf output}_t$$
+          <ul class="keys">
+            <li>\(A_i\): row \(i\)'s residual. \(B_i\): the leaf output it kept. Highest score wins.</li>
+            <li>\(\eta\): learning rate, 0.1. \(T\): number of trees.</li>
+            <li>New data: encode with <em>all</em> training rows of that category.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>row</th><th>A residual</th><th>B kept</th><th>A × B</th></tr>
+            <tr><td>1, 3</td><td>1.81, 1.77</td><td>0</td><td>0</td></tr>
+            <tr><td>2</td><td>1.56</td><td>1.81</td><td>2.82</td></tr>
+            <tr><td>4</td><td>1.31</td><td>1.69</td><td>2.21</td></tr>
+            <tr><td>5</td><td>1.64</td><td>1.56</td><td>2.56</td></tr>
+            <tr class="final"><td>score</td><td colspan="2">7.60 / 10.65</td><td>0.71</td></tr>
+          </table>
+          <p class="hand">That is threshold 0.04. Threshold 0.29 scores 0.79 and wins the root. A new “Blue” gets 0.3 after two trees.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">A row's leaf output includes its own residual.</span><span class="yes">It records the value from before its residual joined the leaf.</span></li>
+            <li><span class="no">Leaf outputs of 0 come from the data.</span><span class="yes">They are just starting values. With lots of data, CatBoost ignores the first bunch of rows when scoring.</span></li>
+            <li><span class="no">Height can be target encoded as it is.</span><span class="yes">Bin it first. More than two bins need a slightly different equation.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="69-catboost-part-1-ordered-target-encoding.html"><small>Previous</small>CatBoost Part 1: Ordered Target Encoding</a> <a href="71-cosine-similarity.html"><small>Next</small>Cosine Similarity</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

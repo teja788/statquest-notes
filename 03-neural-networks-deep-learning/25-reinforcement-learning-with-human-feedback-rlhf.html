@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reinforcement Learning with Human Feedback (RLHF) — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-nn">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Neural Networks / Deep Learning</a><span class="sep">/</span><span>25</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Neural Networks / Deep Learning · Video 25 · 18.0 min</div>
+    <h1>Reinforcement Learning with Human Feedback (RLHF)</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=qPN_XZcJf_s" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: —</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video shows how a large language model goes from random weights to polite, helpful answers. The last step is reinforcement learning with human feedback (RLHF). It is a cheap way to teach the model to answer new prompts well.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>First, the model is pre-trained to predict the next token on a huge text such as Wikipedia. Then supervised fine-tuning trains it on a small set of human-written prompts and responses. That small set makes the model overfit. To fix this cheaply, the model writes several responses and people only say which one they prefer. Those preferences train a reward model that scores responses like a human would. Finally, those scores train the original model, so it answers new prompts well.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>The model is a decoder-only transformer, the kind of network behind ChatGPT. Untrained, all its weights and biases are random. Ask it "What is StatQuest?" and it only says "blah blah blah". Pre-training teaches it language by predicting the next token, a word or piece of a word. But a pre-trained model is <b>unaligned</b>. It does not behave the way people actually use it.</p>
+    <p>Alignment usually takes two steps: supervised fine-tuning and RLHF. Supervised fine-tuning needs people to write full responses, which is slow and expensive. RLHF only asks people to pick the better of two responses, which is much faster. The goal is a much larger data set than fine-tuning gives, while keeping human effort cheap.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 260" role="img" aria-label="Five training stages from pre-training to reinforcement learning, with stages two to five marked as alignment">
+        <defs><marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker></defs>
+        <rect x="20" y="40" width="128" height="120" rx="10" class="sv-paper2"/>
+        <rect x="168" y="40" width="128" height="120" rx="10" class="sv-acc-soft"/>
+        <rect x="316" y="40" width="128" height="120" rx="10" class="sv-key-soft"/>
+        <rect x="464" y="40" width="128" height="120" rx="10" class="sv-key-soft"/>
+        <rect x="612" y="40" width="128" height="120" rx="10" class="sv-good-soft"/>
+        <text x="84" y="80" text-anchor="middle" class="sv-tb">1. Pre-training</text>
+        <text x="84" y="115" text-anchor="middle" class="sv-ts"><tspan x="84">predict next token</tspan><tspan x="84" dy="16">on Wikipedia</tspan></text>
+        <text x="232" y="80" text-anchor="middle" class="sv-tb"><tspan x="232">2. Supervised</tspan><tspan x="232" dy="18">fine-tuning</tspan></text>
+        <text x="232" y="125" text-anchor="middle" class="sv-ts"><tspan x="232">human prompts</tspan><tspan x="232" dy="16">+ human responses</tspan></text>
+        <text x="380" y="80" text-anchor="middle" class="sv-tb"><tspan x="380">3. Humans</tspan><tspan x="380" dy="18">pick preferred</tspan></text>
+        <text x="380" y="125" text-anchor="middle" class="sv-ts"><tspan x="380">pairs of sampled</tspan><tspan x="380" dy="16">responses</tspan></text>
+        <text x="528" y="80" text-anchor="middle" class="sv-tb"><tspan x="528">4. Reward</tspan><tspan x="528" dy="18">model</tspan></text>
+        <text x="528" y="125" text-anchor="middle" class="sv-ts"><tspan x="528">copy of SFT model</tspan><tspan x="528" dy="16">with one output</tspan></text>
+        <text x="676" y="80" text-anchor="middle" class="sv-tb"><tspan x="676">5. RL with</tspan><tspan x="676" dy="18">rewards</tspan></text>
+        <text x="676" y="125" text-anchor="middle" class="sv-ts"><tspan x="676">reward score trains</tspan><tspan x="676" dy="16">the SFT model</tspan></text>
+        <line x1="148" y1="100" x2="166" y2="100" class="sv-stroke-ink" stroke-width="2" marker-end="url(#ar1)"/>
+        <line x1="296" y1="100" x2="314" y2="100" class="sv-stroke-ink" stroke-width="2" marker-end="url(#ar1)"/>
+        <line x1="444" y1="100" x2="462" y2="100" class="sv-stroke-ink" stroke-width="2" marker-end="url(#ar1)"/>
+        <line x1="592" y1="100" x2="610" y2="100" class="sv-stroke-ink" stroke-width="2" marker-end="url(#ar1)"/>
+        <rect x="20" y="185" width="128" height="40" rx="8" class="sv-paper2"/>
+        <text x="84" y="210" text-anchor="middle" class="sv-ts">unaligned model</text>
+        <rect x="168" y="185" width="572" height="40" rx="8" class="sv-acc-soft"/>
+        <text x="454" y="210" text-anchor="middle" class="sv-t">Alignment: polite and helpful answers to real prompts</text>
+      </svg>
+      <figcaption>Only stage 1 learns language; stages 2 to 5 align the model, and RLHF (stages 3 to 5, ending in reinforcement learning) replaces a huge, costly fine-tuning set.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li><b>Pre-train.</b> Feed fragments of Wikipedia articles and train the model to predict the next token. Normal backpropagation, the usual way to adjust weights, does the training. For example, "A was a Japanese" should predict "girl".</li>
+      <li><b>See that it is unaligned.</b> Nobody prompts a chatbot with half a Wikipedia sentence. People ask questions like "What is a good YouTube channel for learning about AI?" and expect a polite, helpful answer.</li>
+      <li><b>Supervised fine-tuning (SFT).</b> People write prompts and matching responses, such as "StatQuest is a good channel to learn AI." Backpropagation trains the model to produce each response from its prompt.</li>
+      <li><b>Notice the overfitting.</b> Paid human writers are slow and costly, so the SFT data set is small. The model answers its training prompts well but does not generalise to new prompts.</li>
+      <li><b>Generate several responses.</b> Normally the model always picks the token with the highest output value. Instead, treat the softmax outputs as the probability of choosing each token. The same prompt then gives different answers, such as "a great channel" and "an awesome channel".</li>
+      <li><b>Collect preferences.</b> List every pair of responses and ask people which one they prefer. This is the "human feedback" part, and it is much faster than writing answers.</li>
+      <li><b>Build the reward model.</b> Copy the SFT model and remove its unembedding layer, the last layer that scores every token. Replace it with a single output. Its input is the prompt plus the response, because what counts as helpful depends on the prompt.</li>
+      <li><b>Train the reward model.</b> Using the preference pairs, train it to give a positive reward to the preferred response and a negative reward to the other one.</li>
+      <li><b>Reinforcement learning.</b> Give the original SFT model new prompts with no human answers. Score each generated response with the reward model, and use that reward to train the original model.</li>
+    </ol>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>Josh shows the reward-model loss used by OpenAI in their 2022 paper on training language models to follow instructions with human feedback. For one preference pair, it is a few simple pieces chained together.</p>
+    <div class="formula"><span class="lbl">Reward model loss (one pair)</span><div class="math">$$ \text{loss} = -\log\Big(\sigma\big(r_{\text{better}} - r_{\text{worse}}\big)\Big) $$</div><p class="explain"><b>Symbols:</b> \(r_{\text{better}}\) is the reward the model gives the preferred response. \(r_{\text{worse}}\) is the reward it gives the response that was not preferred. \(\sigma\) is the sigmoid function, an S-shaped curve that turns any number into a value between 0 and 1. \(\log\) is the logarithm, which is near 0 for inputs near 1 and very negative for inputs near 0. The minus sign flips the curve. <b>What it tells you:</b> the loss is small when the better response scores clearly higher than the worse one, and large when it does not.</p></div>
+    <p>Read it from the inside out, as Josh does:</p>
+    <div class="formula"><span class="lbl">Built up in steps</span><div class="math">$$ d = r_{\text{better}} - r_{\text{worse}} $$ $$ s = \sigma(d) \in (0, 1) $$ $$ \log(s) \le 0 \qquad \text{loss} = -\log(s) $$</div><p class="explain"><b>Symbols:</b> \(d\) is the difference in rewards, and \(s\) is the sigmoid output. <b>What it tells you:</b> ideally \(d\) is a large positive number, so \(s\) is close to 1 and \(\log(s)\) is at its high point near 0. Gradient descent looks for the lowest point of a curve, so multiplying by \(-1\) turns that high point into the low point we want.</p></div>
+    <p>We never tell the model what the rewards should be. The loss only cares about the difference, so the model works out suitable reward values on its own.</p>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p><b>Collecting feedback.</b> For the prompt "What is a good YouTube channel for learning about AI?", sampling gives three responses: "StatQuest is a good channel to learn AI", "...a great channel for learning AI", and "...an awesome channel for learning AI". With three responses there are 3 pairs, and people choose the preferred response in each pair.</p>
+      <p><b>The loss with Josh's numbers.</b> Josh plugs 10 and \(-10\) into the sigmoid. The figure below follows both through the loss.</p>
+      <p>Good case, \(d = 10\): \(\sigma(10) \approx 0.99995\), \(\log(0.99995) \approx -0.00005\), so the loss is about 0.00005. The model is barely pushed.</p>
+      <p>Bad case, \(d = -10\): \(\sigma(-10) \approx 0.00005\), \(\log(0.00005) \approx -10.00005\), so the loss is about 10. Gradient descent pushes hard to raise \(r_{\text{better}}\) and lower \(r_{\text{worse}}\).</p>
+      <p><b>The RL step.</b> A new prompt, "What's another good YouTube channel for learning about AI?", first gets "YouTube is special." That is not helpful, so the reward model gives a negative reward. After training, the model answers "Serrano Academy is a great YouTube channel for AI," which gets a large positive reward. The final model answers "What is StatQuest?" with a helpful sentence instead of "blah blah blah".</p>
+    </div>
+    <figure class="info">
+      <svg viewBox="0 0 760 240" role="img" aria-label="Reward difference of plus 10 and minus 10 passed through sigmoid, log and times minus one">
+        <defs><marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker></defs>
+        <text x="232" y="40" text-anchor="middle" class="sv-tb">r_better − r_worse</text>
+        <text x="374" y="40" text-anchor="middle" class="sv-tb">sigmoid</text>
+        <text x="516" y="40" text-anchor="middle" class="sv-tb">log</text>
+        <text x="658" y="40" text-anchor="middle" class="sv-tb">× (−1) = loss</text>
+        <text x="20" y="100" class="sv-t">Better wins</text>
+        <text x="20" y="180" class="sv-t">Worse wins</text>
+        <rect x="170" y="70" width="124" height="50" rx="8" class="sv-good-soft"/>
+        <rect x="312" y="70" width="124" height="50" rx="8" class="sv-good-soft"/>
+        <rect x="454" y="70" width="124" height="50" rx="8" class="sv-good-soft"/>
+        <rect x="596" y="70" width="124" height="50" rx="8" class="sv-good-soft"/>
+        <rect x="170" y="150" width="124" height="50" rx="8" class="sv-acc-soft"/>
+        <rect x="312" y="150" width="124" height="50" rx="8" class="sv-acc-soft"/>
+        <rect x="454" y="150" width="124" height="50" rx="8" class="sv-acc-soft"/>
+        <rect x="596" y="150" width="124" height="50" rx="8" class="sv-acc-soft"/>
+        <text x="232" y="100" text-anchor="middle" class="sv-tm">10</text>
+        <text x="374" y="100" text-anchor="middle" class="sv-tm">≈ 0.99995</text>
+        <text x="516" y="100" text-anchor="middle" class="sv-tm">≈ −0.00005</text>
+        <text x="658" y="100" text-anchor="middle" class="sv-tm">≈ 0 (small)</text>
+        <text x="232" y="180" text-anchor="middle" class="sv-tm">−10</text>
+        <text x="374" y="180" text-anchor="middle" class="sv-tm">≈ 0.00005</text>
+        <text x="516" y="180" text-anchor="middle" class="sv-tm">≈ −10</text>
+        <text x="658" y="180" text-anchor="middle" class="sv-tm">≈ 10 (large)</text>
+        <line x1="294" y1="95" x2="310" y2="95" class="sv-stroke-ink" stroke-width="2" marker-end="url(#ar2)"/>
+        <line x1="436" y1="95" x2="452" y2="95" class="sv-stroke-ink" stroke-width="2" marker-end="url(#ar2)"/>
+        <line x1="578" y1="95" x2="594" y2="95" class="sv-stroke-ink" stroke-width="2" marker-end="url(#ar2)"/>
+        <line x1="294" y1="175" x2="310" y2="175" class="sv-stroke-ink" stroke-width="2" marker-end="url(#ar2)"/>
+        <line x1="436" y1="175" x2="452" y2="175" class="sv-stroke-ink" stroke-width="2" marker-end="url(#ar2)"/>
+        <line x1="578" y1="175" x2="594" y2="175" class="sv-stroke-ink" stroke-width="2" marker-end="url(#ar2)"/>
+      </svg>
+      <figcaption>When the preferred response scores far higher, the loss is almost zero; when it scores far lower, the loss is large, so training fixes it.</figcaption>
+    </figure>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Next-token training on a huge body of text is called pre-training, not training. A pre-trained model is good at completing text but is still unaligned with how people use it.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> RLHF exists because a huge supervised fine-tuning set would cost a huge amount of money. Josh notes that if writing such a data set were cheap, we would probably just do that instead.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The reward model gets the prompt as well as the response. Without the prompt it cannot judge helpfulness, because different prompts need different answers.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Always choosing the highest-value token gives the same answer every time. To get different responses for people to compare, you must sample tokens using the softmax probabilities.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>Why do we need RLHF if we already have supervised fine-tuning?</summary><div class="a">Supervised fine-tuning needs people to write full responses, so the data set stays small and the model overfits. It handles its training prompts well but not new ones. RLHF only asks people to compare responses, which is much cheaper. The reward model then scores responses to many new prompts.</div></details>
+    <details class="qa" open><summary>How is the reward model built?</summary><div class="a">You copy the supervised fine-tuned model, remove the unembedding layer, and replace it with a single output. You feed it the prompt plus a response. It is trained on human preference pairs to give the preferred response a higher reward.</div></details>
+    <details class="qa" open><summary>Explain the reward model's loss function.</summary><div class="a">It takes the reward of the better response minus the reward of the worse one, passes that through a sigmoid, takes the log, and multiplies by minus one. A large positive difference gives a loss near zero. The nice part is that we never define target rewards; the model learns them from the comparisons.</div></details>
+    <details class="qa" open><summary>Where does the human feedback actually come in?</summary><div class="a">The model samples several responses to a prompt using its softmax probabilities. People look at each pair and say which one they prefer. Those preferences train the reward model, and the reward model, not a person, scores responses during reinforcement learning.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Pre-training teaches a model to predict the next token on a huge body of text.</li>
+      <li>A pre-trained model is unaligned, so it is not yet polite and helpful.</li>
+      <li>Supervised fine-tuning uses human-written prompts and responses, but the small data set causes overfitting.</li>
+      <li>RLHF samples several responses and asks people only which one they prefer.</li>
+      <li>A reward model, copied from the fine-tuned model with a single output, learns to score responses from those preferences.</li>
+      <li>Its loss is minus the log of the sigmoid of the reward difference, so no target rewards are needed.</li>
+      <li>Reinforcement learning then uses the reward model's scores to train the original model on new prompts.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">RLHF</span><span class="board-tag">people only pick; a reward model scores</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 260" role="img" aria-label="The SFT model samples three responses to one prompt: a good channel, a great channel and an awesome channel. People pick the preferred response in each of the 3 pairs, those picks train a reward model, and the reward model's scores loop back to train the SFT model.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <g class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round">
+              <line x1="156" y1="68" x2="191" y2="36" marker-end="url(#board-arr)"/>
+              <line x1="156" y1="68" x2="191" y2="68" marker-end="url(#board-arr)"/>
+              <line x1="156" y1="68" x2="191" y2="100" marker-end="url(#board-arr)"/>
+            </g>
+            <line x1="294" y1="124" x2="294" y2="176" class="sv-stroke-key" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <path d="M196 210 H85 V104" class="sv-stroke-good" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2.5">
+              <rect x="20" y="44" width="130" height="48" rx="10" class="sv-paper"/>
+              <rect x="200" y="186" width="188" height="48" rx="10" class="sv-key-soft"/>
+            </g>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <rect x="200" y="20" width="188" height="28" rx="14" class="sv-paper"/>
+              <rect x="200" y="54" width="188" height="28" rx="14" class="sv-paper"/>
+              <rect x="200" y="88" width="188" height="28" rx="14" class="sv-paper"/>
+            </g>
+            <text x="85" y="75" text-anchor="middle" class="sv-tb">SFT model</text>
+            <text x="294" y="39" text-anchor="middle" class="sv-ts">a good channel</text>
+            <text x="294" y="73" text-anchor="middle" class="sv-ts">a great channel</text>
+            <text x="294" y="107" text-anchor="middle" class="sv-ts">an awesome channel</text>
+            <text x="276" y="146" text-anchor="end" class="sv-tb">people pick</text>
+            <text x="276" y="172" text-anchor="end" class="sv-ts">in each of 3 pairs</text>
+            <text x="294" y="217" text-anchor="middle" class="sv-tb">reward model</text>
+            <text x="108" y="240" text-anchor="middle" class="sv-t">reward trains it</text>
+          </svg>
+          <p>Writing full answers is costly, so the fine-tuning set is small and the model overfits. RLHF only asks which of two responses people prefer. Those picks train a reward model, and its scores train the original model on new prompts.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Pre-training</dt><dd>Predicting the next token on huge text, like Wikipedia.</dd>
+            <dt>Unaligned</dt><dd>Completes text, but not the way people use it.</dd>
+            <dt>SFT</dt><dd>Supervised fine-tuning on human-written prompts and responses.</dd>
+            <dt>Human feedback</dt><dd>People only say which of two responses they prefer.</dd>
+            <dt>Reward model</dt><dd>An SFT copy with one output that scores responses.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Pre-train</b>predict next token, still unaligned</li>
+            <li><b>Fine-tune (SFT)</b>small human-written set overfits</li>
+            <li><b>Sample responses</b>softmax outputs as probabilities</li>
+            <li><b>Collect preferences</b>people pick one per pair</li>
+            <li><b>Reward model</b>one-output SFT copy, trained on pairs</li>
+            <li><b>Reinforcement learning</b>rewards train the original model</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$d=r_{\text{better}}-r_{\text{worse}}$$
+          $$\text{loss}=-\log\big(\sigma(d)\big)$$
+          <ul class="keys">
+            <li>\(r_{\text{better}}\), \(r_{\text{worse}}\): rewards of the preferred and the other response.</li>
+            <li>\(\sigma\): the sigmoid, any number to a value between 0 and 1.</li>
+            <li>No target rewards needed; only the difference counts.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>step</th><th>better wins</th><th>worse wins</th></tr>
+            <tr><td>d</td><td>10</td><td>−10</td></tr>
+            <tr><td>σ(d)</td><td>≈ 0.99995</td><td>≈ 0.00005</td></tr>
+            <tr><td>log σ(d)</td><td>≈ −0.00005</td><td>≈ −10.00005</td></tr>
+            <tr class="final"><td>loss</td><td>≈ 0.00005</td><td>≈ 10</td></tr>
+          </table>
+          <p class="hand">If the preferred response already scores higher, the loss is tiny. If not, it is about 10 and gradient descent pushes hard.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">RLHF beats a huge fine-tuning set.</span><span class="yes">It saves money. If writing that set were cheap, we would probably just do that.</span></li>
+            <li><span class="no">The reward model only needs the response.</span><span class="yes">It also gets the prompt, because helpfulness depends on the prompt.</span></li>
+            <li><span class="no">Picking the top token gives answers to compare.</span><span class="yes">It gives the same answer every time. Sample tokens with the softmax probabilities.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="24-reinforcement-learning-with-neural-networks-mathematical-det.html"><small>Previous</small>Reinforcement Learning with Neural Networks: Mathematical Details</a> <a href="32-word-embedding-in-pytorch-lightning.html"><small>Next</small>Word Embedding in PyTorch + Lightning</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

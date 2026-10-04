@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>t-SNE — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>39</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 39 · 11.8 min</div>
+    <h1>t-SNE</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=NEaUSP4YerM" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">t-SNE takes a data set with many dimensions and draws it on a small graph, usually two dimensions. It keeps the clusters that were in the original data.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>t-SNE first measures how similar every pair of points is in the original high-dimensional space. It measures similarity with a normal curve centred on each point, then scales the scores so they add up to one. Next it drops the points onto the new low-dimensional graph in random order and measures similarity there with a t distribution. Then it moves the points a little at a time, so that the new similarity scores match the original ones. Points that were near each other pull together, and points that were far apart push away.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh starts with a simple 2-D scatter plot that holds two clear clusters. The goal is to squash it onto a 1-D number line without losing them. This tiny example works the same way as a real one.</p>
+    <p>The lazy way is to project the points onto one axis. That fails. Project onto the Y axis and the two clusters turn into a mishmash. Project onto the X axis and you get the same mess.</p>
+    <p>t-SNE instead places the points on the line in a random order, then nudges them. For one point, the points that sit near it in the scatter plot attract it. The points that sit far from it in the scatter plot repel it. The stronger side wins, and the point takes a small step that way. Repeat this for every point, many times, and the clusters reappear on the line.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Two clusters in a 2-D scatter plot, mixed up when projected onto the X axis, and kept apart by t-SNE on a number line">
+        <defs>
+          <marker id="arw1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker>
+        </defs>
+        <text class="sv-tb" x="30" y="28">The 2-D data</text>
+        <text class="sv-tb" x="285" y="28">Project onto X</text>
+        <text class="sv-tb" x="525" y="28">t-SNE</text>
+
+        <path class="sv-line" d="M50 240 L240 240 M50 240 L50 55" stroke-width="1.5"/>
+        <text class="sv-ts" x="245" y="245">X</text>
+        <text class="sv-ts" x="42" y="52">Y</text>
+        <circle class="sv-acc" cx="75" cy="205" r="5"/>
+        <circle class="sv-acc" cx="100" cy="180" r="5"/>
+        <circle class="sv-acc" cx="125" cy="155" r="5"/>
+        <circle class="sv-acc" cx="150" cy="130" r="5"/>
+        <circle class="sv-acc" cx="175" cy="105" r="5"/>
+        <circle class="sv-key" cx="105" cy="230" r="5"/>
+        <circle class="sv-key" cx="130" cy="205" r="5"/>
+        <circle class="sv-key" cx="155" cy="180" r="5"/>
+        <circle class="sv-key" cx="180" cy="155" r="5"/>
+        <circle class="sv-key" cx="205" cy="130" r="5"/>
+
+        <path class="sv-line" d="M256 155 L272 155" stroke-width="1.5" marker-end="url(#arw1)"/>
+        <path class="sv-line" d="M496 155 L512 155" stroke-width="1.5" marker-end="url(#arw1)"/>
+
+        <path class="sv-stroke-ink" d="M280 155 L490 155" stroke-width="1.5"/>
+        <circle class="sv-acc" cx="285" cy="155" r="5"/>
+        <circle class="sv-acc" cx="323" cy="155" r="5"/>
+        <circle class="sv-key" cx="331" cy="155" r="5"/>
+        <circle class="sv-acc" cx="362" cy="155" r="5"/>
+        <circle class="sv-key" cx="370" cy="155" r="5"/>
+        <circle class="sv-acc" cx="400" cy="155" r="5"/>
+        <circle class="sv-key" cx="408" cy="155" r="5"/>
+        <circle class="sv-acc" cx="439" cy="155" r="5"/>
+        <circle class="sv-key" cx="446" cy="155" r="5"/>
+        <circle class="sv-key" cx="485" cy="155" r="5"/>
+        <text class="sv-ts" x="385" y="190" text-anchor="middle">clusters mixed together</text>
+
+        <path class="sv-stroke-ink" d="M520 155 L735 155" stroke-width="1.5"/>
+        <circle class="sv-acc" cx="545" cy="155" r="5"/>
+        <circle class="sv-acc" cx="562" cy="155" r="5"/>
+        <circle class="sv-acc" cx="579" cy="155" r="5"/>
+        <circle class="sv-acc" cx="596" cy="155" r="5"/>
+        <circle class="sv-acc" cx="613" cy="155" r="5"/>
+        <circle class="sv-key" cx="660" cy="155" r="5"/>
+        <circle class="sv-key" cx="677" cy="155" r="5"/>
+        <circle class="sv-key" cx="694" cy="155" r="5"/>
+        <circle class="sv-key" cx="711" cy="155" r="5"/>
+        <circle class="sv-key" cx="728" cy="155" r="5"/>
+        <text class="sv-ts" x="628" y="190" text-anchor="middle">clusters kept apart</text>
+      </svg>
+      <figcaption>Notice the middle panel: dropping an axis interleaves the two colours, while t-SNE keeps them in two groups.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Pick one point in the scatter plot. Call it the point of interest. Measure the straight-line distance from it to every other point.</li>
+      <li>Draw a normal curve centred on the point of interest. Mark each distance on that curve and read the height of the curve there. Josh calls that height the unscaled similarity.</li>
+      <li>Because the curve falls away fast, near points get high scores and distant points get very low scores. That is the whole reason a bell curve is used.</li>
+      <li>Set the width of the curve from the local density. A dense neighbourhood gets a narrow curve, a sparse one a wide curve. The perplexity parameter is the expected density around each point.</li>
+      <li>Scale the scores for that point so they add up to one. Divide each score by the sum of all the scores for that point.</li>
+      <li>Repeat for every point. The score from A to B may differ from the score from B to A, because the curves have different widths. t-SNE averages the two directions. A point scores zero with itself. You now have a matrix of similarity scores.</li>
+      <li>Drop the points onto the number line in random order and build a second similarity matrix there. This time use a t distribution instead of a normal curve, then scale the scores the same way.</li>
+      <li>The new matrix is a mess compared with the original one. Move the points a small step at a time, always in the direction that makes the new matrix look more like the original one. Like a chess game, it cannot be solved in one move.</li>
+    </ol>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 320" role="img" aria-label="A normal curve turns a distance into a similarity score, and the curve gets wider in sparse regions">
+        <text class="sv-tb" x="20" y="28">Similarity = height of the curve</text>
+        <path class="sv-stroke-acc" d="M60 250 C130 250, 150 112, 195 110 C240 112, 260 250, 330 250" stroke-width="2"/>
+        <path class="sv-line" d="M50 250 L350 250" stroke-width="1.5"/>
+        <path class="sv-stroke-key" d="M235 250 L235 160" stroke-width="2"/>
+        <path class="sv-stroke-key" d="M290 250 L290 239" stroke-width="2"/>
+        <circle class="sv-acc" cx="195" cy="250" r="5.5"/>
+        <circle class="sv-key" cx="235" cy="250" r="4.5"/>
+        <circle class="sv-key" cx="290" cy="250" r="4.5"/>
+        <text class="sv-ts" x="195" y="272" text-anchor="middle">point of interest</text>
+        <rect class="sv-paper" x="241" y="136" width="164" height="20" rx="3"/>
+        <text class="sv-ts" x="245" y="150">close: tall line, high score</text>
+        <rect class="sv-paper" x="196" y="218" width="158" height="20" rx="3"/>
+        <text class="sv-ts" x="352" y="232" text-anchor="end">far: short line, low score</text>
+
+        <text class="sv-tb" x="410" y="28">Curve width follows density</text>
+        <path class="sv-stroke-acc" d="M480 250 C535 250, 550 112, 575 110 C600 112, 615 250, 670 250" stroke-width="2"/>
+        <path class="sv-stroke-key" d="M430 250 C520 250, 545 182, 575 180 C605 182, 630 250, 720 250" stroke-width="2" stroke-dasharray="5 4"/>
+        <path class="sv-line" d="M420 250 L730 250" stroke-width="1.5"/>
+        <text class="sv-ts" x="575" y="96" text-anchor="middle">dense cluster: narrow curve</text>
+        <text class="sv-ts" x="575" y="274" text-anchor="middle">sparse cluster: wide curve</text>
+        <text class="sv-ts" x="575" y="296" text-anchor="middle">after scaling, both give the same scores</text>
+      </svg>
+      <figcaption>Notice that a distance only becomes a score after it is read off the curve, and the curve stretches where the data is thin.</figcaption>
+    </figure>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 320" role="img" aria-label="The clean high-dimensional similarity matrix, the messy low-dimensional one, and the t curve compared with a normal curve">
+        <defs>
+          <marker id="arw3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker>
+        </defs>
+        <text class="sv-tb" x="40" y="38">High-D matrix</text>
+        <rect class="sv-paper" x="40" y="55" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-key" x="76" y="55" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-key" x="112" y="55" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-paper2" x="148" y="55" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-paper2" x="184" y="55" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-key" x="40" y="91" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-paper" x="76" y="91" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-key" x="112" y="91" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-paper2" x="148" y="91" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-paper2" x="184" y="91" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-key" x="40" y="127" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-key" x="76" y="127" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-paper" x="112" y="127" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-paper2" x="148" y="127" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-paper2" x="184" y="127" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-paper2" x="40" y="163" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-paper2" x="76" y="163" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-paper2" x="112" y="163" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-paper" x="148" y="163" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-key" x="184" y="163" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-paper2" x="40" y="199" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-paper2" x="76" y="199" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-paper2" x="112" y="199" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-key" x="148" y="199" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-paper" x="184" y="199" width="36" height="36" stroke="var(--line)"/>
+
+        <text class="sv-tb" x="340" y="38">Low-D matrix at the start</text>
+        <rect class="sv-paper" x="340" y="55" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-paper2" x="376" y="55" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-key" x="412" y="55" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-key-soft" x="448" y="55" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-paper2" x="484" y="55" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-paper2" x="340" y="91" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-paper" x="376" y="91" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-paper2" x="412" y="91" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-key" x="448" y="91" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-key-soft" x="484" y="91" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-key" x="340" y="127" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-paper2" x="376" y="127" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-paper" x="412" y="127" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-paper2" x="448" y="127" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-key" x="484" y="127" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-key-soft" x="340" y="163" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-key" x="376" y="163" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-paper2" x="412" y="163" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-paper" x="448" y="163" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-paper2" x="484" y="163" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-paper2" x="340" y="199" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-key-soft" x="376" y="199" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-key" x="412" y="199" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-paper2" x="448" y="199" width="36" height="36" stroke="var(--line)"/>
+        <rect class="sv-paper" x="484" y="199" width="36" height="36" stroke="var(--line)"/>
+
+        <path class="sv-line" d="M470 262 L110 262" stroke-width="1.5" marker-end="url(#arw3)"/>
+        <text class="sv-t" x="290" y="288" text-anchor="middle">Nudge the points until the right matrix matches the left one.</text>
+
+        <text class="sv-tb" x="570" y="38">Normal vs t</text>
+        <path class="sv-stroke-acc" d="M585 200 C625 200, 640 92, 657 90 C674 92, 690 200, 730 200" stroke-width="2"/>
+        <path class="sv-stroke-key" d="M580 196 C620 190, 638 117, 657 115 C676 117, 694 190, 735 196" stroke-width="2" stroke-dasharray="5 4"/>
+        <path class="sv-line" d="M575 200 L740 200" stroke-width="1.5"/>
+        <text class="sv-ts" x="657" y="78" text-anchor="middle">normal curve</text>
+        <text class="sv-ts" x="657" y="222" text-anchor="middle">t: shorter, fatter tails</text>
+        <text class="sv-ts" x="657" y="242" text-anchor="middle">so clusters spread out</text>
+      </svg>
+      <figcaption>Notice the block pattern on the left: t-SNE moves points until the messy matrix on the right shows the same blocks.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>The video uses pictures, not algebra. These lines write down the same moves: read a height off a curve, scale, and average.</p>
+
+    <div class="formula"><span class="lbl">Unscaled similarity</span><div class="math">$$ w_{j\mid i} \;=\; \exp\!\left(-\frac{d_{ij}^{2}}{2\sigma_i^{2}}\right) $$</div><p class="explain"><b>Symbols:</b> \(w_{j\mid i}\) is the unscaled similarity of point \(j\) seen from point \(i\); \(d_{ij}\) is the distance between the two points; \(\sigma_i\) is the width of the curve centred on point \(i\), set by the local density. <b>What it tells you:</b> this is the height of the bell curve at that distance, so it drops away quickly.</p></div>
+
+    <div class="formula"><span class="lbl">Scaling so the scores sum to one</span><div class="math">$$ p_{j\mid i} \;=\; \frac{w_{j\mid i}}{\sum_{k \neq i} w_{k\mid i}} $$</div><p class="explain"><b>Symbols:</b> \(p_{j\mid i}\) is the scaled similarity; the sum in the bottom runs over every other point \(k\), so it is the total of all unscaled scores for point \(i\). <b>What it tells you:</b> after this division, each row adds up to one, so a tight cluster and a loose cluster produce the same numbers.</p></div>
+
+    <div class="formula"><span class="lbl">Averaging the two directions</span><div class="math">$$ p_{ij} \;=\; \frac{p_{j\mid i} + p_{i\mid j}}{2}, \qquad p_{ii} = 0 $$</div><p class="explain"><b>Symbols:</b> \(p_{j\mid i}\) is the score measured from \(i\), \(p_{i\mid j}\) the score measured from \(j\), and \(p_{ij}\) the agreed score for the pair. <b>What it tells you:</b> the two curves have different widths, so the directions disagree. The average settles it. A point scores zero with itself, because that does not help clustering.</p></div>
+
+    <div class="formula"><span class="lbl">Similarity on the low-dimensional graph</span><div class="math">$$ q_{ij} \;=\; \frac{\left(1 + \lVert y_i - y_j \rVert^{2}\right)^{-1}}{\sum_{k \neq l}\left(1 + \lVert y_k - y_l \rVert^{2}\right)^{-1}} $$</div><p class="explain"><b>Symbols:</b> \(y_i\) and \(y_j\) are the positions on the new graph, and \(q_{ij}\) is their scaled similarity. <b>What it tells you:</b> the same recipe as above, but the height comes off a t curve. t-SNE moves the \(y\) positions until the \(q\) values look like the \(p\) values.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh compares two clusters, one twice as spread out as the other. The tight cluster gets a curve with a standard deviation of 1. Its two neighbours sit at distances 1 and 2, so the curve heights are 0.24 and 0.05.</p>
+      <p>Scale them: \(0.24 / 0.29 = 0.82\) and \(0.05 / 0.29 = 0.18\).</p>
+      <p>The loose cluster is half as dense, so its curve has a standard deviation of 2. Its neighbours are twice as far away. The heights are exactly half the ones above, 0.12 and 0.027.</p>
+      <p>Scale them: \(0.12 / 0.147 = 0.82\) and \(0.027 / 0.147 = 0.18\).</p>
+      <p>Both clusters give 0.82 and 0.18. That is why scaling matters: a loose cluster now looks as much like a cluster as a tight one.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not confuse t-SNE with dropping an axis. Projecting onto X or onto Y turns two clean clusters into a mishmash. t-SNE works because it uses the distances between all pairs of points.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The width of the normal curve is not fixed. It follows the local density, so every point gets its own curve. That is why two clusters of very different density can end up looking similar.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The similarity from A to B is not the same as from B to A, because the two curves have different widths. t-SNE averages the two numbers. Also, the similarity of a point with itself is set to zero on purpose.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The t distribution is not a small detail. Without it the clusters would clump up in the middle of the plot and be hard to tell apart. Its fatter tails let points that are far apart stay far apart.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>Explain t-SNE in a minute.</summary><div class="a">t-SNE reduces a high-dimensional data set to a two-dimensional picture and keeps the clusters. It first scores how similar every pair of points is, using a normal curve centred on each point. It then scatters the points at random on the new plot and scores them there with a t distribution. Finally it moves the points a small step at a time until the two score sets match.</div></details>
+    <details class="qa" open><summary>Why is a t distribution used, and not a normal curve, on the low-dimensional plot?</summary><div class="a">A t distribution is shorter in the middle and has fatter tails than a normal curve. Those fat tails give distant pairs a bigger score, so those points are allowed to stay far apart. Without it, everything would clump towards the middle of the plot and the clusters would be hard to see. That is the t in t-SNE.</div></details>
+    <details class="qa" open><summary>Why are the similarity scores scaled so they add up to one?</summary><div class="a">Because the width of the curve depends on the local density, so raw scores from a dense region and a sparse region are not comparable. If one cluster is half as dense, its raw scores are about half the size. Dividing each score by the total for that point removes that difference. After scaling, a loose cluster gives the same numbers as a tight one.</div></details>
+    <details class="qa" open><summary>What is perplexity?</summary><div class="a">Perplexity is the expected density around each point. It sets how wide the normal curve is for that point, which decides how many neighbours really count as similar. A small value looks at very local structure, and a larger one looks at broader structure. It is the main knob you tune when a t-SNE plot does not look sensible.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>t-SNE squashes high-dimensional data onto a small plot and keeps the clusters.</li>
+      <li>Simply projecting onto one axis destroys the clusters, so t-SNE uses all the pairwise distances instead.</li>
+      <li>A distance becomes a similarity score by reading the height of a normal curve centred on the point of interest.</li>
+      <li>The width of that curve follows the local density, and perplexity is the expected density around each point.</li>
+      <li>Scores are scaled to sum to one, so tight and loose clusters give the same numbers.</li>
+      <li>The two directions of a pair disagree, so t-SNE averages them, and a point scores zero with itself.</li>
+      <li>On the new plot the points start in random order, and a t distribution scores them there.</li>
+      <li>t-SNE moves the points a little at a time until the new matrix looks like the original one.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">t-SNE</span><span class="board-tag">near points pull, far points push</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 294" role="img" aria-label="Two clusters in 2-D are dropped on a line in random order, where one point is pulled toward the points that were near it and pushed from the points that were far, until after many small steps the clusters are back.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <path d="M30 16 L30 106 L150 106" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="52" cy="38" r="6" class="sv-acc"/>
+              <circle cx="70" cy="26" r="6" class="sv-acc"/>
+              <circle cx="60" cy="60" r="6" class="sv-acc"/>
+              <circle cx="108" cy="84" r="6" class="sv-key"/>
+              <circle cx="124" cy="72" r="6" class="sv-key"/>
+              <circle cx="120" cy="94" r="6" class="sv-key"/>
+              <circle cx="140" cy="86" r="6" class="sv-key"/>
+            </g>
+            <g class="sv-stroke-ink" stroke-width="3"><circle cx="84" cy="46" r="8" class="sv-acc"/></g>
+            <text x="172" y="62" class="sv-t">two clusters in 2-D</text>
+            <line x1="30" y1="170" x2="370" y2="170" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="45" cy="170" r="6" class="sv-acc"/>
+              <circle cx="85" cy="170" r="6" class="sv-key"/>
+              <circle cx="125" cy="170" r="6" class="sv-acc"/>
+              <circle cx="165" cy="170" r="6" class="sv-acc"/>
+              <circle cx="285" cy="170" r="6" class="sv-key"/>
+              <circle cx="325" cy="170" r="6" class="sv-key"/>
+              <circle cx="360" cy="170" r="6" class="sv-key"/>
+            </g>
+            <g class="sv-stroke-ink" stroke-width="3"><circle cx="230" cy="170" r="8" class="sv-acc"/></g>
+            <line x1="224" y1="150" x2="182" y2="150" class="sv-stroke-acc" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="224" y1="190" x2="182" y2="190" class="sv-stroke-key" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="232" y="130" text-anchor="end" class="sv-t">pull: near in 2-D</text>
+            <text x="372" y="152" text-anchor="end" class="sv-ts">random start</text>
+            <text x="232" y="221" text-anchor="end" class="sv-t">push: far in 2-D</text>
+            <text x="200" y="253" text-anchor="middle" class="sv-tb">after many small steps</text>
+            <line x1="30" y1="274" x2="370" y2="274" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="45" cy="274" r="6" class="sv-acc"/>
+              <circle cx="75" cy="274" r="6" class="sv-acc"/>
+              <circle cx="105" cy="274" r="6" class="sv-acc"/>
+              <circle cx="265" cy="274" r="6" class="sv-key"/>
+              <circle cx="295" cy="274" r="6" class="sv-key"/>
+              <circle cx="325" cy="274" r="6" class="sv-key"/>
+              <circle cx="355" cy="274" r="6" class="sv-key"/>
+            </g>
+            <g class="sv-stroke-ink" stroke-width="3"><circle cx="135" cy="274" r="8" class="sv-acc"/></g>
+          </svg>
+          <p>Dropping an axis mixes the clusters together. t-SNE scores how similar every pair of points is, drops the points on a line in random order, then nudges them: points that were near pull, points that were far push. Many small steps later, the clusters are back.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Point of interest</dt><dd>The point the normal curve is centred on.</dd>
+            <dt>Unscaled similarity</dt><dd>The curve's height at a neighbour's distance.</dd>
+            <dt>Perplexity</dt><dd>Expected density around each point; it sets the curve's width.</dd>
+            <dt>Similarity matrix</dt><dd>Scaled scores for every pair; zero with itself.</dd>
+            <dt>t distribution</dt><dd>Shorter curve with fatter tails, used on the new graph.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Measure distances</b>from the point of interest</li>
+            <li><b>Normal curve</b>its height = unscaled similarity</li>
+            <li><b>Fit the width</b>narrow if dense, wide if sparse</li>
+            <li><b>Scale, average</b>sum to one; average A→B, B→A</li>
+            <li><b>Drop randomly</b>score again with a t curve</li>
+            <li><b>Nudge points</b>small steps toward the original matrix</li>
+          </ol>
+          <p class="loop">↺ steps 1 to 4 run for every point; step 6 repeats until the two matrices match</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$w_{j\mid i}=\exp\!\left(-\frac{d_{ij}^{2}}{2\sigma_i^{2}}\right)$$
+          $$p_{j\mid i}=\frac{w_{j\mid i}}{\sum_{k\neq i} w_{k\mid i}}$$
+          $$p_{ij}=\frac{p_{j\mid i}+p_{i\mid j}}{2}$$
+          <ul class="keys">
+            <li>\(d_{ij}\) is the distance; \(\sigma_i\) is the curve's width, set by local density.</li>
+            <li>Dividing by the total makes each point's scores sum to one.</li>
+            <li>A t curve gives \(q_{ij}\) on the new graph; points move until \(q\) looks like \(p\).</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th></th><th>tight, σ = 1</th><th>loose, σ = 2</th></tr>
+            <tr><td>near height</td><td>0.24</td><td>0.12</td></tr>
+            <tr><td>far height</td><td>0.05</td><td>0.027</td></tr>
+            <tr><td>sum</td><td>0.29</td><td>0.147</td></tr>
+            <tr class="final"><td>scaled</td><td>0.82, 0.18</td><td>0.82, 0.18</td></tr>
+          </table>
+          <p class="hand">Half as dense means half the heights, yet after scaling both clusters give 0.82 and 0.18.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">t-SNE is just dropping an axis.</span><span class="yes">Projecting onto X or Y makes a mishmash. t-SNE uses all the pairwise distances.</span></li>
+            <li><span class="no">A→B similarity equals B→A.</span><span class="yes">The two curves have different widths, so t-SNE averages the two scores.</span></li>
+            <li><span class="no">The t distribution is a small detail.</span><span class="yes">Without it clusters clump in the middle. Its fatter tails let far points stay far apart.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="38-mds-and-pcoa-in-r.html"><small>Previous</small>MDS and PCoA in R</a> <a href="40-hierarchical-clustering.html"><small>Next</small>Hierarchical Clustering</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

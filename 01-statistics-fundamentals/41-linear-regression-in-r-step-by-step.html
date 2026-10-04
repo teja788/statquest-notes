@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Linear Regression in R, Step-by-Step — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>41</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 41 · 5 min</div>
+    <h1>Linear Regression in R, Step-by-Step</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=u1cc1r_Y7M0" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Companion to the StatQuest on linear regression</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This is the hands-on companion to the linear regression video. Josh fits a line in R, then reads every line of the output.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>You put your data in a data frame, then call <code>lm(size ~ weight)</code>. That gives the least squares intercept and slope. The real work is the <code>summary()</code> output, which has five blocks. You check that the residuals look symmetric, that the p-value for the predictor is below 0.05, and that R-squared is large. Then you draw the line on the plot.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Linear regression fits a straight line through the data. R finds the intercept and slope that make the squared vertical distances to the line as small as possible. Those distances are called residuals.</p>
+    <p>The video uses the nine mice from the linear regression video. The formula <code>size ~ weight</code> reads as "size is explained by weight". So size is the y variable and weight is the x variable. Fitting takes one line of code. Everything after that is interpretation.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 308" role="img" aria-label="Scatter plot of nine mice, weight on x and size on y, with the fitted least squares line and two residual segments">
+        <rect x="0" y="0" width="760" height="308" class="sv-paper"></rect>
+        <line x1="90" y1="250" x2="700" y2="250" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <line x1="90" y1="40" x2="90" y2="250" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <text x="395" y="282" text-anchor="middle" class="sv-t">weight (x)</text>
+        <text x="30" y="145" class="sv-t">size (y)</text>
+        <line x1="90" y1="233" x2="690" y2="78" class="sv-stroke-acc" stroke-width="2.5"></line>
+        <line x1="296" y1="221" x2="296" y2="180" class="sv-stroke-key" stroke-width="2" stroke-dasharray="4 3"></line>
+        <line x1="424" y1="93" x2="424" y2="147" class="sv-stroke-key" stroke-width="2" stroke-dasharray="4 3"></line>
+        <circle cx="167" cy="210" r="5" class="sv-ink"></circle>
+        <circle cx="244" cy="176" r="5" class="sv-ink"></circle>
+        <circle cx="296" cy="221" r="5" class="sv-ink"></circle>
+        <circle cx="390" cy="144" r="5" class="sv-ink"></circle>
+        <circle cx="424" cy="93" r="5" class="sv-ink"></circle>
+        <circle cx="467" cy="159" r="5" class="sv-ink"></circle>
+        <circle cx="527" cy="164" r="5" class="sv-ink"></circle>
+        <circle cx="570" cy="110" r="5" class="sv-ink"></circle>
+        <circle cx="630" cy="70" r="5" class="sv-ink"></circle>
+        <rect x="470" y="196" width="256" height="24" rx="4" class="sv-paper2"></rect>
+        <text x="478" y="213" class="sv-tm">size = 0.5813 + 0.7778 × weight</text>
+        <rect x="312" y="186" width="150" height="22" rx="4" class="sv-paper2"></rect>
+        <text x="320" y="202" class="sv-ts">residual (dashed)</text>
+        <rect x="104" y="52" width="160" height="22" rx="4" class="sv-paper2"></rect>
+        <text x="112" y="68" class="sv-ts">nine mice, one dot each</text>
+      </svg>
+      <figcaption>The line is chosen so the squared dashed distances add up to the smallest possible total.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>
+        <p>Put the two columns in a data frame. Typing the name prints it as a neat table.</p>
+        <pre><code>mouse.data &lt;- data.frame(
+  weight = c(0.9, 1.8, 2.4, 3.5, 3.9, 4.4, 5.1, 5.6, 6.3),
+  size   = c(1.4, 2.6, 1.0, 3.7, 5.5, 3.2, 3.0, 4.9, 6.3))
+mouse.data</code></pre>
+      </li>
+      <li>
+        <p>Look at the raw data first, before any model.</p>
+        <pre><code>plot(mouse.data$weight, mouse.data$size)</code></pre>
+      </li>
+      <li>
+        <p>Fit the line with <code>lm()</code>, which stands for linear models. The left side of the tilde is y, the right side is x.</p>
+        <pre><code>mouse.regression &lt;- lm(size ~ weight, data = mouse.data)</code></pre>
+      </li>
+      <li>
+        <p>Ask for the summary. This is where the useful numbers live.</p>
+        <pre><code>summary(mouse.regression)</code></pre>
+      </li>
+      <li>
+        <p>Add the fitted line to the plot you already drew.</p>
+        <pre><code>abline(mouse.regression, col = "blue", lwd = 2)</code></pre>
+      </li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 360" role="img" aria-label="The five blocks of the summary output in R with a note about what to check in each block">
+        <rect x="0" y="0" width="760" height="360" class="sv-paper"></rect>
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" class="sv-acc"></path>
+          </marker>
+        </defs>
+        <text x="20" y="22" class="sv-tb">summary(mouse.regression)</text>
+        <rect x="20" y="34" width="330" height="40" rx="5" class="sv-paper2"></rect>
+        <text x="32" y="59" class="sv-tm">Call:</text>
+        <line x1="356" y1="54" x2="404" y2="54" class="sv-stroke-acc" stroke-width="2" marker-end="url(#ar)"></line>
+        <text x="412" y="58" class="sv-ts">the formula you fitted — check it is right</text>
+        <rect x="20" y="82" width="330" height="52" rx="5" class="sv-acc-soft"></rect>
+        <text x="32" y="107" class="sv-tm">Residuals:</text>
+        <text x="32" y="125" class="sv-ts">Min 1Q Median 3Q Max</text>
+        <line x1="356" y1="108" x2="404" y2="108" class="sv-stroke-acc" stroke-width="2" marker-end="url(#ar)"></line>
+        <text x="412" y="104" class="sv-ts">should be symmetric about zero:</text>
+        <text x="412" y="121" class="sv-ts">Min ≈ −Max, 1Q ≈ −3Q, median near 0</text>
+        <rect x="20" y="142" width="330" height="70" rx="5" class="sv-acc-soft"></rect>
+        <text x="32" y="167" class="sv-tm">Coefficients:</text>
+        <text x="32" y="185" class="sv-ts">Estimate  Std. Error</text>
+        <text x="32" y="202" class="sv-ts">t value   Pr(&gt;|t|)</text>
+        <line x1="356" y1="177" x2="404" y2="177" class="sv-stroke-acc" stroke-width="2" marker-end="url(#ar)"></line>
+        <text x="412" y="173" class="sv-ts">intercept and slope, plus a p-value</text>
+        <text x="412" y="190" class="sv-ts">for each. Want p &lt; 0.05 for weight.</text>
+        <rect x="20" y="220" width="330" height="40" rx="5" class="sv-paper2"></rect>
+        <text x="32" y="245" class="sv-tm">Residual standard error</text>
+        <line x1="356" y1="240" x2="404" y2="240" class="sv-stroke-acc" stroke-width="2" marker-end="url(#ar)"></line>
+        <text x="412" y="244" class="sv-ts">typical size of a residual</text>
+        <rect x="20" y="268" width="330" height="70" rx="5" class="sv-good-soft"></rect>
+        <text x="32" y="293" class="sv-tm">Multiple R-squared,</text>
+        <text x="32" y="311" class="sv-tm">Adjusted R-squared</text>
+        <text x="32" y="329" class="sv-tm">F-statistic, p-value</text>
+        <line x1="356" y1="300" x2="404" y2="300" class="sv-stroke-acc" stroke-width="2" marker-end="url(#ar)"></line>
+        <text x="412" y="296" class="sv-ts">how much variation weight explains,</text>
+        <text x="412" y="313" class="sv-ts">and whether that amount is significant</text>
+      </svg>
+      <figcaption>Read the summary from top to bottom, and check one thing in each block.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">Multiple R-squared</span>
+      <div class="math">$$ R^2 = \frac{SS(\text{mean}) - SS(\text{fit})}{SS(\text{mean})} $$</div>
+      <p class="explain"><b>Symbols:</b> \(SS(\text{mean})\) is the sum of squared distances to a flat line at the mean of y. \(SS(\text{fit})\) is the same sum around the fitted line. <b>What it tells you:</b> the share of the variation in y that x explains.</p>
+    </div>
+    <div class="formula"><span class="lbl">Residual standard error</span>
+      <div class="math">$$ RSE = \sqrt{\frac{SS(\text{fit})}{n - p_{fit}}} $$</div>
+      <p class="explain"><b>Symbols:</b> \(n\) is the number of data points. \(p_{fit}\) is the number of parameters in the fitted line, which is 2. The bottom is the residual degrees of freedom. <b>What it tells you:</b> the typical distance from a point to the line. Josh calls it the square root of the denominator of F.</p>
+    </div>
+    <div class="formula"><span class="lbl">F-statistic</span>
+      <div class="math">$$ F = \frac{\big(SS(\text{mean}) - SS(\text{fit})\big) / (p_{fit} - p_{mean})}{SS(\text{fit}) / (n - p_{fit})} $$</div>
+      <p class="explain"><b>Symbols:</b> \(p_{mean}=1\) is the single parameter of the flat mean line. The two divisors are the degrees of freedom R prints next to F. <b>What it tells you:</b> whether the gain over the mean line is bigger than chance would give.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Here is the summary for the nine mice, rounded.</p>
+      <pre><code>Residuals:
+    Min      1Q  Median      3Q     Max
+-1.5482 -0.8037  0.1186  0.6186  1.8852
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)
+(Intercept)   0.5813     0.9649   0.602   0.5661
+weight        0.7778     0.2334   3.332   0.0126 *
+
+Residual standard error: 1.19 on 7 degrees of freedom
+Multiple R-squared: 0.6133,  Adjusted R-squared: 0.5580
+F-statistic: 11.1 on 1 and 7 DF,  p-value: 0.01256</code></pre>
+      <p>The residuals look reasonable. Min and Max sit on opposite sides of zero, 1Q and 3Q are rough mirror images, and the median is close to zero.</p>
+      <p>The slope is 0.7778, so a mouse one unit heavier is predicted to be 0.7778 units bigger. Its p-value is 0.0126, below 0.05, so weight gives a reliable guess of size. The intercept has a large p-value, but Josh says we usually do not care about the intercept.</p>
+      <p>R-squared is 0.6133, so weight explains 61% of the variation in size. The F-test says that 61% beats chance. Its p-value matches the one for weight, because there is only one predictor.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> The formula is <code>y ~ x</code>, not the other way round. Writing <code>weight ~ size</code> fits a different line and gives a different slope, even though R-squared stays the same.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A small p-value does not mean the line fits well. It only says the slope is probably not zero. Look at R-squared and at the scatter plot too.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Lopsided residuals are a warning. If the median is far from zero, or Min and Max differ a lot, a straight line may be the wrong shape.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What does the p-value next to a coefficient test?</summary><div class="a">It tests whether that coefficient is zero. If it is zero, the term adds nothing to the model. A small p-value for the slope means the predictor gives a reliable guess of the outcome. I ignore the intercept's p-value.</div></details>
+    <details class="qa" open><summary>Why does the overall F p-value equal the slope p-value here?</summary><div class="a">With a single predictor, both tests ask the same question. Does adding weight beat a flat line at the mean? With more predictors the F-test becomes a joint test, and the two p-values separate.</div></details>
+    <details class="qa" open><summary>What do you check in the residual summary?</summary><div class="a">I check for symmetry around zero. The median should be near zero. Min and Max should sit about the same distance from zero, and so should 1Q and 3Q. If they are lopsided, a straight line is probably the wrong shape.</div></details>
+    <details class="qa" open><summary>R-squared versus adjusted R-squared?</summary><div class="a">R-squared is the fraction of variation in y that the model explains. It never goes down when you add a predictor, even a useless one. Adjusted R-squared scales it by the number of parameters, so it can go down.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Put your two variables in a data frame and plot them first.</li>
+      <li>Fit the model with <code>lm(size ~ weight, data = mouse.data)</code>, where the left side is y.</li>
+      <li>All the interpretation comes from <code>summary()</code>.</li>
+      <li>Check that the residual quantiles are roughly symmetric about zero.</li>
+      <li>Read the slope estimate, and want its p-value below 0.05.</li>
+      <li>R-squared says how much variation the predictor explains; here it is 61%.</li>
+      <li>Finish by drawing the line with <code>abline()</code> so you can see the fit.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Linear regression</span><span class="board-tag">one line to fit, five blocks to read</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 280" role="img" aria-label="The nine mice, size (y) against weight (x), with the least squares line from lm(size ~ weight). The two biggest residuals are marked: Max 1.8852 above the line and Min −1.5482 below it. The slope is 0.7778 with p = 0.0126, and R squared is 0.6133.">
+            <line x1="40" y1="210" x2="380" y2="210" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="40" y1="52" x2="40" y2="210" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="40" y1="196" x2="376" y2="65.4" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round"/>
+            <line x1="227.2" y1="83" x2="227.2" y2="121" class="sv-stroke-key" stroke-width="2.5" stroke-dasharray="4 4"/>
+            <line x1="284.8" y1="133" x2="284.8" y2="103" class="sv-stroke-key" stroke-width="2.5" stroke-dasharray="4 4"/>
+            <circle cx="83.2" cy="176.4" r="5" class="sv-ink"/>
+            <circle cx="126.4" cy="147.6" r="5" class="sv-ink"/>
+            <circle cx="155.2" cy="186" r="5" class="sv-ink"/>
+            <circle cx="208" cy="121.2" r="5" class="sv-ink"/>
+            <circle cx="251.2" cy="133.2" r="5" class="sv-ink"/>
+            <circle cx="308.8" cy="92.4" r="5" class="sv-ink"/>
+            <circle cx="342.4" cy="58.8" r="5" class="sv-ink"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="227.2" cy="78" r="5" class="sv-key"/>
+              <circle cx="284.8" cy="138" r="5" class="sv-key"/>
+            </g>
+            <text x="48" y="42" class="sv-ts">size (y)</text>
+            <text x="384" y="44" text-anchor="end" class="sv-t">slope 0.7778, p = 0.0126</text>
+            <text x="214" y="84" text-anchor="end" class="sv-t">Max 1.8852</text>
+            <text x="270" y="164" class="sv-t">Min −1.5482</text>
+            <text x="380" y="230" text-anchor="end" class="sv-ts">weight (x)</text>
+            <text x="40" y="264" class="sv-tm">lm(size ~ weight)</text>
+            <text x="380" y="264" text-anchor="end" class="sv-tb">R² = 0.6133</text>
+          </svg>
+          <p>One call, <code>lm(size ~ weight)</code>, fits the least squares line; the left side of ~ is y. The rest is reading <code>summary()</code>: residuals roughly symmetric, a slope p-value below 0.05, a large R².</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>lm()</dt><dd>R's linear model function; in y ~ x the left side is y.</dd>
+            <dt>Residual</dt><dd>The vertical distance from a point to the fitted line.</dd>
+            <dt>Pr(&gt;|t|)</dt><dd>The p-value testing whether a coefficient is zero.</dd>
+            <dt>Residual standard error</dt><dd>The typical size of a residual.</dd>
+            <dt>Multiple R-squared</dt><dd>The share of the variation in y that x explains.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>data.frame()</b>weight and size for nine mice</li>
+            <li><b>plot()</b>look at the raw data first</li>
+            <li><b>lm()</b>size ~ weight; y on the left</li>
+            <li><b>summary()</b>five blocks of useful numbers</li>
+            <li><b>abline()</b>draw the fitted line</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$R^2=\frac{SS_m-SS_f}{SS_m}$$
+          $$RSE=\sqrt{\frac{SS_f}{n-p_f}}$$
+          <ul class="keys">
+            <li>\(SS_m\), \(SS_f\): squared distances summed around the mean line and the fitted line.</li>
+            <li>\(n=9\) mice and \(p_f=2\) parameters, so \(n-p_f=7\) degrees of freedom.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>output</th><th>value</th><th>check</th></tr>
+            <tr><td>residuals</td><td>−1.5482 … 1.8852</td><td>≈ symmetric</td></tr>
+            <tr><td>intercept</td><td>0.5813</td><td>p 0.5661</td></tr>
+            <tr><td>slope</td><td>0.7778</td><td>p 0.0126 ✓</td></tr>
+            <tr><td>RSE</td><td>1.19</td><td>7 df</td></tr>
+            <tr class="final"><td>R²</td><td>0.6133</td><td>F p 0.01256</td></tr>
+          </table>
+          <p class="hand">Weight explains 61% of size. We usually ignore the intercept; the slope's p matches F's, as there is one predictor.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">weight ~ size fits the same line.</span><span class="yes">The left of ~ is y. Swapping gives a different slope, though R-squared stays the same.</span></li>
+            <li><span class="no">A small p-value means the line fits well.</span><span class="yes">It only says the slope is probably not zero. Also check R-squared and the plot.</span></li>
+            <li><span class="no">Lopsided residuals are nothing to worry about.</span><span class="yes">A median far from zero, or very unequal Min and Max, means a line may be the wrong shape.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="40-linear-regression.html"><small>Previous</small>Linear Regression</a> <a href="42-multiple-regression.html"><small>Next</small>Multiple Regression</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

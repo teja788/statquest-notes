@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Alternative Hypotheses: Main Ideas — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>10</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 10 · 9.8 min</div>
+    <h1>Alternative Hypotheses: Main Ideas</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=5koKb5B_YWo" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: —</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video explains the alternative hypothesis: the rival description of the data that a statistical test compares against the null hypothesis.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>A statistical test needs three things: data, a null hypothesis, and an alternative hypothesis. The null says the groups are the same, so one mean describes all the data. The alternative says the groups differ, so separate means describe the data better. The test looks at how far the observations sit from each set of means, and rejects the null when the separate means fit much better. With three or more groups there are several possible alternatives, and different alternatives can lead to different decisions.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh reviews the previous video. Two drugs, C and D, and we measure recovery from a virus. We test the null hypothesis: there is no difference. A gap too big to blame on diet or exercise means we reject the null. If small random things could flip the result, we fail to reject.</p>
+    <p>Now the new part. To make that decision we run the data through a <strong>statistical test</strong>, a procedure that returns one verdict: reject, or fail to reject. It needs three ingredients: the data, the null or primary hypothesis, and an <strong>alternative hypothesis</strong>, which is the competing story about the data.</p>
+    <p>With two drugs the alternative is obvious. The null says no difference, so the alternative is simply the opposite. Josh warns that the next part is hand-wavy. The goal is to feel why the alternative matters, not to learn how a test works in detail.</p>
+    <p>Here is the picture. Compute one mean from all the data. Measure the distance from every observation to it. Those distances stand for the null. Then compute a separate mean per drug and measure again. If those distances are much shorter, two means describe the data better, so we reject the null.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 330" role="img" aria-label="Same recovery data shown twice: long distances to one shared mean on the left, short distances to two separate group means on the right">
+        <rect x="20" y="20" width="350" height="286" rx="8" class="sv-paper2"/>
+        <rect x="390" y="20" width="350" height="286" rx="8" class="sv-paper2"/>
+        <text x="195" y="38" text-anchor="middle" class="sv-tb">Null: one mean for everything</text>
+        <text x="565" y="38" text-anchor="middle" class="sv-tb">Alternative: one mean per drug</text>
+
+        <path d="M52 54 L52 262 L358 262" class="sv-line" stroke-width="1.5"/>
+        <path d="M422 54 L422 262 L728 262" class="sv-line" stroke-width="1.5"/>
+        <text x="34" y="158" text-anchor="middle" transform="rotate(-90 34 158)" class="sv-ts">recovery (days)</text>
+
+        <path d="M92 208 L92 154 M117 190 L117 154 M142 208 L142 154 M167 190 L167 154" class="sv-stroke-key" stroke-width="1.5"/>
+        <path d="M252 118 L252 154 M277 100 L277 154 M302 118 L302 154 M327 100 L327 154" class="sv-stroke-key" stroke-width="1.5"/>
+        <path d="M62 154 L352 154" class="sv-stroke-acc" stroke-width="2" stroke-dasharray="6 4"/>
+        <rect x="70" y="130" width="122" height="18" rx="4" class="sv-paper"/>
+        <text x="131" y="143" text-anchor="middle" class="sv-ts">one mean = 6 days</text>
+
+        <path d="M462 208 L462 199 M487 190 L487 199 M512 208 L512 199 M537 190 L537 199" class="sv-stroke-good" stroke-width="2"/>
+        <path d="M622 118 L622 109 M647 100 L647 109 M672 118 L672 109 M697 100 L697 109" class="sv-stroke-good" stroke-width="2"/>
+        <path d="M432 199 L567 199" class="sv-stroke-good" stroke-width="2" stroke-dasharray="6 4"/>
+        <path d="M592 109 L727 109" class="sv-stroke-good" stroke-width="2" stroke-dasharray="6 4"/>
+        <text x="500" y="234" text-anchor="middle" class="sv-ts">mean C = 3.5</text>
+        <text x="660" y="88" text-anchor="middle" class="sv-ts">mean D = 8.5</text>
+
+        <circle cx="92" cy="208" r="4.5" class="sv-ink"/><circle cx="117" cy="190" r="4.5" class="sv-ink"/>
+        <circle cx="142" cy="208" r="4.5" class="sv-ink"/><circle cx="167" cy="190" r="4.5" class="sv-ink"/>
+        <circle cx="252" cy="118" r="4.5" class="sv-ink"/><circle cx="277" cy="100" r="4.5" class="sv-ink"/>
+        <circle cx="302" cy="118" r="4.5" class="sv-ink"/><circle cx="327" cy="100" r="4.5" class="sv-ink"/>
+        <circle cx="462" cy="208" r="4.5" class="sv-ink"/><circle cx="487" cy="190" r="4.5" class="sv-ink"/>
+        <circle cx="512" cy="208" r="4.5" class="sv-ink"/><circle cx="537" cy="190" r="4.5" class="sv-ink"/>
+        <circle cx="622" cy="118" r="4.5" class="sv-ink"/><circle cx="647" cy="100" r="4.5" class="sv-ink"/>
+        <circle cx="672" cy="118" r="4.5" class="sv-ink"/><circle cx="697" cy="100" r="4.5" class="sv-ink"/>
+
+        <text x="130" y="282" text-anchor="middle" class="sv-ts">Drug C</text>
+        <text x="290" y="282" text-anchor="middle" class="sv-ts">Drug D</text>
+        <text x="500" y="282" text-anchor="middle" class="sv-ts">Drug C</text>
+        <text x="660" y="282" text-anchor="middle" class="sv-ts">Drug D</text>
+      </svg>
+      <figcaption>Both panels hold the same data. The distances to the single mean are long; the distances to the two group means are short. That gap is the evidence against the null.</figcaption>
+    </figure>
+
+    <p>Now suppose the distances around the single mean were not much longer. Then the small gap between the group means probably reflects random things. Josh's example: perhaps one person got less exercise. Had he exercised more, the difference would disappear. Then we fail to reject the null.</p>
+    <p>Josh adds a note for readers who know machine learning. Failing to reject is the same as noticing that two averages have overfit the data.</p>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 250" role="img" aria-label="Three ingredients feeding a statistical test, which outputs a decision about the null hypothesis">
+        <defs>
+          <marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" class="sv-ink3"/>
+          </marker>
+        </defs>
+        <rect x="20" y="20" width="212" height="54" rx="8" class="sv-acc-soft"/>
+        <rect x="20" y="88" width="212" height="54" rx="8" class="sv-acc-soft"/>
+        <rect x="20" y="156" width="212" height="54" rx="8" class="sv-acc-soft"/>
+        <circle cx="48" cy="47" r="14" class="sv-acc"/><circle cx="48" cy="115" r="14" class="sv-acc"/><circle cx="48" cy="183" r="14" class="sv-acc"/>
+        <text x="48" y="52" text-anchor="middle" class="sv-paper" font-size="14" font-weight="700">1</text>
+        <text x="48" y="120" text-anchor="middle" class="sv-paper" font-size="14" font-weight="700">2</text>
+        <text x="48" y="188" text-anchor="middle" class="sv-paper" font-size="14" font-weight="700">3</text>
+        <text x="72" y="52" class="sv-t">The data</text>
+        <text x="72" y="120" class="sv-t">Null hypothesis</text>
+        <text x="72" y="188" class="sv-t">Alternative hypothesis</text>
+
+        <path d="M232 47 L296 105" class="sv-line" stroke-width="1.5" marker-end="url(#ah1)"/>
+        <path d="M232 115 L296 115" class="sv-line" stroke-width="1.5" marker-end="url(#ah1)"/>
+        <path d="M232 183 L296 125" class="sv-line" stroke-width="1.5" marker-end="url(#ah1)"/>
+
+        <rect x="300" y="67" width="170" height="96" rx="8" class="sv-paper2"/>
+        <text x="385" y="106" text-anchor="middle" class="sv-tb">Statistical test</text>
+        <text x="385" y="130" text-anchor="middle" class="sv-ts">compares the two</text>
+        <text x="385" y="148" text-anchor="middle" class="sv-ts">descriptions of the data</text>
+
+        <path d="M470 115 L536 115" class="sv-line" stroke-width="1.5" marker-end="url(#ah1)"/>
+        <rect x="540" y="67" width="200" height="96" rx="8" class="sv-good-soft"/>
+        <text x="640" y="106" text-anchor="middle" class="sv-tb">Decision</text>
+        <text x="640" y="130" text-anchor="middle" class="sv-ts">reject the null,</text>
+        <text x="640" y="148" text-anchor="middle" class="sv-ts">or fail to reject it</text>
+      </svg>
+      <figcaption>A statistical test takes three ingredients and returns one verdict, always about the null hypothesis only.</figcaption>
+    </figure>
+
+    <ol class="steps">
+      <li>Collect the data: how quickly each person recovered while taking drug C or drug D.</li>
+      <li>State the null hypothesis. There is no difference, so a single mean describes everybody.</li>
+      <li>State the alternative hypothesis. With two groups it is the opposite: each drug gets its own mean.</li>
+      <li>Measure the distances from every observation to the single mean. These stand for the null.</li>
+      <li>Measure the distances to each observation's own group mean. These stand for the alternative.</li>
+      <li>Compare the two sets. If the group means shrink the distances a lot, reject the null. If the shrinkage could be random noise, fail to reject.</li>
+      <li>Report the verdict about the null. Never report that you accepted the alternative.</li>
+    </ol>
+
+    <h3>When there are three or more groups</h3>
+    <p>With two groups the alternative is obvious, so it is easy to forget. Add a third drug and it becomes interesting. The null now says there is no difference between C, D and E, again pictured as distances to a single mean. But the alternative is no longer unique.</p>
+    <p>One alternative is that all three drugs differ, so each gets its own mean. Another is that C and D are the same while E does its own thing, so C and D share one mean and E keeps another. Both are legitimate.</p>
+    <p>This is the heart of the video. Depending on which alternative goes into the test, we can reach a different decision about the null. So state clearly which alternative you use before you run the test.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Three panels of the same three-drug data: one shared mean, three separate means, and one mean for drugs C and D with a separate mean for drug E">
+        <rect x="20" y="20" width="230" height="260" rx="8" class="sv-paper2"/>
+        <rect x="265" y="20" width="230" height="260" rx="8" class="sv-paper2"/>
+        <rect x="510" y="20" width="230" height="260" rx="8" class="sv-paper2"/>
+        <text x="135" y="40" text-anchor="middle" class="sv-tb">Null: one mean</text>
+        <text x="380" y="40" text-anchor="middle" class="sv-tb">Alt 1: all three differ</text>
+        <text x="625" y="40" text-anchor="middle" class="sv-tb">Alt 2: C and D together</text>
+
+        <path d="M38 250 L232 250" class="sv-line" stroke-width="1.5"/>
+        <path d="M283 250 L477 250" class="sv-line" stroke-width="1.5"/>
+        <path d="M528 250 L722 250" class="sv-line" stroke-width="1.5"/>
+
+        <path d="M50 202 L50 157 M68 186 L68 157 M110 186 L110 157 M128 170 L128 157 M180 106 L180 157 M198 90 L198 157" class="sv-stroke-key" stroke-width="1.5"/>
+        <path d="M38 157 L232 157" class="sv-stroke-acc" stroke-width="2" stroke-dasharray="6 4"/>
+
+        <path d="M295 202 L295 194 M313 186 L313 194 M355 186 L355 178 M373 170 L373 178 M425 106 L425 98 M443 90 L443 98" class="sv-stroke-good" stroke-width="1.5"/>
+        <path d="M287 194 L321 194 M347 178 L381 178 M417 98 L451 98" class="sv-stroke-good" stroke-width="2.5" stroke-dasharray="6 4"/>
+
+        <path d="M540 202 L540 186 M618 170 L618 186 M670 106 L670 98 M688 90 L688 98" class="sv-stroke-good" stroke-width="1.5"/>
+        <path d="M532 186 L626 186 M662 98 L696 98" class="sv-stroke-good" stroke-width="2.5" stroke-dasharray="6 4"/>
+
+        <circle cx="50" cy="202" r="4" class="sv-ink"/><circle cx="68" cy="186" r="4" class="sv-ink"/>
+        <circle cx="110" cy="186" r="4" class="sv-ink"/><circle cx="128" cy="170" r="4" class="sv-ink"/>
+        <circle cx="180" cy="106" r="4" class="sv-ink"/><circle cx="198" cy="90" r="4" class="sv-ink"/>
+        <circle cx="295" cy="202" r="4" class="sv-ink"/><circle cx="313" cy="186" r="4" class="sv-ink"/>
+        <circle cx="355" cy="186" r="4" class="sv-ink"/><circle cx="373" cy="170" r="4" class="sv-ink"/>
+        <circle cx="425" cy="106" r="4" class="sv-ink"/><circle cx="443" cy="90" r="4" class="sv-ink"/>
+        <circle cx="540" cy="202" r="4" class="sv-ink"/><circle cx="558" cy="186" r="4" class="sv-ink"/>
+        <circle cx="600" cy="186" r="4" class="sv-ink"/><circle cx="618" cy="170" r="4" class="sv-ink"/>
+        <circle cx="670" cy="106" r="4" class="sv-ink"/><circle cx="688" cy="90" r="4" class="sv-ink"/>
+
+        <text x="59" y="272" text-anchor="middle" class="sv-ts">C</text>
+        <text x="119" y="272" text-anchor="middle" class="sv-ts">D</text>
+        <text x="189" y="272" text-anchor="middle" class="sv-ts">E</text>
+        <text x="304" y="272" text-anchor="middle" class="sv-ts">C</text>
+        <text x="364" y="272" text-anchor="middle" class="sv-ts">D</text>
+        <text x="434" y="272" text-anchor="middle" class="sv-ts">E</text>
+        <text x="549" y="272" text-anchor="middle" class="sv-ts">C</text>
+        <text x="609" y="272" text-anchor="middle" class="sv-ts">D</text>
+        <text x="679" y="272" text-anchor="middle" class="sv-ts">E</text>
+      </svg>
+      <figcaption>All three panels show the same recovery data. The null uses one mean; each alternative groups the means differently.</figcaption>
+    </figure>
+
+    <p>Whichever alternative we choose, the verdict is still about the null. We may say we rejected the null in favour of that alternative. We never accept the alternative, because too many others exist to test.</p>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>The video stays hand-wavy and gives no formula. It talks about "distances" from the observations to the means. Real tests add those up as squared distances, because squaring removes the sign.</p>
+
+    <div class="formula"><span class="lbl">Distances for the null and for the alternative</span>
+      <div class="math">$$ SS_{\text{null}} = \sum_{i=1}^{n} \left( x_i - \bar{x} \right)^2, \qquad SS_{\text{alt}} = \sum_{g=1}^{G} \; \sum_{i \in g} \left( x_i - \bar{x}_g \right)^2 $$</div>
+      <p class="explain"><b>Symbols:</b> \(x_i\) is person \(i\)'s recovery time and \(n\) is the total number of people. \(\bar{x}\) is the single pooled mean. \(g\) labels one group of the alternative, \(G\) is how many groups it uses, and \(\bar{x}_g\) is that group's mean. <b>What it tells you:</b> the first number says how badly one mean describes everybody. The second says how well the alternative's grouping fits. A different alternative changes who shares a mean.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Rule of thumb for the comparison</span>
+      <div class="math">$$ \text{drop} = SS_{\text{null}} - SS_{\text{alt}} $$</div>
+      <p class="explain"><b>Symbols:</b> the drop is how much distance the extra means removed. <b>What it tells you:</b> a large drop, relative to the number of extra means used, says the separate means are worth it, so reject the null. A small drop says they chased random noise. Turning that judgement into a number is the job of the p-value.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>The video draws the three drugs without printing values. These numbers match the figure above. Recovery in days: drug C gives 3 and 4, drug D gives 4 and 5, drug E gives 9 and 10.</p>
+      <p>The null says everyone shares one mean, which is \((3+4+4+5+9+10)/6 = 5.83\) days. The squared distances to it add up to:</p>
+      <div class="math">$$ SS_{\text{null}} = 2.83^2 + 1.83^2 + 1.83^2 + 0.83^2 + 3.17^2 + 4.17^2 = 42.8 $$</div>
+      <p>The first alternative says all three drugs differ. The means become 3.5 for C, 4.5 for D and 9.5 for E, and every observation sits half a day from its own mean:</p>
+      <div class="math">$$ SS_{\text{alt-1}} = 6 \times 0.5^2 = 1.5 $$</div>
+      <p>The second alternative says C and D are the same and E does its own thing. Then C and D share the mean \((3+4+4+5)/4 = 4\) days, while E keeps 9.5:</p>
+      <div class="math">$$ SS_{\text{alt-2}} = \left(1^2 + 0^2 + 0^2 + 1^2\right) + 2 \times 0.5^2 = 2.5 $$</div>
+      <p>Both alternatives cut the distances from 42.8 to under 3, so both say reject the null. Josh's warning is that the two will not always agree. When they disagree, the alternative you chose decides the verdict.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Do not say "we accept the alternative hypothesis". The test only rejects or fails to reject the null. Some other alternative you never tested might describe the data better.</p>
+    </div>
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Choose the alternative before you run the test. With three or more groups, different alternatives can give different decisions about the same null and the same data.</p>
+    </div>
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>"Fail to reject" is not "there is no difference". It means the extra means did not shrink the distances enough to rule out random things.</p>
+    </div>
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Extra means always fit at least as well, so shorter distances alone prove nothing. That is Josh's overfitting remark.</p>
+    </div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is the alternative hypothesis, in plain words?</summary><div class="a">It is the rival description of the data that the test weighs against the null. The null says one mean describes everybody; the alternative says the groups need their own means. A test cannot work with the null alone.</div></details>
+    <details class="qa" open><summary>Why do we never accept the alternative hypothesis?</summary><div class="a">Rejecting the null only says one mean fits poorly. It does not say our particular alternative is right, and there are far too many others we never tested. The honest wording is that we rejected the null in favour of a stated alternative.</div></details>
+    <details class="qa" open><summary>With three groups, what alternatives could you have, and why does it matter?</summary><div class="a">With drugs C, D and E, one alternative is that all three differ, so each gets its own mean. Another is that C and D are the same while E differs. Each groups the data differently, and the test can reach a different verdict, so state it up front.</div></details>
+    <details class="qa" open><summary>How does a test actually use the alternative hypothesis?</summary><div class="a">It measures how far each observation sits from a single pooled mean, then from the means the alternative implies. If the alternative's means shrink those distances a lot, we reject the null.</div></details>
+    <details class="qa" open><summary>How is "fail to reject" related to overfitting?</summary><div class="a">Failing to reject means the extra means bought very little. They moved apart only because of random noise, such as one person exercising less. In machine learning language, that is overfitting.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>A statistical test needs three things: the data, a null or primary hypothesis, and an alternative hypothesis.</li>
+      <li>The null hypothesis says the groups are the same, which we picture as one mean for all the data.</li>
+      <li>The alternative hypothesis says the groups differ, which we picture as separate means.</li>
+      <li>The test compares the distances from the observations to each set of means.</li>
+      <li>Much shorter distances around the separate means mean we reject the null hypothesis.</li>
+      <li>Similar distances mean we fail to reject it, because random things could explain the small gap.</li>
+      <li>With three or more groups several alternatives exist, and each can change the decision.</li>
+      <li>Whatever alternative we use, we only reject or fail to reject the null.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Alternative hypotheses</span><span class="board-tag">one shared mean, or one per group</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 284" role="img" aria-label="Recovery days for drugs C, D and E. Long lines join each point to one shared mean, and those squared distances add up to 42.8. Each group's own mean sits right beside its points, adding up to only 1.5. The big drop says reject the null.">
+            <line x1="40" y1="246" x2="300" y2="246" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <g class="sv-stroke-key" stroke-width="2.5" stroke-linecap="round">
+              <line x1="70" y1="223" x2="70" y2="175"/>
+              <line x1="96" y1="203" x2="96" y2="175"/>
+              <line x1="160" y1="203" x2="160" y2="175"/>
+              <line x1="186" y1="183" x2="186" y2="175"/>
+              <line x1="250" y1="117" x2="250" y2="171"/>
+              <line x1="276" y1="97" x2="276" y2="171"/>
+            </g>
+            <line x1="44" y1="173" x2="296" y2="173" class="sv-stroke-acc" stroke-width="3" stroke-dasharray="8 6"/>
+            <g class="sv-stroke-good" stroke-width="4" stroke-linecap="round">
+              <line x1="56" y1="220" x2="110" y2="220"/>
+              <line x1="146" y1="200" x2="200" y2="200"/>
+              <line x1="236" y1="100" x2="290" y2="100"/>
+            </g>
+            <circle cx="70" cy="230" r="6" class="sv-ink"/>
+            <circle cx="96" cy="210" r="6" class="sv-ink"/>
+            <circle cx="160" cy="210" r="6" class="sv-ink"/>
+            <circle cx="186" cy="190" r="6" class="sv-ink"/>
+            <circle cx="250" cy="110" r="6" class="sv-ink"/>
+            <circle cx="276" cy="90" r="6" class="sv-ink"/>
+            <text x="20" y="34" class="sv-tb">big drop: reject null</text>
+            <text x="304" y="95" class="sv-ts">own means</text>
+            <text x="304" y="115" class="sv-ts">SS 1.5</text>
+            <text x="304" y="168" class="sv-ts">one mean</text>
+            <text x="304" y="188" class="sv-ts">SS 42.8</text>
+            <text x="83" y="270" text-anchor="middle" class="sv-ts">C</text>
+            <text x="173" y="270" text-anchor="middle" class="sv-ts">D</text>
+            <text x="263" y="270" text-anchor="middle" class="sv-ts">E</text>
+          </svg>
+          <p>The null says one mean fits everyone; the alternative gives each group its own mean. If the own means shrink the distances a lot, 42.8 down to 1.5 here, reject the null. With three or more groups there are several alternatives, so name yours first.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Statistical test</dt><dd>Returns one verdict: reject the null, or fail to reject it.</dd>
+            <dt>Null hypothesis</dt><dd>No difference: one mean for all the data.</dd>
+            <dt>Alternative hypothesis</dt><dd>The rival story: groups differ, so each gets its own mean.</dd>
+            <dt>SS</dt><dd>Squared distances to the means, added up.</dd>
+            <dt>Overfitting</dt><dd>Extra means chasing random noise; then we fail to reject.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Collect data</b>recovery times on drugs C, D</li>
+            <li><b>State the null</b>one mean for everybody</li>
+            <li><b>State the alternative</b>each drug gets its own mean</li>
+            <li><b>Measure distances</b>to one mean, then group means</li>
+            <li><b>Compare</b>shrinks a lot: reject the null</li>
+            <li><b>Report the verdict</b>never accept the alternative</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$SS_{\text{null}}=\sum_i(x_i-\bar{x})^2$$
+          $$SS_{\text{alt}}=\sum_g\sum_{i\in g}(x_i-\bar{x}_g)^2$$
+          $$\text{drop}=SS_{\text{null}}-SS_{\text{alt}}$$
+          <ul class="keys">
+            <li>\(\bar{x}\): one pooled mean. \(\bar{x}_g\): the mean of group \(g\).</li>
+            <li>Squaring removes the sign of each distance.</li>
+            <li>Large drop for the extra means used: reject. Small drop: random noise.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>hypothesis</th><th>means</th><th>SS</th></tr>
+            <tr><td>null</td><td>5.83</td><td>42.8</td></tr>
+            <tr><td>all differ</td><td>3.5, 4.5, 9.5</td><td>1.5</td></tr>
+            <tr><td>C, D share</td><td>4, 9.5</td><td>2.5</td></tr>
+            <tr class="final"><td>verdict</td><td colspan="2">reject the null ✓</td></tr>
+          </table>
+          <p class="hand">Days: C 3, 4; D 4, 5; E 9, 10. Both alternatives cut 42.8 to under 3; they will not always agree.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">We accept the alternative.</span><span class="yes">We only reject or fail to reject the null. An untested alternative might fit better.</span></li>
+            <li><span class="no">Any alternative gives the same verdict.</span><span class="yes">With three or more groups they can disagree. Choose yours before the test.</span></li>
+            <li><span class="no">Shorter distances alone prove a difference.</span><span class="yes">Extra means always fit at least as well. That is the overfitting remark.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="09-hypothesis-testing-and-the-null-hypothesis.html"><small>Previous</small>Hypothesis Testing and The Null Hypothesis</a> <a href="11-p-values-what-they-are-and-how-to-interpret-them.html"><small>Next</small>p-values: What they are and how to interpret them</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

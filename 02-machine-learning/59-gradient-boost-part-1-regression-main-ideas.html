@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gradient Boost Part 1 (of 4): Regression Main Ideas — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>59</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 59 · 15.9 min</div>
+    <h1>Gradient Boost Part 1 (of 4): Regression Main Ideas</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=3CC4N4z3GJc" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video shows how Gradient Boost predicts a continuous value, like weight, by adding one small tree at a time. It is the first of four parts, and it gives the intuition that the later parts build on.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Gradient Boost starts with a single leaf that holds the average of the target. It then measures how wrong that guess is for each person. Those errors are called pseudo residuals. Gradient Boost fits a small tree to predict the pseudo residuals, shrinks that tree with a learning rate, and adds it to the prediction. It repeats this until you reach the tree limit or the residuals stop shrinking.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh uses a small table of six people. For each person we know height, favorite color, gender, and weight. We want to predict weight, which is a continuous number, so this is regression. Note that Gradient Boost for regression is not linear regression, even though the two are related.</p>
+    <p>Josh first compares Gradient Boost with AdaBoost, because they share a shape. AdaBoost builds a stump, which is a tree with one split. It then builds the next stump from the errors of the previous stump. Each stump gets its own amount of say, so stronger stumps count more.</p>
+    <p>Gradient Boost changes three things. It starts with a single leaf, not a tree. That leaf is the average weight, and it is the first guess for everybody. After that it builds trees that are bigger than stumps, but still limited in size. In this simple example the trees may have up to four leaves. In real work people usually allow 8 to 32 leaves.</p>
+    <p>The third change is the scaling. AdaBoost scales each stump by its own amount of say. Gradient Boost scales every tree by the same small number, called the learning rate. So every tree moves the prediction a small step in the right direction.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 290" role="img" aria-label="Four boxes in a row: average leaf, pseudo residuals, small tree, scaled update, with a loop arrow back to the residuals">
+        <defs>
+          <marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" class="sv-ink2"></path>
+          </marker>
+        </defs>
+        <text x="20" y="30" class="sv-tb">One round of Gradient Boost for regression</text>
+
+        <rect x="20" y="58" width="150" height="122" rx="7" class="sv-acc-soft"></rect>
+        <rect x="20" y="58" width="150" height="122" rx="7" class="sv-stroke-acc" stroke-width="1.5"></rect>
+        <text x="95" y="84" text-anchor="middle" class="sv-t">1. Initial leaf</text>
+        <text x="95" y="106" text-anchor="middle" class="sv-ts">average weight</text>
+        <text x="95" y="136" text-anchor="middle" class="sv-tb">71.2 kg</text>
+        <text x="95" y="162" text-anchor="middle" class="sv-ts">same for all six</text>
+
+        <rect x="210" y="58" width="150" height="122" rx="7" class="sv-paper2"></rect>
+        <rect x="210" y="58" width="150" height="122" rx="7" class="sv-line" stroke-width="1.5"></rect>
+        <text x="285" y="84" text-anchor="middle" class="sv-t">2. Pseudo residuals</text>
+        <text x="285" y="106" text-anchor="middle" class="sv-ts">observed − predicted</text>
+        <text x="285" y="136" text-anchor="middle" class="sv-tm">88 − 71.2 = 16.8</text>
+        <text x="285" y="162" text-anchor="middle" class="sv-ts">one per person</text>
+
+        <rect x="400" y="58" width="150" height="122" rx="7" class="sv-paper2"></rect>
+        <rect x="400" y="58" width="150" height="122" rx="7" class="sv-line" stroke-width="1.5"></rect>
+        <text x="475" y="80" text-anchor="middle" class="sv-t">3. Tree (4 leaves)</text>
+        <circle cx="475" cy="100" r="7" class="sv-acc"></circle>
+        <path d="M475 107 L441 128 M475 107 L509 128" class="sv-stroke-ink" stroke-width="1.5"></path>
+        <rect x="418" y="128" width="46" height="20" rx="4" class="sv-good-soft"></rect>
+        <text x="441" y="142" text-anchor="middle" class="sv-tm">16.8</text>
+        <rect x="486" y="128" width="46" height="20" rx="4" class="sv-good-soft"></rect>
+        <text x="509" y="142" text-anchor="middle" class="sv-tm">...</text>
+        <text x="475" y="168" text-anchor="middle" class="sv-ts">height, color, gender</text>
+
+        <rect x="590" y="58" width="150" height="122" rx="7" class="sv-key-soft"></rect>
+        <rect x="590" y="58" width="150" height="122" rx="7" class="sv-stroke-key" stroke-width="1.5"></rect>
+        <text x="665" y="84" text-anchor="middle" class="sv-t">4. Scaled update</text>
+        <text x="665" y="108" text-anchor="middle" class="sv-tm">71.2 + 0.1 × 16.8</text>
+        <text x="665" y="138" text-anchor="middle" class="sv-tb">72.9 kg</text>
+        <text x="665" y="162" text-anchor="middle" class="sv-ts">learning rate 0.1</text>
+
+        <path d="M172 119 L206 119" class="sv-line" stroke-width="2" marker-end="url(#ah1)"></path>
+        <path d="M362 119 L396 119" class="sv-line" stroke-width="2" marker-end="url(#ah1)"></path>
+        <path d="M552 119 L586 119" class="sv-line" stroke-width="2" marker-end="url(#ah1)"></path>
+
+        <path d="M665 182 L665 232 L285 232 L285 184" class="sv-line" stroke-width="2" marker-end="url(#ah1)"></path>
+        <rect x="270" y="244" width="330" height="24" rx="5" class="sv-paper"></rect>
+        <text x="435" y="261" text-anchor="middle" class="sv-ts">Repeat: new residuals, new tree, another small step</text>
+      </svg>
+      <figcaption>Notice that the tree predicts the residuals, not the weights, and that the learning rate shrinks its contribution before it is added.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Take the average of the observed weights. Here it is 71.2 kg. This single leaf is the first prediction for every person.</li>
+      <li>Compute the pseudo residual for each person: observed weight minus 71.2. For the person who weighs 88 kg, the residual is 16.8.</li>
+      <li>Build a tree that uses height, favorite color, and gender to predict those residuals. Limit it to four leaves in this example.</li>
+      <li>Because there are fewer leaves than people, some rows land in the same leaf. Replace those residuals with their average, so each leaf holds one number.</li>
+      <li>Make a new prediction. Start at 71.2, run the row down the tree, and add the leaf value scaled by the learning rate 0.1. That gives 72.9 kg.</li>
+      <li>Recompute the pseudo residuals against this new prediction. For the 88 kg person the residual falls from 16.8 to 15.1.</li>
+      <li>Build the next tree on the new residuals and add it, also scaled by 0.1. Keep going until you hit the tree limit, or until extra trees stop shrinking the residuals.</li>
+    </ol>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 275" role="img" aria-label="Three bars showing the residual for the 88 kilogram person falling from 16.8 to 15.1 to 13.6">
+        <text x="20" y="30" class="sv-tb">The residual for the 88 kg person after each tree</text>
+        <path d="M60 214 L740 214" class="sv-stroke-ink" stroke-width="1.5"></path>
+        <text x="60" y="234" class="sv-ts">0 = perfect fit for this person</text>
+
+        <rect x="150" y="80" width="90" height="134" rx="4" class="sv-acc-soft"></rect>
+        <rect x="150" y="80" width="90" height="134" rx="4" class="sv-stroke-acc" stroke-width="1.5"></rect>
+        <text x="195" y="70" text-anchor="middle" class="sv-tm">16.8</text>
+        <text x="195" y="252" text-anchor="middle" class="sv-ts">initial leaf only</text>
+
+        <rect x="330" y="93" width="90" height="121" rx="4" class="sv-key-soft"></rect>
+        <rect x="330" y="93" width="90" height="121" rx="4" class="sv-stroke-key" stroke-width="1.5"></rect>
+        <text x="375" y="83" text-anchor="middle" class="sv-tm">15.1</text>
+        <text x="375" y="252" text-anchor="middle" class="sv-ts">after tree 1</text>
+
+        <rect x="510" y="105" width="90" height="109" rx="4" class="sv-good-soft"></rect>
+        <rect x="510" y="105" width="90" height="109" rx="4" class="sv-stroke-good" stroke-width="1.5"></rect>
+        <text x="555" y="95" text-anchor="middle" class="sv-tm">13.6</text>
+        <text x="555" y="252" text-anchor="middle" class="sv-ts">after tree 2</text>
+
+        <text x="285" y="140" text-anchor="middle" class="sv-ts">−0.1 × 16.8</text>
+        <text x="465" y="152" text-anchor="middle" class="sv-ts">−0.1 × 15.1</text>
+      </svg>
+      <figcaption>Notice that each scaled tree removes only a little of the error, so the fit improves in small steps instead of one jump.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Initial leaf</span>
+      <div class="math">$$ F_0(x) = \frac{1}{n}\sum_{i=1}^{n} y_i = 71.2 $$</div>
+      <p class="explain"><b>Symbols:</b> \(F_0(x)\) is the first prediction for any row \(x\). \(y_i\) is the observed weight of person \(i\). \(n\) is the number of people, here six. <b>What it tells you:</b> before any tree exists, the best flat guess for a continuous target is its average.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Pseudo residual</span>
+      <div class="math">$$ r_{i,m} = y_i - F_{m-1}(x_i) $$</div>
+      <p class="explain"><b>Symbols:</b> \(r_{i,m}\) is the pseudo residual of person \(i\) before tree \(m\). \(y_i\) is the observed weight. \(F_{m-1}(x_i)\) is the prediction made by everything built so far. <b>What it tells you:</b> the residual is the part of the answer the model still misses, and it becomes the target for the next tree.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Adding one scaled tree</span>
+      <div class="math">$$ F_m(x) = F_{m-1}(x) + \nu \, \gamma_m(x) $$</div>
+      <p class="explain"><b>Symbols:</b> \(F_m(x)\) is the prediction after \(m\) trees. \(\nu\) is the learning rate, a number between 0 and 1, here 0.1. \(\gamma_m(x)\) is the leaf value that tree \(m\) gives to row \(x\). <b>What it tells you:</b> each tree corrects the prediction, but only by a fraction \(\nu\) of what it wants to.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">The finished model</span>
+      <div class="math">$$ F_M(x) = F_0(x) + \nu \sum_{m=1}^{M} \gamma_m(x) $$</div>
+      <p class="explain"><b>Symbols:</b> \(F_M(x)\) is the final prediction. \(M\) is the total number of trees. The other symbols are as above. <b>What it tells you:</b> a Gradient Boost model is one average plus a chain of small, equally scaled tree corrections.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>The six weights average to 71.2 kg, so the initial leaf predicts 71.2 for everyone. The first person actually weighs 88 kg, so their pseudo residual is \(88 - 71.2 = 16.8\).</p>
+      <p>The first tree sends this person to a leaf that holds 16.8. Without scaling the prediction would be \(71.2 + 16.8 = 88\), exactly right. Josh warns that this is bad news: the model fits the training data too well, so bias is low but variance is probably very high.</p>
+      <p>With the learning rate set to 0.1 the prediction becomes \(71.2 + 0.1 \times 16.8 = 72.9\). The new residual is \(88 - 72.9 = 15.1\), smaller than 16.8.</p>
+      <p>The second tree is built on these new residuals and sends this person to a leaf holding 15.1. The prediction is now \(71.2 + 0.1 \times 16.8 + 0.1 \times 15.1 = 74.4\). The residual falls again, to \(88 - 74.4 = 13.6\).</p>
+      <p>After the chain of trees is finished, a new person is scored the same way: start at the initial leaf, then add each tree's leaf value times 0.1. In the video that new person is predicted to weigh 70 kg.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Gradient Boost for regression is not linear regression. Josh says the two methods are related, but they are different. Do not confuse them.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The trees predict residuals, never the weights themselves. Only the initial leaf carries the weight scale. If you forget the initial leaf when scoring, every prediction will be far too small.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not drop the learning rate to save time. Without it, one tree can reproduce the observed value exactly, which is overfitting. Jerome Friedman found that many small steps give better predictions on test data.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>How does Gradient Boost differ from AdaBoost?</summary><div class="a">Both build models in sequence, each one fixing the errors of the last. AdaBoost starts with a stump, reweights the samples, and gives each stump its own amount of say. Gradient Boost starts with a single leaf holding the average, fits fixed-size trees to the residuals, and scales every tree by the same learning rate.</div></details>
+
+    <details class="qa" open><summary>Why do the trees predict residuals instead of the target?</summary><div class="a">The residual is the part of the target the current model still gets wrong. Fitting a tree to it tells us exactly where to move each prediction and by how much. Adding that correction to the running prediction pushes the model closer to the observed values, one step at a time.</div></details>
+
+    <details class="qa" open><summary>What does the learning rate actually do?</summary><div class="a">It shrinks the contribution of every tree, usually to a value like 0.1. Without it, a single tree can match the training values exactly, which means low bias and very high variance. With it, each tree takes a small step in the right direction. Jerome Friedman found that many small steps predict test data better.</div></details>
+
+    <details class="qa" open><summary>Why is the tree size limited, and what size is typical?</summary><div class="a">Gradient Boost builds fixed-size trees, which are usually larger than stumps but still restricted. With fewer leaves than rows, some rows share a leaf, and the leaf holds their average residual. In practice people allow 8 to 32 leaves. The video uses four leaves only to keep the example small.</div></details>
+
+    <details class="qa" open><summary>How do you score a new person once training is done?</summary><div class="a">Start with the initial leaf, the average of the training target. Run the new row down each tree in order and collect its leaf value. Multiply every leaf value by the learning rate and add them all to the initial leaf. That sum is the prediction.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap">
+      <ul>
+        <li>Gradient Boost for regression starts with one leaf that holds the average of the target, here 71.2 kg.</li>
+        <li>It then computes pseudo residuals, which are the observed values minus the current prediction.</li>
+        <li>A fixed-size tree is fitted to those residuals, using the ordinary feature columns to split.</li>
+        <li>Leaves that hold several rows store the average of their residuals.</li>
+        <li>The tree's output is multiplied by a learning rate, such as 0.1, and added to the prediction.</li>
+        <li>Every tree is scaled by the same learning rate, which is the main difference from AdaBoost.</li>
+        <li>The process repeats until you reach the tree limit or extra trees stop shrinking the residuals.</li>
+        <li>Part 2 works through the maths and proves that this simple recipe is correct.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Gradient Boost Regression</span><span class="board-tag">start at the average, add small tree corrections</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 270" role="img" aria-label="For the 88 kg person the prediction starts at the average, 71.2, and each tree adds 0.1 times its leaf value, 16.8 then 15.1, reaching 74.4 with a residual of 13.6 left, while adding the full 16.8 at once would overfit.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <line x1="20" y1="232" x2="385" y2="232" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="20" y1="52" x2="385" y2="52" class="sv-stroke-good" stroke-width="3" stroke-dasharray="6 8" stroke-linecap="round"/>
+            <path d="M46 178 Q 40 90 100 56" class="sv-stroke-ink" stroke-width="2.5" stroke-dasharray="6 5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <path d="M58 182 Q 110 146 160 170" class="sv-stroke-key" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <path d="M178 168 Q 230 134 280 158" class="sv-stroke-key" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <path d="M302 155 Q 337 146 372 143" class="sv-stroke-key" stroke-width="3" stroke-dasharray="1 9" stroke-linecap="round"/>
+            <line x1="290" y1="148" x2="290" y2="59" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" marker-start="url(#board-arr)" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="50" cy="186.4" r="8" class="sv-acc"/>
+              <circle cx="170" cy="172.8" r="7" class="sv-key"/>
+              <circle cx="290" cy="160.8" r="7" class="sv-key"/>
+            </g>
+            <text x="20" y="38" class="sv-ts">+16.8 at once: overfit</text>
+            <text x="385" y="38" text-anchor="end" class="sv-tb">observed 88 kg</text>
+            <text x="280" y="100" text-anchor="end" class="sv-t">residual 13.6</text>
+            <text x="226" y="128" text-anchor="middle" class="sv-tm">+0.1 × 15.1</text>
+            <text x="112" y="146" text-anchor="middle" class="sv-tm">+0.1 × 16.8</text>
+            <text x="290" y="194" text-anchor="middle" class="sv-tb">74.4</text>
+            <text x="20" y="216" class="sv-t">start: average 71.2</text>
+            <text x="385" y="256" text-anchor="end" class="sv-ts">trees added →</text>
+          </svg>
+          <p>Everyone starts at one leaf, the average. Each tree predicts the residuals and adds only 0.1 of its answer, so the prediction creeps toward 88. A whole tree at once would overfit.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Initial leaf</dt><dd>Everyone's first guess: the average, 71.2 kg.</dd>
+            <dt>Pseudo residual</dt><dd>Observed minus predicted; the next tree's target.</dd>
+            <dt>Fixed-size tree</dt><dd>Bigger than a stump but limited: 4 leaves here, usually 8 to 32.</dd>
+            <dt>Learning rate</dt><dd>One small number, here 0.1, that scales every tree.</dd>
+            <dt>Amount of say</dt><dd>AdaBoost scales each stump by its own; Gradient Boost uses one learning rate.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Average leaf</b>71.2 kg for everyone</li>
+            <li><b>Residuals</b>observed − predicted, e.g. 16.8</li>
+            <li><b>Fit a tree</b>height, color, gender → residuals</li>
+            <li><b>Leaf values</b>a shared leaf holds the average</li>
+            <li><b>Scaled update</b>71.2 + 0.1 × 16.8 = 72.9</li>
+          </ol>
+          <p class="loop">↺ repeat steps 2 to 5 until the tree limit, or residuals stop shrinking</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$F_0(x)=\frac{1}{n}\sum_{i=1}^{n} y_i=71.2$$
+          $$r_{i,m}=y_i-F_{m-1}(x_i)$$
+          $$F_m(x)=F_{m-1}(x)+\nu\,\gamma_m(x)$$
+          <ul class="keys">
+            <li>\(y_i\) is person \(i\)'s weight; \(n\) is 6 people.</li>
+            <li>\(r_{i,m}\) is what the model so far still misses.</li>
+            <li>\(\nu\) is the learning rate, 0.1; \(\gamma_m(x)\) is tree \(m\)'s leaf value.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>step</th><th>prediction</th><th>residual</th></tr>
+            <tr><td>leaf only</td><td>71.2</td><td>16.8</td></tr>
+            <tr><td>+ 0.1 × 16.8</td><td>72.9</td><td>15.1</td></tr>
+            <tr class="final"><td>+ 0.1 × 15.1</td><td>74.4</td><td>13.6</td></tr>
+          </table>
+          <p class="hand">For the 88 kg person each tree trims a little. Unscaled, tree 1 would hit 88 exactly: overfit. A new person scores 70 kg.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">It is just linear regression.</span><span class="yes">The two are related, but they are different methods.</span></li>
+            <li><span class="no">The trees predict the weights.</span><span class="yes">They predict residuals. Forget the initial leaf and predictions are far too small.</span></li>
+            <li><span class="no">Dropping the learning rate saves time.</span><span class="yes">One unscaled tree can match training values exactly: overfitting. Many small steps predict test data better.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="58-adaboost.html"><small>Previous</small>AdaBoost</a> <a href="60-gradient-boost-part-2-regression-details.html"><small>Next</small>Gradient Boost Part 2 (of 4): Regression Details</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

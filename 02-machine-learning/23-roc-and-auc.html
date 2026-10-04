@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ROC and AUC — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>23</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 23 · 16.3 min</div>
+    <h1>ROC and AUC</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=4jRBRDbJemM" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">A classifier gives you a probability, not a label. You pick a threshold to turn that probability into a label. ROC and AUC show you every threshold at once.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh fits a logistic regression that predicts if a mouse is obese from its weight. Every threshold you choose gives a different confusion matrix. Rather than read dozens of matrices, you plot one point per threshold. The true positive rate goes up the y-axis and the false positive rate along the x-axis. Joining the points gives the ROC graph, which helps you pick a threshold. The area under that curve, the AUC, lets you compare two models.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>The video starts with mice. The blue points are obese mice and the red points are mice that are not obese. Weight runs along the x-axis. One heavy mouse is not obese, and one light mouse is obese, so weight alone does not separate the groups perfectly.</p>
+    <p>Logistic regression turns the y-axis into the probability that a mouse is obese. A heavy mouse gets a high probability. A light mouse gets a low probability. That is useful, but a probability is not a decision.</p>
+    <p>To make a decision you set a <strong>threshold</strong>. A threshold is a cut-off probability. With a threshold of 0.5, every mouse above 0.5 is called obese and every mouse at or below 0.5 is called not obese. The figure below shows that rule on the eight test mice.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Logistic regression curve for mouse weight with a classification threshold drawn at probability 0.5">
+        <line class="sv-line" x1="90" y1="40" x2="600" y2="40" stroke-width="1" stroke-dasharray="3 4"/>
+        <line class="sv-stroke-ink" x1="90" y1="30" x2="90" y2="240" stroke-width="1.5"/>
+        <line class="sv-stroke-ink" x1="90" y1="240" x2="600" y2="240" stroke-width="1.5"/>
+        <path class="sv-stroke-acc" d="M 90 236 C 200 234 270 215 325 140 C 380 65 450 46 560 44" stroke-width="2.5"/>
+        <line class="sv-stroke-key" x1="90" y1="140" x2="600" y2="140" stroke-width="1.8" stroke-dasharray="6 5"/>
+        <line class="sv-stroke-key" x1="325" y1="140" x2="325" y2="248" stroke-width="1.8" stroke-dasharray="6 5"/>
+        <circle class="sv-key" cx="130" cy="240" r="6"/>
+        <circle class="sv-key" cx="175" cy="240" r="6"/>
+        <circle class="sv-acc" cx="225" cy="40" r="6"/>
+        <circle class="sv-key" cx="280" cy="240" r="6"/>
+        <circle class="sv-key" cx="350" cy="240" r="6"/>
+        <circle class="sv-acc" cx="420" cy="40" r="6"/>
+        <circle class="sv-acc" cx="470" cy="40" r="6"/>
+        <circle class="sv-acc" cx="520" cy="40" r="6"/>
+        <text class="sv-ts" x="80" y="45" text-anchor="end">1.0</text>
+        <text class="sv-ts" x="80" y="145" text-anchor="end">0.5</text>
+        <text class="sv-ts" x="80" y="245" text-anchor="end">0.0</text>
+        <text class="sv-ts" x="30" y="140" text-anchor="middle" transform="rotate(-90 30 140)">probability obese</text>
+        <text class="sv-t" x="345" y="276" text-anchor="middle">weight</text>
+        <rect class="sv-paper" x="430" y="122" width="152" height="20" rx="3"/>
+        <text class="sv-tm" x="434" y="137">threshold = 0.5</text>
+        <text class="sv-ts" x="315" y="212" text-anchor="end">called not obese</text>
+        <text class="sv-ts" x="335" y="212">called obese</text>
+        <circle class="sv-acc" cx="640" cy="86" r="6"/>
+        <text class="sv-ts" x="654" y="91">obese</text>
+        <circle class="sv-key" cx="640" cy="112" r="6"/>
+        <text class="sv-ts" x="654" y="117">not obese</text>
+      </svg>
+      <figcaption>Notice that the threshold, not the curve, decides the labels. Slide the dashed line up or down and the labels change.</figcaption>
+    </figure>
+    <p>Josh then asks the key question. Why 0.5? If missing an obese mouse is costly, lower the threshold to 0.1. That catches all four obese mice, at the price of more false alarms. Josh gives a sharper version. Imagine you are screening for Ebola. You would lower the threshold a lot, because letting an infected person through is far worse than a false alarm.</p>
+    <p>Each threshold gives its own confusion matrix. Testing every useful threshold gives a confusing pile of matrices. The ROC graph replaces the pile with one picture.</p>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Fit the model. Logistic regression gives each mouse a probability of being obese.</li>
+      <li>Pick a threshold so low that every sample is called obese. Build the confusion matrix for it.</li>
+      <li>Compute the true positive rate, which is sensitivity, and the false positive rate, which is one minus specificity.</li>
+      <li>Plot one point at that pair of rates. The very low threshold lands at the top right corner, at (1, 1).</li>
+      <li>Raise the threshold one step, so the next lightest sample flips to not obese. Make its confusion matrix and plot its point.</li>
+      <li>Repeat until the threshold is so high that every sample is called not obese. That point sits at the bottom left corner, at (0, 0).</li>
+      <li>Join the points. Points to the left of the diagonal are thresholds where you catch positives faster than you raise false alarms.</li>
+      <li>Measure the area under the joined curve. That single number, the AUC, ranks whole models against each other.</li>
+    </ol>
+    <p>You do not need to test every possible threshold. Many nearby thresholds produce exactly the same confusion matrix, so they give the same point. Only the thresholds that fall between two samples change anything.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 410" role="img" aria-label="ROC curve for the eight mice, built from one confusion matrix per threshold, with the area under the curve shaded">
+        <polygon class="sv-acc-soft" points="150,350 150,272.5 150,195 150,117.5 227.5,117.5 305,117.5 305,40 382.5,40 460,40 460,350"/>
+        <line class="sv-line" x1="150" y1="40" x2="460" y2="40" stroke-width="1" stroke-dasharray="3 4"/>
+        <line class="sv-line" x1="460" y1="40" x2="460" y2="350" stroke-width="1" stroke-dasharray="3 4"/>
+        <line class="sv-stroke-good" x1="150" y1="350" x2="460" y2="40" stroke-width="1.8" stroke-dasharray="6 5"/>
+        <line class="sv-stroke-ink" x1="150" y1="30" x2="150" y2="350" stroke-width="1.5"/>
+        <line class="sv-stroke-ink" x1="150" y1="350" x2="470" y2="350" stroke-width="1.5"/>
+        <polyline class="sv-stroke-acc" points="150,350 150,272.5 150,195 150,117.5 227.5,117.5 305,117.5 305,40 382.5,40 460,40" stroke-width="2.5"/>
+        <circle class="sv-acc" cx="150" cy="350" r="5"/>
+        <circle class="sv-acc" cx="150" cy="272.5" r="5"/>
+        <circle class="sv-acc" cx="150" cy="195" r="5"/>
+        <circle class="sv-acc" cx="150" cy="117.5" r="5"/>
+        <circle class="sv-acc" cx="227.5" cy="117.5" r="5"/>
+        <circle class="sv-acc" cx="305" cy="117.5" r="5"/>
+        <circle class="sv-acc" cx="305" cy="40" r="5"/>
+        <circle class="sv-acc" cx="382.5" cy="40" r="5"/>
+        <circle class="sv-acc" cx="460" cy="40" r="5"/>
+        <text class="sv-ts" x="140" y="355" text-anchor="end">0</text>
+        <text class="sv-ts" x="140" y="200" text-anchor="end">0.5</text>
+        <text class="sv-ts" x="140" y="45" text-anchor="end">1</text>
+        <text class="sv-ts" x="150" y="368" text-anchor="middle">0</text>
+        <text class="sv-ts" x="305" y="368" text-anchor="middle">0.5</text>
+        <text class="sv-ts" x="460" y="368" text-anchor="middle">1</text>
+        <text class="sv-t" x="305" y="390" text-anchor="middle">false positive rate</text>
+        <text class="sv-t" x="42" y="195" text-anchor="middle" transform="rotate(-90 42 195)">true positive rate</text>
+        <rect class="sv-paper" x="196" y="228" width="106" height="22" rx="3"/>
+        <text class="sv-tm" x="200" y="244">AUC = 0.9</text>
+        <text class="sv-ts" x="497" y="35">threshold so low</text>
+        <text class="sv-ts" x="497" y="51">everything is obese</text>
+        <text class="sv-ts" x="497" y="345">threshold so high</text>
+        <text class="sv-ts" x="497" y="361">nothing is obese</text>
+        <rect class="sv-paper" x="160" y="86" width="232" height="20" rx="3"/>
+        <text class="sv-ts" x="164" y="101">no false positives, 75% of obese caught</text>
+        <rect class="sv-paper" x="368" y="183" width="72" height="18" rx="3"/>
+        <text class="sv-ts" x="372" y="196">chance line</text>
+      </svg>
+      <figcaption>Notice that every dot is one confusion matrix. The further a dot sits above the green chance line, the better that threshold is.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">True positive rate (sensitivity), the y-axis</span><div class="math">$$ \text{TPR} = \frac{TP}{TP + FN} $$</div><p class="explain"><b>Symbols:</b> \(TP\) is true positives, the obese mice correctly called obese. \(FN\) is false negatives, the obese mice wrongly called not obese. The bottom is therefore every truly obese mouse. <b>What it tells you:</b> the share of real positives that the model catches.</p></div>
+    <div class="formula"><span class="lbl">False positive rate (1 − specificity), the x-axis</span><div class="math">$$ \text{FPR} = \frac{FP}{FP + TN} = 1 - \text{specificity} $$</div><p class="explain"><b>Symbols:</b> \(FP\) is false positives, the not-obese mice wrongly called obese. \(TN\) is true negatives, the not-obese mice correctly called not obese. The bottom is every truly not-obese mouse. <b>What it tells you:</b> the share of real negatives that the model falsely flags.</p></div>
+    <div class="formula"><span class="lbl">Precision, an alternative x-axis</span><div class="math">$$ \text{Precision} = \frac{TP}{TP + FP} $$</div><p class="explain"><b>Symbols:</b> \(TP\) is true positives and \(FP\) is false positives, so the bottom is everything the model called obese. <b>What it tells you:</b> the share of positive predictions that were right. Note that \(TN\) does not appear, so precision is not diluted when negatives greatly outnumber positives.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+    <p>Josh tests the model on four mice known to be obese and four known to be not obese. At a threshold of 0.5 the confusion matrix comes out like this.</p>
+    <table>
+      <tr><th></th><th>Actually obese</th><th>Actually not obese</th></tr>
+      <tr><th>Predicted obese</th><td>3 (TP)</td><td>1 (FP)</td></tr>
+      <tr><th>Predicted not obese</th><td>1 (FN)</td><td>3 (TN)</td></tr>
+    </table>
+    <p>Now take the extreme low threshold, where every mouse is called obese. There are 4 true positives and 0 false negatives, so \(\text{TPR} = 4/(4+0) = 1\). There are 4 false positives and 0 true negatives, so \(\text{FPR} = 4/(4+0) = 1\). That is the point at (1, 1): every obese mouse caught, and every healthy mouse falsely flagged.</p>
+    <p>Raise the threshold so the lightest mouse is now called not obese. That mouse was not obese, so it moves from \(FP\) to \(TN\). Now \(\text{TPR} = 4/4 = 1\) and \(\text{FPR} = 3/4 = 0.75\), giving the point (0.75, 1). Raising the threshold once more removes another false positive and gives (0.5, 1). Each step to the left is an improvement.</p>
+    <p>Keep going and you reach a threshold where \(\text{TPR} = 0.75\) and \(\text{FPR} = 0\). That threshold catches 75% of the obese mice and produces no false positives at all. Finally, a threshold so high that nothing is called obese gives 0 true positives and 0 false positives, the point at (0, 0).</p>
+    <p>Joining the nine points gives the ROC graph in the figure above. Josh reads its area as 0.9. If a random forest gave a curve with a smaller area, say a blue curve under this red one, you would prefer the logistic regression.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> A threshold of 0.5 is a habit, not a law. The right threshold depends on the cost of each error. For a screening test where a missed case is dangerous, a low threshold with more false alarms is the correct choice.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> An ROC curve measures the ranking, not one decision. AUC tells you how well the model orders positives above negatives across all thresholds. It does not tell you which threshold to ship.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> With heavy class imbalance the false positive rate can look flattering. Its denominator includes all the true negatives. So a large count of false positives still gives a small rate. Swap in precision when positives are rare, as in a rare disease study.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not read the diagonal as a target. The green line is where the true positive rate equals the false positive rate, which is no better than guessing. You want points above and to the left of it.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What does an ROC curve actually plot?</summary><div class="a">Each point on the curve is one classification threshold. The y-axis is the true positive rate, which is sensitivity, and the x-axis is the false positive rate, which is one minus specificity. So the curve is a compact summary of the confusion matrix you would get at every threshold, and it shows the trade-off between catching positives and raising false alarms.</div></details>
+    <details class="qa" open><summary>What does AUC mean, and what does 0.5 mean?</summary><div class="a">AUC is the area under the ROC curve, so it condenses the whole curve into one number between 0 and 1. An AUC of 0.5 sits on the diagonal and means the model ranks positives and negatives no better than chance. Higher is better, and I mainly use AUC to compare two models on the same data rather than to judge one model on its own.</div></details>
+    <details class="qa" open><summary>How do you choose the threshold in practice?</summary><div class="a">I start from the cost of the two error types instead of defaulting to 0.5. If a missed positive is expensive, such as a missed infection, I move the threshold down and accept more false positives. Then I look at the ROC points and pick the one that gives the highest true positive rate I can afford at that false positive rate.</div></details>
+    <details class="qa" open><summary>When would you prefer a precision-recall curve?</summary><div class="a">When the positive class is rare. The false positive rate divides by the number of true negatives, so with thousands of negatives a large number of false alarms still looks like a tiny rate. Precision divides by everything predicted positive, so it stays honest under imbalance, which is why I use it for rare disease or fraud problems.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Logistic regression gives a probability, and a threshold turns that probability into a label.</li>
+      <li>Every threshold produces its own confusion matrix, so comparing them by hand becomes unmanageable.</li>
+      <li>An ROC graph plots the true positive rate against the false positive rate, one point per threshold.</li>
+      <li>The top right point calls everything positive. The bottom left point calls nothing positive.</li>
+      <li>The green diagonal is chance, so points above and to the left of it are the useful thresholds.</li>
+      <li>The area under the curve, the AUC, summarises the whole curve in one number for comparing models.</li>
+      <li>Replace the false positive rate with precision when negatives greatly outnumber positives.</li>
+      <li>ROC helps you pick a threshold, and AUC helps you pick a method.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">ROC and AUC</span><span class="board-tag">one dot per threshold, area ranks models</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 270" role="img" aria-label="ROC graph for the eight mice, true positive rate up and false positive rate across. Nine dots, one per threshold, step down from all called obese at the top right to none called obese at the bottom left. The shaded area under the steps is the AUC, 0.9, and the dashed diagonal is chance.">
+            <polygon points="60,230 60,95 150,95 150,50 240,50 240,230" class="sv-key-soft"/>
+            <line x1="60" y1="230" x2="244" y2="230" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="60" y1="230" x2="60" y2="42" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="60" y1="230" x2="240" y2="50" class="sv-stroke-good" stroke-width="2.5" stroke-dasharray="7 6" stroke-linecap="round"/>
+            <polyline points="60,230 60,95 150,95 150,50 240,50" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="60" cy="230" r="5" class="sv-acc"/>
+              <circle cx="60" cy="185" r="5" class="sv-acc"/>
+              <circle cx="60" cy="140" r="5" class="sv-acc"/>
+              <circle cx="60" cy="95" r="5" class="sv-acc"/>
+              <circle cx="105" cy="95" r="5" class="sv-acc"/>
+              <circle cx="150" cy="95" r="5" class="sv-acc"/>
+              <circle cx="150" cy="50" r="5" class="sv-acc"/>
+              <circle cx="195" cy="50" r="5" class="sv-acc"/>
+              <circle cx="240" cy="50" r="5" class="sv-acc"/>
+            </g>
+            <text x="50" y="54" text-anchor="end" class="sv-ts">TPR</text>
+            <text x="252" y="236" class="sv-ts">FPR</text>
+            <text x="140" y="200" class="sv-tb">AUC = 0.9</text>
+            <text x="180" y="132" class="sv-ts">chance</text>
+            <text x="252" y="56" class="sv-ts">all called obese</text>
+            <text x="60" y="256" class="sv-ts">none called obese</text>
+            <text x="252" y="130" class="sv-t">each dot is</text>
+            <text x="252" y="154" class="sv-t">one threshold</text>
+          </svg>
+          <p>Each threshold gives one confusion matrix, so one dot: TPR up, FPR across. The dots make the ROC graph for picking a threshold; the area under it, the AUC, compares models.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Threshold</dt><dd>Cut-off that turns a probability into a label.</dd>
+            <dt>True positive rate</dt><dd>Sensitivity: share of real positives caught.</dd>
+            <dt>False positive rate</dt><dd>1 − specificity: share of real negatives falsely flagged.</dd>
+            <dt>ROC graph</dt><dd>TPR against FPR, one dot per threshold.</dd>
+            <dt>AUC</dt><dd>Area under the ROC curve, for comparing models.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Fit the model</b>a probability per mouse</li>
+            <li><b>Lowest threshold</b>every mouse called obese</li>
+            <li><b>Two rates</b>TPR and FPR from its matrix</li>
+            <li><b>Plot a dot</b>first at (1, 1)</li>
+            <li><b>Raise one step</b>next lightest mouse flips</li>
+            <li><b>Join, then AUC</b>area under the curve</li>
+          </ol>
+          <p class="loop">↺ repeat 3 to 5 until nothing is obese</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{TPR}=\frac{TP}{TP+FN}$$
+          $$\text{FPR}=\frac{FP}{FP+TN}=1-\text{specificity}$$
+          $$\text{Precision}=\frac{TP}{TP+FP}$$
+          <ul class="keys">
+            <li>\(TP\), \(FN\), \(FP\), \(TN\): counts from one threshold's confusion matrix.</li>
+            <li>Precision skips \(TN\), so negatives cannot dilute it.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>threshold</th><th>TPR</th><th>FPR</th></tr>
+            <tr><td>lowest</td><td>4/4 = 1</td><td>4/4 = 1</td></tr>
+            <tr><td>raise once</td><td>4/4 = 1</td><td>3/4 = 0.75</td></tr>
+            <tr><td>raise again</td><td>1</td><td>0.5</td></tr>
+            <tr><td>higher</td><td>0.75</td><td>0</td></tr>
+            <tr class="final"><td>9 dots joined</td><td>AUC</td><td>0.9</td></tr>
+          </table>
+          <p class="hand">At 0.5: 3 TP, 1 FP, 1 FN, 3 TN. A random forest with less area would lose.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">0.5 is the right threshold.</span><span class="yes">A habit. Pick by each error's cost; screening wants a low one.</span></li>
+            <li><span class="no">AUC tells you which threshold to ship.</span><span class="yes">It scores ranking across all thresholds. ROC picks a threshold; AUC, a method.</span></li>
+            <li><span class="no">A small false positive rate is always good.</span><span class="yes">Many true negatives make many false positives look small. Use precision when positives are rare.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="22-deviance-residuals.html"><small>Previous</small>Deviance Residuals</a> <a href="24-roc-and-auc-in-r.html"><small>Next</small>ROC and AUC in R</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

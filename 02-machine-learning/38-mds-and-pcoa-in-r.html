@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MDS and PCoA in R — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>38</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 38 · 7.8 min</div>
+    <h1>MDS and PCoA in R</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=pGAUHhLYp5Q" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video runs multi-dimensional scaling (MDS) in R with the <code>cmdscale</code> function. It also shows how the distance metric changes the plot.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Classical (metric) MDS and PCoA are the same method. You start from a distance matrix, not from the raw data. Josh runs MDS on a Euclidean distance matrix and gets the exact same plot as PCA. He then builds a distance matrix by hand, and the plot changes. The metric you pick is the real decision in MDS.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>PCA starts with the measurements themselves. MDS starts one step later, with a table of distances between samples. So MDS lets you define "far apart" any way you like. Use the Euclidean metric and MDS gives you PCA back, exactly. Use another metric and you get a different picture of the same data.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Pipeline from a gene matrix to a distance matrix to eigen decomposition to a two dimensional plot">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" class="sv-acc"></path>
+          </marker>
+        </defs>
+        <rect x="20" y="70" width="150" height="120" rx="6" class="sv-paper2"></rect>
+        <rect x="20" y="70" width="150" height="120" rx="6" class="sv-line" stroke-width="1"></rect>
+        <text x="95" y="98" text-anchor="middle" class="sv-tb">Data matrix</text>
+        <text x="95" y="120" text-anchor="middle" class="sv-ts">100 genes (rows)</text>
+        <text x="95" y="138" text-anchor="middle" class="sv-ts">10 samples (columns)</text>
+        <text x="95" y="164" text-anchor="middle" class="sv-tm">5 WT · 5 KO</text>
+
+        <rect x="212" y="70" width="150" height="120" rx="6" class="sv-acc-soft"></rect>
+        <rect x="212" y="70" width="150" height="120" rx="6" class="sv-stroke-acc" stroke-width="1"></rect>
+        <text x="287" y="98" text-anchor="middle" class="sv-tb">Distance matrix</text>
+        <text x="287" y="120" text-anchor="middle" class="sv-ts">10 by 10, symmetric</text>
+        <text x="287" y="138" text-anchor="middle" class="sv-ts">one number per pair</text>
+        <text x="287" y="164" text-anchor="middle" class="sv-tm">dist(...)</text>
+
+        <rect x="404" y="70" width="150" height="120" rx="6" class="sv-paper"></rect>
+        <rect x="404" y="70" width="150" height="120" rx="6" class="sv-stroke-ink" stroke-width="1"></rect>
+        <text x="479" y="98" text-anchor="middle" class="sv-tb">Double centre</text>
+        <text x="479" y="120" text-anchor="middle" class="sv-ts">then eigen decompose</text>
+        <text x="479" y="138" text-anchor="middle" class="sv-ts">keep top 2 eigenvectors</text>
+        <text x="479" y="164" text-anchor="middle" class="sv-tm">cmdscale(...)</text>
+
+        <rect x="596" y="70" width="144" height="120" rx="6" class="sv-good-soft"></rect>
+        <rect x="596" y="70" width="144" height="120" rx="6" class="sv-stroke-good" stroke-width="1"></rect>
+        <text x="668" y="98" text-anchor="middle" class="sv-tb">MDS plot</text>
+        <circle cx="632" cy="130" r="5" class="sv-acc"></circle>
+        <circle cx="644" cy="146" r="5" class="sv-acc"></circle>
+        <circle cx="638" cy="118" r="5" class="sv-acc"></circle>
+        <circle cx="700" cy="128" r="5" class="sv-key"></circle>
+        <circle cx="710" cy="144" r="5" class="sv-key"></circle>
+        <circle cx="694" cy="146" r="5" class="sv-key"></circle>
+        <text x="668" y="176" text-anchor="middle" class="sv-ts">10 points in 2D</text>
+
+        <line x1="172" y1="130" x2="206" y2="130" class="sv-stroke-acc" stroke-width="2" marker-end="url(#ar)"></line>
+        <line x1="364" y1="130" x2="398" y2="130" class="sv-stroke-acc" stroke-width="2" marker-end="url(#ar)"></line>
+        <line x1="556" y1="130" x2="590" y2="130" class="sv-stroke-acc" stroke-width="2" marker-end="url(#ar)"></line>
+
+        <rect x="212" y="216" width="150" height="34" rx="4" class="sv-key-soft"></rect>
+        <text x="287" y="238" text-anchor="middle" class="sv-tm">you choose the metric</text>
+        <line x1="287" y1="214" x2="287" y2="194" class="sv-stroke-key" stroke-width="2" stroke-dasharray="4 3"></line>
+
+        <rect x="404" y="216" width="150" height="34" rx="4" class="sv-paper2"></rect>
+        <text x="479" y="238" text-anchor="middle" class="sv-tm">eigenvalues → % var</text>
+        <line x1="479" y1="214" x2="479" y2="194" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="4 3"></line>
+      </svg>
+      <figcaption>Notice that the raw data leaves the pipeline early. After the second box, MDS only ever sees distances.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <p>Josh uses the same fake data as the PCA in R video: 100 genes and 10 samples, five wild type and five knockout.</p>
+    <pre><code>library(ggplot2)
+
+data.matrix &lt;- matrix(nrow=100, ncol=10)
+colnames(data.matrix) &lt;- c(paste("wt", 1:5, sep=""), paste("ko", 1:5, sep=""))
+rownames(data.matrix) &lt;- paste("gene", 1:100, sep="")
+for (i in 1:100) {
+  data.matrix[i,] &lt;- c(rpois(5, lambda=sample(10:1000, 1)),
+                       rpois(5, lambda=sample(10:1000, 1)))
+}
+head(data.matrix)</code></pre>
+    <p>The same data in Python.</p>
+    <pre><code># Python equivalent
+import numpy as np, pandas as pd
+rng = np.random.default_rng(0)
+cols = [f"wt{i}" for i in range(1, 6)] + [f"ko{i}" for i in range(1, 6)]
+rows = [f"gene{i}" for i in range(1, 101)]
+data = pd.DataFrame(
+    [np.concatenate([rng.poisson(rng.integers(10, 1000), 5),
+                     rng.poisson(rng.integers(10, 1000), 5)]) for _ in rows],
+    index=rows, columns=cols)</code></pre>
+
+    <ol class="steps">
+      <li>Make the distance matrix. Transpose the data so samples become rows, centre and scale each gene, then call <code>dist</code>.</li>
+      <li>Run <code>cmdscale</code> on that matrix. Ask for the eigenvalues with <code>eig=TRUE</code> and the doubly centred matrix with <code>x.ret=TRUE</code>.</li>
+      <li>Turn the eigenvalues into the percentage of variation each axis accounts for.</li>
+      <li>Put the coordinates into a data frame and draw the plot with ggplot2.</li>
+    </ol>
+
+    <p>Steps one to three are three short lines of R.</p>
+    <pre><code>## step 1: distance matrix
+distance.matrix &lt;- dist(scale(t(data.matrix), center=TRUE, scale=TRUE),
+                        method="euclidean")
+
+## step 2: classical multi-dimensional scaling
+mds.stuff &lt;- cmdscale(distance.matrix, eig=TRUE, x.ret=TRUE)
+
+## step 3: variation per axis
+mds.var.per &lt;- round(mds.stuff$eig / sum(mds.stuff$eig) * 100, 1)</code></pre>
+    <p>Here is the same thing in Python. The eigen block is what <code>cmdscale</code> does internally.</p>
+    <pre><code># Python equivalent: classical MDS by hand
+from scipy.spatial.distance import pdist, squareform
+from sklearn.preprocessing import scale
+
+X = scale(data.T.values)                       # samples in rows, genes centred+scaled
+D = squareform(pdist(X, metric="euclidean"))   # 10 x 10 distances
+
+n = D.shape[0]
+J = np.eye(n) - np.ones((n, n)) / n
+B = -0.5 * J @ (D ** 2) @ J                    # doubly centred matrix
+vals, vecs = np.linalg.eigh(B)
+order = np.argsort(vals)[::-1]
+vals, vecs = vals[order], vecs[:, order]
+
+coords = vecs[:, :2] * np.sqrt(np.clip(vals[:2], 0, None))
+var_per = np.round(100 * vals / vals.sum(), 1)</code></pre>
+    <p>Step four draws the plot.</p>
+    <pre><code>## R
+mds.values &lt;- mds.stuff$points
+mds.data &lt;- data.frame(Sample=rownames(mds.values),
+                       X=mds.values[,1], Y=mds.values[,2])
+ggplot(mds.data, aes(x=X, y=Y, label=Sample)) +
+  geom_text() +
+  xlab(paste("MDS1 - ", mds.var.per[1], "%", sep="")) +
+  ylab(paste("MDS2 - ", mds.var.per[2], "%", sep=""))</code></pre>
+    <pre><code># Python equivalent (stress-based, not classical)
+from sklearn.manifold import MDS
+coords_smacof = MDS(n_components=2, dissimilarity="precomputed",
+                    normalized_stress=False, random_state=0).fit_transform(D)</code></pre>
+    <p>The result matches the PCA plot exactly. Wild type sits on the left, knockout on the right, MDS1 at 91% and MDS2 at 2.7%.</p>
+    <p>Then Josh changes the metric to the average absolute log fold change. That metric is not built into <code>dist</code>, so he fills a matrix by hand. He only computes the lower triangle, because the full matrix is symmetric.</p>
+    <pre><code>log2.data.matrix &lt;- log2(data.matrix)
+log2.distance.matrix &lt;- matrix(0, nrow=10, ncol=10,
+  dimnames=list(colnames(data.matrix), colnames(data.matrix)))
+for (i in 1:10) {
+  for (j in 1:i) {
+    log2.distance.matrix[i,j] &lt;- mean(abs(log2.data.matrix[,i] - log2.data.matrix[,j]))
+  }
+}
+mds.stuff &lt;- cmdscale(as.dist(log2.distance.matrix), eig=TRUE, x.ret=TRUE)</code></pre>
+    <pre><code># Python equivalent
+L = np.log2(data.values)
+D2 = squareform(pdist(L.T, metric=lambda a, b: np.mean(np.abs(a - b))))
+# then reuse the double-centring + eigen block above on D2</code></pre>
+    <p>Everything after that is unchanged. The new plot still separates wild type from knockout, but MDS1 now accounts for 99.2% of the variation instead of 91%.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 272" role="img" aria-label="Two MDS plots side by side, one using Euclidean distance and one using average absolute log fold change">
+        <text x="190" y="30" text-anchor="middle" class="sv-tb">Euclidean distance</text>
+        <text x="570" y="30" text-anchor="middle" class="sv-tb">Avg. absolute log fold change</text>
+
+        <line x1="40" y1="200" x2="340" y2="200" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <line x1="190" y1="60" x2="190" y2="200" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <circle cx="90" cy="120" r="6" class="sv-acc"></circle>
+        <circle cx="104" cy="146" r="6" class="sv-acc"></circle>
+        <circle cx="84" cy="166" r="6" class="sv-acc"></circle>
+        <circle cx="112" cy="100" r="6" class="sv-acc"></circle>
+        <circle cx="96" cy="134" r="6" class="sv-acc"></circle>
+        <circle cx="278" cy="122" r="6" class="sv-key"></circle>
+        <circle cx="292" cy="150" r="6" class="sv-key"></circle>
+        <circle cx="266" cy="164" r="6" class="sv-key"></circle>
+        <circle cx="300" cy="104" r="6" class="sv-key"></circle>
+        <circle cx="284" cy="138" r="6" class="sv-key"></circle>
+        <text x="190" y="222" text-anchor="middle" class="sv-ts">MDS1 — 91%</text>
+        <text x="52" y="72" class="sv-ts">MDS2 — 2.7%</text>
+
+        <line x1="420" y1="200" x2="720" y2="200" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <line x1="570" y1="60" x2="570" y2="200" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <circle cx="462" cy="132" r="6" class="sv-acc"></circle>
+        <circle cx="470" cy="142" r="6" class="sv-acc"></circle>
+        <circle cx="456" cy="150" r="6" class="sv-acc"></circle>
+        <circle cx="476" cy="124" r="6" class="sv-acc"></circle>
+        <circle cx="466" cy="136" r="6" class="sv-acc"></circle>
+        <circle cx="668" cy="134" r="6" class="sv-key"></circle>
+        <circle cx="676" cy="144" r="6" class="sv-key"></circle>
+        <circle cx="662" cy="152" r="6" class="sv-key"></circle>
+        <circle cx="682" cy="126" r="6" class="sv-key"></circle>
+        <circle cx="672" cy="138" r="6" class="sv-key"></circle>
+        <text x="570" y="222" text-anchor="middle" class="sv-ts">MDS1 — 99.2%</text>
+        <text x="432" y="72" class="sv-ts">MDS2 — smaller</text>
+
+        <rect x="300" y="238" width="16" height="10" class="sv-acc"></rect>
+        <text x="324" y="248" class="sv-ts">wild type</text>
+        <rect x="400" y="238" width="16" height="10" class="sv-key"></rect>
+        <text x="424" y="248" class="sv-ts">knockout</text>
+      </svg>
+      <figcaption>Both metrics split wild type from knockout, but the second pushes almost all signal onto axis one.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">What cmdscale does</span>
+      <div class="math">$$ B = -\tfrac{1}{2} J D^{(2)} J, \qquad J = I - \tfrac{1}{n}\mathbf{1}\mathbf{1}^{\top} $$</div>
+      <div class="math">$$ X_k = V_k \Lambda_k^{1/2} $$</div>
+      <p class="explain"><b>Symbols:</b> \(D^{(2)}\) holds the squared distances. \(n\) is the number of samples. \(J\) subtracts row and column means. \(B\) is the doubly centred matrix that <code>x.ret=TRUE</code> returns. \(V_k\) and \(\Lambda_k\) are the top \(k\) eigenvectors and eigenvalues of \(B\). <b>What it tells you:</b> one eigen decomposition turns distances into plot coordinates.</p>
+    </div>
+    <div class="formula"><span class="lbl">Variation per axis</span>
+      <div class="math">$$ \text{var}_i = 100 \times \frac{\lambda_i}{\sum_j \lambda_j} $$</div>
+      <p class="explain"><b>Symbols:</b> \(\lambda_i\) is the eigenvalue for axis \(i\). <b>What it tells you:</b> the share of variation that axis \(i\) accounts for. It is the number on the axis label: 91% and 2.7% here.</p>
+    </div>
+    <div class="formula"><span class="lbl">The hand-made metric</span>
+      <div class="math">$$ d(i,j) = \frac{1}{p}\sum_{g=1}^{p} \bigl| \log_2 x_{gi} - \log_2 x_{gj} \bigr| $$</div>
+      <p class="explain"><b>Symbols:</b> \(x_{gi}\) is the measurement for gene \(g\) in sample \(i\); \(p\) is the number of genes, 100 here. <b>What it tells you:</b> the average absolute log fold change between two samples. This is the metric <code>edgeR</code> uses in its <code>plotMDS</code> function.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>The data are 100 genes by 10 samples: wt1 to wt5 and ko1 to ko5. PCA puts wild type on the left and knockout on the right. PC1 accounts for 91% of the variation and PC2 for 2.7%.</p>
+      <p>MDS on the Euclidean distance matrix gives MDS1 at 91% and MDS2 at 2.7%. The two plots are not just similar, they are the same plot.</p>
+      <p>The average absolute log fold change gives a similar but different plot. MDS1 now accounts for 99.2% of the variation instead of 91%.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> The <code>dist</code> function measures distances between rows, and your samples are columns. Forget <code>t()</code> and you get a 100 by 100 matrix of gene distances, not a 10 by 10 matrix of sample distances.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> If you build a distance matrix by hand, <code>cmdscale</code> will not know it is one. Wrap it in <code>as.dist()</code> first. A true distance object only stores the lower triangle, which is why Josh only fills that triangle in the loop.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> MDS with the Euclidean metric is the same as PCA, so running both adds nothing. R's <code>dist</code> offers six metrics if you want a different one.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is the difference between MDS and PCoA?</summary><div class="a">There is none. Classical or metric MDS and principal coordinate analysis are two names for the same method. Different fields adopted different names, and R implements it as <code>cmdscale</code>.</div></details>
+    <details class="qa" open><summary>When is MDS identical to PCA?</summary><div class="a">When the distance matrix uses the Euclidean metric on centred and scaled data. In the video the two plots match, and the axes carry the same percentages, 91% and 2.7%.</div></details>
+    <details class="qa" open><summary>So why would you use MDS at all?</summary><div class="a">Because MDS accepts any distance you can define. Josh uses the average absolute log fold change, which is what <code>edgeR</code> does. That helps when Euclidean distance does not match what "similar" means for your data.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>MDS, classical MDS, metric MDS and PCoA all name the same method.</li>
+      <li>In R the four steps are <code>dist</code>, <code>cmdscale</code>, eigenvalues to percentages, then plot.</li>
+      <li>With Euclidean distance the MDS plot is exactly the PCA plot, 91% and 2.7% here.</li>
+      <li>Using the average absolute log fold change moved MDS1 from 91% to 99.2%.</li>
+      <li>A hand-built matrix needs <code>as.dist</code> before <code>cmdscale</code> will accept it.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">MDS and PCoA</span><span class="board-tag">the metric you pick is the real decision</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 280" role="img" aria-label="Two distance matrices of the same samples, one Euclidean and one log fold change, each go through cmdscale into a plot with wild type on the left and knockout on the right. Euclidean gives MDS1 91%, the same as PCA; log fold change gives MDS1 99.2%.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <text x="100" y="32" text-anchor="middle" class="sv-tb">Euclidean</text>
+            <text x="300" y="32" text-anchor="middle" class="sv-tb">log fold change</text>
+            <rect x="64" y="46" width="72" height="72" class="sv-paper"/>
+            <rect x="264" y="46" width="72" height="72" class="sv-paper"/>
+            <path d="M64 64 H82 V82 H100 V100 H118 V118 H64 Z M264 64 H282 V82 H300 V100 H318 V118 H264 Z" class="sv-key-soft"/>
+            <path d="M82 46 V118 M100 46 V118 M118 46 V118 M64 64 H136 M64 82 H136 M64 100 H136 M282 46 V118 M300 46 V118 M318 46 V118 M264 64 H336 M264 82 H336 M264 100 H336" class="sv-line" stroke-width="2" stroke-linecap="round"/>
+            <path d="M64 46 H136 V118 H64 Z M264 46 H336 V118 H264 Z" class="sv-stroke-ink" stroke-width="2.5" stroke-linejoin="round"/>
+            <text x="200" y="88" text-anchor="middle" class="sv-ts">distances</text>
+            <line x1="100" y1="128" x2="100" y2="154" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="300" y1="128" x2="300" y2="154" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="200" y="146" text-anchor="middle" class="sv-tm">cmdscale</text>
+            <path d="M40 166 V232 H160 M240 166 V232 H360" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="58" cy="180" r="6" class="sv-acc"/>
+              <circle cx="74" cy="190" r="6" class="sv-acc"/>
+              <circle cx="54" cy="198" r="6" class="sv-acc"/>
+              <circle cx="70" cy="208" r="6" class="sv-acc"/>
+              <circle cx="60" cy="218" r="6" class="sv-acc"/>
+              <circle cx="126" cy="182" r="6" class="sv-key"/>
+              <circle cx="142" cy="192" r="6" class="sv-key"/>
+              <circle cx="122" cy="200" r="6" class="sv-key"/>
+              <circle cx="138" cy="210" r="6" class="sv-key"/>
+              <circle cx="126" cy="220" r="6" class="sv-key"/>
+              <circle cx="254" cy="198" r="6" class="sv-acc"/>
+              <circle cx="268" cy="192" r="6" class="sv-acc"/>
+              <circle cx="284" cy="196" r="6" class="sv-acc"/>
+              <circle cx="262" cy="210" r="6" class="sv-acc"/>
+              <circle cx="278" cy="210" r="6" class="sv-acc"/>
+              <circle cx="318" cy="198" r="6" class="sv-key"/>
+              <circle cx="332" cy="192" r="6" class="sv-key"/>
+              <circle cx="348" cy="196" r="6" class="sv-key"/>
+              <circle cx="326" cy="210" r="6" class="sv-key"/>
+              <circle cx="342" cy="210" r="6" class="sv-key"/>
+              <circle cx="184" cy="190" r="6" class="sv-acc"/>
+              <circle cx="184" cy="216" r="6" class="sv-key"/>
+            </g>
+            <text x="196" y="196" class="sv-ts">WT</text>
+            <text x="196" y="222" class="sv-ts">KO</text>
+            <text x="100" y="262" text-anchor="middle" class="sv-t">MDS1 91% = PCA</text>
+            <text x="300" y="262" text-anchor="middle" class="sv-t">MDS1 99.2%</text>
+          </svg>
+          <p>MDS never sees the raw data, only a 10 by 10 table of distances, and <code>cmdscale</code> turns that table into points. Euclidean distance gives back the PCA plot exactly. Another metric still splits wild type (WT) from knockout (KO), but MDS1 moves from 91% to 99.2%.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>MDS = PCoA</dt><dd>Classical (metric) MDS and principal coordinate analysis: one method, two names.</dd>
+            <dt>Distance matrix</dt><dd>One number per pair of samples; 10 by 10 and symmetric here.</dd>
+            <dt>Metric</dt><dd>Your rule for "far apart": Euclidean, or average absolute log fold change.</dd>
+            <dt>cmdscale</dt><dd>R's classical MDS: double centre the distances, then eigen decompose.</dd>
+            <dt>% variation</dt><dd>Each eigenvalue's share of the total, shown on the axis label.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Fake data</b>100 genes, 5 WT, 5 KO</li>
+            <li><b>Distances</b>transpose, scale, then <code>dist</code></li>
+            <li><b>cmdscale</b>eig=TRUE, x.ret=TRUE</li>
+            <li><b>% per axis</b>eigenvalue ÷ sum × 100</li>
+            <li><b>Plot</b>ggplot2, MDS1 vs MDS2</li>
+            <li><b>Swap metric</b>log fold change, <code>as.dist</code>, rerun</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$B=-\tfrac{1}{2}\,J\,D^{(2)}J$$
+          $$\text{var}_i=100\times\frac{\lambda_i}{\sum_j\lambda_j}$$
+          $$d(i,j)=\frac{1}{p}\sum_{g}\bigl|\log_2 x_{gi}-\log_2 x_{gj}\bigr|$$
+          <ul class="keys">
+            <li>\(D^{(2)}\): squared distances; \(J\) subtracts row and column means; the top eigenvectors of \(B\) give the points.</li>
+            <li>\(\lambda_i\): the eigenvalue for axis \(i\).</li>
+            <li>\(x_{gi}\): gene \(g\) in sample \(i\); \(p\) is 100 genes.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>run</th><th>axis 1</th><th>axis 2</th></tr>
+            <tr><td>PCA</td><td>91%</td><td>2.7%</td></tr>
+            <tr><td>MDS, Euclidean</td><td>91%</td><td>2.7%</td></tr>
+            <tr class="final"><td>MDS, log fold change</td><td>99.2%</td><td>smaller</td></tr>
+          </table>
+          <p class="hand">Euclidean MDS is the very same plot as PCA. The new metric lifts MDS1 to 99.2%.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no"><code>dist</code> on the raw data gives sample distances.</span><span class="yes"><code>dist</code> measures rows; samples are columns. Without <code>t()</code> you get 100 by 100 gene distances.</span></li>
+            <li><span class="no"><code>cmdscale</code> accepts any matrix you build.</span><span class="yes">Wrap a hand-built matrix in <code>as.dist()</code> first. A distance object keeps only the lower triangle.</span></li>
+            <li><span class="no">Running both MDS and PCA gives two views.</span><span class="yes">With Euclidean distance they are the same plot. R's <code>dist</code> offers six metrics.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="37-mds-and-pcoa.html"><small>Previous</small>MDS and PCoA</a> <a href="39-t-sne.html"><small>Next</small>t-SNE</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

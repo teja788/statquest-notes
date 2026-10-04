@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Word Embedding in PyTorch + Lightning — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-nn">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Neural Networks / Deep Learning</a><span class="sep">/</span><span>32</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Neural Networks / Deep Learning · Video 32 · 32.0 min</div>
+    <h1>Word Embedding in PyTorch + Lightning</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=Qf06XDYXCXI" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: —</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video codes a tiny word embedding network in PyTorch, first from scratch and then with <code>nn.Linear</code>. Lightning is a library that handles the training loop for you. Finally, Josh loads the trained embeddings into <code>nn.Embedding</code> for use in a bigger model.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh builds a network for two sentences, "Troll 2 is great" and "Gymkata is great", that predicts the next token. First he writes every weight and every sum by hand. Then he replaces all of that with two calls to <code>nn.Linear</code>. After training, the two weights from each input to the hidden layer are that token's embedding. Troll 2 and Gymkata end up close together. Finally he loads those weights into <code>nn.Embedding</code> so they can be looked up by index or by token.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>The network has one input per unique token: Troll 2, is, great and Gymkata. Each input is one-hot encoded. That means the input for the current token gets a 1 and every other input gets a 0. The inputs connect to two hidden nodes, and those connect to four outputs, one per token.</p>
+    <p>The hidden nodes use the identity activation function. This means the output of the node is the same as its input, so it does nothing. Because only one input is 1, each hidden node simply receives the weight from that one token. So the two weights leaving a token are its two embedding values.</p>
+    <p>The outputs are not run through SoftMax inside the model. The loss, <code>nn.CrossEntropyLoss</code>, applies SoftMax for us and then measures how far the result is from the ideal one-hot output.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 380" role="img" aria-label="Word embedding network: four one-hot inputs, two identity hidden nodes, four outputs, then SoftMax and cross-entropy loss">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker>
+        </defs>
+        <text x="120" y="32" text-anchor="middle" class="sv-tb">one-hot input</text>
+        <text x="340" y="32" text-anchor="middle" class="sv-tb">hidden (identity)</text>
+        <text x="540" y="32" text-anchor="middle" class="sv-tb">outputs</text>
+        <!-- input to hidden lines -->
+        <line x1="136" y1="150" x2="318" y2="140" class="sv-line" stroke-width="1.5"/>
+        <line x1="136" y1="150" x2="318" y2="240" class="sv-line" stroke-width="1.5"/>
+        <line x1="136" y1="230" x2="318" y2="140" class="sv-line" stroke-width="1.5"/>
+        <line x1="136" y1="230" x2="318" y2="240" class="sv-line" stroke-width="1.5"/>
+        <line x1="136" y1="310" x2="318" y2="140" class="sv-line" stroke-width="1.5"/>
+        <line x1="136" y1="310" x2="318" y2="240" class="sv-line" stroke-width="1.5"/>
+        <line x1="136" y1="70" x2="318" y2="140" class="sv-stroke-acc" stroke-width="3"/>
+        <line x1="136" y1="70" x2="318" y2="240" class="sv-stroke-acc" stroke-width="3"/>
+        <!-- hidden to output lines -->
+        <line x1="362" y1="140" x2="524" y2="70" class="sv-line" stroke-width="1.5"/>
+        <line x1="362" y1="140" x2="524" y2="150" class="sv-line" stroke-width="1.5"/>
+        <line x1="362" y1="140" x2="524" y2="230" class="sv-line" stroke-width="1.5"/>
+        <line x1="362" y1="140" x2="524" y2="310" class="sv-line" stroke-width="1.5"/>
+        <line x1="362" y1="240" x2="524" y2="70" class="sv-line" stroke-width="1.5"/>
+        <line x1="362" y1="240" x2="524" y2="150" class="sv-line" stroke-width="1.5"/>
+        <line x1="362" y1="240" x2="524" y2="230" class="sv-line" stroke-width="1.5"/>
+        <line x1="362" y1="240" x2="524" y2="310" class="sv-line" stroke-width="1.5"/>
+        <!-- weight labels for Troll 2 -->
+        <rect x="200" y="86" width="40" height="20" rx="4" class="sv-paper"/>
+        <text x="220" y="101" text-anchor="middle" class="sv-tm">0.38</text>
+        <rect x="160" y="112" width="40" height="20" rx="4" class="sv-paper"/>
+        <text x="180" y="127" text-anchor="middle" class="sv-tm">0.42</text>
+        <!-- input nodes -->
+        <text x="94" y="75" text-anchor="end" class="sv-t">Troll 2</text>
+        <text x="94" y="155" text-anchor="end" class="sv-t">is</text>
+        <text x="94" y="235" text-anchor="end" class="sv-t">great</text>
+        <text x="94" y="315" text-anchor="end" class="sv-t">Gymkata</text>
+        <circle cx="120" cy="70" r="16" class="sv-acc"/>
+        <circle cx="120" cy="150" r="16" class="sv-paper2"/>
+        <circle cx="120" cy="230" r="16" class="sv-paper2"/>
+        <circle cx="120" cy="310" r="16" class="sv-paper2"/>
+        <text x="120" y="75" text-anchor="middle" class="sv-tm">1</text>
+        <text x="120" y="155" text-anchor="middle" class="sv-tm">0</text>
+        <text x="120" y="235" text-anchor="middle" class="sv-tm">0</text>
+        <text x="120" y="315" text-anchor="middle" class="sv-tm">0</text>
+        <!-- hidden nodes -->
+        <circle cx="340" cy="140" r="22" class="sv-key-soft"/>
+        <circle cx="340" cy="240" r="22" class="sv-key-soft"/>
+        <text x="340" y="145" text-anchor="middle" class="sv-ts">top</text>
+        <text x="340" y="245" text-anchor="middle" class="sv-ts">bottom</text>
+        <!-- output nodes -->
+        <circle cx="540" cy="70" r="16" class="sv-paper2"/>
+        <circle cx="540" cy="150" r="16" class="sv-good-soft"/>
+        <circle cx="540" cy="230" r="16" class="sv-paper2"/>
+        <circle cx="540" cy="310" r="16" class="sv-paper2"/>
+        <text x="540" y="155" text-anchor="middle" class="sv-ts">is</text>
+        <!-- softmax / loss box -->
+        <line x1="558" y1="190" x2="596" y2="190" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"/>
+        <rect x="600" y="150" width="140" height="80" rx="8" class="sv-acc-soft"/>
+        <text x="670" y="176" text-anchor="middle" class="sv-tb">SoftMax +</text>
+        <text x="670" y="196" text-anchor="middle" class="sv-tb">cross-entropy</text>
+        <text x="670" y="217" text-anchor="middle" class="sv-tm">CrossEntropyLoss</text>
+        <text x="340" y="300" text-anchor="middle" class="sv-ts">bold weights = Troll 2's embedding</text>
+        <text x="340" y="320" text-anchor="middle" class="sv-ts">(random start values)</text>
+        <text x="670" y="260" text-anchor="middle" class="sv-ts">ideal: one-hot for "is"</text>
+      </svg>
+      <figcaption>With Troll 2 as the only 1, the hidden nodes just receive Troll 2's two weights, so those weights are its embedding.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li><b>Imports.</b> Josh imports <code>torch</code>, <code>torch.nn</code>, <code>Adam</code>, <code>Uniform</code>, <code>TensorDataset</code> and <code>DataLoader</code>, <code>lightning as L</code>, and pandas, matplotlib and seaborn for graphs.</li>
+      <li><b>Training data.</b> Each token gets a one-hot input. The label is the one-hot encoding of the token that comes next. Nothing follows "great", so Josh pretends it predicts Gymkata.</li>
+      <li><b>Data loader.</b> Inputs and labels go into a <code>TensorDataset</code> and then a <code>DataLoader</code>. This makes batching, shuffling and quick debugging easy when the data is large.</li>
+      <li><b>Model from scratch.</b> A class <code>WordEmbeddingFromScratch</code> inherits from <code>LightningModule</code>. It has <code>__init__</code>, <code>forward</code>, <code>configure_optimizers</code> and <code>training_step</code>.</li>
+      <li><b>Look before training.</b> Josh puts the weights into a pandas data frame and draws a seaborn scatter plot. Troll 2 and Gymkata start far apart.</li>
+      <li><b>Train and check.</b> A Lightning <code>Trainer</code> runs at most 100 epochs, or full passes through the data. Afterwards Troll 2 and Gymkata sit close together, and Troll 2 predicts "is".</li>
+      <li><b>Same network with <code>nn.Linear</code>.</b> Two calls replace all the hand-made weights and sums.</li>
+      <li><b>Load into <code>nn.Embedding</code>.</b> The trained weights are transposed and loaded with <code>from_pretrained</code>, ready to plug into a bigger network like a transformer.</li>
+    </ol>
+
+    <p>The training data is four one-hot inputs and four one-hot labels.</p>
+<pre><code>inputs = torch.Tensor([[1., 0., 0., 0.],   # Troll 2
+                       [0., 1., 0., 0.],   # is
+                       [0., 0., 1., 0.],   # great
+                       [0., 0., 0., 1.]])  # Gymkata
+labels = torch.Tensor([[0., 1., 0., 0.],   # Troll 2 -&gt; is
+                       [0., 0., 1., 0.],   # is      -&gt; great
+                       [0., 0., 0., 1.],   # great   -&gt; Gymkata
+                       [0., 1., 0., 0.]])  # Gymkata -&gt; is
+dataset = TensorDataset(inputs, labels)
+dataloader = DataLoader(dataset)</code></pre>
+
+    <p>The from-scratch model makes every weight with <code>nn.Parameter</code>, starting from a uniform draw between -0.5 and 0.5. Josh picks this range to match what <code>nn.Linear</code> will do later.</p>
+<pre><code>class WordEmbeddingFromScratch(L.LightningModule):
+    def __init__(self):
+        super().__init__()
+        min_value, max_value = -0.5, 0.5
+        self.input1_w1 = nn.Parameter(Uniform(min_value, max_value).sample())  # Troll 2 -&gt; top
+        self.input1_w2 = nn.Parameter(Uniform(min_value, max_value).sample())  # Troll 2 -&gt; bottom
+        # ... the same for input2 to input4, then output1_w1 ... output4_w2
+        self.loss = nn.CrossEntropyLoss()
+
+    def forward(self, input):
+        input = input[0]                         # remove the extra brackets
+        inputs_to_top_hidden = (input[0] * self.input1_w1 + input[1] * self.input2_w1 +
+                                input[2] * self.input3_w1 + input[3] * self.input4_w1)
+        inputs_to_bottom_hidden = (input[0] * self.input1_w2 + input[1] * self.input2_w2 +
+                                   input[2] * self.input3_w2 + input[3] * self.input4_w2)
+        output1 = (inputs_to_top_hidden * self.output1_w1 +
+                   inputs_to_bottom_hidden * self.output1_w2)
+        # ... output2 to output4 the same way
+        output_presoftmax = torch.stack([output1, output2, output3, output4])
+        return output_presoftmax
+
+    def configure_optimizers(self):
+        return Adam(self.parameters(), lr=0.1)
+
+    def training_step(self, batch, batch_idx):
+        input_i, label_i = batch
+        output_i = self.forward(input_i)
+        loss = self.loss(output_i, label_i[0])
+        return loss</code></pre>
+
+    <p>The weights are read out with <code>.item()</code> into a data frame, plotted, and then the model is trained.</p>
+<pre><code>model_from_scratch = WordEmbeddingFromScratch()
+data = {"w1": [model_from_scratch.input1_w1.item(), ...],   # weights to top node
+        "w2": [model_from_scratch.input1_w2.item(), ...],   # weights to bottom node
+        "token": ["Troll2", "is", "great", "Gymkata"],
+        "input": ["input1", "input2", "input3", "input4"]}
+df = pd.DataFrame(data)
+sns.scatterplot(data=df, x="w1", y="w2")
+plt.text(df.w1[0], df.w2[0], df.token[0], horizontalalignment="left",
+         size="medium", color="black", weight="semibold")   # one call per row
+plt.show()
+
+trainer = L.Trainer(max_epochs=100)
+trainer.fit(model_from_scratch, train_dataloaders=dataloader)</code></pre>
+
+    <p>The <code>nn.Linear</code> version needs far less code. There is no bias, and the input no longer needs its extra brackets removed.</p>
+<pre><code>class WordEmbeddingWithLinear(L.LightningModule):
+    def __init__(self):
+        super().__init__()
+        self.input_to_hidden = nn.Linear(in_features=4, out_features=2, bias=False)
+        self.hidden_to_output = nn.Linear(in_features=2, out_features=4, bias=False)
+        self.loss = nn.CrossEntropyLoss()
+
+    def forward(self, input):
+        hidden = self.input_to_hidden(input)
+        output_values = self.hidden_to_output(hidden)
+        return output_values
+    # configure_optimizers and training_step are similar to before
+
+model_linear = WordEmbeddingWithLinear()
+data = {"w1": model_linear.input_to_hidden.weight.detach()[0].numpy(),
+        "w2": model_linear.input_to_hidden.weight.detach()[1].numpy(), ...}</code></pre>
+
+    <p>Finally, the trained weights are loaded into <code>nn.Embedding</code>. A dictionary lets you look up a token by name instead of by index.</p>
+<pre><code>word_embeddings = nn.Embedding.from_pretrained(model_linear.input_to_hidden.weight.T)
+print(word_embeddings.weight)               # now 4 rows, 2 columns
+print(word_embeddings(torch.tensor(0)))     # Troll 2's embedding
+
+vocab = {"Troll2": 0, "is": 1, "great": 2, "Gymkata": 3}
+print(word_embeddings(torch.tensor(vocab["Troll2"])))</code></pre>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 290" role="img" aria-label="nn.Linear stores weights as 2 rows by 4 tokens; transposing gives nn.Embedding 4 rows by 2 columns, one row per token">
+        <defs>
+          <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker>
+        </defs>
+        <text x="220" y="40" text-anchor="middle" class="sv-tb">input_to_hidden.weight (2 × 4)</text>
+        <text x="100" y="88" text-anchor="middle" class="sv-ts">Troll 2</text>
+        <text x="180" y="88" text-anchor="middle" class="sv-ts">is</text>
+        <text x="260" y="88" text-anchor="middle" class="sv-ts">great</text>
+        <text x="340" y="88" text-anchor="middle" class="sv-ts">Gymkata</text>
+        <text x="50" y="125" text-anchor="end" class="sv-tm">w1</text>
+        <text x="50" y="165" text-anchor="end" class="sv-tm">w2</text>
+        <rect x="61" y="101" width="78" height="38" class="sv-acc-soft"/>
+        <rect x="141" y="101" width="78" height="38" class="sv-paper2"/>
+        <rect x="221" y="101" width="78" height="38" class="sv-paper2"/>
+        <rect x="301" y="101" width="78" height="38" class="sv-paper2"/>
+        <rect x="61" y="141" width="78" height="38" class="sv-acc-soft"/>
+        <rect x="141" y="141" width="78" height="38" class="sv-paper2"/>
+        <rect x="221" y="141" width="78" height="38" class="sv-paper2"/>
+        <rect x="301" y="141" width="78" height="38" class="sv-paper2"/>
+        <text x="220" y="210" text-anchor="middle" class="sv-ts">row 0 → top hidden node, row 1 → bottom</text>
+        <line x1="398" y1="140" x2="462" y2="140" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah2)"/>
+        <text x="430" y="130" text-anchor="middle" class="sv-tm">.T</text>
+        <text x="620" y="40" text-anchor="middle" class="sv-tb">nn.Embedding (4 × 2)</text>
+        <text x="580" y="58" text-anchor="middle" class="sv-tm">w1</text>
+        <text x="660" y="58" text-anchor="middle" class="sv-tm">w2</text>
+        <text x="530" y="95" text-anchor="end" class="sv-ts">0 Troll 2</text>
+        <text x="530" y="135" text-anchor="end" class="sv-ts">1 is</text>
+        <text x="530" y="175" text-anchor="end" class="sv-ts">2 great</text>
+        <text x="530" y="215" text-anchor="end" class="sv-ts">3 Gymkata</text>
+        <rect x="541" y="71" width="78" height="38" class="sv-acc-soft"/>
+        <rect x="621" y="71" width="78" height="38" class="sv-acc-soft"/>
+        <rect x="541" y="111" width="78" height="38" class="sv-paper2"/>
+        <rect x="621" y="111" width="78" height="38" class="sv-paper2"/>
+        <rect x="541" y="151" width="78" height="38" class="sv-paper2"/>
+        <rect x="621" y="151" width="78" height="38" class="sv-paper2"/>
+        <rect x="541" y="191" width="78" height="38" class="sv-paper2"/>
+        <rect x="621" y="191" width="78" height="38" class="sv-paper2"/>
+        <text x="620" y="262" text-anchor="middle" class="sv-tm">word_embeddings(torch.tensor(0))</text>
+      </svg>
+      <figcaption>nn.Linear keeps one row per hidden node; nn.Embedding wants one row per token, so the weights are transposed with .T.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">Hidden node sums</span><div class="math">$$ h_{\text{top}} = \sum_{i=1}^{4} x_i\, w_{1,i} \qquad h_{\text{bottom}} = \sum_{i=1}^{4} x_i\, w_{2,i} $$</div><p class="explain"><b>Symbols:</b> \(x_i\) is input \(i\) of the one-hot encoding (1 for the current token, 0 otherwise). \(w_{1,i}\) is the weight from input \(i\) to the top hidden node, and \(w_{2,i}\) the weight to the bottom node. \(h\) is the hidden value; the identity activation leaves it unchanged. <b>What it tells you:</b> with a one-hot input, \(h_{\text{top}}\) and \(h_{\text{bottom}}\) are just that token's two weights, which is why they are its embedding.</p></div>
+    <div class="formula"><span class="lbl">Output sums (before SoftMax)</span><div class="math">$$ o_j = h_{\text{top}}\, v_{j,1} + h_{\text{bottom}}\, v_{j,2} $$</div><p class="explain"><b>Symbols:</b> \(o_j\) is the raw value for output token \(j\). \(v_{j,1}\) and \(v_{j,2}\) are the weights from the top and bottom hidden nodes to output \(j\). <b>What it tells you:</b> this is all <code>forward</code> computes; the four \(o_j\) are stacked and returned without SoftMax.</p></div>
+    <div class="formula"><span class="lbl">SoftMax (done inside the loss)</span><div class="math">$$ p_j = \frac{e^{o_j}}{\sum_{k=1}^{4} e^{o_k}} $$</div><p class="explain"><b>Symbols:</b> \(p_j\) is the predicted probability for token \(j\); \(e\) is Euler's number; the sum runs over all four outputs. <b>What it tells you:</b> <code>nn.CrossEntropyLoss</code> turns the raw outputs into probabilities like this, then compares them with the one-hot label.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>The two sentences give four training pairs: Troll 2 → is, is → great, great → Gymkata (a stand-in, since nothing follows "great"), and Gymkata → is. Troll 2 and Gymkata both predict "is", so they are used in the same context.</p>
+      <p>Before training, Josh's first weights for Troll 2 were randomly set to 0.38 and 0.42. Run Troll 2 as \([1, 0, 0, 0]\): \(h_{\text{top}} = 1 \times 0.38 + 0 + 0 + 0 = 0.38\) and \(h_{\text{bottom}} = 1 \times 0.42 = 0.42\). So Troll 2 sits at the point (0.38, 0.42) on the W1 vs W2 plot. In the starting plot, Troll 2 and Gymkata are far apart.</p>
+      <p>After 100 epochs with Adam and a learning rate of 0.1, the plot shows Troll 2 and Gymkata very close together. Josh then passes \([1, 0, 0, 0]\) into the model, applies <code>nn.Softmax(dim=0)</code>, and rounds to two decimals. The result is \([0, 1, 0, 0]\), the one-hot encoding for "is", which is correct. The other inputs also give their correct outputs.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> In the from-scratch <code>forward</code>, return the outputs with <code>torch.stack</code>. If you just wrap them in square brackets as a plain list, the gradients get stripped off and backpropagation cannot work.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not add SoftMax inside <code>forward</code>. <code>nn.CrossEntropyLoss</code> already applies it. You only add <code>nn.Softmax(dim=0)</code> yourself when checking predictions; <code>dim=1</code> would apply it to columns instead of rows.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> <code>nn.Linear</code> stores the input weights in rows, one per hidden node. <code>nn.Embedding</code> expects them in columns, one row per token, so use <code>.T</code> when calling <code>from_pretrained</code>.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The from-scratch <code>forward</code> receives the input wrapped in an extra set of brackets, so it starts with <code>input = input[0]</code>. With <code>nn.Linear</code> this step is not needed. When reading <code>nn.Linear</code> weights into pandas, call <code>.detach()</code> before <code>.numpy()</code>.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>Where exactly are the word embeddings in this network?</summary><div class="a">They are the weights from the inputs to the hidden layer. Because the input is one-hot and the hidden activation is the identity, each hidden node just receives one weight from the active token. So each token's embedding is its set of weights to the hidden nodes, here two numbers.</div></details>
+    <details class="qa" open><summary>Why is there no SoftMax in the forward method?</summary><div class="a">The loss is <code>nn.CrossEntropyLoss</code>, which applies SoftMax to the raw outputs and then compares them with the ideal one-hot label. Adding SoftMax in the model would apply it twice. When I want actual predictions after training, I apply SoftMax myself.</div></details>
+    <details class="qa" open><summary>How does <code>nn.Linear</code> replace the hand-built version?</summary><div class="a">One <code>nn.Linear(4, 2, bias=False)</code> holds the eight input-to-hidden weights and does the multiply-and-add. A second <code>nn.Linear(2, 4, bias=False)</code> holds the hidden-to-output weights. The identity activation can be skipped, so forward is just two calls. The model is the same, with much less code.</div></details>
+    <details class="qa" open><summary>How would you reuse trained or pre-trained embeddings?</summary><div class="a">I load them into <code>nn.Embedding.from_pretrained</code>, transposing the <code>nn.Linear</code> weights so each token is a row. Then I look embeddings up by index, or by token through a small dictionary. The same idea works for larger sets, like Word2Vec or embeddings from a transformer, and the object can feed a bigger network.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Each token is one-hot encoded, and the label is the one-hot encoding of the next token.</li>
+      <li>The network has two hidden nodes with identity activations and no bias.</li>
+      <li>The weights from each input to the hidden nodes are that token's embedding.</li>
+      <li>The model returns raw outputs, and <code>nn.CrossEntropyLoss</code> applies SoftMax and measures the error.</li>
+      <li>After 100 epochs with Adam at a learning rate of 0.1, Troll 2 and Gymkata end up close together, and Troll 2 predicts "is".</li>
+      <li>Two <code>nn.Linear</code> calls replace all the hand-written weights and sums.</li>
+      <li><code>nn.Embedding.from_pretrained(weight.T)</code> loads the embeddings so they can be looked up and used in a larger model.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Word embedding in PyTorch</span><span class="board-tag">a token's two weights are its embedding</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 220" role="img" aria-label="Four one-hot inputs: Troll 2 is 1, while is, great and Gymkata are 0. Only Troll 2's two weights reach the two hidden nodes, which use the identity activation, so they hold 0.38 and 0.42. Those two numbers are Troll 2's embedding.">
+            <g class="sv-line" stroke-width="2" stroke-linecap="round">
+              <line x1="120" y1="91" x2="200" y2="70"/>
+              <line x1="120" y1="91" x2="200" y2="160"/>
+              <line x1="120" y1="139" x2="200" y2="70"/>
+              <line x1="120" y1="139" x2="200" y2="160"/>
+              <line x1="120" y1="187" x2="200" y2="70"/>
+              <line x1="120" y1="187" x2="200" y2="160"/>
+            </g>
+            <g class="sv-stroke-key" stroke-width="4" stroke-linecap="round">
+              <line x1="120" y1="43" x2="200" y2="70"/>
+              <line x1="120" y1="43" x2="200" y2="160"/>
+            </g>
+            <g class="sv-stroke-ink" stroke-width="3"><rect x="14" y="28" width="116" height="30" rx="15" class="sv-key-soft"/></g>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <rect x="14" y="76" width="116" height="30" rx="15" class="sv-paper"/>
+              <rect x="14" y="124" width="116" height="30" rx="15" class="sv-paper"/>
+              <rect x="14" y="172" width="116" height="30" rx="15" class="sv-paper"/>
+            </g>
+            <g class="sv-stroke-ink" stroke-width="2.5">
+              <rect x="190" y="50" width="62" height="40" rx="8" class="sv-paper"/>
+              <rect x="190" y="140" width="62" height="40" rx="8" class="sv-paper"/>
+            </g>
+            <path d="M260 52 Q270 52 270 66 V101 Q270 115 280 115 Q270 115 270 129 V164 Q270 178 260 178" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="72" y="49" text-anchor="middle" class="sv-t">Troll 2 = 1</text>
+            <text x="72" y="97" text-anchor="middle" class="sv-ts">is = 0</text>
+            <text x="72" y="145" text-anchor="middle" class="sv-ts">great = 0</text>
+            <text x="72" y="193" text-anchor="middle" class="sv-ts">Gymkata = 0</text>
+            <text x="221" y="36" text-anchor="middle" class="sv-ts">hidden (identity)</text>
+            <text x="221" y="77" text-anchor="middle" class="sv-tb">0.38</text>
+            <text x="221" y="167" text-anchor="middle" class="sv-tb">0.42</text>
+            <text x="288" y="110" class="sv-t">Troll 2's</text>
+            <text x="288" y="134" class="sv-t">embedding</text>
+          </svg>
+          <p>Each token is one-hot, so only its own two weights reach the hidden nodes, and the identity activation passes them on. Those weights are its embedding. After training, Troll 2 and Gymkata, which both predict "is", sit close together.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>One-hot</dt><dd>1 for the current token, 0 for every other input.</dd>
+            <dt>Identity activation</dt><dd>Output equals input, so the node does nothing.</dd>
+            <dt>Embedding</dt><dd>A token's weights to the hidden nodes.</dd>
+            <dt>nn.CrossEntropyLoss</dt><dd>Applies SoftMax, then compares with the one-hot label.</dd>
+            <dt>nn.Embedding</dt><dd>Holds the trained embeddings, one row per token.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Set up data</b>one-hot inputs, next-token labels</li>
+            <li><b>Data loader</b>TensorDataset, then DataLoader</li>
+            <li><b>Model from scratch</b>LightningModule, every weight by hand</li>
+            <li><b>Plot, then train</b>100 epochs, Troll 2 near Gymkata</li>
+            <li><b>Use nn.Linear</b>two calls replace hand-made weights</li>
+            <li><b>Load nn.Embedding</b>transpose, then from_pretrained</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$h_{\text{top}}=\sum_{i=1}^{4} x_i\,w_{1,i}$$
+          $$o_j=h_{\text{top}}\,v_{j,1}+h_{\text{bottom}}\,v_{j,2}$$
+          $$p_j=\frac{e^{o_j}}{\sum_{k=1}^{4} e^{o_k}}$$
+          <ul class="keys">
+            <li>\(x_i\) is the one-hot input; \(w_{1,i}\) goes to the top node, \(w_{2,i}\) to the bottom.</li>
+            <li>\(v\): hidden-to-output weights; the \(o_j\) are returned raw.</li>
+            <li>\(p_j\) is the SoftMax that nn.CrossEntropyLoss applies for you.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>step</th><th>Troll 2</th></tr>
+            <tr><td>input</td><td>[1, 0, 0, 0]</td></tr>
+            <tr><td>h_top</td><td>1 × 0.38 = 0.38</td></tr>
+            <tr><td>h_bottom</td><td>1 × 0.42 = 0.42</td></tr>
+            <tr><td>train</td><td>100 epochs, Adam, lr=0.1</td></tr>
+            <tr class="final"><td>SoftMax</td><td>[0, 1, 0, 0] = "is"</td></tr>
+          </table>
+          <p class="hand">Troll 2 starts at (0.38, 0.42), far from Gymkata. After training they sit close together, and the other inputs are correct too.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Return the outputs as a plain list.</span><span class="yes">Use <code>torch.stack</code>. A plain list strips the gradients, so backpropagation fails.</span></li>
+            <li><span class="no">Put SoftMax inside <code>forward</code>.</span><span class="yes"><code>nn.CrossEntropyLoss</code> already applies it. Add <code>nn.Softmax(dim=0)</code> only to check predictions.</span></li>
+            <li><span class="no">Load <code>nn.Linear</code> weights into <code>nn.Embedding</code> as is.</span><span class="yes"><code>nn.Linear</code> keeps a row per hidden node; <code>nn.Embedding</code> wants a row per token. Use <code>.T</code>.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="25-reinforcement-learning-with-human-feedback-rlhf.html"><small>Previous</small>Reinforcement Learning with Human Feedback (RLHF)</a> <a href="33-coding-a-chatgpt-like-transformer-from-scratch-in-pytorch.html"><small>Next</small>Coding a ChatGPT Like Transformer From Scratch in PyTorch</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Neural Networks Part 7: Cross Entropy Derivatives and Backpropagation — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>85</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 85 · 22.1 min</div>
+    <h1>Neural Networks Part 7: Cross Entropy Derivatives and Backpropagation</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=xBEh66V9gZo" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: Neural Networks / Deep Learning (video 13)</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video shows how to take the derivative of cross entropy with respect to one bias in a neural network with a softmax output. It then uses those derivatives in backpropagation to optimize that bias.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>A neural network predicts iris species, and softmax turns its raw outputs into probabilities. Cross entropy measures how good each prediction is. Josh uses the chain rule to link cross entropy to the bias \(b_3\), which only feeds the raw output for Setosa. When the observed species is Setosa, the derivative is \(p_{\text{setosa}} - 1\). For any other species it is just \(p_{\text{setosa}}\). Gradient descent uses these derivatives to move \(b_3\) from -2 to its best value, -0.03.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>The network takes petal width and sepal width as inputs. Two hidden nodes each make a bent surface: the node's output, plotted over every pair of inputs. Josh colours them blue and orange. For Setosa, the blue surface is scaled by -0.1 and the orange surface by 1.5. Adding them, plus a final bias \(b_3\), gives a green crinkled surface. This is the raw output for Setosa, the number that comes out before softmax.</p>
+    <p>Versicolor and Virginica get their own raw outputs in the same way, each with its own bias. Softmax then turns the three raw outputs into three predicted probabilities. Cross entropy takes the predicted probability for the observed species and gives an error score.</p>
+    <p>To optimize \(b_3\) with gradient descent, we need the derivative of cross entropy with respect to \(b_3\). Cross entropy is linked to \(b_3\) through a predicted probability and the raw output for Setosa. So the chain rule gives the answer as a product of three smaller derivatives.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 330" role="img" aria-label="Chain from bias b3 to raw output for Setosa, to softmax probabilities, to cross entropy">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker>
+          <marker id="ak" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-key"/></marker>
+        </defs>
+        <rect x="30" y="40" width="120" height="50" rx="8" class="sv-acc-soft"/>
+        <text x="90" y="70" text-anchor="middle" class="sv-tb">bias b3</text>
+        <rect x="200" y="40" width="160" height="50" rx="8" class="sv-good-soft"/>
+        <text x="280" y="62" text-anchor="middle" class="sv-t">raw output</text>
+        <text x="280" y="80" text-anchor="middle" class="sv-t">Setosa (green)</text>
+        <rect x="200" y="130" width="160" height="40" rx="8" class="sv-paper2"/>
+        <text x="280" y="155" text-anchor="middle" class="sv-ts">raw Versicolor</text>
+        <rect x="200" y="200" width="160" height="40" rx="8" class="sv-paper2"/>
+        <text x="280" y="225" text-anchor="middle" class="sv-ts">raw Virginica</text>
+        <rect x="410" y="40" width="120" height="200" rx="8" class="sv-key-soft"/>
+        <text x="470" y="135" text-anchor="middle" class="sv-tb">softmax</text>
+        <text x="470" y="155" text-anchor="middle" class="sv-ts">3 probabilities</text>
+        <rect x="580" y="110" width="150" height="60" rx="8" class="sv-acc-soft"/>
+        <text x="655" y="136" text-anchor="middle" class="sv-tb">cross entropy</text>
+        <text x="655" y="156" text-anchor="middle" class="sv-tm">-ln(p observed)</text>
+        <line x1="150" y1="65" x2="198" y2="65" class="sv-stroke-key" stroke-width="2.5" marker-end="url(#ak)"/>
+        <line x1="360" y1="65" x2="408" y2="65" class="sv-stroke-key" stroke-width="2.5" marker-end="url(#ak)"/>
+        <line x1="360" y1="150" x2="408" y2="150" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar)"/>
+        <line x1="360" y1="220" x2="408" y2="220" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar)"/>
+        <line x1="530" y1="140" x2="578" y2="140" class="sv-stroke-key" stroke-width="2.5" marker-end="url(#ak)"/>
+        <rect x="30" y="265" width="700" height="46" rx="6" class="sv-paper"/>
+        <text x="90" y="285" text-anchor="middle" class="sv-tm">d raw/d b3 = 1</text>
+        <text x="330" y="285" text-anchor="middle" class="sv-tm">d p/d raw (softmax)</text>
+        <text x="620" y="285" text-anchor="middle" class="sv-tm">d CE/d p = -1/p</text>
+        <text x="380" y="304" text-anchor="middle" class="sv-ts">multiply the three pieces (chain rule), read right to left</text>
+      </svg>
+      <figcaption>Only the green raw output for Setosa depends directly on \(b_3\), but it feeds every softmax probability, so every cross entropy depends on \(b_3\).</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Put petal and sepal widths into the network. The blue and orange bent surfaces are scaled and added, then \(b_3\) is added to give the raw output for Setosa.</li>
+      <li>Run the three raw outputs through softmax. For the Setosa training row in the video, the predicted probability for Setosa is 0.57, and cross entropy is 0.56.</li>
+      <li>Notice that \(b_3\) changes the Setosa raw output. That raw output is in the numerator and denominator of the Setosa softmax, and in the denominators for Versicolor and Virginica.</li>
+      <li>Cross entropy uses the probability for the observed species. So a Setosa row and a Virginica row give different cross entropy equations, and different derivatives.</li>
+      <li>Derive the Setosa case with the chain rule. The answer simplifies to \(p_{\text{setosa}} - 1\).</li>
+      <li>Derive the Virginica case the same way. The answer simplifies to \(p_{\text{setosa}}\). Versicolor gives the same result, so Josh leaves it as homework.</li>
+      <li>Start \(b_3\) at -2. Add the derivatives from all training rows and take a gradient descent step. Repeat until the predictions stop improving.</li>
+    </ol>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">Raw output and softmax</span>
+      <div class="math">$$ r_{s} = (\text{blue}\times -0.1) + (\text{orange}\times 1.5) + b_3 \qquad p_{s} = \frac{e^{r_{s}}}{e^{r_{s}} + e^{r_{ve}} + e^{r_{vi}}} $$</div>
+      <p class="explain"><b>Symbols:</b> \(r_s, r_{ve}, r_{vi}\) are the raw outputs for Setosa, Versicolor and Virginica. "blue" and "orange" are the two bent surfaces from the hidden nodes. \(b_3\) is the final bias for Setosa. \(p_s\) is the predicted probability for Setosa. <b>What it tells you:</b> \(b_3\) enters only \(r_s\), but \(r_s\) appears in every softmax output.</p>
+    </div>
+    <div class="formula"><span class="lbl">Chain rule, observed species is Setosa</span>
+      <div class="math">$$ \frac{d\,CE}{d\,b_3} = \frac{d\,CE}{d\,p_s}\cdot\frac{d\,p_s}{d\,r_s}\cdot\frac{d\,r_s}{d\,b_3}, \qquad CE = -\ln(p_s) $$</div>
+      <p class="explain"><b>Symbols:</b> \(CE\) is the cross entropy for one row. \(p_s\) is the softmax output for Setosa. \(r_s\) is the raw output for Setosa. <b>What it tells you:</b> we split one hard derivative into three easy ones along the path from cross entropy back to \(b_3\).</p>
+      <div class="math">$$ \frac{d\,CE}{d\,p_s} = -\frac{1}{p_s} $$</div>
+      <p class="explain">Cross entropy to softmax: the derivative of \(-\ln(p_s)\) is \(-1\) divided by \(p_s\).</p>
+      <div class="math">$$ \frac{d\,p_s}{d\,r_s} = p_s(1 - p_s) $$</div>
+      <p class="explain">Softmax to raw output: this is the softmax derivative from an earlier video, which Josh asks us to take on trust here.</p>
+      <div class="math">$$ \frac{d\,r_s}{d\,b_3} = 0 + 0 + 1 = 1 $$</div>
+      <p class="explain">Raw output to bias: the blue and orange surfaces do not depend on \(b_3\), so only the \(b_3\) term leaves a 1.</p>
+      <div class="math">$$ \frac{d\,CE}{d\,b_3} = -\frac{1}{p_s}\cdot p_s(1-p_s)\cdot 1 = p_s - 1 $$</div>
+      <p class="explain">Multiply, cancel the two \(p_s\) terms, and move the negative sign in to get the familiar result.</p>
+    </div>
+    <div class="formula"><span class="lbl">Chain rule, observed species is Virginica</span>
+      <div class="math">$$ \frac{d\,CE}{d\,b_3} = \frac{d\,CE}{d\,p_{vi}}\cdot\frac{d\,p_{vi}}{d\,r_s}\cdot\frac{d\,r_s}{d\,b_3}, \qquad CE = -\ln(p_{vi}) $$</div>
+      <p class="explain"><b>Symbols:</b> \(p_{vi}\) is the softmax output for Virginica. The path still goes through \(r_s\), because that is the only raw output \(b_3\) touches. <b>What it tells you:</b> the same three-link chain works, but the middle link changes.</p>
+      <div class="math">$$ \frac{d\,CE}{d\,p_{vi}} = -\frac{1}{p_{vi}} $$</div>
+      <p class="explain">Cross entropy to softmax: same rule as before, now for the Virginica probability.</p>
+      <div class="math">$$ \frac{d\,p_{vi}}{d\,r_s} = -\,p_s\, p_{vi} $$</div>
+      <p class="explain">Softmax to raw output: a change in the Setosa raw output moves the Virginica probability through its denominator only.</p>
+      <div class="math">$$ \frac{d\,r_s}{d\,b_3} = 1 $$</div>
+      <p class="explain">Raw output to bias: this link is exactly the same as in the Setosa case.</p>
+      <div class="math">$$ \frac{d\,CE}{d\,b_3} = -\frac{1}{p_{vi}}\cdot(-p_s\,p_{vi})\cdot 1 = p_s $$</div>
+      <p class="explain">The two \(p_{vi}\) terms cancel and the two negatives cancel, leaving the Setosa probability. Versicolor gives the same answer.</p>
+    </div>
+    <div class="formula"><span class="lbl">Gradient descent update</span>
+      <div class="math">$$ \text{step size} = \text{slope}\times\text{learning rate}, \qquad b_3^{\text{new}} = b_3^{\text{old}} - \text{step size} $$</div>
+      <p class="explain"><b>Symbols:</b> the slope is the sum of the per-row derivatives of cross entropy with respect to \(b_3\). The learning rate scales the step. <b>What it tells you:</b> a negative slope pushes \(b_3\) up, toward lower total cross entropy.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>There are three training rows: Setosa, Virginica and Versicolor. Josh sets \(b_3 = -2\). At that value the total cross entropy is 2.67. If you try many values of \(b_3\), the total cross entropy traces a curve, and we want its lowest point.</p>
+      <p>For each row, pick the derivative that matches the observed species. Then run the row through the network to get \(p_s\).</p>
+      <p>Row 1 is Setosa with \(p_s = 0.15\), so its term is \(0.15 - 1 = -0.85\). Row 2 is Virginica with \(p_s = 0.04\), so its term is \(0.04\). Row 3 is Versicolor with \(p_s = 0.04\), so its term is \(0.04\).</p>
+      <p>$$ \text{slope} = -0.85 + 0.04 + 0.04 = -0.77 $$</p>
+      <p>With a learning rate of 1, the step size is -0.77. The new bias is:</p>
+      <p>$$ b_3^{\text{new}} = -2 - (-0.77) = -1.23 $$</p>
+      <p>Josh repeats this with each new value of \(b_3\). The predictions stop improving when \(b_3 = -0.03\).</p>
+    </div>
+    <figure class="info">
+      <svg viewBox="0 0 760 280" role="img" aria-label="Three per-row derivatives add up to a slope of -0.77, which moves b3 from -2 to -1.23">
+        <defs>
+          <marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-good"/></marker>
+        </defs>
+        <line x1="40" y1="110" x2="400" y2="110" class="sv-stroke-ink" stroke-width="1"/>
+        <text x="30" y="114" text-anchor="end" class="sv-ts">0</text>
+        <rect x="70" y="110" width="70" height="136" class="sv-acc"/>
+        <rect x="190" y="104" width="70" height="6" class="sv-key"/>
+        <rect x="310" y="104" width="70" height="6" class="sv-key"/>
+        <text x="105" y="40" text-anchor="middle" class="sv-t">Setosa</text>
+        <text x="105" y="58" text-anchor="middle" class="sv-tm">0.15 - 1 = -0.85</text>
+        <text x="225" y="40" text-anchor="middle" class="sv-t">Virginica</text>
+        <text x="225" y="58" text-anchor="middle" class="sv-tm">p_s = 0.04</text>
+        <text x="345" y="40" text-anchor="middle" class="sv-t">Versicolor</text>
+        <text x="345" y="58" text-anchor="middle" class="sv-tm">p_s = 0.04</text>
+        <rect x="440" y="70" width="290" height="140" rx="8" class="sv-good-soft"/>
+        <text x="585" y="100" text-anchor="middle" class="sv-tb">slope = -0.77</text>
+        <text x="585" y="125" text-anchor="middle" class="sv-ts">learning rate 1, step size -0.77</text>
+        <line x1="480" y1="170" x2="690" y2="170" class="sv-stroke-good" stroke-width="2.5" marker-end="url(#ag)"/>
+        <text x="480" y="195" text-anchor="middle" class="sv-tm">b3 = -2</text>
+        <text x="690" y="195" text-anchor="middle" class="sv-tm">-1.23</text>
+      </svg>
+      <figcaption>The Setosa row gives the big negative term, so the total slope is negative and gradient descent raises \(b_3\).</figcaption>
+    </figure>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> The derivative for a row depends on which species was observed in that row. A Setosa row uses \(p_s - 1\), while Virginica and Versicolor rows use \(p_s\). Mixing them up gives the wrong slope.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The \(p_s\) in each term comes from that row's own measurements. The Setosa probability for the Virginica row is not the same number as for the Setosa row. Josh says this difference matters when you do backpropagation.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> These results are for \(b_3\) only, because \(b_3\) only directly affects the raw output for Setosa. Derivatives with respect to \(b_4\) (Versicolor) or \(b_5\) (Virginica) follow the same process but give different results.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The derivative of the raw output with respect to \(b_3\) is 1 because the blue and orange surfaces are made before \(b_3\) is added. Their derivatives with respect to \(b_3\) are 0.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is the gradient of softmax plus cross entropy with respect to the output bias?</summary><div class="a">For the bias on the Setosa raw output, it is \(p_s - 1\) when the observed class is Setosa. It is \(p_s\) when the observed class is something else. You get this by chaining three pieces: minus one over p, the softmax derivative, and one for the bias.</div></details>
+    <details class="qa" open><summary>Why does a bias on one class output affect the loss for rows of another class?</summary><div class="a">The bias changes that class's raw output. That raw output sits in the denominator of every softmax probability. So even when cross entropy uses the Virginica probability, it still depends on the Setosa bias.</div></details>
+    <details class="qa" open><summary>How do you get the gradient over the whole training set?</summary><div class="a">You compute the derivative for each row, using the formula that matches the observed class. Then you add them up. In the video the three terms are -0.85, 0.04 and 0.04, which sum to a slope of -0.77.</div></details>
+    <details class="qa" open><summary>What does gradient descent do with that slope?</summary><div class="a">It multiplies the slope by the learning rate to get a step size, then subtracts the step size from the old value. With a learning rate of 1, the bias moves from -2 to -1.23. You repeat until predictions stop improving or you hit a step limit.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Softmax turns raw outputs into probabilities, and cross entropy scores the probability for the observed species.</li>
+      <li>The bias \(b_3\) only directly affects the raw output for Setosa.</li>
+      <li>The chain rule links cross entropy to \(b_3\) through a softmax probability and the Setosa raw output.</li>
+      <li>When the observed species is Setosa, the derivative is \(p_s - 1\).</li>
+      <li>When the observed species is Virginica or Versicolor, the derivative is \(p_s\).</li>
+      <li>Add the per-row derivatives to get the slope, which was -0.77 at \(b_3 = -2\).</li>
+      <li>Gradient descent moved \(b_3\) to -1.23, and repeated steps stopped at -0.03.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Cross Entropy Derivatives</span><span class="board-tag">chain back to the bias, then step downhill</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 262" role="img" aria-label="The bias b3 feeds the Setosa raw output, which feeds every softmax probability and cross entropy, so the derivative is p_s minus 1 for a Setosa row and p_s for any other row.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <rect x="40" y="14" width="80" height="44" rx="10" class="sv-key-soft"/>
+              <rect x="162" y="14" width="160" height="44" rx="10" class="sv-good-soft"/>
+              <rect x="40" y="102" width="320" height="44" rx="10" class="sv-paper2"/>
+              <rect x="30" y="186" width="160" height="64" rx="10" class="sv-paper"/>
+              <rect x="210" y="186" width="160" height="64" rx="10" class="sv-paper"/>
+            </g>
+            <line x1="124" y1="36" x2="154" y2="36" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="242" y1="61" x2="242" y2="94" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="110" y1="149" x2="110" y2="178" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="290" y1="149" x2="290" y2="178" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="80" y="43" text-anchor="middle" class="sv-tb">b3</text>
+            <text x="242" y="42" text-anchor="middle" class="sv-t">raw Setosa</text>
+            <text x="256" y="82" class="sv-ts">feeds every p</text>
+            <text x="200" y="130" text-anchor="middle" class="sv-t">softmax → cross entropy</text>
+            <text x="200" y="170" text-anchor="middle" class="sv-tm">d CE / d b3</text>
+            <text x="110" y="210" text-anchor="middle" class="sv-t">Setosa row</text>
+            <text x="110" y="236" text-anchor="middle" class="sv-tb">p_s − 1</text>
+            <text x="290" y="210" text-anchor="middle" class="sv-t">other rows</text>
+            <text x="290" y="236" text-anchor="middle" class="sv-tb">p_s</text>
+          </svg>
+          <p>The bias \(b_3\) only directly affects the Setosa raw output, but that output feeds every softmax probability. So every row's cross entropy depends on \(b_3\), with derivative \(p_s - 1\) for a Setosa row and \(p_s\) otherwise.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Bias \(b_3\)</dt><dd>The final bias for Setosa. It only directly affects the Setosa raw output.</dd>
+            <dt>Raw output</dt><dd>One number per species, before softmax.</dd>
+            <dt>Softmax</dt><dd>Turns the three raw outputs into predicted probabilities.</dd>
+            <dt>Cross entropy</dt><dd>\(-\ln\) of the observed species' predicted probability.</dd>
+            <dt>Chain rule</dt><dd>Splits one hard derivative into three easy ones that multiply.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Raw output</b>scaled surfaces plus \(b_3\)</li>
+            <li><b>Softmax, cross entropy</b>score the observed species</li>
+            <li><b>Trace the bias</b>raw Setosa feeds every probability</li>
+            <li><b>Setosa row</b>chain rule gives \(p_s - 1\)</li>
+            <li><b>Other rows</b>chain rule gives \(p_s\)</li>
+            <li><b>Gradient step</b>add rows, move \(b_3\) from −2</li>
+          </ol>
+          <p class="loop">↺ repeat step 6 until predictions stop improving, at −0.03</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\frac{d\,CE}{d\,b_3}=\frac{d\,CE}{d\,p}\cdot\frac{d\,p}{d\,r_s}\cdot\frac{d\,r_s}{d\,b_3}$$
+          $$-\frac{1}{p_s}\cdot p_s(1-p_s)\cdot 1=p_s-1$$
+          $$-\frac{1}{p_{vi}}\cdot(-p_s\,p_{vi})\cdot 1=p_s$$
+          <ul class="keys">
+            <li>\(r_s\) is the Setosa raw output; \(p\) is the observed species' probability.</li>
+            <li>Line 2: a Setosa row. Line 3: a Virginica row; Versicolor matches.</li>
+            <li>Slope = sum over rows; new \(b_3\) = old − slope × learning rate.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>row</th><th>\(p_s\)</th><th>term</th></tr>
+            <tr><td>Setosa</td><td>0.15</td><td>−0.85</td></tr>
+            <tr><td>Virginica</td><td>0.04</td><td>0.04</td></tr>
+            <tr><td>Versicolor</td><td>0.04</td><td>0.04</td></tr>
+            <tr><td>slope</td><td></td><td>−0.77</td></tr>
+            <tr class="final"><td>new \(b_3\)</td><td colspan="2">−2 − (−0.77) = −1.23 ✓</td></tr>
+          </table>
+          <p class="hand">At \(b_3=-2\) the total cross entropy is 2.67. With learning rate 1 the step is −0.77, and repeated steps stop at −0.03.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Every row uses the same derivative.</span><span class="yes">Setosa rows use \(p_s - 1\), other rows use \(p_s\). Mixing them up gives the wrong slope.</span></li>
+            <li><span class="no">\(p_s\) is one number for all rows.</span><span class="yes">Each row's own measurements set it: 0.15 for Setosa, 0.04 for Virginica.</span></li>
+            <li><span class="no">The same results hold for \(b_4\) and \(b_5\).</span><span class="yes">These are for \(b_3\) only. \(b_4\) and \(b_5\) follow the same process but give different results.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="84-neural-networks-part-6-cross-entropy.html"><small>Previous</small>Neural Networks Part 6: Cross Entropy</a> <a href="86-neural-networks-part-8-image-classification-with-convolution.html"><small>Next</small>Neural Networks Part 8: Image Classification with Convolutional Neural Networks (CNNs)</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

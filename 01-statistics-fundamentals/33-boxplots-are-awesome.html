@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Boxplots are Awesome — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>33</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 33 · 2.5 min</div>
+    <h1>Boxplots are Awesome</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=fHLhBnmwUM0" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">A boxplot shows the shape of a whole batch of numbers in one small picture. Josh names each part and shows why the plot beats a plain bar chart.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>A boxplot is also called a box and whisker plot. The line inside the box is the median, so half the data sits above it and half below. The box holds the middle 50% of the data, split into two quarters by the median. The whiskers reach the rest, and points past them are drawn as dots for outliers. Draw the original points on top and you also see how many measurements each group had.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh starts with the two parts of the name. The rectangle is the box. The lines sticking out from it are the whiskers. Every piece stands for a share of the data.</p>
+    <p>The line across the middle of the box is the median, the middle value. 50% of the data is above it and 50% below. A median is not pushed around by extreme values as much as the mean, the ordinary average, is.</p>
+    <p>Inside the box there are two quarters. 25% of the data sits between the median and the top of the box. Another 25% sits below the median. So the box covers the middle 50%. The whiskers cover the rest, and any point drawn beyond a whisker is an outlier.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 340" role="img" aria-label="Labelled boxplot showing outlier dots, whiskers, the box holding the middle fifty percent of the data, and the median line">
+        <defs><marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="sv-ink3"/></marker></defs>
+        <circle cx="292" cy="42" r="4" class="sv-key"/>
+        <circle cx="310" cy="32" r="4" class="sv-key"/>
+        <line x1="300" y1="70" x2="300" y2="120" class="sv-stroke-ink" stroke-width="2"/>
+        <line x1="300" y1="230" x2="300" y2="285" class="sv-stroke-ink" stroke-width="2"/>
+        <line x1="255" y1="70" x2="345" y2="70" class="sv-stroke-ink" stroke-width="2"/>
+        <line x1="255" y1="285" x2="345" y2="285" class="sv-stroke-ink" stroke-width="2"/>
+        <rect x="230" y="120" width="140" height="110" class="sv-acc-soft"/>
+        <rect x="230" y="120" width="140" height="110" class="sv-stroke-acc" stroke-width="2"/>
+        <line x1="230" y1="175" x2="370" y2="175" class="sv-stroke-key" stroke-width="3"/>
+        <path d="M212 120 L200 120 L200 230 L212 230" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="188" y="169" class="sv-ts" text-anchor="end">Box = the middle</text>
+        <text x="188" y="185" class="sv-ts" text-anchor="end">50% of the data</text>
+        <line x1="318" y1="38" x2="392" y2="38" class="sv-line" stroke-width="1" marker-end="url(#ar1)"/>
+        <text x="400" y="42" class="sv-t">Outliers: points past the whiskers</text>
+        <line x1="348" y1="70" x2="392" y2="70" class="sv-line" stroke-width="1" marker-end="url(#ar1)"/>
+        <text x="400" y="74" class="sv-t">Whisker: reaches the rest of the data</text>
+        <line x1="373" y1="146" x2="392" y2="146" class="sv-line" stroke-width="1" marker-end="url(#ar1)"/>
+        <text x="400" y="150" class="sv-t">25% of the data</text>
+        <line x1="373" y1="175" x2="392" y2="175" class="sv-line" stroke-width="1" marker-end="url(#ar1)"/>
+        <text x="400" y="179" class="sv-t">Median: 50% above, 50% below</text>
+        <line x1="373" y1="205" x2="392" y2="205" class="sv-line" stroke-width="1" marker-end="url(#ar1)"/>
+        <text x="400" y="209" class="sv-t">25% of the data</text>
+        <line x1="348" y1="285" x2="392" y2="285" class="sv-line" stroke-width="1" marker-end="url(#ar1)"/>
+        <text x="400" y="289" class="sv-t">Whisker</text>
+      </svg>
+      <figcaption>Notice how the four shares add up: 25% and 25% inside the box, and the two whiskers holding the rest.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Find the median of the data and draw it as a line. Half the values are above this line and half are below it.</li>
+      <li>Draw the box around the median. Its top edge cuts off the 25% above, and its bottom edge the 25% below.</li>
+      <li>Draw the whiskers out from the box. They stretch towards the smallest and largest ordinary values.</li>
+      <li>Plot anything beyond the whiskers as a dot. Those dots are the outliers.</li>
+      <li>Overlay the original data points. Now you also see how many measurements each group has.</li>
+    </ol>
+    <p>Josh calls that last step common practice. Two groups can have similar boxes but very different numbers of measurements. You trust statistics from the crowded group more.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 320" role="img" aria-label="Left panel shows two boxplots with the raw data points drawn on top; right panel shows the same two groups as plain bars of similar height">
+        <text x="40" y="26" class="sv-tb">Boxplots with the data on top</text>
+        <text x="420" y="26" class="sv-tb">Bar plot of the same data</text>
+        <line x1="40" y1="278" x2="380" y2="278" class="sv-line" stroke-width="1.5"/>
+        <line x1="130" y1="118" x2="130" y2="150" class="sv-stroke-ink" stroke-width="2"/>
+        <line x1="130" y1="212" x2="130" y2="240" class="sv-stroke-ink" stroke-width="2"/>
+        <line x1="106" y1="118" x2="154" y2="118" class="sv-stroke-ink" stroke-width="2"/>
+        <line x1="106" y1="240" x2="154" y2="240" class="sv-stroke-ink" stroke-width="2"/>
+        <rect x="98" y="150" width="64" height="62" class="sv-acc-soft"/>
+        <rect x="98" y="150" width="64" height="62" class="sv-stroke-acc" stroke-width="2"/>
+        <line x1="98" y1="182" x2="162" y2="182" class="sv-stroke-key" stroke-width="3"/>
+        <circle cx="115" cy="141" r="3.5" class="sv-key"/>
+        <circle cx="144" cy="167" r="3.5" class="sv-key"/>
+        <circle cx="120" cy="196" r="3.5" class="sv-key"/>
+        <circle cx="140" cy="228" r="3.5" class="sv-key"/>
+        <line x1="280" y1="102" x2="280" y2="146" class="sv-stroke-ink" stroke-width="2"/>
+        <line x1="280" y1="218" x2="280" y2="252" class="sv-stroke-ink" stroke-width="2"/>
+        <line x1="256" y1="102" x2="304" y2="102" class="sv-stroke-ink" stroke-width="2"/>
+        <line x1="256" y1="252" x2="304" y2="252" class="sv-stroke-ink" stroke-width="2"/>
+        <rect x="248" y="146" width="64" height="72" class="sv-acc-soft"/>
+        <rect x="248" y="146" width="64" height="72" class="sv-stroke-acc" stroke-width="2"/>
+        <line x1="248" y1="178" x2="312" y2="178" class="sv-stroke-key" stroke-width="3"/>
+        <circle cx="264" cy="110" r="3.5" class="sv-key"/>
+        <circle cx="292" cy="121" r="3.5" class="sv-key"/>
+        <circle cx="271" cy="136" r="3.5" class="sv-key"/>
+        <circle cx="297" cy="150" r="3.5" class="sv-key"/>
+        <circle cx="259" cy="158" r="3.5" class="sv-key"/>
+        <circle cx="286" cy="166" r="3.5" class="sv-key"/>
+        <circle cx="266" cy="176" r="3.5" class="sv-key"/>
+        <circle cx="295" cy="186" r="3.5" class="sv-key"/>
+        <circle cx="262" cy="196" r="3.5" class="sv-key"/>
+        <circle cx="289" cy="205" r="3.5" class="sv-key"/>
+        <circle cx="273" cy="215" r="3.5" class="sv-key"/>
+        <circle cx="299" cy="232" r="3.5" class="sv-key"/>
+        <text x="130" y="296" class="sv-ts" text-anchor="middle">Group A (n = 4)</text>
+        <text x="280" y="296" class="sv-ts" text-anchor="middle">Group B (n = 12)</text>
+        <line x1="440" y1="278" x2="740" y2="278" class="sv-line" stroke-width="1.5"/>
+        <rect x="480" y="182" width="70" height="96" class="sv-acc"/>
+        <rect x="630" y="178" width="70" height="100" class="sv-acc"/>
+        <text x="515" y="296" class="sv-ts" text-anchor="middle">Group A</text>
+        <text x="665" y="296" class="sv-ts" text-anchor="middle">Group B</text>
+        <text x="590" y="130" class="sv-ts" text-anchor="middle">Same data, one bar each.</text>
+        <text x="590" y="148" class="sv-ts" text-anchor="middle">Spread, outliers and</text>
+        <text x="590" y="166" class="sv-ts" text-anchor="middle">sample size all disappear.</text>
+      </svg>
+      <figcaption>Both sides show the same data, but only the left side tells you how spread out it is and how many points there are.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>This video has no formulas. It is a picture lesson. The one thing worth memorising is the share of data each part holds.</p>
+    <div class="formula"><span class="lbl">Rule of thumb</span><div class="math">$$ \underbrace{25\% + 25\%}_{\text{the box}} \;+\; \underbrace{50\%}_{\text{whiskers and outlier dots}} \;=\; 100\% $$</div><p class="explain"><b>Symbols:</b> the two middle quarters are the box, split by the median line. The remaining half sits along the whiskers, plus any dots beyond them. <b>What it tells you:</b> the box covers the middle half of the data, and everything else lies outside it.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh shows several boxplots side by side with the raw measurements drawn on top. One group has only a handful of dots. Another has a thick cloud. Trust the statistics from the crowded group more, because they rest on more measurements.</p>
+      <p>To make the shares concrete, take 8 sorted values: 2, 4, 5, 7, 9, 10, 14, 30. The median falls between 7 and 9, so it is 8. The box runs from about 5 to 10 and holds the middle four values, which is 50% of the data. The value 30 is drawn as a dot beyond the whisker. If 30 became 300, the median would stay at 8, but the mean would jump from 10.1 to 43.9.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> The line in the box is the median, not the mean. People read it as the average and then wonder why it does not match the number in their table.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A boxplot never tells you the sample size on its own. Two groups with identical boxes can rest on 5 points or 500. Overlay the data points when you can.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A dot past a whisker means the value is unusual, not that it is wrong. What to do with it is a separate question.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Bar plots of the same data look tidy but hide almost everything. They show one number per group, so spread and outliers vanish.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What does each part of a boxplot represent?</summary><div class="a">The line in the middle of the box is the median, so half the data is above it and half below. The box covers the middle 50% of the data, split into two quarters by that median line. The whiskers reach out to the rest of the values, and anything past them is drawn as a dot for an outlier.</div></details>
+    <details class="qa" open><summary>Why show the median instead of the mean?</summary><div class="a">The median is the middle value, so extreme values barely move it. The mean gets pulled towards any very large or very small number. When the data has outliers, the median describes the typical value more honestly.</div></details>
+    <details class="qa" open><summary>Why prefer a boxplot over a bar chart for the same data?</summary><div class="a">A bar gives one number per group and nothing else. A boxplot shows the centre, the spread, and the outliers in the same space. If I also draw the raw points on top, the reader can see how many measurements each group had, which tells them how much to trust the comparison.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>A boxplot is also called a box and whisker plot.</li>
+      <li>The line inside the box is the median, with 50% of the data above and 50% below.</li>
+      <li>The median resists outliers far better than the mean does.</li>
+      <li>The box holds the middle 50%, as two quarters on either side of the median.</li>
+      <li>The whiskers stretch to the remaining ordinary values.</li>
+      <li>Points beyond the whiskers are plotted as dots and are called outliers.</li>
+      <li>Overlaying the original data shows how many measurements each group had.</li>
+      <li>A bar plot of the same data hides the spread, the outliers and the sample size.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Boxplots</span><span class="board-tag">the box holds the middle 50%</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 210" role="img" aria-label="The 8 values 2, 4, 5, 7, 9, 10, 14 and 30 drawn on a sideways boxplot: the median line at 8 splits the box into two 25% quarters, the box holds the middle 50%, the whiskers reach the rest, and 30 is an outlier dot.">
+            <line x1="56" y1="92" x2="119" y2="92" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="224" y1="92" x2="308" y2="92" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="56" y1="80" x2="56" y2="104" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="308" y1="80" x2="308" y2="104" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2.5" stroke-linejoin="round"><rect x="119" y="62" width="105" height="60" class="sv-paper"/></g>
+            <line x1="182" y1="62" x2="182" y2="122" class="sv-stroke-key" stroke-width="4" stroke-linecap="round"/>
+            <circle cx="56" cy="92" r="5" class="sv-ink2"/>
+            <circle cx="98" cy="92" r="5" class="sv-ink2"/>
+            <circle cx="119" cy="92" r="5" class="sv-ink2"/>
+            <circle cx="161" cy="92" r="5" class="sv-ink2"/>
+            <circle cx="203" cy="92" r="5" class="sv-ink2"/>
+            <circle cx="224" cy="92" r="5" class="sv-ink2"/>
+            <circle cx="308" cy="92" r="5" class="sv-ink2"/>
+            <g class="sv-stroke-ink" stroke-width="2"><circle cx="372" cy="92" r="7" class="sv-key"/></g>
+            <path d="M119 156 L119 164 L224 164 L224 156" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="182" y="46" text-anchor="middle" class="sv-tb">median 8</text>
+            <text x="266" y="78" text-anchor="middle" class="sv-ts">whisker</text>
+            <text x="388" y="128" text-anchor="end" class="sv-t">outlier 30</text>
+            <text x="150" y="146" text-anchor="middle" class="sv-t">25%</text>
+            <text x="203" y="146" text-anchor="middle" class="sv-t">25%</text>
+            <text x="171" y="188" text-anchor="middle" class="sv-t">box = middle 50%</text>
+          </svg>
+          <p>The median line, 8 here, splits the box into two quarters of 25%, so the box holds the middle 50% of the data. The whiskers reach the rest, and a point beyond them, like 30, is drawn as an outlier dot.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Median</dt><dd>The middle value: 50% of the data above, 50% below.</dd>
+            <dt>Box</dt><dd>The middle 50% of the data, two quarters split by the median.</dd>
+            <dt>Whiskers</dt><dd>Lines out from the box that reach the rest of the data.</dd>
+            <dt>Outlier</dt><dd>A point beyond a whisker, drawn as a dot.</dd>
+            <dt>Mean</dt><dd>The ordinary average; extreme values pull it more than the median.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Median line</b>half above, half below</li>
+            <li><b>Draw the box</b>25% above and below the median</li>
+            <li><b>Whiskers</b>to smallest and largest ordinary values</li>
+            <li><b>Outlier dots</b>anything beyond the whiskers</li>
+            <li><b>Overlay the data</b>shows how many measurements</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\underbrace{25\%+25\%}_{\text{box}}+\underbrace{50\%}_{\text{whiskers, dots}}=100\%$$
+          <ul class="keys">
+            <li>The median line splits the box into its two quarters.</li>
+            <li>The other half sits along the whiskers, plus any dots beyond them.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>part</th><th>value</th></tr>
+            <tr><td>sorted data</td><td>2 4 5 7 9 10 14 30</td></tr>
+            <tr><td>median</td><td>8 (between 7 and 9)</td></tr>
+            <tr><td>box</td><td>≈ 5 to 10, middle 50%</td></tr>
+            <tr><td>outlier dot</td><td>30</td></tr>
+            <tr class="final"><td>30 → 300</td><td>median 8, mean 10.1 → 43.9</td></tr>
+          </table>
+          <p class="hand">The box holds 4 of the 8 values. Swap 30 for 300 and only the mean moves.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">The line in the box is the mean.</span><span class="yes">It is the median, so it may not match the average in your table.</span></li>
+            <li><span class="no">A boxplot shows how many points there are.</span><span class="yes">Identical boxes can rest on 5 points or 500. Overlay the data points.</span></li>
+            <li><span class="no">A bar plot of the same data is just as good.</span><span class="yes">One number per group: spread, outliers and sample size all vanish.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="32-bar-charts-are-better-than-pie-charts.html"><small>Previous</small>Bar Charts Are Better than Pie Charts</a> <a href="34-logs-logarithms.html"><small>Next</small>Logs (logarithms)</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

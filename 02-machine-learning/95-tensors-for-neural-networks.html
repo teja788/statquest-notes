@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tensors for Neural Networks — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>95</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 95 · 9.7 min</div>
+    <h1>Tensors for Neural Networks</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=L35fFDpwIM4" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: Neural Networks / Deep Learning (video 26)</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video explains what a tensor means in machine learning. It shows why neural networks need tensors once the data gets large, and what tensors add beyond ordinary arrays.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>The word "tensor" means one thing in math and physics and another in machine learning. The video covers only the machine learning meaning. Real neural networks do a huge amount of math, because inputs like colour images and video contain hundreds of thousands of numbers. A tensor stores the input data and the weights and biases, in shapes from a single value up to many dimensions. On the surface this is just a new name for scalars, arrays and matrices. The real difference is that tensors are built to run fast on GPUs and TPUs, and they work out the derivatives for backpropagation automatically.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh starts with a warning. People in math and physics define a tensor one way, and people in machine learning define it another way. This video only uses the machine learning meaning, where tensors are used together with neural networks.</p>
+    <p>For someone building a neural network, a tensor is simply a place to store numbers. It holds the input data, and it also holds the weights and biases of the network. A weight is a number that scales a value inside the network, and a bias is a number that shifts it. Seen this way, tensors can seem boring, because they mostly give new names to things programmers already use.</p>
+    <p>A single value, which most languages call a scalar, becomes a zero-dimensional tensor. A list of values, called an array, becomes a one-dimensional tensor. A single image, called a matrix, becomes a two-dimensional tensor. Video, which most languages store as a multi-dimensional array (an ND array in Python), becomes an N-dimensional tensor.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Scalar, array, matrix and N-dimensional array renamed as 0-D, 1-D, 2-D and N-D tensors">
+        <defs>
+          <marker id="arr1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink3"/></marker>
+        </defs>
+        <text x="105" y="50" text-anchor="middle" class="sv-tb">0-D tensor</text>
+        <text x="285" y="50" text-anchor="middle" class="sv-tb">1-D tensor</text>
+        <text x="465" y="50" text-anchor="middle" class="sv-tb">2-D tensor</text>
+        <text x="645" y="50" text-anchor="middle" class="sv-tb">N-D tensor</text>
+
+        <rect x="85" y="100" width="40" height="40" class="sv-acc-soft"/>
+        <rect x="85" y="100" width="40" height="40" class="sv-stroke-acc" stroke-width="2"/>
+
+        <rect x="245" y="100" width="80" height="40" class="sv-acc-soft"/>
+        <path d="M245,100 h80 v40 h-80 z M285,100 v40" class="sv-stroke-acc" stroke-width="2"/>
+
+        <rect x="429" y="84" width="72" height="72" class="sv-acc-soft"/>
+        <path d="M441,84 v72 M453,84 v72 M465,84 v72 M477,84 v72 M489,84 v72 M429,96 h72 M429,108 h72 M429,120 h72 M429,132 h72 M429,144 h72" class="sv-line" stroke-width="1"/>
+        <path d="M429,84 h72 v72 h-72 z" class="sv-stroke-acc" stroke-width="2"/>
+
+        <rect x="629" y="68" width="72" height="72" class="sv-key-soft"/>
+        <path d="M629,68 h72 v72 h-72 z" class="sv-stroke-key" stroke-width="1.5"/>
+        <rect x="619" y="78" width="72" height="72" class="sv-key-soft"/>
+        <path d="M619,78 h72 v72 h-72 z" class="sv-stroke-key" stroke-width="1.5"/>
+        <rect x="609" y="88" width="72" height="72" class="sv-acc-soft"/>
+        <path d="M621,88 v72 M633,88 v72 M645,88 v72 M657,88 v72 M669,88 v72 M609,100 h72 M609,112 h72 M609,124 h72 M609,136 h72 M609,148 h72" class="sv-line" stroke-width="1"/>
+        <path d="M609,88 h72 v72 h-72 z" class="sv-stroke-acc" stroke-width="2"/>
+
+        <path d="M140,120 L228,120" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#arr1)"/>
+        <path d="M340,120 L413,120" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#arr1)"/>
+        <path d="M516,120 L592,120" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#arr1)"/>
+
+        <text x="105" y="200" text-anchor="middle" class="sv-tm">scalar</text>
+        <text x="285" y="200" text-anchor="middle" class="sv-tm">array</text>
+        <text x="465" y="200" text-anchor="middle" class="sv-tm">matrix</text>
+        <text x="645" y="200" text-anchor="middle" class="sv-tm">ND array</text>
+
+        <text x="105" y="224" text-anchor="middle" class="sv-ts">drug dosage</text>
+        <text x="285" y="224" text-anchor="middle" class="sv-ts">2 flower measurements</text>
+        <text x="465" y="224" text-anchor="middle" class="sv-ts">one image</text>
+        <text x="645" y="224" text-anchor="middle" class="sv-ts">video frames</text>
+
+        <rect x="20" y="244" width="720" height="34" rx="6" class="sv-paper2"/>
+        <text x="380" y="266" text-anchor="middle" class="sv-t">Same shapes, new names. What is new: GPU/TPU speed and automatic differentiation.</text>
+      </svg>
+      <figcaption>Top row is the tensor name, the code font is the everyday programming name, and the grey text is the video's input example for each shape.</figcaption>
+    </figure>
+    <p>So what is the big deal? Unlike plain arrays and matrices, tensors were designed to use hardware acceleration. This means the math done on the data runs quickly on special chips. Tensors also handle backpropagation for you through automatic differentiation.</p>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Josh recalls a very simple network from earlier videos. It takes one input, drug dosage, and predicts one output, efficacy. Even with three training points, fitting the squiggle needed a lot of math.</li>
+      <li>A fancier network took two flower measurements as inputs and had three outputs, one per iris species. It needed even more math to make its predictions.</li>
+      <li>A convolutional neural network took a 6 by 6 black and white image, 36 pixels in all, and predicted whether it showed an X or an O. That took a whole lot of math too.</li>
+      <li>Real networks are much bigger. A typical input image is 256 by 256 pixels and in colour, split into red, green and blue channels. The network treats each channel separately, so the pixel count triples.</li>
+      <li>One image is not enough, because training uses a ton of images. Video is a series of images, so it means even more math. Handling all this math is what tensors were designed for.</li>
+      <li>Josh then shows that tensors store inputs and weights and biases. He renames scalar, array, matrix and ND array as 0-D, 1-D, 2-D and N-D tensors.</li>
+      <li>Next comes the real benefit. Tensors and their math are sped up by GPUs (graphics processing units). There are also TPUs (tensor processing units), chips built specifically to work with tensors.</li>
+      <li>Finally, training finds the best weights and biases with backpropagation, which needs many derivatives and the chain rule. Tensors do this for you with automatic differentiation, so you can build a very fancy network without deriving anything by hand.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 230" role="img" aria-label="Pixel count growing from 36 to 65,536 to 196,608 and then many images">
+        <defs>
+          <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink3"/></marker>
+        </defs>
+        <rect x="20" y="50" width="150" height="90" rx="8" class="sv-paper2"/>
+        <text x="95" y="85" text-anchor="middle" class="sv-t">6 × 6 black/white</text>
+        <text x="95" y="115" text-anchor="middle" class="sv-tb">36</text>
+
+        <rect x="210" y="50" width="150" height="90" rx="8" class="sv-acc-soft"/>
+        <text x="285" y="85" text-anchor="middle" class="sv-t">256 × 256</text>
+        <text x="285" y="115" text-anchor="middle" class="sv-tb">65,536</text>
+
+        <rect x="400" y="50" width="150" height="90" rx="8" class="sv-key-soft"/>
+        <text x="475" y="85" text-anchor="middle" class="sv-t">× 3 colour channels</text>
+        <text x="475" y="115" text-anchor="middle" class="sv-tb">196,608</text>
+
+        <rect x="590" y="50" width="150" height="90" rx="8" class="sv-paper2"/>
+        <text x="665" y="85" text-anchor="middle" class="sv-t">× many images</text>
+        <text x="665" y="115" text-anchor="middle" class="sv-tb">or video frames</text>
+
+        <path d="M172,95 L207,95" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#arr2)"/>
+        <path d="M362,95 L397,95" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#arr2)"/>
+        <path d="M552,95 L587,95" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+        <text x="380" y="185" text-anchor="middle" class="sv-ts">Number of pixel values the network must do math on, for one input and then for training</text>
+      </svg>
+      <figcaption>Notice how fast the numbers grow: the toy image has 36 pixels, but one realistic colour image already has 196,608.</figcaption>
+    </figure>
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Two meanings of tensor, and the three jobs of a neural-network tensor">
+        <defs>
+          <marker id="arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink3"/></marker>
+        </defs>
+        <rect x="320" y="20" width="120" height="40" rx="8" class="sv-key-soft"/>
+        <text x="380" y="45" text-anchor="middle" class="sv-tb">"tensor"</text>
+
+        <rect x="20" y="110" width="200" height="56" rx="8" class="sv-paper2"/>
+        <text x="120" y="134" text-anchor="middle" class="sv-t">Math and physics</text>
+        <text x="120" y="154" text-anchor="middle" class="sv-ts">not covered in the video</text>
+
+        <rect x="380" y="110" width="250" height="40" rx="8" class="sv-acc-soft"/>
+        <text x="505" y="135" text-anchor="middle" class="sv-tb">Neural networks</text>
+
+        <path d="M350,60 L170,106" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#arr3)"/>
+        <path d="M410,60 L480,106" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#arr3)"/>
+
+        <rect x="250" y="200" width="155" height="76" rx="8" class="sv-good-soft"/>
+        <text x="327" y="226" text-anchor="middle" class="sv-t">Store</text>
+        <text x="327" y="248" text-anchor="middle" class="sv-ts">data, weights, biases</text>
+
+        <rect x="417" y="200" width="155" height="76" rx="8" class="sv-good-soft"/>
+        <text x="494" y="226" text-anchor="middle" class="sv-t">Run fast</text>
+        <text x="494" y="248" text-anchor="middle" class="sv-ts">on GPUs and TPUs</text>
+
+        <rect x="584" y="200" width="155" height="76" rx="8" class="sv-good-soft"/>
+        <text x="661" y="226" text-anchor="middle" class="sv-t">Do backprop</text>
+        <text x="661" y="246" text-anchor="middle" class="sv-ts">with automatic</text>
+        <text x="661" y="264" text-anchor="middle" class="sv-ts">differentiation</text>
+
+        <path d="M460,150 L340,196" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#arr3)"/>
+        <path d="M505,150 L496,196" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#arr3)"/>
+        <path d="M550,150 L650,196" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#arr3)"/>
+      </svg>
+      <figcaption>The machine learning tensor does three jobs; only the first one is "just storage".</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>The video has no formal formula. Its only calculation is the pixel count that shows why the math becomes so large.</p>
+    <div class="formula"><span class="lbl">Pixel count of one input image</span>
+      <div class="math">$$ 6 \times 6 = 36 $$ $$ 256 \times 256 = 65{,}536 $$ $$ 3 \times 65{,}536 = 196{,}608 $$</div>
+      <p class="explain"><b>Symbols:</b> the first two numbers in each product are the image height and width in pixels; the 3 is the number of colour channels (red, green, blue), which the network treats separately. <b>What it tells you:</b> moving from the toy 6 by 6 image to a realistic colour image multiplies the numbers to process by more than five thousand, and that is for a single image.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Start with the X-or-O network. Its input is a 6 by 6 black and white image, so \(6 \times 6 = 36\) pixels. As a tensor, this single image is a two-dimensional tensor.</p>
+      <p>Now make it realistic. A 256 by 256 image has \(256 \times 256 = 65{,}536\) pixels. In colour it has three channels, so the network must do math on \(3 \times 65{,}536 = 196{,}608\) pixel values.</p>
+      <p>Training needs a ton of such images, and video is a series of frames, each with three colour channels. That input is stored as an N-dimensional tensor. Tensors make this practical in two ways. GPUs or TPUs run the math quickly, and automatic differentiation computes the derivatives that backpropagation needs to update the weights and biases.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> "Tensor" has two meanings. The math and physics meaning is different from the machine learning meaning, and this video says nothing about the math and physics one. Do not mix the two in an answer.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Calling a tensor "just an N-dimensional array" misses the point. The shapes are the same, but tensors are designed for hardware acceleration and automatic differentiation.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Tensors do not only hold the input data. They also hold the weights and biases that make up the network.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Colour matters for size. Because each red, green and blue channel is handled separately, a colour image has three times as many pixel values as the same image in black and white.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is a tensor in the context of neural networks?</summary><div class="a">It is the structure that stores the network's input data and its weights and biases. It can be a single value, a list, a matrix, or something with many dimensions, like video. What makes it more than an array is that it is built to run fast on GPUs and TPUs and to compute derivatives automatically.</div></details>
+    <details class="qa" open><summary>How does a tensor differ from an ordinary ND array?</summary><div class="a">In shape, they are the same idea, so a 2-D tensor is just a matrix. The difference is in what tensors were designed for. They let the math run quickly with hardware acceleration, and they take care of backpropagation through automatic differentiation.</div></details>
+    <details class="qa" open><summary>Why do neural networks need hardware acceleration?</summary><div class="a">Real inputs are large. One 256 by 256 colour image already has 196,608 pixel values, and training uses many images, or even video. GPUs, and TPUs built specifically for tensors, let all that math finish in a reasonable amount of time.</div></details>
+    <details class="qa" open><summary>What does automatic differentiation give you?</summary><div class="a">Backpropagation needs many derivatives and a lot of chain rule to find the best weights and biases. With automatic differentiation, the tensors work out those derivatives for you. That means you can build a very complex network without deriving the gradients by hand.</div></details>
+    <details class="qa" open><summary>Is the machine learning tensor the same as the physics tensor?</summary><div class="a">No. The math and physics communities define the word one way, and the machine learning community defines it another way. In machine learning, it means the data container used with neural networks, with built-in speed and automatic differentiation.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>The word "tensor" means different things in math and physics and in machine learning.</li>
+      <li>Neural networks do a lot of math, and real inputs make it much more.</li>
+      <li>A 256 by 256 colour image has 196,608 pixel values, and training needs many images or even video.</li>
+      <li>Tensors store the input data and the weights and biases of the network.</li>
+      <li>A scalar, array, matrix and ND array become 0-D, 1-D, 2-D and N-D tensors.</li>
+      <li>Tensors are designed for hardware acceleration on GPUs and TPUs, so the math runs quickly.</li>
+      <li>Tensors handle backpropagation for you with automatic differentiation.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Tensors for Neural Networks</span><span class="board-tag">arrays built for GPUs and backprop</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 280" role="img" aria-label="A 256 by 256 by 3 colour image of 196,608 values is the input tensor feeding a small network of weights and biases, with a dashed backprop arrow from the output using automatic differentiation and a GPU or TPU bar underneath for fast math.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-key"/></marker></defs>
+            <g class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round">
+              <line x1="106" y1="100" x2="225" y2="68"/>
+              <line x1="106" y1="100" x2="225" y2="104"/>
+              <line x1="106" y1="100" x2="225" y2="140"/>
+              <line x1="225" y1="68" x2="320" y2="104"/>
+              <line x1="225" y1="104" x2="320" y2="104"/>
+              <line x1="225" y1="140" x2="320" y2="104"/>
+            </g>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <rect x="42" y="60" width="60" height="60" rx="4" class="sv-acc-soft"/>
+              <rect x="32" y="70" width="60" height="60" rx="4" class="sv-good-soft"/>
+              <rect x="22" y="80" width="60" height="60" rx="4" class="sv-key-soft"/>
+              <circle cx="225" cy="68" r="12" class="sv-paper"/>
+              <circle cx="225" cy="104" r="12" class="sv-paper"/>
+              <circle cx="225" cy="140" r="12" class="sv-paper"/>
+              <circle cx="320" cy="104" r="14" class="sv-key"/>
+              <rect x="20" y="214" width="360" height="46" rx="10" class="sv-paper2"/>
+            </g>
+            <path d="M316 121 Q 282 194 235 156" class="sv-stroke-key" stroke-width="3" stroke-dasharray="7 6" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="20" y="38" class="sv-tb">input tensor</text>
+            <text x="272" y="38" text-anchor="middle" class="sv-t">weights &amp; biases</text>
+            <text x="20" y="166" class="sv-t">256 × 256 × 3</text>
+            <text x="20" y="192" class="sv-tb">196,608 values</text>
+            <text x="388" y="174" text-anchor="end" class="sv-tb">backprop</text>
+            <text x="388" y="200" text-anchor="end" class="sv-ts">automatic differentiation</text>
+            <text x="200" y="243" text-anchor="middle" class="sv-tb">GPU / TPU: fast math</text>
+          </svg>
+          <p>Tensors hold the input, like one colour image with 196,608 values, and the network's weights and biases. The shapes are familiar; what is new is speed on GPUs and TPUs, and automatic differentiation for backprop.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Tensor</dt><dd>Holds a network's input data and its weights and biases.</dd>
+            <dt>0-D to N-D</dt><dd>Scalar, array, matrix and ND array, under new names.</dd>
+            <dt>GPU and TPU</dt><dd>Chips that run tensor math fast; TPUs are built for tensors.</dd>
+            <dt>Automatic differentiation</dt><dd>Tensors work out the derivatives backpropagation needs.</dd>
+            <dt>Colour channels</dt><dd>Red, green and blue, each handled separately.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Small networks</b>already need lots of math</li>
+            <li><b>Real images</b>256 × 256, colour triples it</li>
+            <li><b>Many images</b>a ton for training, plus video</li>
+            <li><b>Store as tensors</b>data, weights, biases; 0-D to N-D</li>
+            <li><b>Run fast</b>on GPUs and TPUs</li>
+            <li><b>Do backprop</b>automatic differentiation</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$6 \times 6 = 36$$
+          $$256 \times 256 = 65{,}536$$
+          $$3 \times 65{,}536 = 196{,}608$$
+          <ul class="keys">
+            <li>Height × width in pixels; 3 is the red, green and blue channels.</li>
+            <li>Toy to one real colour image: over five thousand times the numbers.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>input</th><th>values</th><th>tensor</th></tr>
+            <tr><td>6 × 6, black/white</td><td>36</td><td>2-D</td></tr>
+            <tr><td>256 × 256</td><td>65,536</td><td>…</td></tr>
+            <tr><td>× 3 colour channels</td><td>196,608</td><td>…</td></tr>
+            <tr class="final"><td>video: many frames</td><td>even more</td><td>N-D</td></tr>
+          </table>
+          <p class="hand">Training needs a ton of images; GPUs or TPUs and automatic differentiation make that practical.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">A tensor is just an N-dimensional array.</span><span class="yes">Same shapes, but built for hardware acceleration and automatic differentiation.</span></li>
+            <li><span class="no">Tensors only hold the input data.</span><span class="yes">They also hold the network's weights and biases.</span></li>
+            <li><span class="no">The physics tensor is the same thing.</span><span class="yes">Math and physics define it another way; the video covers only machine learning.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="94-encoder-only-transformers-like-bert-for-rag.html"><small>Previous</small>Encoder-Only Transformers (like BERT) for RAG</a> <a href="96-essential-matrix-algebra-for-neural-networks.html"><small>Next</small>Essential Matrix Algebra for Neural Networks</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

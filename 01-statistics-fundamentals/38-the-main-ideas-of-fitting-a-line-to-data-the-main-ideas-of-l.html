@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Main Ideas of Fitting a Line to Data (The Main Ideas of Least Squares and Linear Regression.) — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>38</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 38 · 9.4 min</div>
+    <h1>The Main Ideas of Fitting a Line to Data (The Main Ideas of Least Squares and Linear Regression.)</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=PaFPbb66DxQ" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: Machine Learning (video 9)</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">You have data on an XY graph and you want a line through it. This video explains how we score each candidate line, and how we pick the best one.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh starts with a horizontal line drawn through the average y value of the data. He measures the gap between that line and each data point, then squares every gap so that points above the line do not cancel points below it. Adding those squares gives one number, the sum of squared residuals, which scores how well the line fits. Rotating the line changes that score, and there is a sweet spot where it is smallest. Finding that sweet spot by taking a derivative and setting it to zero is what "least squares" means.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>You did the experiment and you have data on an XY graph. You usually add a line to show the trend. But many lines are possible. Is one line better than another, and how would you prove it?</p>
+    <p>Josh begins with the worst fit of all: a flat line through the average y value. In this data that average is 3.5, and he calls the height of the line \(b\). A line fits well when it sits close to the points, so we measure the vertical gap from the line to each point. The gap for the first point is \(b - y_1\).</p>
+    <p>Here is the problem. The fourth point sits above the line, so \(y_4\) is bigger than \(b\) and the gap is negative. The fifth point is higher still, so its gap is very negative. If we just add the gaps, those negatives make a poor fit look good.</p>
+    <p>The people who worked this out first tried absolute values. That made the maths tricky, so they squared each gap instead. Squaring makes every term positive and keeps the later maths easy.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 340" role="img" aria-label="Five data points on an XY graph with a horizontal line at the average y value of 3.5. The three points below the line give positive gaps and the two points above the line give negative gaps.">
+        <defs>
+          <marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-key"/></marker>
+        </defs>
+
+        <text x="30" y="28" class="sv-tb">Scoring the horizontal line</text>
+
+        <line x1="100" y1="40" x2="100" y2="285" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="100" y1="285" x2="730" y2="285" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="82" y="48" class="sv-ts" text-anchor="end">y</text>
+        <text x="730" y="305" class="sv-ts" text-anchor="end">x</text>
+
+        <line x1="110" y1="165" x2="710" y2="165" class="sv-stroke-acc" stroke-width="2.5"/>
+        <rect x="612" y="132" width="104" height="22" rx="4" class="sv-paper"/>
+        <text x="664" y="148" class="sv-tm" text-anchor="middle">b = 3.5</text>
+
+        <line x1="150" y1="240" x2="150" y2="165" class="sv-stroke-good" stroke-width="2.5"/>
+        <line x1="270" y1="215" x2="270" y2="165" class="sv-stroke-good" stroke-width="2.5"/>
+        <line x1="390" y1="190" x2="390" y2="165" class="sv-stroke-good" stroke-width="2.5"/>
+        <line x1="510" y1="120" x2="510" y2="165" class="sv-stroke-key" stroke-width="2.5"/>
+        <line x1="630" y1="75" x2="630" y2="165" class="sv-stroke-key" stroke-width="2.5"/>
+
+        <circle cx="150" cy="240" r="6" class="sv-ink"/>
+        <circle cx="270" cy="215" r="6" class="sv-ink"/>
+        <circle cx="390" cy="190" r="6" class="sv-ink"/>
+        <circle cx="510" cy="120" r="6" class="sv-ink"/>
+        <circle cx="630" cy="75" r="6" class="sv-ink"/>
+
+        <text x="163" y="258" class="sv-tm">y₁</text>
+        <text x="523" y="112" class="sv-tm">y₄</text>
+        <text x="643" y="67" class="sv-tm">y₅</text>
+
+        <rect x="126" y="296" width="252" height="22" rx="4" class="sv-good-soft"/>
+        <text x="252" y="312" class="sv-ts" text-anchor="middle">below the line: b − y is positive</text>
+
+        <rect x="440" y="36" width="250" height="22" rx="4" class="sv-key-soft"/>
+        <text x="565" y="52" class="sv-ts" text-anchor="middle">above the line: b − y is negative</text>
+
+        <line x1="430" y1="60" x2="500" y2="112" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#ah1)"/>
+      </svg>
+      <figcaption>Notice that two of the five gaps are negative. Squaring each gap stops them from cancelling the positive ones.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Draw a horizontal line through the average y value, 3.5. Call the height of the line \(b\).</li>
+      <li>For every point, measure the vertical gap \(b - y_i\) between the line and the point.</li>
+      <li>Square each gap, then add all the squares. That number is the sum of squared residuals. A residual is the difference between a real data point and the line.</li>
+      <li>Rotate the line a little and score it again. The score drops, so the new line fits better.</li>
+      <li>Keep rotating. The score falls for a while, then climbs again. The best line sits in between.</li>
+      <li>Write the line in general form, \(y = ax + b\). Here \(a\) is the slope and \(b\) is the y-intercept, where the line crosses the y axis at \(x = 0\). Least squares means picking the \(a\) and \(b\) with the smallest score.</li>
+      <li>Plot the score against each rotation. Take the derivative, which gives the slope of that curve, and find where the slope is zero. That is the bottom of the dip.</li>
+      <li>Slope and intercept both vary, so the real picture is a 3D surface. Take the derivative for each one and set both to zero. A computer does this, never a person.</li>
+    </ol>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 330" role="img" aria-label="A curve showing the sum of squared residuals against the rotation of the line. It falls from 24.62 through 18.72 and 14.05 to a flat minimum, then climbs to 31.71 when the line is rotated too far.">
+        <defs>
+          <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-acc"/></marker>
+        </defs>
+
+        <text x="30" y="28" class="sv-tb">The score as the line rotates</text>
+
+        <line x1="100" y1="42" x2="100" y2="275" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="100" y1="275" x2="730" y2="275" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="30" y="130" class="sv-ts">sum of</text>
+        <text x="30" y="146" class="sv-ts">squared</text>
+        <text x="30" y="162" class="sv-ts">residuals</text>
+        <text x="730" y="297" class="sv-ts" text-anchor="end">rotation of the line</text>
+
+        <path d="M140,115 C185,137 220,148 255,155 C300,170 340,182 380,187 C405,190 425,190 445,189 C500,185 560,145 660,71" class="sv-stroke-acc" stroke-width="2.5"/>
+
+        <circle cx="140" cy="115" r="5.5" class="sv-key"/>
+        <circle cx="255" cy="155" r="5.5" class="sv-key"/>
+        <circle cx="380" cy="187" r="5.5" class="sv-key"/>
+        <circle cx="445" cy="189" r="5.5" class="sv-good"/>
+        <circle cx="660" cy="71" r="5.5" class="sv-key"/>
+
+        <text x="140" y="103" class="sv-tm" text-anchor="middle">24.62</text>
+        <text x="255" y="143" class="sv-tm" text-anchor="middle">18.72</text>
+        <text x="368" y="207" class="sv-tm" text-anchor="middle">14.05</text>
+        <text x="660" y="59" class="sv-tm" text-anchor="middle">31.71</text>
+
+        <line x1="385" y1="189" x2="520" y2="189" class="sv-stroke-good" stroke-width="2" stroke-dasharray="5 4"/>
+        <rect x="470" y="213" width="196" height="22" rx="4" class="sv-good-soft"/>
+        <text x="568" y="229" class="sv-ts" text-anchor="middle">slope = 0, the best fit</text>
+        <line x1="520" y1="212" x2="460" y2="194" class="sv-stroke-good" stroke-width="1.5"/>
+
+        <text x="140" y="255" class="sv-ts" text-anchor="middle">flat line</text>
+        <text x="660" y="255" class="sv-ts" text-anchor="middle">rotated too far</text>
+      </svg>
+      <figcaption>Notice that the curve has one bottom. The derivative is zero exactly there, and that rotation gives the least squares line.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Sum of squared residuals for the flat line</span><div class="math">$$ \mathrm{SSR} = \sum_{i=1}^{n} (b - y_i)^2 $$</div><p class="explain"><b>Symbols:</b> \(b\) is the height of the flat line, here 3.5. \(y_i\) is the observed y value of point \(i\). \(n\) is the number of points, and \(\sum\) means add over all of them. <b>What it tells you:</b> one number for how far the line sits from the data. Smaller is better, and this flat line scores 24.62.</p></div>
+
+    <div class="formula"><span class="lbl">The generic line</span><div class="math">$$ y = ax + b $$</div><p class="explain"><b>Symbols:</b> \(a\) is the slope, how much \(y\) changes when \(x\) goes up by one. \(b\) is the y-intercept, the value of \(y\) at \(x = 0\). <b>What it tells you:</b> two numbers describe every straight line, so fitting a line means choosing \(a\) and \(b\).</p></div>
+
+    <div class="formula"><span class="lbl">Sum of squared residuals for any line</span><div class="math">$$ \mathrm{SSR}(a,b) = \sum_{i=1}^{n} \big( (a x_i + b) - y_i \big)^2 $$</div><p class="explain"><b>Symbols:</b> \(a x_i + b\) is the height of the line at \(x_i\). \(y_i\) is the observed height there. Their difference is the residual for point \(i\). <b>What it tells you:</b> it looks heavy, but it is the same idea as before.</p></div>
+
+    <div class="formula"><span class="lbl">Where the best fit sits</span><div class="math">$$ \frac{\partial\,\mathrm{SSR}}{\partial a} = 0 \qquad \text{and} \qquad \frac{\partial\,\mathrm{SSR}}{\partial b} = 0 $$</div><p class="explain"><b>Symbols:</b> each term is the derivative of the score, that is, how steeply the score changes as you nudge the slope or the intercept. <b>What it tells you:</b> the score is smallest where both derivatives are zero. Solving these two equations gives the best slope and intercept, and a computer does the solving.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh uses one small data set all the way through. The average y value is 3.5, so the flat line has \(b = 3.5\). The first three gaps are positive and the last two are negative. He squares all five and adds them, giving 24.62.</p>
+      <p>He then rotates the line and scores it again. The score falls to 18.72, then to 14.05 with a little more rotation. But rotating a long way pushes it up to 31.71, worse than the flat line.</p>
+      <p>That pattern is the point. The score falls, flattens, then climbs, so the best line lies in between. Solving where both derivatives are zero gives the answer:</p>
+      <div class="math">$$ y = 0.77x + 0.66 $$</div>
+      <p>So the fitted line rises by 0.77 for every one unit of \(x\), and it crosses the y axis at 0.66.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+
+    <div class="pitfall"><span class="lbl">Watch out</span> Never add the raw gaps. Points above the line give negative gaps and points below give positive ones, so they cancel. A terrible line can then look perfect. Squaring stops this.</div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span> More rotation is not always better. Rotated too far, the line scored 31.71, worse than the flat line at 24.62. Check the score instead of trusting the direction of travel.</div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span> The single dipping curve is a simplification. Slope and intercept both change, so the real object is a surface over two variables. Both derivatives must be zero at the best fit.</div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span> Nobody solves these derivatives by hand; the computer does it. What matters is the concept. Minimise squared vertical distances, and find the minimum where the derivative is zero.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>What does "least squares" actually mean?</summary><div class="a">It means we choose the line that makes the sum of squared residuals as small as possible. A residual is the vertical distance between an observed data point and the line. We square each residual and add them up to get one score for the line. Least squares is simply picking the slope and intercept that give the lowest score.</div></details>
+
+    <details class="qa" open><summary>Why square the residuals instead of just adding them?</summary><div class="a">Because raw residuals carry a sign. Points above the line give negative values and points below give positive values, so a bad line can score near zero. Squaring makes every term positive. People tried absolute values first, but squares proved much easier to work with.</div></details>
+
+    <details class="qa" open><summary>How is the best line actually found?</summary><div class="a">We write the sum of squared residuals as a function of the slope and the intercept. That function falls as you rotate the line towards the data, then rises once you go too far. We take the derivative for the slope and for the intercept, and find where both are zero. A computer solves it for us.</div></details>
+
+    <details class="qa" open><summary>Why start with a horizontal line at the average y value?</summary><div class="a">It is a deliberately poor fit, so it makes a clean baseline. It ignores x and predicts the average every time. Scoring it gives us a number to beat, and it shows why the signs of the residuals matter.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap">
+      <ul>
+        <li>We want a line through our data, and we need a fair way to compare candidate lines.</li>
+        <li>Start with a horizontal line at the average y value, called \(b\), which is 3.5 in this data.</li>
+        <li>Measure the vertical gap from the line to each point, \(b - y_i\), and notice that points above the line give negative gaps.</li>
+        <li>Square every gap and add them up. That total is the sum of squared residuals, and here it is 24.62.</li>
+        <li>Rotating the line drops the score to 18.72 and then 14.05, but rotating far too much pushes it up to 31.71.</li>
+        <li>Written generally, the line is \(y = ax + b\), and the best line is where both derivatives of the score are zero.</li>
+        <li>For this data the least squares line is \(y = 0.77x + 0.66\), and a computer, not a person, does the solving.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Least Squares</span><span class="board-tag">square the gaps, rotate to the lowest score</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 292" role="img" aria-label="Five points with three lines through one point. The flat line at the average y, 3.5, has dashed vertical gaps; squared and added they score 24.62. Rotated too far, a line scores 31.71. The best line, in between, is y = 0.77x + 0.66.">
+            <line x1="44" y1="24" x2="44" y2="222" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="44" y1="222" x2="384" y2="222" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <text x="36" y="135" text-anchor="end" class="sv-ts">3.5</text>
+            <g class="sv-stroke-acc" stroke-width="2.5" stroke-dasharray="4 5" stroke-linecap="round">
+              <line x1="72" y1="167" x2="72" y2="130"/>
+              <line x1="112" y1="156" x2="112" y2="130"/>
+              <line x1="212" y1="106" x2="212" y2="130"/>
+              <line x1="252" y1="83" x2="252" y2="130"/>
+            </g>
+            <line x1="52" y1="130" x2="262" y2="130" class="sv-stroke-acc" stroke-width="3" stroke-linecap="round"/>
+            <line x1="98" y1="210" x2="229" y2="40" class="sv-stroke-key" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="56" y1="186" x2="262" y2="75" class="sv-stroke-good" stroke-width="4" stroke-linecap="round"/>
+            <g class="sv-ink">
+              <circle cx="72" cy="173" r="6"/>
+              <circle cx="112" cy="162" r="6"/>
+              <circle cx="152" cy="138" r="6"/>
+              <circle cx="212" cy="100" r="6"/>
+              <circle cx="252" cy="77" r="6"/>
+            </g>
+            <text x="270" y="136" class="sv-t">flat: 24.62</text>
+            <text x="270" y="80" class="sv-tb">best</text>
+            <text x="237" y="44" class="sv-t">too far: 31.71</text>
+            <text x="200" y="248" text-anchor="middle" class="sv-ts">score = sum of gaps²</text>
+            <text x="200" y="276" text-anchor="middle" class="sv-tb">best: y = 0.77x + 0.66</text>
+          </svg>
+          <p>Start with a flat line at the average y, 3.5, and add the squared vertical gaps: 24.62. Rotating lowers the score, but too far raises it to 31.71. The bottom, where the derivative is zero, gives y = 0.77x + 0.66.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Residual</dt><dd>The vertical gap between a data point and the line.</dd>
+            <dt>Sum of squared residuals</dt><dd>Square every gap, then add: one score per line.</dd>
+            <dt>Least squares</dt><dd>Pick the slope and intercept with the smallest score.</dd>
+            <dt>Slope and intercept</dt><dd>\(a\) and \(b\) in \(y = ax + b\); \(b\) is \(y\) at \(x = 0\).</dd>
+            <dt>Derivative</dt><dd>Slope of the score curve; zero at the bottom.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Flat line</b>at the average y, 3.5</li>
+            <li><b>Measure gaps</b>vertical gap to each point</li>
+            <li><b>Square, add</b>score 24.62</li>
+            <li><b>Rotate</b>18.72, then 14.05</li>
+            <li><b>Keep rotating</b>falls, then climbs again</li>
+            <li><b>Derivative = 0</b>both derivatives; a computer solves</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\mathrm{SSR}(a,b)=\sum_{i}\big((a x_i+b)-y_i\big)^2$$
+          $$\frac{\partial\,\mathrm{SSR}}{\partial a}=0,\quad\frac{\partial\,\mathrm{SSR}}{\partial b}=0$$
+          <ul class="keys">
+            <li>\(a\) slope, \(b\) intercept; \(a x_i + b\) is the line's height at \(x_i\).</li>
+            <li>For the flat line, \(\sum(b-y_i)^2\) with \(b = 3.5\) gives 24.62.</li>
+            <li>Both zero at the best fit; a computer solves them.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>line</th><th>score (SSR)</th></tr>
+            <tr><td>flat, b = 3.5</td><td>24.62</td></tr>
+            <tr><td>rotated a little</td><td>18.72</td></tr>
+            <tr><td>rotated more</td><td>14.05</td></tr>
+            <tr><td>rotated too far</td><td>31.71</td></tr>
+            <tr class="final"><td>best fit</td><td>y = 0.77x + 0.66</td></tr>
+          </table>
+          <p class="hand">The score falls, flattens, then climbs. The bottom gives a slope of 0.77 and an intercept of 0.66.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Just add the raw gaps.</span><span class="yes">Gaps above and below cancel, so a terrible line looks perfect. Square them.</span></li>
+            <li><span class="no">More rotation is always better.</span><span class="yes">Rotated too far, the score hit 31.71, worse than the flat line's 24.62.</span></li>
+            <li><span class="no">One dipping curve is the whole story.</span><span class="yes">Slope and intercept both vary: a surface. Both derivatives must be zero.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="37-the-essence-of-linear-regression.html"><small>Previous</small>The Essence of Linear Regression</a> <a href="39-lowess-and-loess.html"><small>Next</small>Lowess and Loess</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

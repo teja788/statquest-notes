@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Why Dividing By N Underestimates the Variance — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>62</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 62 · 17.2 min</div>
+    <h1>Why Dividing By N Underestimates the Variance</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=sHRBg6BhKjI" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">When you estimate the variance of a population, you divide by \(n-1\), not by \(n\). This video shows the reason, with two examples and then a short proof using calculus.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>The variance is an average of squared distances from some centre point. If you use your sample mean as that centre, you get the smallest possible average for your data. That is not luck. The sample mean is exactly the value that minimises this average, and Josh proves it with a derivative. The population mean is almost never equal to the sample mean, so the average around the population mean is larger. Dividing by \(n-1\) instead of \(n\) pushes your estimate back up.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh starts with the gene X data from the earlier video: five measurements taken in five liver cells. He then plays a game. Instead of always squaring the distances to the sample mean, he plugs in other centre points and sees what happens to the average.</p>
+    <p>Plug in 0 as the centre. Square each distance to 0, take the average, and you get 391. Plug in 5 instead, and the average drops to 240. Keep sliding that centre point along and you can plot the result. The x axis is the centre point you chose. The y axis is the average squared distance from it, always dividing by \(n\).</p>
+    <p>The plot is a smooth bowl-shaped curve. Its lowest point sits exactly at the sample mean, \(\bar{x} = 17.6\). The population mean sits somewhere nearby, but not in the same place, so its value on the curve is higher. That is the whole story: using the sample mean gives you a smaller number than using the population mean, and the population number is the one you actually want.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 356" role="img" aria-label="A bowl-shaped curve showing the average squared distance for different centre points; the lowest point of the curve is at the sample mean 17.6, and the population mean sits higher up the curve.">
+        <defs>
+          <marker id="ah1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" class="sv-ink2"/></marker>
+        </defs>
+        <line x1="80" y1="300" x2="720" y2="300" class="sv-line" stroke-width="1.5"/>
+        <line x1="80" y1="30" x2="80" y2="300" class="sv-line" stroke-width="1.5"/>
+        <line x1="80" y1="300" x2="80" y2="306" class="sv-line" stroke-width="1.5"/>
+        <line x1="286.7" y1="300" x2="286.7" y2="306" class="sv-line" stroke-width="1.5"/>
+        <line x1="493.3" y1="300" x2="493.3" y2="306" class="sv-line" stroke-width="1.5"/>
+        <line x1="700" y1="300" x2="700" y2="306" class="sv-line" stroke-width="1.5"/>
+        <text x="80" y="320" text-anchor="middle" class="sv-ts">0</text>
+        <text x="286.7" y="320" text-anchor="middle" class="sv-ts">10</text>
+        <text x="493.3" y="320" text-anchor="middle" class="sv-ts">20</text>
+        <text x="700" y="320" text-anchor="middle" class="sv-ts">30</text>
+        <text x="400" y="336" text-anchor="middle" class="sv-ts">centre point you plug in for V</text>
+        <text x="30" y="165" text-anchor="middle" class="sv-ts" transform="rotate(-90 30 165)">average squared distance (divide by n)</text>
+
+        <polyline points="80,58 131.7,108.5 183.3,151.4 235,186.6 286.7,214 338.3,233.6 390,245.5 443.7,249.7 493.3,246.1 545,234.8 596.7,215.8 648.3,189 700,154.5" class="sv-stroke-acc" stroke-width="2.5"/>
+
+        <line x1="443.7" y1="249.7" x2="443.7" y2="300" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <line x1="534.7" y1="237.7" x2="534.7" y2="300" class="sv-stroke-good" stroke-width="1.5" stroke-dasharray="4 4"/>
+
+        <circle cx="80" cy="58" r="5" class="sv-acc"/>
+        <circle cx="183.3" cy="151.4" r="5" class="sv-acc"/>
+        <circle cx="443.7" cy="249.7" r="6" class="sv-key"/>
+        <circle cx="534.7" cy="237.7" r="6" class="sv-good"/>
+
+        <rect x="92" y="44" width="122" height="22" rx="4" class="sv-paper"/>
+        <text x="98" y="60" class="sv-tm">V = 0  →  391</text>
+        <rect x="196" y="138" width="122" height="22" rx="4" class="sv-paper"/>
+        <text x="202" y="154" class="sv-tm">V = 5  →  240</text>
+
+        <rect x="286" y="94" width="176" height="24" rx="4" class="sv-paper"/>
+        <text x="292" y="111" class="sv-t">sample mean x̄ = 17.6</text>
+        <line x1="458" y1="142" x2="448" y2="240" class="sv-line" stroke-width="1.5" marker-end="url(#ah1)"/>
+        <text x="292" y="134" class="sv-ts">lowest point of the curve</text>
+
+        <rect x="556" y="120" width="180" height="24" rx="4" class="sv-paper"/>
+        <text x="562" y="137" class="sv-t">population mean μ</text>
+        <line x1="550" y1="150" x2="540" y2="228" class="sv-line" stroke-width="1.5" marker-end="url(#ah1)"/>
+        <text x="562" y="160" class="sv-ts">always sits higher up</text>
+      </svg>
+      <figcaption>Notice the shape: any centre other than \(\bar{x}\) gives a bigger average. Wherever the population mean really sits, it is not exactly \(\bar{x}\), so it lands higher on the curve.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Take the five gene X measurements. Replace the sample mean with 0, square each difference, and average them. The answer is 391.</li>
+      <li>Slide the centre point to 5 and repeat. The answer is 240. Keep sliding and plot every result to draw the curve above.</li>
+      <li>Read the curve. The smallest value sits at the sample mean. The value at the population mean is a little larger.</li>
+      <li>Repeat the whole thing with five fresh measurements from the same population. With a centre of 0 you get 616, and the curve again bottoms out at the new sample mean.</li>
+      <li>Replace \(\bar{x}\) with an unknown centre \(V\) so you can treat the curve as a function of \(V\) rather than a handful of dots.</li>
+      <li>Take the derivative of that function with respect to \(V\). The derivative is the slope of the curve, and the slope is zero at the bottom of the bowl.</li>
+      <li>Set the derivative to zero and solve for \(V\). Josh does this three times: with the five real numbers, with five unknown numbers, and with \(n\) unknown numbers. Every time the answer is \(V = \bar{x}\).</li>
+      <li>Conclude: the average squared distance around \(\bar{x}\) is the minimum, so it underestimates the average around \(\mu\). Divide by \(n-1\) to correct for this.</li>
+    </ol>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">The two variances</span>
+      <div class="math">$$ \sigma^2 = \frac{1}{N}\sum_{i=1}^{N}(x_i - \mu)^2 \qquad s^2 = \frac{1}{n-1}\sum_{i=1}^{n}(x_i - \bar{x})^2 $$</div>
+      <p class="explain"><b>Symbols:</b> \(\sigma^2\) is the true population variance. \(N\) is the size of the whole population and \(\mu\) is the population mean. \(s^2\) is the estimate you compute from a sample. \(n\) is the sample size, \(x_i\) is measurement number \(i\), and \(\bar{x}\) is the sample mean. <b>What it tells you:</b> both are averages of squared distances from a centre, but the sample version divides by \(n-1\) because its centre is \(\bar{x}\), not \(\mu\).</p>
+    </div>
+
+    <div class="formula"><span class="lbl">The curve Josh plots</span>
+      <div class="math">$$ f(V) = \frac{1}{n}\sum_{i=1}^{n}(x_i - V)^2 $$</div>
+      <p class="explain"><b>Symbols:</b> \(V\) is any centre point you choose to measure distances from. Everything else is as above. <b>What it tells you:</b> this is the y value of every dot on the graph. It is the "divide by \(n\)" variance around \(V\), and the whole question is which \(V\) makes it smallest.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Derivative, using the chain rule</span>
+      <div class="math">$$ \frac{d}{dV}f(V) = \frac{1}{n}\sum_{i=1}^{n} 2\,(x_i - V)\cdot(-1) $$</div>
+      <p class="explain">Bring the power 2 to the front, then multiply by the derivative of the inside, \(x_i - V\). The derivative of \(x_i\) with respect to \(V\) is 0 and the derivative of \(-V\) is \(-1\), so the inside contributes \(-1\).</p>
+      <div class="math">$$ \frac{d}{dV}f(V) = -\frac{2}{n}\sum_{i=1}^{n}(x_i - V) $$</div>
+      <p class="explain">Multiplying 2 by \(-1\) gives \(-2\), and both \(-2\) and \(1/n\) are constants, so they move outside the sum. This expression is the slope of the curve at the point \(V\).</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Solving for the minimum</span>
+      <div class="math">$$ -\frac{2}{n}\sum_{i=1}^{n}(x_i - V) = 0 \;\Longrightarrow\; \sum_{i=1}^{n}(x_i - V) = 0 $$</div>
+      <p class="explain">The bottom of the bowl is where the slope is zero, so set the derivative to zero. Multiply both sides by \(n/(-2)\) and that awkward fraction cancels.</p>
+      <div class="math">$$ \sum_{i=1}^{n} x_i - nV = 0 \;\Longrightarrow\; V = \frac{1}{n}\sum_{i=1}^{n} x_i = \bar{x} $$</div>
+      <p class="explain"><b>What it tells you:</b> the minimising centre is the average of the measurements, which is the sample mean. This holds for any sample and any sample size, so it is not a property of one lucky data set.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh plugs the five gene X measurements straight into the derivative. He puts 5 in for \(n\), puts the five numbers in for the \(x_i\), and sets the whole thing to zero.</p>
+      <div class="math">$$ -\frac{2}{5}\sum_{i=1}^{5}(x_i - V) = 0 $$</div>
+      <p>The only thing making this hard is the \(-2/5\) in front. Multiply both sides by \(5/(-2)\) and it disappears, which leaves a simple sum. Solving gives \(V\) as the average of the five measurements:</p>
+      <div class="math">$$ V = \bar{x} = 17.6 $$</div>
+      <p>So the slope is zero at 17.6, the variance is minimised at 17.6, and 17.6 is the sample mean. That is why the value at the sample mean on the curve sits below the value at the population mean.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span>Dividing by \(n\) is not wrong for the population. If you really have every member of the population and you use \(\mu\), dividing by \(N\) is exactly right. The problem only appears when you use a sample mean computed from the same data you are measuring distances from.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span>The underestimate is not random noise that averages out. The sample mean is the minimising point every single time, for every possible sample. So the bias always points the same way: too low.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span>There is one exception, and it is useless in practice. If the sample mean happened to equal the population mean exactly, the two values on the curve would match. That essentially never happens.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span>This video explains why the divisor must be smaller than \(n\). It does not explain why the right correction is exactly \(n-1\) rather than \(n-0.5\) or \(n-2\). Josh leaves that for the video on expected values.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>Why do we divide by n − 1 when we estimate a variance?</summary><div class="a">Because we measure distances from the sample mean, and the sample mean is the exact point that makes the average squared distance as small as possible. The population mean is almost never that point, so the true variance is larger than what we computed. Dividing by \(n-1\) instead of \(n\) makes the number bigger and removes the bias.</div></details>
+    <details class="qa" open><summary>How would you prove that the sample mean minimises the sum of squared distances?</summary><div class="a">Write the average squared distance as a function of an unknown centre \(V\). Differentiate with respect to \(V\) using the chain rule, which gives minus two over \(n\) times the sum of \(x_i - V\). Set that to zero, cancel the constant, and you get \(V\) equal to the average of the measurements. It works for any sample size, so it is completely general.</div></details>
+    <details class="qa" open><summary>Is the bias from dividing by n random, or does it always go one way?</summary><div class="a">It always goes one way. The curve of average squared distance is a bowl with its lowest point at the sample mean, so any other centre, including the population mean, gives a larger value. That makes the "divide by n" estimator systematically too small, not just noisy.</div></details>
+    <details class="qa" open><summary>When does the correction stop mattering?</summary><div class="a">When \(n\) is large. The ratio of \(n\) to \(n-1\) goes to one, so the two estimates almost match. With a small sample the gap is real. In Josh's example \(n\) is five, so you divide by four instead of five.</div></details>
+    <details class="qa" open><summary>Why square the differences instead of taking absolute values?</summary><div class="a">Mainly because squaring gives a smooth curve you can differentiate. With absolute values the curve has a sharp corner at the minimum, and a derivative does not exist at a corner, so finding and analysing the minimum is much harder. The squared version made this whole proof easy.</div></details>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 250" role="img" aria-label="Two small plots side by side: squared differences give a smooth curve with a flat bottom, absolute differences give a V shape with a sharp corner.">
+        <line x1="60" y1="200" x2="340" y2="200" class="sv-line" stroke-width="1.5"/>
+        <polyline points="60,50 95,107 130,147.5 165,171.9 200,180 235,171.9 270,147.5 305,107 340,50" class="sv-stroke-acc" stroke-width="2.5"/>
+        <line x1="158" y1="180" x2="242" y2="180" class="sv-stroke-key" stroke-width="2.5"/>
+        <circle cx="200" cy="180" r="5" class="sv-key"/>
+        <text x="200" y="34" text-anchor="middle" class="sv-tb">squared differences</text>
+        <text x="200" y="224" text-anchor="middle" class="sv-ts">flat bottom: slope is 0, easy to solve</text>
+
+        <line x1="420" y1="200" x2="700" y2="200" class="sv-line" stroke-width="1.5"/>
+        <polyline points="420,50 560,180 700,50" class="sv-stroke-good" stroke-width="2.5"/>
+        <circle cx="560" cy="180" r="10" class="sv-warn" fill-opacity="0.25"/>
+        <circle cx="560" cy="180" r="5" class="sv-warn"/>
+        <text x="560" y="34" text-anchor="middle" class="sv-tb">absolute differences</text>
+        <text x="560" y="224" text-anchor="middle" class="sv-ts">sharp corner: no derivative exists here</text>
+      </svg>
+      <figcaption>Notice the bottom of each curve. Squaring gives a smooth minimum you can find with calculus; the absolute value gives a corner where the slope is undefined.</figcaption>
+    </figure>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>The variance is an average of squared distances measured from some centre point.</li>
+      <li>Josh plots that average for many different centre points and gets a smooth bowl-shaped curve.</li>
+      <li>With the gene X data, a centre of 0 gives 391 and a centre of 5 gives 240; the curve bottoms out at 17.6.</li>
+      <li>Taking the derivative and setting it to zero proves that the minimising centre is always the sample mean.</li>
+      <li>This holds for any five numbers and for any sample of size \(n\), so it is not a coincidence.</li>
+      <li>The population mean is almost never equal to the sample mean, so its value on the curve is higher.</li>
+      <li>Therefore dividing by \(n\) systematically underestimates the population variance you are trying to estimate.</li>
+      <li>Divide by \(n-1\) instead, and use squared differences rather than absolute ones so the maths stays smooth.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Why divide by n − 1</span><span class="board-tag">the sample mean always sits at the bottom</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 280" role="img" aria-label="Average squared distance plotted against the centre point forms a bowl. Centre 0 gives 391 and centre 5 gives 240. The lowest point is the sample mean, 17.6, and the population mean sits higher up the bowl.">
+            <line x1="20" y1="214" x2="386" y2="214" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="20" y1="40" x2="20" y2="214" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <polyline points="36,50.6 55.6,80.5 75.2,106.8 85,118.6 94.8,129.4 114.4,148.5 134,164 153.6,175.9 173.2,184.2 192.8,188.8 208.5,190 222.2,189.1 241.8,184.8 261.4,176.9 281,165.4 290.8,158.2 300.6,150.2 320.2,131.5 339.8,109.2 359.4,83.3 379,53.8" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="208.5" y1="200" x2="208.5" y2="214" class="sv-stroke-key" stroke-width="2" stroke-dasharray="3 3"/>
+            <line x1="290.8" y1="167" x2="290.8" y2="214" class="sv-stroke-good" stroke-width="2" stroke-dasharray="3 3"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="36" cy="50.6" r="7" class="sv-paper"/>
+              <circle cx="85" cy="118.6" r="6" class="sv-paper"/>
+              <circle cx="290.8" cy="158.2" r="7" class="sv-good"/>
+              <circle cx="208.5" cy="190" r="8" class="sv-key"/>
+            </g>
+            <text x="386" y="24" text-anchor="end" class="sv-ts">height = variance (÷ n)</text>
+            <text x="52" y="50" class="sv-tb">centre 0 → 391</text>
+            <text x="100" y="114" class="sv-tb">centre 5 → 240</text>
+            <text x="278" y="150" text-anchor="end" class="sv-t">μ: higher</text>
+            <text x="208.5" y="240" text-anchor="middle" class="sv-tb">x̄ = 17.6: lowest</text>
+            <text x="386" y="266" text-anchor="end" class="sv-ts">centre point →</text>
+          </svg>
+          <p>Slide the centre point and the average squared distance traces a bowl. Its lowest point is always the sample mean, here 17.6. The population mean sits elsewhere, higher up, so dividing by \(n\) comes out too small.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Variance</dt><dd>Average squared distance from a centre point.</dd>
+            <dt>Centre point \(V\)</dt><dd>Where you measure the distances from.</dd>
+            <dt>Sample mean \(\bar{x}\)</dt><dd>Your data's average, 17.6. Always the lowest point.</dd>
+            <dt>Population mean \(\mu\)</dt><dd>The true mean. Almost never equal to \(\bar{x}\).</dd>
+            <dt>Bias</dt><dd>An error that always points one way: here, too low.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Centre at 0</b>average squared distance: 391</li>
+            <li><b>Slide the centre</b>5 gives 240; plot the bowl</li>
+            <li><b>Read the bottom</b>lowest at \(\bar{x}\), higher at \(\mu\)</li>
+            <li><b>Fresh sample</b>0 gives 616; bottom at new \(\bar{x}\)</li>
+            <li><b>Slope = 0</b>solves to \(V=\bar{x}\), every time</li>
+            <li><b>Divide by \(n-1\)</b>pushes the estimate back up</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$f(V)=\frac{1}{n}\sum_i(x_i-V)^2$$
+          $$-\frac{2}{n}\sum_i(x_i-V)=0\;\Rightarrow\;V=\bar{x}$$
+          $$s^2=\frac{1}{n-1}\sum_i(x_i-\bar{x})^2$$
+          <ul class="keys">
+            <li>\(f(V)\): the divide-by-\(n\) variance around a centre \(V\).</li>
+            <li>The slope is zero only at \(V=\bar{x}\), the bottom of the bowl.</li>
+            <li>\(s^2\): the sample estimate. With \(n=5\), divide by 4.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>centre</th><th>average (÷ n)</th></tr>
+            <tr><td>0</td><td>391</td></tr>
+            <tr><td>5</td><td>240</td></tr>
+            <tr><td>\(\mu\)</td><td>higher than at \(\bar{x}\)</td></tr>
+            <tr class="final"><td>\(\bar{x}\) = 17.6</td><td>lowest, slope 0 ✓</td></tr>
+          </table>
+          <p class="hand">Set −(2/5)·Σ(xᵢ − V) = 0, multiply by 5/(−2), and V comes out as the average: 17.6.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Dividing by \(n\) is always wrong.</span><span class="yes">With the whole population and \(\mu\), dividing by \(N\) is exactly right.</span></li>
+            <li><span class="no">The underestimate is noise that averages out.</span><span class="yes">\(\bar{x}\) is the lowest point for every sample, so the bias always points down.</span></li>
+            <li><span class="no">This proves the divisor is exactly \(n-1\).</span><span class="yes">It shows only that the divisor must be below \(n\). Exactly \(n-1\) needs the expected values video.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="60-odds-ratios-and-log-odds-ratios.html"><small>Previous</small>Odds Ratios and Log(Odds Ratios)</a> <a href="index.html"><small>Next</small>Back to Statistics Fundamentals</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

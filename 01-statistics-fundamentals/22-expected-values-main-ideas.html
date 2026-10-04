@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Expected Values, Main Ideas — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>22</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 22 · 13.7 min</div>
+    <h1>Expected Values, Main Ideas</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=KLs_7b7SKi4" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">The expected value is the average result you should plan for when you repeat a random event many times. Josh uses a $1 bet to show where the number comes from.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>In StatLand, 37 of 213 people have heard of the movie Troll 2, and 176 have not. Those counts turn into probabilities of 0.17 and 0.83. Statsquatch offers a bet: you lose $1 if the next person has heard of Troll 2, and you win $1 if they have not. If you imagine 100 bets and then divide by 100, the count of bets cancels out. What is left is each outcome multiplied by its probability, and the sum is 0.66, so you expect to gain 66 cents per bet.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Every person in StatLand belongs to exactly one of two groups. Either they have heard of the 1990 movie Troll 2, or they have not. Nobody is halfway between the two groups. This matters, because expected values need outcomes that do not overlap and that cover every case.</p>
+    <p>Raw counts are useful. They tell us StatLand is small, so any conclusion applies to a handful of people. But counts alone do not show how one group compares to the whole town. Dividing each count by the total 213 gives a probability, and probabilities make the comparison obvious at a glance.</p>
+    <p>Now add money to each group. If we meet someone who has heard of Troll 2, we lose the bet, so the outcome is \(-1\) dollars. If we meet someone who has not, we win, so the outcome is \(+1\) dollar. We now have two numbers for each group: how likely it is, and what it pays. The expected value simply combines the two.</p>
+    <p>The high win probability alone is not the whole story. What decides the bet is the payout weighted by how often each payout happens. That weighting is the entire idea of an expected value.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="StatLand population of 213 split into 37 who heard of Troll 2 and 176 who did not, then divided by the total to give probabilities 0.17 and 0.83">
+        <defs>
+          <marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" class="sv-ink3"></path>
+          </marker>
+        </defs>
+        <text x="20" y="30" class="sv-tb">StatLand: 213 people, two groups that do not overlap</text>
+
+        <rect x="20" y="50" width="122" height="52" rx="4" class="sv-key-soft"></rect>
+        <rect x="20" y="50" width="122" height="52" rx="4" class="sv-stroke-key" stroke-width="1.5"></rect>
+        <text x="81" y="74" text-anchor="middle" class="sv-tm">37</text>
+        <text x="81" y="92" text-anchor="middle" class="sv-ts">heard of it</text>
+
+        <rect x="150" y="50" width="590" height="52" rx="4" class="sv-acc-soft"></rect>
+        <rect x="150" y="50" width="590" height="52" rx="4" class="sv-stroke-acc" stroke-width="1.5"></rect>
+        <text x="445" y="74" text-anchor="middle" class="sv-tm">176</text>
+        <text x="445" y="92" text-anchor="middle" class="sv-ts">never heard of it</text>
+
+        <line x1="81" y1="112" x2="81" y2="150" class="sv-line" stroke-width="1.5" marker-end="url(#ar1)"></line>
+        <line x1="445" y1="112" x2="445" y2="150" class="sv-line" stroke-width="1.5" marker-end="url(#ar1)"></line>
+        <text x="95" y="136" class="sv-ts">divide by 213</text>
+        <text x="459" y="136" class="sv-ts">divide by 213</text>
+
+        <rect x="20" y="158" width="200" height="46" rx="4" class="sv-paper2"></rect>
+        <text x="120" y="187" text-anchor="middle" class="sv-tm">37 / 213 = 0.17</text>
+        <rect x="345" y="158" width="200" height="46" rx="4" class="sv-paper2"></rect>
+        <text x="445" y="187" text-anchor="middle" class="sv-tm">176 / 213 = 0.83</text>
+
+        <text x="20" y="232" class="sv-tb">Money on the line for each group</text>
+        <rect x="20" y="244" width="200" height="34" rx="4" class="sv-paper"></rect>
+        <rect x="20" y="244" width="200" height="34" rx="4" class="sv-stroke-key" stroke-width="1.5"></rect>
+        <text x="120" y="267" text-anchor="middle" class="sv-tm">outcome = &#8722;$1</text>
+        <rect x="345" y="244" width="200" height="34" rx="4" class="sv-paper"></rect>
+        <rect x="345" y="244" width="200" height="34" rx="4" class="sv-stroke-good" stroke-width="1.5"></rect>
+        <text x="445" y="267" text-anchor="middle" class="sv-tm">outcome = +$1</text>
+      </svg>
+      <figcaption>Notice that the wide block on the right is the common group, so the probability 0.83 sits with the winning outcome.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Count the people in each group. 37 have heard of Troll 2 and 176 have not, so StatLand holds 213 people in total.</li>
+      <li>Turn each count into a probability. Divide by the total to get 0.17 for the first group and 0.83 for the second.</li>
+      <li>Write the money outcome next to each probability. Losing the bet is \(-1\) and winning the bet is \(+1\).</li>
+      <li>Imagine playing 100 times. We expect to lose about \(0.17 \times 100 = 17\) times and to win about \(0.83 \times 100 = 83\) times.</li>
+      <li>Convert those counts into money. The losses come to \(17 \times (-1) = -17\) dollars and the wins come to \(83 \times 1 = 83\) dollars, so we gain about $66 over 100 bets.</li>
+      <li>Divide by the 100 bets to get the average per bet. That gives \(66/100 = 0.66\), which is the expected value.</li>
+      <li>Cancel the 100s. Multiplying and then dividing by the number of bets removes them, leaving outcome times probability, added up.</li>
+    </ol>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 260" role="img" aria-label="Each outcome multiplied by its probability, minus 0.17 plus 0.83, summed to give an expected value of 0.66">
+        <defs>
+          <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" class="sv-ink3"></path>
+          </marker>
+        </defs>
+        <text x="20" y="28" class="sv-tb">Multiply, then add</text>
+
+        <rect x="20" y="46" width="300" height="76" rx="6" class="sv-key-soft"></rect>
+        <text x="170" y="70" text-anchor="middle" class="sv-ts">heard of Troll 2</text>
+        <text x="170" y="98" text-anchor="middle" class="sv-tm">(&#8722;1) &#215; 0.17 = &#8722;0.17</text>
+
+        <rect x="440" y="46" width="300" height="76" rx="6" class="sv-good-soft"></rect>
+        <text x="590" y="70" text-anchor="middle" class="sv-ts">never heard of Troll 2</text>
+        <text x="590" y="98" text-anchor="middle" class="sv-tm">(+1) &#215; 0.83 = +0.83</text>
+
+        <text x="380" y="95" text-anchor="middle" class="sv-tb">+</text>
+
+        <line x1="170" y1="130" x2="330" y2="176" class="sv-line" stroke-width="1.5" marker-end="url(#ar2)"></line>
+        <line x1="590" y1="130" x2="430" y2="176" class="sv-line" stroke-width="1.5" marker-end="url(#ar2)"></line>
+
+        <rect x="230" y="186" width="300" height="52" rx="6" class="sv-paper"></rect>
+        <rect x="230" y="186" width="300" height="52" rx="6" class="sv-stroke-acc" stroke-width="2"></rect>
+        <text x="380" y="218" text-anchor="middle" class="sv-tm">E(X) = 0.66 dollars per bet</text>
+      </svg>
+      <figcaption>Notice that the answer, 66 cents, sits between the two possible payouts and is not itself a payout you can ever receive.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Probability from counts</span>
+      <div class="math">$$ P(\text{heard}) = \frac{37}{213} = 0.17 \qquad P(\text{never heard}) = \frac{176}{213} = 0.83 $$</div>
+      <p class="explain"><b>Symbols:</b> \(P\) is the probability that a randomly picked person falls in that group. The top number is the count in the group. The bottom number, 213, is the whole population. <b>What it tells you:</b> A count becomes a share of the total, so the two groups can be compared directly.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">The long way, over 100 bets</span>
+      <div class="math">$$ E(X) = \frac{(0.17 \times 100) \times (-1) \; + \; (0.83 \times 100) \times (1)}{100} = \frac{66}{100} = 0.66 $$</div>
+      <p class="explain"><b>Symbols:</b> 100 is the number of bets we plan to make. \(0.17 \times 100\) is how many times we expect to lose, and \(0.83 \times 100\) is how many times we expect to win. The \(-1\) and \(1\) are the dollars lost or won each time. <b>What it tells you:</b> Total money over 100 bets, converted into money per bet.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">The same thing after the 100s cancel</span>
+      <div class="math">$$ E(X) = (-1)(0.17) + (1)(0.83) = 0.66 $$</div>
+      <p class="explain"><b>Symbols:</b> Each pair is one outcome in dollars multiplied by the probability of that outcome. <b>What it tells you:</b> The number of bets never mattered. Only the outcomes and their probabilities matter.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Sigma notation for discrete outcomes</span>
+      <div class="math">$$ E(X) = \sum_{i=1}^{n} x_i \, P(X = x_i) $$</div>
+      <p class="explain"><b>Symbols:</b> \(X\) is the random thing we care about, here the bet. \(x_i\) is one possible outcome, such as \(-1\) or \(1\). \(P(X = x_i)\) is the probability of seeing that outcome. \(n\) is how many separate outcomes exist, and \(\sum\) means add every term. <b>What it tells you:</b> The expected value is a weighted average of the outcomes, where the weights are the probabilities.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Statsquatch changes the offer. Because it is rare for someone in StatLand to know Troll 2, he will pay $10 if the next person has heard of it. If they have not, you pay him $1.</p>
+      <p>The outcomes change but the probabilities stay the same. The rare group now pays \(+10\) with probability 0.17. The common group now costs \(-1\) with probability 0.83.</p>
+      <div class="math">$$ E(X) = (10)(0.17) + (-1)(0.83) = 1.70 - 0.83 = 0.87 $$</div>
+      <p>So this bet is worth about 87 cents per play on average. It is better than the first bet, even though we now lose most of the time. A big rare payout can beat a small frequent one.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>The expected value is often impossible to observe. Each bet pays exactly $1 or costs exactly $1. You never receive 66 cents. The number describes the long-run average, not any single play.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>A positive expected value does not remove risk. There is still a 0.17 chance of losing on the very next bet. Josh only accepts the offer once Statsquatch confirms the bet can be repeated 100 times.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Do not judge a bet by probability alone. The 0.83 win chance looked good, but the second offer with only a 0.17 win chance was worth more. You must weight each outcome by its size and its probability together.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>The groups must not overlap and must cover everyone, so the probabilities add to 1. This also works only for discrete outcomes, meaning a finite list of separate results. Continuous quantities, such as the time between text messages, need the next video's method.</p>
+    </div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>What is an expected value in plain words?</summary><div class="a">It is the average outcome you would get if you repeated a random event a very large number of times. You take every possible outcome, multiply it by the probability of that outcome, and add the products. In the Troll 2 bet, that is minus one times 0.17 plus one times 0.83, which is 0.66. So each bet is worth about 66 cents on average.</div></details>
+
+    <details class="qa" open><summary>Why is the expected value 0.66 when every bet pays plus or minus one dollar?</summary><div class="a">The expected value is a weighted average, not a possible result. It sits between the outcomes because it is pulled toward the more likely one. Getting a value you can never actually observe is normal and is not a mistake. It is the right number to use for planning over many repeats.</div></details>
+
+    <details class="qa" open><summary>Where does the formula come from?</summary><div class="a">Imagine playing a fixed number of times, say 100. You expect to lose 17 times and win 83 times, which gives 66 dollars in total. Divide by 100 to get the money per bet. The 100s cancel, so all that remains is each outcome multiplied by its probability.</div></details>
+
+    <details class="qa" open><summary>When would you not act on the expected value?</summary><div class="a">When the event happens only once, or when a loss would wipe you out. A positive average means nothing if you cannot survive long enough to reach it. In the video, the answer only becomes safe once Statsquatch agrees to repeat the bet 100 times. In practice you also look at the spread of outcomes, not just the mean.</div></details>
+
+    <details class="qa" open><summary>How does this differ for continuous variables?</summary><div class="a">With discrete outcomes you can list every possible result and sum outcome times probability. With a continuous quantity there is no finite list, so you replace the sum with an integral and the probabilities with a probability density. The idea is identical, only the machinery changes.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap">
+      <ul>
+        <li>Counts become probabilities when you divide each group by the total, here 37 and 176 divided by 213.</li>
+        <li>Every possible outcome needs its own probability, and the groups must not overlap.</li>
+        <li>Each outcome also carries a value, such as losing one dollar or winning one dollar.</li>
+        <li>Multiplying each outcome by its probability and adding the results gives the expected value.</li>
+        <li>For the first bet that sum is 0.66, so each bet gains about 66 cents on average.</li>
+        <li>The number of repeats cancels out, which is why the formula only needs outcomes and probabilities.</li>
+        <li>The expected value is a long-run average and may be a value you can never observe on one play.</li>
+        <li>Everything here applies to discrete outcomes; continuous variables come in the next video.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Expected values</span><span class="board-tag">payout times probability, then add up</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 250" role="img" aria-label="Two bars on a money line: probability 0.17 at minus 1 dollar for people who heard of Troll 2, and 0.83 at plus 1 dollar for those who never heard of it. The expected value, 0.66, sits between them, pulled toward the likely payout.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <rect x="26" y="154.5" width="48" height="25.5" rx="3" class="sv-key"/>
+              <rect x="326" y="55.5" width="48" height="124.5" rx="3" class="sv-good"/>
+              <path d="M299 183 L288 203 L310 203 Z" class="sv-acc"/>
+            </g>
+            <line x1="20" y1="180" x2="380" y2="180" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round"/>
+            <path d="M50 180 L50 188 M200 180 L200 188 M350 180 L350 188" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="212" y1="168" x2="288" y2="168" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="5 4" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="26" y="144" class="sv-t">heard: 0.17</text>
+            <text x="374" y="44" text-anchor="end" class="sv-t">never heard: 0.83</text>
+            <text x="316" y="152" text-anchor="end" class="sv-ts">toward the likely payout</text>
+            <text x="50" y="208" text-anchor="middle" class="sv-tb">−$1</text>
+            <text x="200" y="206" text-anchor="middle" class="sv-ts">0</text>
+            <text x="350" y="208" text-anchor="middle" class="sv-tb">+$1</text>
+            <text x="322" y="232" text-anchor="end" class="sv-tb">E(X) = 0.66</text>
+          </svg>
+          <p>Each group comes with two numbers: how likely it is and what it pays. Multiply each payout by its probability and add: −0.17 + 0.83 = 0.66. That average sits between the payouts, pulled toward the likely one.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Expected value</dt><dd>The average result per play over many repeats.</dd>
+            <dt>Outcome</dt><dd>What one play pays: −$1 or +$1.</dd>
+            <dt>Probability</dt><dd>Count over total, like 37/213 = 0.17.</dd>
+            <dt>Weighted average</dt><dd>Each outcome counts in proportion to its probability.</dd>
+            <dt>Discrete outcomes</dt><dd>Separate results that do not overlap and cover every case.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Count groups</b>37 heard, 176 never heard</li>
+            <li><b>Divide by 213</b>0.17 and 0.83</li>
+            <li><b>Add payouts</b>lose −$1, win +$1</li>
+            <li><b>Imagine 100 bets</b>17 losses, 83 wins</li>
+            <li><b>Per bet</b>$66 ÷ 100 = 0.66</li>
+            <li><b>Cancel the 100s</b>outcome × probability, added</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$E(X)=\sum_{i=1}^{n}x_i\,P(X=x_i)$$
+          $$E(X)=(-1)(0.17)+(1)(0.83)=0.66$$
+          <ul class="keys">
+            <li>\(x_i\) is one outcome in dollars, \(P(X=x_i)\) its probability, \(n\) the number of outcomes.</li>
+            <li>The 100 bets cancel, so only outcomes and probabilities matter.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>group</th><th>P</th><th>payout</th><th>product</th></tr>
+            <tr><td>heard</td><td>0.17</td><td>+10</td><td>1.70</td></tr>
+            <tr><td>never heard</td><td>0.83</td><td>−1</td><td>−0.83</td></tr>
+            <tr class="final"><td>E(X)</td><td colspan="2">1.70 − 0.83</td><td>0.87</td></tr>
+          </table>
+          <p class="hand">Worth 87 cents a bet, beating the first bet's 0.66, though you now lose most of the time.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">You actually win 66 cents a bet.</span><span class="yes">Each bet pays exactly +$1 or −$1. 0.66 is the long-run average, not one play.</span></li>
+            <li><span class="no">A positive expected value means no risk.</span><span class="yes">Still a 0.17 chance of losing the next bet. Josh agrees only if it repeats 100 times.</span></li>
+            <li><span class="no">The higher win chance is the better bet.</span><span class="yes">The 0.17 win chance with a $10 payout was worth more. Weigh size and probability together.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="21-bayes-theorem.html"><small>Previous</small>Bayes&#x27; Theorem</a> <a href="23-expected-values-for-continuous-variables.html"><small>Next</small>Expected Values for Continuous Variables</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

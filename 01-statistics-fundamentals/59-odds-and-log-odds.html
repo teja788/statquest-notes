@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Odds and Log(Odds) — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>59</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 59 · 11.5 min</div>
+    <h1>Odds and Log(Odds)</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=ARfXDSkQf1Y" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: Machine Learning (video 14)</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video explains what odds are, how they differ from probability, and why we so often take the log of them.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Odds are the ratio of something happening to that same thing not happening. Probability is the ratio of something happening to everything that could happen. You can compute odds from raw counts or from probabilities, and you get the same number. Plain odds are awkward because odds against a team are squeezed between 0 and 1, while odds in favour run from 1 to infinity. Taking the log makes the two sides symmetric around zero, which is why the log of the odds sits at the heart of logistic regression.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh starts with a sports example. He says the odds in favour of his team winning are 1 to 4. That means five games in total: his team wins one and loses four. Written as a fraction that is \(1/4\), which equals 0.25.</p>
+    <p>Change the example to odds of 5 to 3. Now there are eight games: five wins and three losses. As a fraction that is \(5/3\), which equals about 1.7. The number on top is always the count of the thing happening. The number underneath is the count of the thing not happening.</p>
+    <p>This is exactly where odds part company with probability. The probability of winning uses the same five wins on top, but it puts all eight games underneath. So the probability is \(5/8 = 0.625\), while the odds are 1.7. Same situation, two different numbers, because the denominators are different.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Eight games split into five wins and three losses, with odds five over three and probability five over eight computed from them">
+        <defs>
+          <marker id="ah1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L7,3 L0,6 z" class="sv-ink3"></path>
+          </marker>
+        </defs>
+        <text x="20" y="26" class="sv-tb">Eight games played: five won, three lost</text>
+        <rect x="20"  y="46" width="46" height="46" rx="5" class="sv-acc-soft"></rect>
+        <rect x="74"  y="46" width="46" height="46" rx="5" class="sv-acc-soft"></rect>
+        <rect x="128" y="46" width="46" height="46" rx="5" class="sv-acc-soft"></rect>
+        <rect x="182" y="46" width="46" height="46" rx="5" class="sv-acc-soft"></rect>
+        <rect x="236" y="46" width="46" height="46" rx="5" class="sv-acc-soft"></rect>
+        <rect x="20"  y="46" width="46" height="46" rx="5" class="sv-stroke-acc" stroke-width="1.5" fill="none"></rect>
+        <rect x="74"  y="46" width="46" height="46" rx="5" class="sv-stroke-acc" stroke-width="1.5" fill="none"></rect>
+        <rect x="128" y="46" width="46" height="46" rx="5" class="sv-stroke-acc" stroke-width="1.5" fill="none"></rect>
+        <rect x="182" y="46" width="46" height="46" rx="5" class="sv-stroke-acc" stroke-width="1.5" fill="none"></rect>
+        <rect x="236" y="46" width="46" height="46" rx="5" class="sv-stroke-acc" stroke-width="1.5" fill="none"></rect>
+        <rect x="304" y="46" width="46" height="46" rx="5" class="sv-key-soft"></rect>
+        <rect x="358" y="46" width="46" height="46" rx="5" class="sv-key-soft"></rect>
+        <rect x="412" y="46" width="46" height="46" rx="5" class="sv-key-soft"></rect>
+        <rect x="304" y="46" width="46" height="46" rx="5" class="sv-stroke-key" stroke-width="1.5" fill="none"></rect>
+        <rect x="358" y="46" width="46" height="46" rx="5" class="sv-stroke-key" stroke-width="1.5" fill="none"></rect>
+        <rect x="412" y="46" width="46" height="46" rx="5" class="sv-stroke-key" stroke-width="1.5" fill="none"></rect>
+        <text x="37"  y="76" class="sv-tm">W</text>
+        <text x="91"  y="76" class="sv-tm">W</text>
+        <text x="145" y="76" class="sv-tm">W</text>
+        <text x="199" y="76" class="sv-tm">W</text>
+        <text x="253" y="76" class="sv-tm">W</text>
+        <text x="322" y="76" class="sv-tm">L</text>
+        <text x="376" y="76" class="sv-tm">L</text>
+        <text x="430" y="76" class="sv-tm">L</text>
+        <text x="20"  y="112" class="sv-ts">5 wins (it happened)</text>
+        <text x="304" y="112" class="sv-ts">3 losses (it did not happen)</text>
+        <path d="M180,120 L180,148" class="sv-line" stroke-width="1.5" marker-end="url(#ah1)"></path>
+        <path d="M560,120 L560,148" class="sv-line" stroke-width="1.5" marker-end="url(#ah1)"></path>
+        <rect x="20"  y="152" width="350" height="112" rx="7" class="sv-paper2"></rect>
+        <rect x="390" y="152" width="350" height="112" rx="7" class="sv-paper2"></rect>
+        <text x="40"  y="180" class="sv-tb">ODDS of winning</text>
+        <text x="410" y="180" class="sv-tb">PROBABILITY of winning</text>
+        <text x="40"  y="208" class="sv-tm">wins / losses = 5 / 3</text>
+        <text x="410" y="208" class="sv-tm">wins / all games = 5 / 8</text>
+        <text x="40"  y="240" class="sv-t">= 1.7</text>
+        <text x="410" y="240" class="sv-t">= 0.625</text>
+      </svg>
+      <figcaption>Notice that only the denominator changes: odds divide by the losses, probability divides by every game.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Count the times the event happened and the times it did not. In the example that is 5 wins and 3 losses.</li>
+      <li>Divide the first count by the second count. That gives the odds, \(5/3 \approx 1.7\).</li>
+      <li>If you only have probabilities, use \(p = 0.625\) for winning and \(1 - p = 0.375\) for losing. Their ratio is the same 1.7, because the shared denominator of 8 cancels out.</li>
+      <li>Look at the range of the odds. Odds against the team live between 0 and 1. Odds in favour live between 1 and infinity, so the two sides are not comparable at a glance.</li>
+      <li>Take the log of the odds. Now odds of 1 to 6 give −1.79 and odds of 6 to 1 give +1.79. The two sides are mirror images around zero.</li>
+    </ol>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Two number lines: raw odds crowd the against side between zero and one, while log odds place minus 1.79 and plus 1.79 at equal distances from zero">
+        <defs>
+          <marker id="ah2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L7,3 L0,6 z" class="sv-ink2"></path>
+          </marker>
+        </defs>
+        <text x="20" y="24" class="sv-tb">Raw odds: lopsided</text>
+        <path d="M60,74 L720,74" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah2)"></path>
+        <path d="M60,74 L220,74" class="sv-stroke-key" stroke-width="5"></path>
+        <path d="M220,74 L700,74" class="sv-stroke-acc" stroke-width="5"></path>
+        <circle cx="87" cy="74" r="6" class="sv-key"></circle>
+        <circle cx="460" cy="74" r="6" class="sv-acc"></circle>
+        <text x="54"  y="98" class="sv-ts">0</text>
+        <text x="214" y="98" class="sv-ts">1</text>
+        <text x="686" y="98" class="sv-ts">∞</text>
+        <text x="40"  y="122" class="sv-tm">1 to 6 odds = 0.17</text>
+        <text x="410" y="122" class="sv-tm">6 to 1 odds = 6</text>
+        <text x="40"  y="142" class="sv-ts">all &quot;against&quot; values squeezed into one unit</text>
+        <text x="410" y="142" class="sv-ts">all &quot;in favour&quot; values spread out forever</text>
+
+        <text x="20" y="186" class="sv-tb">Log of the odds: symmetric</text>
+        <path d="M60,236 L720,236" class="sv-stroke-ink" stroke-width="1.5"></path>
+        <path d="M239,236 L400,236" class="sv-stroke-key" stroke-width="5"></path>
+        <path d="M400,236 L561,236" class="sv-stroke-acc" stroke-width="5"></path>
+        <circle cx="239" cy="236" r="6" class="sv-key"></circle>
+        <circle cx="561" cy="236" r="6" class="sv-acc"></circle>
+        <path d="M400,222 L400,250" class="sv-stroke-ink" stroke-width="1.5"></path>
+        <text x="393" y="266" class="sv-ts">0</text>
+        <text x="160" y="266" class="sv-tm">log(1/6) = −1.79</text>
+        <text x="510" y="266" class="sv-tm">log(6) = +1.79</text>
+        <text x="286" y="222" class="sv-ts">same distance</text>
+        <text x="440" y="222" class="sv-ts">same distance</text>
+      </svg>
+      <figcaption>The log turns an unbalanced scale into a balanced one, so odds for and against are equally easy to read.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Odds from counts</span>
+      <div class="math">$$ \text{odds} = \frac{\#\ \text{it happened}}{\#\ \text{it did not happen}} $$</div>
+      <p class="explain"><b>Symbols:</b> the top is how many times the event of interest occurred, such as games won. The bottom is how many times it did not occur, such as games lost. <b>What it tells you:</b> odds compare one outcome directly against the other outcome, never against the total.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Odds from probability</span>
+      <div class="math">$$ \text{odds} = \frac{p}{1-p} $$</div>
+      <p class="explain"><b>Symbols:</b> \(p\) is the probability of the event happening, so \(p = 0.625\) for a win. \(1-p\) is the probability of it not happening, so \(1-p = 0.375\). <b>What it tells you:</b> you do not need raw counts. Probabilities give the identical odds, because the common total cancels.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Why the two agree</span>
+      <div class="math">$$ \frac{5/8}{3/8} \;=\; \frac{5}{3} \;\approx\; 1.7 $$</div>
+      <p class="explain"><b>Symbols:</b> 5 and 3 are the win and loss counts, and 8 is the total number of games. <b>What it tells you:</b> the 8 scales the top and the bottom by the same amount, so it cancels. Counts and probabilities are two routes to one answer.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Log of the odds (the logit)</span>
+      <div class="math">$$ \text{logit}(p) = \log(\text{odds}) = \log\!\left(\frac{p}{1-p}\right) $$</div>
+      <p class="explain"><b>Symbols:</b> \(\log\) is the natural logarithm, \(p\) is the probability of the event, and \(p/(1-p)\) is the odds. <b>What it tells you:</b> it maps odds onto a symmetric scale centred at zero. Negative means the event is unlikely, positive means it is likely, and zero means an even chance. This function is the basis of logistic regression.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh's team plays 8 games. It wins 5 and loses 3.</p>
+      <p><b>Odds from counts.</b> Wins over losses is \(5/3 \approx 1.7\).</p>
+      <p><b>Probabilities.</b> Winning is \(5/8 = 0.625\). Losing is \(3/8 = 0.375\), which you can also get as \(1 - 5/8 = 8/8 - 5/8 = 3/8\).</p>
+      <p><b>Odds from probabilities.</b> \(0.625 / 0.375 = 1.7\). Same answer as the counts.</p>
+      <p><b>Now the log.</b> Josh compares 1 to 6 odds against 6 to 1 odds. As raw odds these are \(1/6 = 0.17\) and \(6/1 = 6\), which look wildly different in size. As logs they are \(\log(0.17) = -1.79\) and \(\log(6) = 1.79\). The same strength of evidence now has the same magnitude, only the sign flips.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Odds are not probabilities. In the example the odds of winning are 1.7 but the probability is 0.625. Odds put the losses in the denominator, probability puts every game there. Mixing them up changes the answer.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Odds are unbounded on one side. They cannot go below zero and they never reach a ceiling. A probability is always between 0 and 1, so it is bounded on both sides.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Raw odds are a poor scale for comparing. Odds of 0.17 against and odds of 6 in favour are equally strong, but the first number looks tiny. Only after the log do they read as −1.79 and +1.79.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>The odds and the odds ratio are different things, even though both are ratios. The odds ratio compares two sets of odds, and that is the subject of the next video.</p>
+    </div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>What is the difference between odds and probability?</summary>
+      <div class="a">Odds are the ratio of something happening to that same thing not happening. Probability is the ratio of something happening to everything that could happen. If a team wins 5 of 8 games, the odds of winning are 5 to 3, or about 1.7, while the probability is 5 over 8, or 0.625. The difference is entirely in the denominator.</div>
+    </details>
+
+    <details class="qa" open><summary>How do you convert a probability into odds?</summary>
+      <div class="a">You divide the probability of the event by the probability of its complement, so odds equal p over 1 minus p. With p equal to 0.625 you get 0.625 divided by 0.375, which is 1.7. That matches the odds you would get from the raw counts, because the shared total cancels out of the ratio.</div>
+    </details>
+
+    <details class="qa" open><summary>Why do we take the log of the odds instead of using the odds directly?</summary>
+      <div class="a">Raw odds are asymmetric. Everything against the event is crammed between 0 and 1, while everything in favour runs from 1 up to infinity. That makes two equally strong results look very different in size. The log fixes it: 1 to 6 odds become −1.79 and 6 to 1 odds become +1.79, so the scale is symmetric around zero and much easier to interpret.</div>
+    </details>
+
+    <details class="qa" open><summary>What is the logit function and where do you meet it?</summary>
+      <div class="a">The logit is the log of the ratio of the probabilities, that is log of p over 1 minus p. It is just the log of the odds written in probability form. It is the link function in logistic regression, which is why the coefficients of a logistic model are read on the log odds scale.</div>
+    </details>
+
+    <details class="qa" open><summary>Why is the log odds scale convenient for statistics?</summary>
+      <div class="a">If you take many pairs of counts that add up to the same total and compute the log of the odds for each, the histogram comes out shaped like a normal distribution. That makes the log odds a comfortable quantity for standard statistical machinery. It suits problems about win or lose, yes or no, and true or false outcomes.</div>
+    </details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap">
+      <ul>
+        <li>Odds are the count of something happening divided by the count of it not happening.</li>
+        <li>Probability divides by everything that could happen, so it is a different number from the odds.</li>
+        <li>With 5 wins and 3 losses the odds are 1.7 and the probability of winning is 0.625.</li>
+        <li>You can also compute odds as p divided by 1 minus p, and you get the identical value.</li>
+        <li>Odds against an event fall between 0 and 1, while odds in favour run from 1 to infinity.</li>
+        <li>That asymmetry makes raw odds hard to compare, so we take the log of them.</li>
+        <li>Log odds are symmetric around zero: 1 to 6 gives −1.79 and 6 to 1 gives +1.79.</li>
+        <li>The log of the ratio of probabilities is the logit, and it underpins logistic regression.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Odds and log odds</span><span class="board-tag">the log makes for and against symmetric</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 222" role="img" aria-label="Two number lines. On the odds line, 1/6 is squeezed between 0 and 1 while 6 sits far out to the right. On the log odds line, 1/6 becomes -1.79 and 6 becomes +1.79, the same distance either side of 0.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <text x="20" y="76" class="sv-ts">odds</text>
+            <line x1="110" y1="70" x2="374" y2="70" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="116.9" y1="70" x2="151.5" y2="70" class="sv-stroke-key" stroke-width="6" stroke-linecap="round"/>
+            <line x1="151.5" y1="70" x2="359" y2="70" class="sv-stroke-acc" stroke-width="6" stroke-linecap="round"/>
+            <line x1="151.5" y1="61" x2="151.5" y2="79" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round"/>
+            <text x="116.9" y="52" text-anchor="middle" class="sv-t">1/6</text>
+            <text x="151.5" y="52" text-anchor="middle" class="sv-t">1</text>
+            <text x="359" y="52" text-anchor="middle" class="sv-t">6</text>
+            <text x="20" y="186" class="sv-ts">log(odds)</text>
+            <line x1="112" y1="180" x2="378" y2="180" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" marker-start="url(#board-arr)" marker-end="url(#board-arr)"/>
+            <line x1="125" y1="180" x2="245" y2="180" class="sv-stroke-key" stroke-width="6" stroke-linecap="round"/>
+            <line x1="245" y1="180" x2="365" y2="180" class="sv-stroke-acc" stroke-width="6" stroke-linecap="round"/>
+            <line x1="245" y1="172" x2="245" y2="188" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round"/>
+            <text x="125" y="208" text-anchor="middle" class="sv-t">−1.79</text>
+            <text x="245" y="208" text-anchor="middle" class="sv-t">0</text>
+            <text x="365" y="208" text-anchor="middle" class="sv-t">+1.79</text>
+            <line x1="116.9" y1="79" x2="125" y2="171" class="sv-stroke-key" stroke-width="2" stroke-dasharray="5 5"/>
+            <line x1="151.5" y1="82" x2="245" y2="170" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="5 5"/>
+            <line x1="359" y1="79" x2="365" y2="171" class="sv-stroke-acc" stroke-width="2" stroke-dasharray="5 5"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="116.9" cy="70" r="6" class="sv-key"/>
+              <circle cx="359" cy="70" r="6" class="sv-acc"/>
+              <circle cx="125" cy="180" r="6" class="sv-key"/>
+              <circle cx="365" cy="180" r="6" class="sv-acc"/>
+            </g>
+          </svg>
+          <p>Odds divide wins by losses (5/3 ≈ 1.7); probability divides by all 8 games (5/8 = 0.625). Raw odds squeeze "against" into 0 to 1 while "for" runs to infinity. The log turns 1 to 6 and 6 to 1 into −1.79 and +1.79, mirror images around 0.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Odds</dt><dd>Times it happened over times it did not.</dd>
+            <dt>Probability</dt><dd>Times it happened over everything that could happen.</dd>
+            <dt>Log odds</dt><dd>The log of the odds, symmetric around 0.</dd>
+            <dt>Logit</dt><dd>\(\log\frac{p}{1-p}\): the log odds written with a probability. The heart of logistic regression.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Count</b>5 wins and 3 losses</li>
+            <li><b>Divide</b>wins over losses: 5/3 ≈ 1.7</li>
+            <li><b>Or use p</b>0.625 / 0.375, the same 1.7</li>
+            <li><b>Check the range</b>0 to 1 vs 1 to ∞</li>
+            <li><b>Take the log</b>−1.79 and +1.79: mirror images</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{odds}=\frac{\text{happened}}{\text{did not happen}}$$
+          $$\text{odds}=\frac{p}{1-p}$$
+          $$\text{logit}(p)=\log\Big(\frac{p}{1-p}\Big)$$
+          <ul class="keys">
+            <li>\(p\) is the probability of the event, here 0.625.</li>
+            <li>The shared total of 8 cancels, so counts and probabilities agree.</li>
+            <li>Below 0 means unlikely, 0 an even chance, above 0 likely.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>what</th><th>how</th><th>value</th></tr>
+            <tr><td>odds</td><td>5 / 3</td><td>≈ 1.7</td></tr>
+            <tr><td>probability</td><td>5 / 8</td><td>0.625</td></tr>
+            <tr><td>odds from p</td><td>0.625 / 0.375</td><td>1.7</td></tr>
+            <tr><td>raw odds</td><td>1/6 vs 6/1</td><td>0.17 vs 6</td></tr>
+            <tr class="final"><td>log odds</td><td>log of each</td><td>−1.79 vs +1.79 ✓</td></tr>
+          </table>
+          <p class="hand">Same 8 games, two numbers: 1.7 and 0.625. The log gives equally strong odds the same size, with opposite signs.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Odds are the same as probability.</span><span class="yes">Odds divide by the losses, probability by every game: 1.7 versus 0.625.</span></li>
+            <li><span class="no">Odds stay between 0 and 1.</span><span class="yes">Odds cannot go below 0 but have no ceiling. Probability is bounded on both sides.</span></li>
+            <li><span class="no">Odds of 0.17 are weaker than odds of 6.</span><span class="yes">They are equally strong. Only after the log do they read −1.79 and +1.79.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="58-maximum-likelihood-for-the-normal-distribution-step-by-step.html"><small>Previous</small>Maximum Likelihood For the Normal Distribution, step-by-step</a> <a href="60-odds-ratios-and-log-odds-ratios.html"><small>Next</small>Odds Ratios and Log(Odds Ratios)</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

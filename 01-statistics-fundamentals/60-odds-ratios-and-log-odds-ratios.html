@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Odds Ratios and Log(Odds Ratios) — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>60</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 60 · 16.3 min</div>
+    <h1>Odds Ratios and Log(Odds Ratios)</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=8nm0G-1uJzA" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: Machine Learning (video 15)</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">An odds ratio is a ratio of two odds. It tells you whether one thing raises the odds of another thing. Taking its log makes the scale fair in both directions.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>The odds are one ratio. The odds ratio compares two odds, one from each group. Its raw scale is lopsided, so we take the log to make it symmetric around zero. The odds ratio measures effect size, like R-squared does. To check if the relationship is real, Josh shows three tests: Fisher's exact test, the chi-square test, and the Wald test.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>The odds are already a ratio. In the last video, the odds of Josh's team winning were 2 over 4, which is 0.5. So why do people also say "odds ratio"? Because they mean a ratio <em>of odds</em>. You take the odds in one group and divide by the odds in another group.</p>
+    <p>With the video's simple numbers, one group has odds 2 to 4 and the other has odds 3 to 1. The odds ratio is \((2/4)\) divided by \((3/1)\), which is 0.17. Flip the two groups and you get \((3/1)\) divided by \((2/4)\), which is 6.</p>
+    <p>Both numbers describe the same comparison, seen from opposite sides. Yet 0.17 and 6 look nothing alike. That is the problem with the raw scale. When the bottom odds are bigger, the answer sits between 0 and 1. When the top odds are bigger, it can run to infinity. Taking the log fixes this. The log of 0.17 is -1.79 and the log of 6 is +1.79.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 282" role="img" aria-label="A number line showing the odds ratio squeezed between 0 and 1 on one side and open to infinity on the other, and a second number line showing the log of the odds ratio symmetric around zero">
+        <defs><marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"></path></marker></defs>
+        <text x="30" y="28" class="sv-tb">The raw odds ratio scale is lopsided</text>
+        <rect x="60" y="62" width="320" height="18" class="sv-key-soft"></rect>
+        <rect x="380" y="62" width="320" height="18" class="sv-acc-soft"></rect>
+        <line x1="60" y1="80" x2="700" y2="80" class="sv-line" stroke-width="1.5"></line>
+        <line x1="60" y1="76" x2="60" y2="88" class="sv-line" stroke-width="1.5"></line>
+        <line x1="380" y1="76" x2="380" y2="88" class="sv-line" stroke-width="1.5"></line>
+        <line x1="700" y1="76" x2="700" y2="88" class="sv-line" stroke-width="1.5"></line>
+        <circle cx="114" cy="71" r="5" class="sv-key"></circle>
+        <text x="114" y="54" text-anchor="middle" class="sv-tm">0.17</text>
+        <circle cx="560" cy="71" r="5" class="sv-acc"></circle>
+        <text x="560" y="54" text-anchor="middle" class="sv-tm">6</text>
+        <text x="60" y="102" text-anchor="middle" class="sv-ts">0</text>
+        <text x="380" y="102" text-anchor="middle" class="sv-ts">1</text>
+        <text x="700" y="102" text-anchor="end" class="sv-ts">to infinity</text>
+        <text x="220" y="124" text-anchor="middle" class="sv-ts">every "lower odds" answer is squeezed in here</text>
+        <text x="540" y="124" text-anchor="middle" class="sv-ts">every "higher odds" answer has endless room</text>
+        <text x="30" y="172" class="sv-tb">Taking the log makes it symmetric</text>
+        <line x1="60" y1="210" x2="700" y2="210" class="sv-line" stroke-width="1.5"></line>
+        <line x1="380" y1="204" x2="380" y2="216" class="sv-line" stroke-width="1.5"></line>
+        <circle cx="190" cy="210" r="5" class="sv-key"></circle>
+        <circle cx="570" cy="210" r="5" class="sv-acc"></circle>
+        <text x="190" y="198" text-anchor="middle" class="sv-tm">-1.79</text>
+        <text x="380" y="198" text-anchor="middle" class="sv-tm">0</text>
+        <text x="570" y="198" text-anchor="middle" class="sv-tm">+1.79</text>
+        <line x1="378" y1="238" x2="192" y2="238" class="sv-stroke-ink" stroke-width="1" marker-end="url(#ar1)"></line>
+        <line x1="382" y1="238" x2="568" y2="238" class="sv-stroke-ink" stroke-width="1" marker-end="url(#ar1)"></line>
+        <text x="285" y="256" text-anchor="middle" class="sv-ts">same distance</text>
+        <text x="475" y="256" text-anchor="middle" class="sv-ts">same distance</text>
+      </svg>
+      <figcaption>Notice that 0.17 and 6 sit at very different distances from 1, but their logs sit at equal distances from 0.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <p>Josh then puts the idea to work on real data: 356 people, some with cancer and some with a mutated gene.</p>
+    <ol class="steps">
+      <li>Sort everyone into a two-by-two table. Of the 356 people, 29 have cancer and 327 do not. Also, 140 carry the mutated gene and 216 do not.</li>
+      <li>Read the odds of cancer inside each group. With the mutated gene the odds are 23 to 117. Without it they are 6 to 210.</li>
+      <li>Divide the first odds by the second. The odds ratio is 6.88, so the odds of cancer are 6.88 times greater with the gene.</li>
+      <li>Take the log to get 1.93. We test this value, because logs of odds ratios follow a normal distribution.</li>
+      <li>Read it as an effect size. Like R-squared, a large value means the gene predicts cancer well.</li>
+      <li>Now test for significance. Josh gives three options: Fisher's exact test, a chi-square test, and the Wald test.</li>
+      <li>Report the result. All three tests agree that this relationship is very unlikely to be chance.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 262" role="img" aria-label="A two by two table of 356 people split by mutated gene and cancer, with the two group odds and the odds ratio of 6.88 worked out beside it">
+        <text x="30" y="26" class="sv-tb">356 people, split four ways</text>
+        <rect x="30" y="50" width="470" height="32" class="sv-paper2"></rect>
+        <rect x="170" y="82" width="95" height="40" class="sv-key-soft"></rect>
+        <rect x="170" y="122" width="95" height="40" class="sv-acc-soft"></rect>
+        <rect x="30" y="50" width="470" height="148" class="sv-line" stroke-width="1"></rect>
+        <line x1="30" y1="82" x2="500" y2="82" class="sv-line" stroke-width="1"></line>
+        <line x1="30" y1="122" x2="500" y2="122" class="sv-line" stroke-width="1"></line>
+        <line x1="30" y1="162" x2="500" y2="162" class="sv-line" stroke-width="1"></line>
+        <line x1="170" y1="50" x2="170" y2="198" class="sv-line" stroke-width="1"></line>
+        <line x1="265" y1="50" x2="265" y2="198" class="sv-line" stroke-width="1"></line>
+        <line x1="375" y1="50" x2="375" y2="198" class="sv-line" stroke-width="1"></line>
+        <text x="217" y="72" text-anchor="middle" class="sv-ts">Cancer</text>
+        <text x="320" y="72" text-anchor="middle" class="sv-ts">No cancer</text>
+        <text x="437" y="72" text-anchor="middle" class="sv-ts">Total</text>
+        <text x="40" y="107" class="sv-t">Mutated gene</text>
+        <text x="217" y="107" text-anchor="middle" class="sv-tm">23</text>
+        <text x="320" y="107" text-anchor="middle" class="sv-tm">117</text>
+        <text x="437" y="107" text-anchor="middle" class="sv-tm">140</text>
+        <text x="40" y="147" class="sv-t">No mutated gene</text>
+        <text x="217" y="147" text-anchor="middle" class="sv-tm">6</text>
+        <text x="320" y="147" text-anchor="middle" class="sv-tm">210</text>
+        <text x="437" y="147" text-anchor="middle" class="sv-tm">216</text>
+        <text x="40" y="185" class="sv-t">Total</text>
+        <text x="217" y="185" text-anchor="middle" class="sv-tm">29</text>
+        <text x="320" y="185" text-anchor="middle" class="sv-tm">327</text>
+        <text x="437" y="185" text-anchor="middle" class="sv-tm">356</text>
+        <text x="530" y="64" class="sv-t">Odds of cancer</text>
+        <text x="530" y="88" class="sv-tm">with gene: 23 / 117</text>
+        <text x="530" y="110" class="sv-tm">without: 6 / 210</text>
+        <line x1="530" y1="126" x2="740" y2="126" class="sv-line" stroke-width="1"></line>
+        <text x="530" y="150" class="sv-t">Odds ratio</text>
+        <text x="530" y="172" class="sv-tm">(23/117) / (6/210)</text>
+        <text x="530" y="194" class="sv-tb">= 6.88</text>
+        <text x="530" y="216" class="sv-tm">log(6.88) = 1.93</text>
+        <text x="30" y="240" class="sv-ts">Read across one row to get that group's odds of cancer, then divide one odds by the other.</text>
+      </svg>
+      <figcaption>The whole odds ratio comes from four counts: 23, 117, 6 and 210.</figcaption>
+    </figure>
+    <p>The three tests answer the same question in different ways. Fisher's exact test treats the people as a bag of sweets. There are 29 red sweets for cancer and 327 blue ones for no cancer. It asks how surprising a handful of 23 red and 117 blue would be. A computer does the work, and the p-value is 0.00001.</p>
+    <p>The chi-square test compares what we saw with what we would expect. The expected counts assume the gene and cancer are unrelated. The Wald test uses a different fact. Logs of odds ratios are normally distributed, so it counts how far 1.93 sits from zero.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 312" role="img" aria-label="A normal curve centred on zero with standard deviation 0.47, showing the observed log odds ratio of 1.93 sitting 4.11 standard deviations to the right">
+        <defs><marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"></path></marker></defs>
+        <text x="30" y="28" class="sv-tb">Wald test: how many standard deviations from zero?</text>
+        <path d="M 80 250 C 220 249, 245 100, 300 100 C 355 100, 380 249, 520 250 Z" class="sv-acc-soft"></path>
+        <path d="M 80 250 C 220 249, 245 100, 300 100 C 355 100, 380 249, 520 250" class="sv-stroke-acc" stroke-width="1.5"></path>
+        <line x1="50" y1="250" x2="730" y2="250" class="sv-line" stroke-width="1.5"></line>
+        <line x1="300" y1="250" x2="300" y2="100" class="sv-line" stroke-width="1"></line>
+        <line x1="400" y1="250" x2="400" y2="160" class="sv-line" stroke-width="1.5" stroke-dasharray="4 4"></line>
+        <line x1="505" y1="250" x2="505" y2="176" class="sv-stroke-key" stroke-width="2"></line>
+        <text x="300" y="268" text-anchor="middle" class="sv-ts">0</text>
+        <rect x="330" y="138" width="140" height="20" rx="4" class="sv-paper"></rect>
+        <text x="400" y="152" text-anchor="middle" class="sv-ts">2 SD, about p = 0.05</text>
+        <text x="505" y="268" text-anchor="middle" class="sv-tm">4.11 SD</text>
+        <rect x="520" y="96" width="212" height="80" rx="5" class="sv-paper2"></rect>
+        <text x="532" y="120" class="sv-tm">log(odds ratio) = 1.93</text>
+        <text x="532" y="142" class="sv-tm">standard dev. = 0.47</text>
+        <text x="532" y="166" class="sv-tb">1.93 / 0.47 = 4.11</text>
+        <line x1="540" y1="182" x2="512" y2="212" class="sv-stroke-ink" stroke-width="1" marker-end="url(#ar2)"></line>
+        <text x="30" y="288" class="sv-ts">If the gene meant nothing, log odds ratios would pile up around zero with a standard deviation near 0.47.</text>
+      </svg>
+      <figcaption>The observed value sits far out in the tail, so the two-sided p-value is tiny.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>Write the four counts of the table as \(a\), \(b\), \(c\) and \(d\), reading across the rows.</p>
+    <div class="formula"><span class="lbl">Odds ratio</span><div class="math">$$ \mathrm{OR} = \frac{a/b}{c/d} = \frac{a\,d}{b\,c} $$</div><p class="explain"><b>Symbols:</b> \(a\) and \(b\) are group one with and without the outcome. \(c\) and \(d\) are group two with and without it. <b>What it tells you:</b> how many times greater the odds are in group one.</p></div>
+    <div class="formula"><span class="lbl">Why we take the log</span><div class="math">$$ \log\!\left(\frac{1}{\mathrm{OR}}\right) = -\log(\mathrm{OR}) $$</div><p class="explain"><b>Symbols:</b> \(\mathrm{OR}\) is the odds ratio. \(1/\mathrm{OR}\) is the same comparison with the groups swapped. <b>What it tells you:</b> swapping the groups only flips the sign, so zero means no difference.</p></div>
+    <div class="formula"><span class="lbl">Expected count for the chi-square test</span><div class="math">$$ E = P(\text{outcome}) \times (\text{people in the group}) $$</div><p class="explain"><b>Symbols:</b> \(E\) is the count you would expect if there were no relationship. \(P(\text{outcome})\) is the overall share of people with the outcome, here \(29/356 = 0.08\). <b>What it tells you:</b> the count each cell should hold if nothing is going on.</p></div>
+    <div class="formula"><span class="lbl">Estimated standard deviation of the log odds ratio</span><div class="math">$$ s = \sqrt{\frac{1}{a}+\frac{1}{b}+\frac{1}{c}+\frac{1}{d}} $$</div><p class="explain"><b>Symbols:</b> \(s\) is the estimated standard deviation. \(a, b, c, d\) are the four observed counts. <b>What it tells you:</b> how much the log odds ratio would wobble from sample to sample.</p></div>
+    <div class="formula"><span class="lbl">Wald statistic</span><div class="math">$$ z = \frac{\log(\mathrm{OR})}{s} $$</div><p class="explain"><b>Symbols:</b> \(z\) is the number of standard deviations from zero. \(s\) is the estimated standard deviation. <b>What it tells you:</b> how far the result sits from "no relationship". Beyond about 2, the p-value drops below 0.05.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Among the 140 people with the mutated gene, 23 have cancer and 117 do not. Among the 216 without it, 6 have cancer and 210 do not. So the odds ratio is \((23/117)\) divided by \((6/210)\), which comes to 6.88. The log of that is 1.93.</p>
+      <p>Fisher's exact test gives a p-value of 0.00001. For the chi-square test, the overall chance of cancer is \(29/356 = 0.08\). Multiply by the 140 people with the gene. You expect 11.2 cancer cases, leaving 128.8 without. Do the same for the other 216 people. You expect 17.3 cases, leaving 198.7 without. The test compares those numbers with 23, 117, 6 and 210. The p-value is 0.00001 with the continuity correction, and 0.000004 without it.</p>
+      <p>For the Wald test, \(s = \sqrt{1/23 + 1/117 + 1/6 + 1/210} = 0.47\). Josh also simulated 10,000 log odds ratios with no real relationship. Their standard deviation was 0.43, which is close. Dividing 1.93 by 0.47 gives 4.11 standard deviations. The two-sided p-value is 0.00005.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> The odds and the odds ratio are not the same thing. The odds are one ratio inside one group. The odds ratio divides the odds of one group by the odds of another.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not compare raw odds ratios as if the scale were even. Values below 1 are crammed between 0 and 1. Values above 1 stretch to infinity. Take logs before you compare sizes.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A large odds ratio is an effect size, not a p-value. Like R-squared, it shows the strength of the relationship. It does not show significance, so you still need a test.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> There is no agreement on which test to use, and people mix them. A p-value from Fisher and a confidence interval from Wald can disagree. Using Wald for both keeps them consistent. Josh's simulation also found the continuity-corrected chi-square test a little conservative: 3 percent significant instead of 5.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is an odds ratio, and how is it different from the odds?</summary><div class="a">The odds count how often something happens against how often it does not, inside one group. An odds ratio divides the odds of one group by the odds of another. So it compares two groups, and a value of 1 means their odds match.</div></details>
+    <details class="qa" open><summary>Why do we work with the log of the odds ratio?</summary><div class="a">The raw scale is not symmetric. Anything that lowers the odds lands between 0 and 1. Anything that raises them can run to infinity. The log centres everything on zero, so swapping the groups only flips the sign. It also makes the values roughly normal, which the standard tests assume.</div></details>
+    <details class="qa" open><summary>How would you test whether an odds ratio is significant?</summary><div class="a">There are three common choices: Fisher's exact test, a chi-square test, and the Wald test. Fisher is exact and suits small counts. The Wald test comes free with logistic regression output. It gives the p-value and the confidence interval from one model, so they always agree. I would check what my field prefers.</div></details>
+    <details class="qa" open><summary>How does the Wald test actually work here?</summary><div class="a">With no relationship, log odds ratios are normal and centred on zero. You estimate their standard deviation as the square root of the sum of one over each count. Then you divide the observed log odds ratio by it. Past about two standard deviations, the p-value falls under 0.05.</div></details>
+    <details class="qa" open><summary>What does an odds ratio of 6.88 mean in the gene and cancer example?</summary><div class="a">The odds of cancer are 6.88 times greater for someone carrying the mutated gene. That is an effect size, so the gene predicts cancer fairly well here. Its log is 1.93, which sits 4.11 standard deviations from zero. The p-value is about 0.00005.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>The odds compare one thing happening to it not happening, inside a single group.</li>
+      <li>An odds ratio divides the odds of one group by the odds of another group.</li>
+      <li>The raw scale is lopsided, because low values are squeezed between 0 and 1.</li>
+      <li>Taking the log makes the scale symmetric, so swapping the groups only changes the sign.</li>
+      <li>For the mutated gene and cancer, the odds ratio is 6.88 and its log is 1.93.</li>
+      <li>The odds ratio measures effect size, like R-squared, so it does not prove significance.</li>
+      <li>Fisher's exact test, the chi-square test and the Wald test each give a p-value.</li>
+      <li>The Wald test divides 1.93 by 0.47, giving 4.11 standard deviations and p = 0.00005.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Odds ratios</span><span class="board-tag">divide two odds, then take the log</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 280" role="img" aria-label="On the raw scale the odds ratio 0.17 is squeezed between 0 and 1, while its flip, 6, stretches far to the right. Taking the log turns them into −1.79 and +1.79, the same distance from 0.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <text x="14" y="34" class="sv-tb">odds ratio: lopsided</text>
+            <line x1="30" y1="96" x2="378" y2="96" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="30" y1="86" x2="30" y2="106" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <rect x="39.5" y="90" width="46.5" height="12" class="sv-key"/>
+              <rect x="86" y="90" width="280" height="12" class="sv-acc"/>
+            </g>
+            <text x="40" y="76" text-anchor="middle" class="sv-tb">0.17</text>
+            <text x="86" y="76" text-anchor="middle" class="sv-tb">1</text>
+            <text x="366" y="76" text-anchor="middle" class="sv-tb">6</text>
+            <text x="30" y="128" text-anchor="middle" class="sv-ts">0</text>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-dasharray="5 5" stroke-linecap="round">
+              <line x1="40" y1="108" x2="80" y2="184" marker-end="url(#board-arr)"/>
+              <line x1="86" y1="108" x2="200" y2="184" marker-end="url(#board-arr)"/>
+              <line x1="366" y1="108" x2="320" y2="184" marker-end="url(#board-arr)"/>
+            </g>
+            <line x1="22" y1="200" x2="378" y2="200" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-start="url(#board-arr)" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <rect x="80" y="194" width="120" height="12" class="sv-key"/>
+              <rect x="200" y="194" width="120" height="12" class="sv-acc"/>
+            </g>
+            <text x="80" y="232" text-anchor="middle" class="sv-tb">−1.79</text>
+            <text x="200" y="232" text-anchor="middle" class="sv-tb">0</text>
+            <text x="320" y="232" text-anchor="middle" class="sv-tb">+1.79</text>
+            <text x="14" y="266" class="sv-tb">log(odds ratio): symmetric</text>
+          </svg>
+          <p>An odds ratio divides one group's odds by another's: (2/4) ÷ (3/1) = 0.17. Flip the groups and it is 6, the same comparison on a lopsided scale. Taking logs gives −1.79 and +1.79, so 0 means no difference.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Odds</dt><dd>Happening against not happening, inside one group.</dd>
+            <dt>Odds ratio</dt><dd>One group's odds divided by another group's odds.</dd>
+            <dt>Log(odds ratio)</dt><dd>Symmetric around 0: swapping the groups only flips the sign.</dd>
+            <dt>Effect size</dt><dd>How strong the relationship is, like R-squared.</dd>
+            <dt>Wald test</dt><dd>Counts how many standard deviations the log odds ratio sits from 0.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Two-by-two table</b>356 people, gene and cancer</li>
+            <li><b>Odds per group</b>23/117 with gene, 6/210 without</li>
+            <li><b>Divide</b>odds ratio = 6.88</li>
+            <li><b>Take the log</b>1.93, the value we test</li>
+            <li><b>Effect size</b>large: the gene predicts cancer</li>
+            <li><b>Test it</b>Fisher, chi-square, Wald: all agree</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\mathrm{OR}=\frac{a/b}{c/d}=\frac{a\,d}{b\,c}$$
+          $$\log\!\left(\frac{1}{\mathrm{OR}}\right)=-\log(\mathrm{OR})$$
+          $$z=\frac{\log(\mathrm{OR})}{\sqrt{\frac1a+\frac1b+\frac1c+\frac1d}}$$
+          <ul class="keys">
+            <li>\(a, b\): group one with and without the outcome; \(c, d\): group two.</li>
+            <li>Swap the groups and only the sign changes.</li>
+            <li>The bottom of \(z\) is the estimated standard deviation; past about 2, \(p\lt 0.05\).</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th></th><th>cancer</th><th>no cancer</th></tr>
+            <tr><td>gene</td><td>23</td><td>117</td></tr>
+            <tr><td>no gene</td><td>6</td><td>210</td></tr>
+            <tr><td>odds ratio</td><td colspan="2">6.88 → log 1.93</td></tr>
+            <tr><td>Wald z</td><td colspan="2">1.93 / 0.47 = 4.11</td></tr>
+            <tr class="final"><td>p-value</td><td colspan="2">0.00005 ✓</td></tr>
+          </table>
+          <p class="hand">Fisher and the corrected chi-square test both give p = 0.00001. All three: very unlikely to be chance.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Odds and odds ratio are the same thing.</span><span class="yes">Odds sit inside one group. The odds ratio divides one group's odds by another's.</span></li>
+            <li><span class="no">Raw odds ratios sit on an even scale.</span><span class="yes">Below 1 is crammed into 0 to 1; above 1 runs to infinity. Compare logs.</span></li>
+            <li><span class="no">A big odds ratio proves significance.</span><span class="yes">It is an effect size, like R-squared. You still need a test.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="59-odds-and-log-odds.html"><small>Previous</small>Odds and Log(Odds)</a> <a href="62-why-dividing-by-n-underestimates-the-variance.html"><small>Next</small>Why Dividing By N Underestimates the Variance</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

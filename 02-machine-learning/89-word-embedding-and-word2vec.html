@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Word Embedding and Word2Vec — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>89</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 89 · 16.2 min</div>
+    <h1>Word Embedding and Word2Vec</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=viZrOnJclY0" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: Neural Networks / Deep Learning (video 17)</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video shows how a very simple neural network can turn words into numbers, called word embeddings, so that similar words get similar numbers. It then shows how word2vec adds more context and trains quickly with negative sampling.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Neural networks do not work well with raw words, so we must turn words into numbers. Random numbers work, but then similar words like "great!" and "awesome!" get very different numbers. Instead, we train a small network to predict the next word. The weights from each input word to the activation functions become that word's embedding. Words used in the same context, like "Troll 2" and "Gymkata", end up with similar embeddings. Word2vec widens the context with continuous bag-of-words or skip-gram, and speeds up training with negative sampling.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Many machine learning algorithms, including neural networks, do not work well with words. The easiest fix is to give each word a random number. If one person says "Troll 2 is great!" and another says "Troll 2 is awesome!", then "great!" might get 4.2 and "awesome!" might get −32.1. These two words mean similar things, yet their numbers are far apart. So learning how to use "great!" does not help the network use "awesome!". The network then needs more complexity and more training.</p>
+    <p>It would be better if similar words used in similar ways got similar numbers. It would also help to give each word more than one number. A word can be used in different contexts. For example, "great" can be positive, as in "StatQuest is great!", or sarcastic, as in "My cell phone is broken, great". One number could track the positive uses and another could track the negative uses.</p>
+    <p>Josh shows that a very simple neural network can find these numbers for us. After training, the weights from its inputs to its activation functions are the word embeddings.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 360" role="img" aria-label="Network with four word inputs, two identity activation functions and four SoftMax outputs; the input weights for Troll 2 are 0.38 and 0.42">
+        <defs>
+          <marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="sv-ink2"/></marker>
+        </defs>
+        <rect x="0" y="0" width="760" height="360" class="sv-paper"/>
+        <text x="150" y="36" text-anchor="middle" class="sv-ts">Input (1 or 0)</text>
+        <text x="360" y="36" text-anchor="middle" class="sv-ts">Identity activations</text>
+        <!-- input to hidden edges -->
+        <line x1="166" y1="140" x2="338" y2="125" class="sv-line" stroke-width="1.5"/>
+        <line x1="166" y1="140" x2="338" y2="225" class="sv-line" stroke-width="1.5"/>
+        <line x1="166" y1="210" x2="338" y2="125" class="sv-line" stroke-width="1.5"/>
+        <line x1="166" y1="210" x2="338" y2="225" class="sv-line" stroke-width="1.5"/>
+        <line x1="166" y1="280" x2="338" y2="125" class="sv-line" stroke-width="1.5"/>
+        <line x1="166" y1="280" x2="338" y2="225" class="sv-line" stroke-width="1.5"/>
+        <line x1="166" y1="70" x2="338" y2="125" class="sv-stroke-key" stroke-width="2.5"/>
+        <line x1="166" y1="70" x2="338" y2="225" class="sv-stroke-key" stroke-width="2.5"/>
+        <!-- hidden to output edges -->
+        <line x1="382" y1="125" x2="526" y2="70" class="sv-line" stroke-width="1.5"/>
+        <line x1="382" y1="125" x2="526" y2="140" class="sv-line" stroke-width="1.5"/>
+        <line x1="382" y1="125" x2="526" y2="210" class="sv-line" stroke-width="1.5"/>
+        <line x1="382" y1="125" x2="526" y2="280" class="sv-line" stroke-width="1.5"/>
+        <line x1="382" y1="225" x2="526" y2="70" class="sv-line" stroke-width="1.5"/>
+        <line x1="382" y1="225" x2="526" y2="140" class="sv-line" stroke-width="1.5"/>
+        <line x1="382" y1="225" x2="526" y2="210" class="sv-line" stroke-width="1.5"/>
+        <line x1="382" y1="225" x2="526" y2="280" class="sv-line" stroke-width="1.5"/>
+        <!-- weight labels for Troll 2 -->
+        <rect x="193" y="76" width="40" height="20" rx="3" class="sv-paper"/>
+        <text x="213" y="91" text-anchor="middle" class="sv-tm">0.38</text>
+        <rect x="193" y="107" width="40" height="20" rx="3" class="sv-paper"/>
+        <text x="213" y="122" text-anchor="middle" class="sv-tm">0.42</text>
+        <!-- inputs -->
+        <text x="122" y="75" text-anchor="end" class="sv-tb">Troll 2</text>
+        <text x="122" y="145" text-anchor="end" class="sv-t">is</text>
+        <text x="122" y="215" text-anchor="end" class="sv-t">great!</text>
+        <text x="122" y="285" text-anchor="end" class="sv-t">Gymkata</text>
+        <circle cx="150" cy="70" r="16" class="sv-key-soft"/>
+        <circle cx="150" cy="70" r="16" class="sv-stroke-key" stroke-width="2"/>
+        <circle cx="150" cy="140" r="16" class="sv-paper2"/>
+        <circle cx="150" cy="140" r="16" class="sv-stroke-ink" stroke-width="1.2"/>
+        <circle cx="150" cy="210" r="16" class="sv-paper2"/>
+        <circle cx="150" cy="210" r="16" class="sv-stroke-ink" stroke-width="1.2"/>
+        <circle cx="150" cy="280" r="16" class="sv-paper2"/>
+        <circle cx="150" cy="280" r="16" class="sv-stroke-ink" stroke-width="1.2"/>
+        <text x="150" y="75" text-anchor="middle" class="sv-tm">1</text>
+        <text x="150" y="145" text-anchor="middle" class="sv-tm">0</text>
+        <text x="150" y="215" text-anchor="middle" class="sv-tm">0</text>
+        <text x="150" y="285" text-anchor="middle" class="sv-tm">0</text>
+        <!-- hidden -->
+        <circle cx="360" cy="125" r="22" class="sv-acc-soft"/>
+        <circle cx="360" cy="125" r="22" class="sv-stroke-acc" stroke-width="2"/>
+        <circle cx="360" cy="225" r="22" class="sv-acc-soft"/>
+        <circle cx="360" cy="225" r="22" class="sv-stroke-acc" stroke-width="2"/>
+        <text x="360" y="130" text-anchor="middle" class="sv-tb">+</text>
+        <text x="360" y="230" text-anchor="middle" class="sv-tb">+</text>
+        <!-- outputs -->
+        <circle cx="540" cy="70" r="14" class="sv-paper2"/>
+        <circle cx="540" cy="70" r="14" class="sv-stroke-ink" stroke-width="1.2"/>
+        <circle cx="540" cy="140" r="14" class="sv-good-soft"/>
+        <circle cx="540" cy="140" r="14" class="sv-stroke-good" stroke-width="2"/>
+        <circle cx="540" cy="210" r="14" class="sv-paper2"/>
+        <circle cx="540" cy="210" r="14" class="sv-stroke-ink" stroke-width="1.2"/>
+        <circle cx="540" cy="280" r="14" class="sv-paper2"/>
+        <circle cx="540" cy="280" r="14" class="sv-stroke-ink" stroke-width="1.2"/>
+        <line x1="555" y1="70" x2="586" y2="70" class="sv-stroke-ink" stroke-width="1.2" marker-end="url(#ah1)"/>
+        <line x1="555" y1="140" x2="586" y2="140" class="sv-stroke-ink" stroke-width="1.2" marker-end="url(#ah1)"/>
+        <line x1="555" y1="210" x2="586" y2="210" class="sv-stroke-ink" stroke-width="1.2" marker-end="url(#ah1)"/>
+        <line x1="555" y1="280" x2="586" y2="280" class="sv-stroke-ink" stroke-width="1.2" marker-end="url(#ah1)"/>
+        <rect x="588" y="50" width="76" height="250" rx="6" class="sv-acc-soft"/>
+        <rect x="588" y="50" width="76" height="250" rx="6" class="sv-stroke-acc" stroke-width="1.5"/>
+        <text x="626" y="180" text-anchor="middle" class="sv-tb">SoftMax</text>
+        <text x="676" y="75" class="sv-t">Troll 2</text>
+        <text x="676" y="145" class="sv-tb">is</text>
+        <text x="676" y="215" class="sv-t">great!</text>
+        <text x="676" y="285" class="sv-t">Gymkata</text>
+        <!-- embedding bracket -->
+        <path d="M150 304 v8 h210 v-8" class="sv-stroke-key" stroke-width="2"/>
+        <text x="255" y="334" text-anchor="middle" class="sv-tb">These weights are the word embeddings</text>
+      </svg>
+      <figcaption>Input "Troll 2" is 1 and the rest are 0, so only its two weights (0.38 and 0.42) reach the activation functions; training wants the output for "is" to be largest.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Start with two phrases: "Troll 2 is great!" and "Gymkata is great!". Josh treats "Troll 2" as one word. There are four unique words, so the network gets four inputs.</li>
+      <li>Connect each input to at least one activation function. These use the identity function, so they do nothing except give us a place to add. The number of activation functions is how many numbers each word gets. Here we use two.</li>
+      <li>All weights start with random values and are optimized with backpropagation. To do backpropagation, the network must make predictions. So each word is used to predict the next word in its phrase.</li>
+      <li>To show the input word, we put a 1 into its input and 0s into all the other inputs. "Troll 2" should predict "is", "is" should predict "great!", and "Gymkata" should predict "is".</li>
+      <li>Connect the activation functions to the outputs with randomly initialized weights. The outputs go through SoftMax because this is classification with multiple outputs. SoftMax turns the outputs into values between 0 and 1 that add up to 1. That means we can use cross entropy as the loss for backpropagation.</li>
+      <li>Plot each word using its two input weights. The x-axis is the weight to the top activation function, and the y-axis is the weight to the bottom one. Before training, "Troll 2" and "Gymkata" are no closer to each other than to any other word.</li>
+      <li>Train the network. The new weights from the inputs to the activation functions are the embeddings. Because "Troll 2" and "Gymkata" appear in the same context, they now sit close together on the graph.</li>
+      <li>Predicting only the next word gives little context. Word2vec, a popular embedding method, adds context in one of two ways. Continuous bag-of-words uses the surrounding words to predict the word in the middle. Skip-gram uses the word in the middle to predict the surrounding words.</li>
+      <li>In practice, people use 100 or more activation functions per word and train on the entire Wikipedia. Word2vec might have a vocabulary of about 3 million words and phrases, which gives 600 million weights. So training can be slow.</li>
+      <li>Word2vec speeds things up with negative sampling. It randomly picks a few words we do not want to predict, and only optimizes the weights for those outputs and the target.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 290" role="img" aria-label="Continuous bag-of-words uses Troll 2 and great! to predict is; skip-gram uses is to predict Troll 2, great! and Gymkata">
+        <defs>
+          <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="sv-ink2"/></marker>
+        </defs>
+        <rect x="0" y="0" width="760" height="290" class="sv-paper"/>
+        <line x1="380" y1="30" x2="380" y2="270" class="sv-line" stroke-width="1.5"/>
+        <!-- CBOW -->
+        <text x="195" y="45" text-anchor="middle" class="sv-tb">Continuous bag-of-words</text>
+        <rect x="50" y="95" width="110" height="40" rx="6" class="sv-paper2"/>
+        <rect x="50" y="95" width="110" height="40" rx="6" class="sv-stroke-ink" stroke-width="1.2"/>
+        <rect x="50" y="175" width="110" height="40" rx="6" class="sv-paper2"/>
+        <rect x="50" y="175" width="110" height="40" rx="6" class="sv-stroke-ink" stroke-width="1.2"/>
+        <text x="105" y="120" text-anchor="middle" class="sv-t">Troll 2</text>
+        <text x="105" y="200" text-anchor="middle" class="sv-t">great!</text>
+        <rect x="240" y="135" width="100" height="40" rx="6" class="sv-good-soft"/>
+        <rect x="240" y="135" width="100" height="40" rx="6" class="sv-stroke-good" stroke-width="2"/>
+        <text x="290" y="160" text-anchor="middle" class="sv-tb">is</text>
+        <line x1="162" y1="115" x2="236" y2="148" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah2)"/>
+        <line x1="162" y1="195" x2="236" y2="162" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah2)"/>
+        <text x="195" y="260" text-anchor="middle" class="sv-ts">surrounding words predict the middle word</text>
+        <!-- Skip-gram -->
+        <text x="565" y="45" text-anchor="middle" class="sv-tb">Skip-gram</text>
+        <rect x="420" y="135" width="100" height="40" rx="6" class="sv-acc-soft"/>
+        <rect x="420" y="135" width="100" height="40" rx="6" class="sv-stroke-acc" stroke-width="2"/>
+        <text x="470" y="160" text-anchor="middle" class="sv-tb">is</text>
+        <rect x="610" y="75" width="110" height="40" rx="6" class="sv-good-soft"/>
+        <rect x="610" y="75" width="110" height="40" rx="6" class="sv-stroke-good" stroke-width="1.5"/>
+        <rect x="610" y="135" width="110" height="40" rx="6" class="sv-good-soft"/>
+        <rect x="610" y="135" width="110" height="40" rx="6" class="sv-stroke-good" stroke-width="1.5"/>
+        <rect x="610" y="195" width="110" height="40" rx="6" class="sv-good-soft"/>
+        <rect x="610" y="195" width="110" height="40" rx="6" class="sv-stroke-good" stroke-width="1.5"/>
+        <text x="665" y="100" text-anchor="middle" class="sv-t">Troll 2</text>
+        <text x="665" y="160" text-anchor="middle" class="sv-t">great!</text>
+        <text x="665" y="220" text-anchor="middle" class="sv-t">Gymkata</text>
+        <line x1="522" y1="150" x2="606" y2="98" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah2)"/>
+        <line x1="522" y1="155" x2="606" y2="155" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah2)"/>
+        <line x1="522" y1="160" x2="606" y2="212" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah2)"/>
+        <text x="565" y="260" text-anchor="middle" class="sv-ts">the middle word predicts the surrounding words</text>
+      </svg>
+      <figcaption>Both word2vec strategies give the network more context than predicting only the next word; they just reverse which side is the input.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>The video does not write out equations, but each idea below follows directly from what Josh describes.</p>
+    <div class="formula"><span class="lbl">Activation function value for one input word</span><div class="math">$$ h_j = \sum_{i=1}^{V} x_i \, w_{ij} = w_{kj} $$</div><p class="explain"><b>Symbols:</b> \(h_j\) is the output of activation function \(j\). \(V\) is the number of unique words (4 here). \(x_i\) is the input for word \(i\): 1 for the input word and 0 for the rest. \(w_{ij}\) is the weight from word \(i\) to activation function \(j\). \(k\) is the input word. <b>What it tells you:</b> every other word multiplies its weights by zero, and the identity function changes nothing, so the activation functions simply pass on the input word's own weights, which are its embedding.</p></div>
+    <div class="formula"><span class="lbl">SoftMax and cross entropy</span><div class="math">$$ p_m = \frac{e^{z_m}}{\sum_{n=1}^{V} e^{z_n}} \qquad L = -\log p_{\text{target}} $$</div><p class="explain"><b>Symbols:</b> \(z_m\) is the raw value of output \(m\). \(p_m\) is its SoftMax value, between 0 and 1. \(p_{\text{target}}\) is the SoftMax value for the word that should come next. \(L\) is the cross entropy loss. <b>What it tells you:</b> the loss is small when the correct next word gets the largest SoftMax value, and backpropagation uses it to adjust all the weights.</p></div>
+    <div class="formula"><span class="lbl">Number of weights in word2vec</span><div class="math">$$ 3{,}000{,}000 \times 100 \times 2 = 600{,}000{,}000 $$</div><p class="explain"><b>Symbols:</b> 3,000,000 is the vocabulary size. 100 is the number of activation functions, so each word has 100 weights going in. The 2 counts the matching weights from the activation functions to the outputs. <b>What it tells you:</b> a full update touches 600 million weights, so training is slow.</p></div>
+    <div class="formula"><span class="lbl">Weights updated per step with negative sampling</span><div class="math">$$ \underbrace{100}_{\text{aardvark to activations}} + \underbrace{100 \times 2}_{\text{activations to a and abandon}} = 300 $$</div><p class="explain"><b>Symbols:</b> 100 is the number of activation functions. "aardvark" is the input word, "a" is the word to predict, and "abandon" is the one randomly chosen word we do not want to predict. <b>What it tells you:</b> instead of 600 million weights, one step optimizes only 300.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p><b>Setup.</b> Inputs are "Troll 2", "is", "great!" and "Gymkata", with two activation functions. Training pairs are "Troll 2" → "is", "is" → "great!", and "Gymkata" → "is". For "Troll 2", the input is 1, 0, 0, 0.</p>
+      <p><b>Before training.</b> "Troll 2" has weights 0.38 and 0.42, so it is plotted at (0.38, 0.42). With random weights, "Troll 2" correctly predicts "is", but only barely. The word "is" fails and predicts "is" instead of "great!". On the graph, "Troll 2" and "Gymkata" are not close.</p>
+      <p><b>After training.</b> "Troll 2" gives 1 for "is" and 0 for everything else. "is" gives 1 for "great!", the next word in both phrases. "Gymkata" gives 1 for "is". On the graph of the new weights, "Troll 2" and "Gymkata" now sit close together.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> The embeddings are the weights from the inputs to the activation functions. The weights from the activation functions to the outputs are only used to make the predictions during training.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The activation functions use the identity function. They add no curve or bend. They are just a place to do addition, and their count sets how many numbers each word gets.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The zeros in the input already remove close to 300 million input weights from a step. The other 300 million sit after the activation functions, and negative sampling is what cuts those down. In practice word2vec picks between 2 and 20 words we do not want to predict, not just one.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>Why not just give each word a random number?</summary><div class="a">Random numbers ignore how words are used. Similar words like "great!" and "awesome!" could get 4.2 and −32.1, so learning one word does not help with the other. The network then needs more complexity and more training.</div></details>
+    <details class="qa" open><summary>How does a neural network create word embeddings?</summary><div class="a">We give it one input per word, a few identity activation functions, and SoftMax outputs. We train it with cross entropy to predict a nearby word. After training, the weights from each input to the activation functions are that word's embedding, and words used in similar contexts get similar weights.</div></details>
+    <details class="qa" open><summary>What is the difference between continuous bag-of-words and skip-gram?</summary><div class="a">Both give more context than predicting the next word. Continuous bag-of-words uses the surrounding words to predict the middle word. Skip-gram does the reverse and uses the middle word to predict the surrounding words.</div></details>
+    <details class="qa" open><summary>What is negative sampling and why does word2vec need it?</summary><div class="a">With about 3 million words and 100 activation functions, the network has 600 million weights, so training is slow. Negative sampling picks 2 to 20 words we do not want to predict and only updates the outputs for those and the target. In Josh's example, with one such word, that leaves 300 weights per step.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Machine learning algorithms need numbers, so words must be turned into numbers.</li>
+      <li>Random numbers work, but similar words then get very different numbers.</li>
+      <li>A simple network with identity activation functions and SoftMax outputs learns to predict a nearby word.</li>
+      <li>The weights from each input to the activation functions are that word's embedding.</li>
+      <li>Words used in similar contexts, like "Troll 2" and "Gymkata", end up with similar embeddings.</li>
+      <li>Word2vec adds context with continuous bag-of-words or skip-gram.</li>
+      <li>Negative sampling updates only a few outputs per step, so huge vocabularies train quickly.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Word Embedding and Word2Vec</span><span class="board-tag">predict a nearby word, keep the weights</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 300" role="img" aria-label="Troll 2's two weights, 0.38 and 0.42, feed two activation functions that predict the next word, is, and also place Troll 2 at (0.38, 0.42) on a graph where, after training, Troll 2 and Gymkata sit close together.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <line x1="110" y1="56" x2="180.7" y2="34.6" class="sv-stroke-key" stroke-width="3" stroke-linecap="round"/>
+            <line x1="110" y1="68" x2="180.7" y2="89.4" class="sv-stroke-key" stroke-width="3" stroke-linecap="round"/>
+            <line x1="211.4" y1="34.3" x2="282" y2="54" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="211.4" y1="89.7" x2="282" y2="70" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-key" stroke-width="2.5"><rect x="14" y="42" width="96" height="40" rx="8" class="sv-key-soft"/></g>
+            <g class="sv-stroke-acc" stroke-width="2.5"><circle cx="196" cy="30" r="16" class="sv-paper"/><circle cx="196" cy="94" r="16" class="sv-paper"/></g>
+            <g class="sv-stroke-good" stroke-width="2.5"><rect x="290" y="42" width="96" height="40" rx="8" class="sv-good-soft"/></g>
+            <text x="62" y="69" text-anchor="middle" class="sv-tb">Troll 2</text>
+            <text x="116" y="32" class="sv-tm">0.38</text>
+            <text x="116" y="103" class="sv-tm">0.42</text>
+            <text x="338" y="30" text-anchor="middle" class="sv-ts">next word</text>
+            <text x="338" y="69" text-anchor="middle" class="sv-tb">is</text>
+            <polyline points="30,128 30,288 386,288" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M74.2 180.2 L186 227" class="sv-stroke-key" stroke-width="2.5" stroke-dasharray="6 6" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <path d="M340 180.6 L227.8 232.5" class="sv-stroke-ink" stroke-width="2.5" stroke-dasharray="6 6" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-key" stroke-width="2.5"><circle cx="64" cy="176" r="7" class="sv-paper"/></g>
+            <g class="sv-stroke-ink" stroke-width="2.5"><circle cx="350" cy="176" r="7" class="sv-paper"/></g>
+            <g class="sv-stroke-ink" stroke-width="2"><circle cx="198" cy="232" r="7" class="sv-key"/><circle cx="216" cy="238" r="7" class="sv-ink2"/></g>
+            <text x="46" y="154" class="sv-t">Troll 2 (0.38, 0.42)</text>
+            <text x="382" y="154" text-anchor="end" class="sv-t">Gymkata</text>
+            <text x="207" y="270" text-anchor="middle" class="sv-tb">after training</text>
+          </svg>
+          <p>Random numbers give similar words very different numbers. Instead, train a network to predict the next word; its input weights are the embeddings. Same-context words land close.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Word embedding</dt><dd>A word's weights into the activation functions.</dd>
+            <dt>Activation function</dt><dd>Identity here; count sets numbers per word.</dd>
+            <dt>SoftMax</dt><dd>Outputs between 0 and 1, summing to 1.</dd>
+            <dt>Continuous bag-of-words</dt><dd>Surrounding words predict the middle one; skip-gram flips it.</dd>
+            <dt>Negative sampling</dt><dd>Update only the target and a few random unwanted words.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Build the network</b>4 inputs, 2 activations</li>
+            <li><b>Predict next word</b>input 1, others 0</li>
+            <li><b>SoftMax outputs</b>cross entropy, backpropagation</li>
+            <li><b>Train and plot</b>input weights = embedding</li>
+            <li><b>More context</b>continuous bag-of-words or skip-gram</li>
+            <li><b>Negative sampling</b>update few outputs</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$h_j=\sum_i x_i\,w_{ij}=w_{kj}$$
+          $$3{,}000{,}000\times100\times2=600{,}000{,}000$$
+          $$100+100\times2=300$$
+          <ul class="keys">
+            <li>\(x_i\) is 1 only for input word \(k\), so \(h_j\) is its weight.</li>
+            <li>3 million words, 100 activation functions, weights in and out.</li>
+            <li>Negative sampling: 100 in, then 100 each to the target and one unwanted word.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>word → next</th><th>before</th><th>after</th></tr>
+            <tr><td>Troll 2 → is</td><td>right, barely</td><td>is = 1</td></tr>
+            <tr><td>is → great!</td><td>says "is" ✗</td><td>great! = 1</td></tr>
+            <tr><td>Gymkata → is</td><td>—</td><td>is = 1</td></tr>
+            <tr class="final"><td>Troll 2, Gymkata</td><td>not close</td><td>close ✓</td></tr>
+          </table>
+          <p class="hand">Troll 2 starts at (0.38, 0.42). It and Gymkata both predict "is".</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Every weight is part of the embedding.</span><span class="yes">Only the weights from inputs to activation functions. The rest only make predictions during training.</span></li>
+            <li><span class="no">The activation functions add a curve.</span><span class="yes">They use the identity: no bend, just a place to add.</span></li>
+            <li><span class="no">Negative sampling removes the input weights.</span><span class="yes">Input zeros drop those. It cuts the 300 million after the activations, using 2 to 20 unwanted words.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="88-long-short-term-memory-lstm.html"><small>Previous</small>Long Short-Term Memory (LSTM)</a> <a href="90-sequence-to-sequence-seq2seq-encoder-decoder-neural-networks.html"><small>Next</small>Sequence-to-Sequence (seq2seq) Encoder-Decoder Neural Networks</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

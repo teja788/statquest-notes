@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stochastic Gradient Descent — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>57</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 57 · 10.9 min</div>
+    <h1>Stochastic Gradient Descent</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=vMh0zPT0tLI" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Regular gradient descent uses every sample in every step. With big data that is too slow. Stochastic gradient descent uses one random sample per step instead.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Gradient descent finds the best parameters by taking small steps down a loss function. Each step plugs every data point into every derivative, so the cost grows with samples and with parameters. Stochastic gradient descent picks one random sample per step and uses only that sample. In practice people use a small subset, called a mini batch, because it is faster than all the data and steadier than one point. The video also shows that new data can update the parameters without starting again.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh starts with the example from the earlier gradient descent video. Three people gave their height and weight. We want to fit a line, so we need an intercept and a slope. We measure the fit with the sum of the squared residuals, which is one of many loss functions. Gradient descent then takes the derivative of that loss with respect to each parameter and steps downhill.</p>
+    <p>With three data points and two parameters, each step is cheap. Each derivative has only three terms. The problem appears when the model grows. Imagine a logistic regression that uses 23,000 genes to predict a disease. That gives 23,000 derivatives. Now imagine one million samples. Each derivative then needs one million terms, so one step costs 23 billion terms. A run of 1,000 steps costs at least 2.3 trillion terms.</p>
+    <p>Stochastic gradient descent removes the sum. It picks one sample at random and uses only that sample to compute the derivatives. The model is the same, the loss is the same, and the update rule is the same. Only the number of terms per step changes, and it drops by a factor equal to the sample size.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 250" role="img" aria-label="Two panels comparing the cost of one step: regular gradient descent uses every sample, stochastic gradient descent uses one random sample">
+        <defs>
+          <marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" class="sv-ink2"></path>
+          </marker>
+          <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" class="sv-key"></path>
+          </marker>
+        </defs>
+
+        <line x1="380" y1="15" x2="380" y2="235" class="sv-line" stroke-width="1"></line>
+
+        <text x="20" y="28" class="sv-tb">Regular gradient descent</text>
+        <text x="400" y="28" class="sv-tb">Stochastic gradient descent</text>
+
+        <circle cx="45" cy="70" r="7" class="sv-acc"></circle>
+        <circle cx="80" cy="70" r="7" class="sv-acc"></circle>
+        <circle cx="115" cy="70" r="7" class="sv-acc"></circle>
+        <circle cx="150" cy="70" r="7" class="sv-acc"></circle>
+        <circle cx="45" cy="102" r="7" class="sv-acc"></circle>
+        <circle cx="80" cy="102" r="7" class="sv-acc"></circle>
+        <circle cx="115" cy="102" r="7" class="sv-acc"></circle>
+        <circle cx="150" cy="102" r="7" class="sv-acc"></circle>
+        <circle cx="45" cy="134" r="7" class="sv-acc"></circle>
+        <circle cx="80" cy="134" r="7" class="sv-acc"></circle>
+        <circle cx="115" cy="134" r="7" class="sv-acc"></circle>
+        <circle cx="150" cy="134" r="7" class="sv-acc"></circle>
+
+        <path d="M168,72 L200,96" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah1)"></path>
+        <path d="M168,102 L200,106" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah1)"></path>
+        <path d="M168,132 L200,118" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah1)"></path>
+
+        <rect x="206" y="78" width="150" height="58" rx="6" class="sv-acc-soft"></rect>
+        <text x="281" y="100" class="sv-ts" text-anchor="middle">every sample goes</text>
+        <text x="281" y="116" class="sv-ts" text-anchor="middle">into every derivative</text>
+
+        <circle cx="425" cy="70" r="7" class="sv-ink3"></circle>
+        <circle cx="460" cy="70" r="7" class="sv-ink3"></circle>
+        <circle cx="495" cy="70" r="7" class="sv-ink3"></circle>
+        <circle cx="530" cy="70" r="7" class="sv-ink3"></circle>
+        <circle cx="425" cy="102" r="7" class="sv-ink3"></circle>
+        <circle cx="460" cy="102" r="10" class="sv-key"></circle>
+        <circle cx="495" cy="102" r="7" class="sv-ink3"></circle>
+        <circle cx="530" cy="102" r="7" class="sv-ink3"></circle>
+        <circle cx="425" cy="134" r="7" class="sv-ink3"></circle>
+        <circle cx="460" cy="134" r="7" class="sv-ink3"></circle>
+        <circle cx="495" cy="134" r="7" class="sv-ink3"></circle>
+        <circle cx="530" cy="134" r="7" class="sv-ink3"></circle>
+
+        <path d="M548,104 L580,106" class="sv-stroke-key" stroke-width="1.8" marker-end="url(#ah2)"></path>
+
+        <rect x="586" y="78" width="150" height="58" rx="6" class="sv-key-soft"></rect>
+        <text x="661" y="100" class="sv-ts" text-anchor="middle">one random sample</text>
+        <text x="661" y="116" class="sv-ts" text-anchor="middle">feeds each derivative</text>
+
+        <text x="20" y="178" class="sv-tm">1,000,000 samples × 23,000 derivatives</text>
+        <text x="20" y="198" class="sv-t">= 23 billion terms for one step</text>
+        <text x="20" y="222" class="sv-ts">1,000 steps = 2.3 trillion terms</text>
+
+        <text x="400" y="178" class="sv-tm">1 sample × 23,000 derivatives</text>
+        <text x="400" y="198" class="sv-t">= 23,000 terms for one step</text>
+        <text x="400" y="222" class="sv-ts">1,000 steps = 23 million terms</text>
+      </svg>
+      <figcaption>Notice that only the number of samples per step changes. The model, the loss and the update rule stay the same.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Start with a guess for the parameters. In the video the intercept is 0 and the slope is 1.</li>
+      <li>Pick one sample at random from the data. Josh picks a point with weight 3 and height 3.3.</li>
+      <li>Plug that one sample into the derivative of the loss with respect to the intercept, and with respect to the slope. These derivatives are the slopes of the loss surface at the current guess.</li>
+      <li>Multiply each derivative by the learning rate to get the step size. The video uses a learning rate of 0.01.</li>
+      <li>Subtract each step size from the matching old parameter. That gives the new intercept and the new slope, and so a new line.</li>
+      <li>Pick another random sample and repeat. Stop after the maximum number of steps, or when the steps become very small.</li>
+    </ol>
+    <p>Stochastic gradient descent helps most when the data repeat themselves. The video shows 12 points that form three clusters. Points inside a cluster carry almost the same information, so one point from a cluster already tells you most of what the whole cluster would tell you.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 360" role="img" aria-label="Scatter plot of 12 weight and height points in three clusters, with the starting line and the line found by stochastic gradient descent">
+        <line x1="60" y1="325" x2="410" y2="325" class="sv-stroke-ink" stroke-width="1.4"></line>
+        <line x1="60" y1="325" x2="60" y2="20" class="sv-stroke-ink" stroke-width="1.4"></line>
+        <text x="235" y="350" class="sv-ts" text-anchor="middle">weight</text>
+        <text x="30" y="170" class="sv-ts" text-anchor="middle" transform="rotate(-90 30 170)">height</text>
+
+        <ellipse cx="135" cy="208" rx="30" ry="26" class="sv-line" stroke-width="1.2" stroke-dasharray="5 4"></ellipse>
+        <ellipse cx="203" cy="171" rx="30" ry="24" class="sv-line" stroke-width="1.2" stroke-dasharray="5 4"></ellipse>
+        <ellipse cx="273" cy="120" rx="30" ry="32" class="sv-line" stroke-width="1.2" stroke-dasharray="5 4"></ellipse>
+
+        <line x1="60" y1="325" x2="340" y2="45" class="sv-stroke-ink" stroke-width="1.5" stroke-dasharray="6 4"></line>
+        <line x1="60" y1="266" x2="340" y2="75" class="sv-stroke-acc" stroke-width="2.6"></line>
+
+        <circle cx="123" cy="220" r="5" class="sv-ink2"></circle>
+        <circle cx="137" cy="206" r="5" class="sv-ink2"></circle>
+        <circle cx="151" cy="213" r="5" class="sv-ink2"></circle>
+        <circle cx="130" cy="192" r="5" class="sv-ink2"></circle>
+        <circle cx="193" cy="185" r="5" class="sv-ink2"></circle>
+        <circle cx="207" cy="164" r="5" class="sv-ink2"></circle>
+        <circle cx="214" cy="178" r="5" class="sv-ink2"></circle>
+        <circle cx="200" cy="157" r="5" class="sv-ink2"></circle>
+        <circle cx="263" cy="129" r="5" class="sv-ink2"></circle>
+        <circle cx="284" cy="115" r="5" class="sv-ink2"></circle>
+        <circle cx="277" cy="143" r="5" class="sv-ink2"></circle>
+        <circle cx="270" cy="94" r="8" class="sv-key"></circle>
+
+        <rect x="252" y="52" width="150" height="24" rx="4" class="sv-paper"></rect>
+        <text x="258" y="69" class="sv-tm">picked: 3 and 3.3</text>
+        <line x1="288" y1="76" x2="274" y2="88" class="sv-stroke-key" stroke-width="1.4"></line>
+
+        <rect x="90" y="286" width="170" height="22" rx="4" class="sv-paper"></rect>
+        <text x="96" y="302" class="sv-ts">start: intercept 0, slope 1</text>
+
+        <rect x="430" y="60" width="310" height="26" rx="4" class="sv-paper2"></rect>
+        <text x="442" y="78" class="sv-t">12 points, but only 3 real clusters</text>
+
+        <text x="442" y="120" class="sv-tb">After many random steps</text>
+        <text x="442" y="146" class="sv-tm">intercept 0.85 · slope 0.68</text>
+        <text x="442" y="178" class="sv-tb">Mini batch of 3 per step</text>
+        <text x="442" y="204" class="sv-tm">intercept 0.86 · slope 0.68</text>
+        <text x="442" y="236" class="sv-tb">Least squares, the gold standard</text>
+        <text x="442" y="262" class="sv-tm">intercept 0.87 · slope 0.68</text>
+        <text x="442" y="294" class="sv-ts">One point per cluster already carries</text>
+        <text x="442" y="312" class="sv-ts">most of that cluster's information.</text>
+      </svg>
+      <figcaption>Notice that the line found from single random points lands very close to the exact least squares answer.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">The fitted line</span>
+      <div class="math">$$ \hat{h}_i = b + m\,w_i $$</div>
+      <p class="explain"><b>Symbols:</b> \(\hat{h}_i\) is the predicted height for person \(i\). \(b\) is the intercept, the height when weight is zero. \(m\) is the slope, the change in height for one unit of weight. \(w_i\) is the observed weight of person \(i\). <b>What it tells you:</b> the two numbers we are searching for are \(b\) and \(m\).</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Loss over all the data</span>
+      <div class="math">$$ \mathrm{SSR} = \sum_{i=1}^{n}\bigl(h_i - (b + m\,w_i)\bigr)^{2} $$</div>
+      <p class="explain"><b>Symbols:</b> \(\mathrm{SSR}\) is the sum of the squared residuals. \(h_i\) is the observed height. \(n\) is the number of samples. The bracket is the residual, the gap between what we saw and what we predicted. <b>What it tells you:</b> smaller is better, and every sample adds one term to the sum.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Derivatives used by regular gradient descent</span>
+      <div class="math">$$ \frac{\partial\,\mathrm{SSR}}{\partial b} = \sum_{i=1}^{n} -2\bigl(h_i - (b + m\,w_i)\bigr) \qquad \frac{\partial\,\mathrm{SSR}}{\partial m} = \sum_{i=1}^{n} -2\,w_i\bigl(h_i - (b + m\,w_i)\bigr) $$</div>
+      <p class="explain"><b>Symbols:</b> \(\partial\,\mathrm{SSR}/\partial b\) is how fast the loss changes when the intercept changes. \(\partial\,\mathrm{SSR}/\partial m\) is the same for the slope. All other symbols are as above. <b>What it tells you:</b> one step needs \(n\) terms for each parameter, so the cost grows with the size of the data.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Derivatives used by stochastic gradient descent</span>
+      <div class="math">$$ \frac{\partial L_j}{\partial b} = -2\bigl(h_j - (b + m\,w_j)\bigr) \qquad \frac{\partial L_j}{\partial m} = -2\,w_j\bigl(h_j - (b + m\,w_j)\bigr) $$</div>
+      <p class="explain"><b>Symbols:</b> \(j\) is the one sample chosen at random for this step. \(L_j\) is the squared residual of that single sample. \(h_j\) and \(w_j\) are its height and weight. <b>What it tells you:</b> the sum is gone, so each derivative costs one term instead of \(n\) terms.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Step size and update</span>
+      <div class="math">$$ \text{step}_b = \frac{\partial L}{\partial b}\times\eta \qquad b_{\text{new}} = b_{\text{old}} - \text{step}_b \qquad m_{\text{new}} = m_{\text{old}} - \text{step}_m $$</div>
+      <p class="explain"><b>Symbols:</b> \(\eta\) is the learning rate, set to 0.01 in the video. \(\text{step}_b\) and \(\text{step}_m\) are how far we move the intercept and the slope. <b>What it tells you:</b> the update rule is exactly the same as regular gradient descent, so only the derivative changed.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>We start with intercept \(b=0\) and slope \(m=1\). We pick one random point with weight 3 and height 3.3. The learning rate is 0.01.</p>
+      <div class="math">$$ \hat{h} = 0 + 1\times 3 = 3 \qquad\Rightarrow\qquad h - \hat{h} = 3.3 - 3 = 0.3 $$</div>
+      <p>Josh skips the arithmetic here, so it is worked out below. First, plug that residual into the two single sample derivatives.</p>
+      <div class="math">$$ \frac{\partial L}{\partial b} = -2(0.3) = -0.6 \qquad \frac{\partial L}{\partial m} = -2(3)(0.3) = -1.8 $$</div>
+      <p>Multiply each by the learning rate to get the step sizes, then update.</p>
+      <div class="math">$$ b_{\text{new}} = 0 - (-0.6\times0.01) = 0.006 \qquad m_{\text{new}} = 1 - (-1.8\times0.01) = 1.018 $$</div>
+      <p>We repeat this with new random points many times. The video ends with an intercept of 0.85 and a slope of 0.68. Least squares, the exact answer, gives 0.87 and 0.68. With a mini batch of three samples per step the intercept comes out at 0.86, a little closer to the exact value.</p>
+      <p>Then a new person is measured, with weight 1.1 and height 2. We do not go back to the first guess. We start from the most recent estimate and take one more step with the same rule. The line becomes intercept 0.878 and slope 0.7.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>The strict meaning of stochastic gradient descent is one sample per step. In real work people almost always use a small subset, called a mini batch. A mini batch is steadier than one point and much faster than all the data. Say which one you mean.</p>
+    </div>
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Like regular gradient descent, stochastic gradient descent is sensitive to the learning rate. The usual strategy is to start fairly large and shrink it at each step. The rule that controls this shrinking is called the schedule. If your parameters never settle, adjust the schedule first.</p>
+    </div>
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Single sample steps are noisy, because each step follows one point instead of the whole data set. A mini batch can give more stable estimates in fewer steps. Here it got the intercept a little closer to 0.87.</p>
+    </div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What problem does stochastic gradient descent solve?</summary><div class="a">Regular gradient descent puts every sample into every derivative at every step. With 23,000 parameters and a million samples, that is 23 billion terms per step. Stochastic gradient descent uses one random sample per step, so the cost drops by a factor of the sample size. It makes fitting feasible when full gradient descent is not.</div></details>
+    <details class="qa" open><summary>What is the difference between batch, stochastic and mini batch gradient descent?</summary><div class="a">They differ only in how many samples are used to compute the derivatives at each step. Batch uses all of them, stochastic uses exactly one, and mini batch uses a small subset. Mini batch sits between the two: more stable estimates in fewer steps than pure stochastic, and far faster than using all the data. The model, the loss and the update rule are identical in all three.</div></details>
+    <details class="qa" open><summary>What is a learning rate schedule, and why does it matter?</summary><div class="a">The schedule is the rule that changes the learning rate as training goes on. The common strategy is to start relatively large, then make the rate smaller with each step. Many implementations set a schedule for you by default. If the estimates fail to converge, the schedule is the first setting I would tune.</div></details>
+    <details class="qa" open><summary>Why can stochastic gradient descent absorb new data so easily?</summary><div class="a">Each step only needs the current parameter values and one sample. So when new data arrive, we start from the most recent estimate and take one more step. In the video a new point with weight 1.1 and height 2 moved the line to intercept 0.878 and slope 0.7. Nothing has to be recomputed from the original guess, which makes it a good fit for online or streaming settings.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Gradient descent finds the intercept and slope by stepping down the sum of the squared residuals.</li>
+      <li>Every step plugs every sample into every derivative, so large data and many parameters make it very slow.</li>
+      <li>Stochastic gradient descent picks one sample at random and computes the derivatives from that sample alone.</li>
+      <li>Everything else is unchanged: the same loss, the same step size formula, and the same update rule.</li>
+      <li>In practice we use a mini batch of a few samples, which is steadier than one point and faster than all of them.</li>
+      <li>The learning rate still matters, and the schedule shrinks it as the steps go on.</li>
+      <li>On the 12 point example the method gave 0.85 and 0.68, close to the exact answer of 0.87 and 0.68.</li>
+      <li>New data can update the parameters with one extra step, without starting from the first guess.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Stochastic gradient descent</span><span class="board-tag">one random sample per step</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 270" role="img" aria-label="One step drawn as a grid: 1,000,000 samples across and 23,000 derivatives down. Regular gradient descent fills every cell, 23 billion terms. Stochastic gradient descent fills only the column of one random sample, 23,000 terms.">
+            <text x="20" y="28" class="sv-tb">one step</text>
+            <text x="156" y="28" class="sv-ts">1,000,000 samples →</text>
+            <rect x="156" y="46" width="220" height="110" class="sv-paper"/>
+            <path d="M178 46V156M200 46V156M222 46V156M244 46V156M266 46V156M288 46V156M310 46V156M332 46V156M354 46V156M156 68H376M156 90H376M156 112H376M156 134H376" class="sv-line" stroke-width="1.5"/>
+            <rect x="156" y="46" width="220" height="110" class="sv-stroke-ink" stroke-width="2"/>
+            <g class="sv-stroke-ink" stroke-width="2.5">
+              <rect x="222" y="40" width="22" height="122" rx="3" class="sv-key"/>
+            </g>
+            <text x="144" y="92" text-anchor="end" class="sv-tb">23,000</text>
+            <text x="144" y="118" text-anchor="end" class="sv-ts">derivatives</text>
+            <text x="233" y="184" text-anchor="middle" class="sv-ts">one random sample</text>
+            <rect x="24" y="206" width="20" height="20" class="sv-paper"/>
+            <path d="M34 206V226M24 216H44" class="sv-line" stroke-width="1.5"/>
+            <rect x="24" y="206" width="20" height="20" class="sv-stroke-ink" stroke-width="2"/>
+            <text x="56" y="222" class="sv-t">regular: 23 billion terms</text>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <rect x="29" y="236" width="10" height="20" rx="2" class="sv-key"/>
+            </g>
+            <text x="56" y="252" class="sv-t">stochastic: 23,000 terms</text>
+          </svg>
+          <p>Regular gradient descent plugs every sample into every derivative, so one step fills the whole grid. Stochastic gradient descent fills one random column. The loss and the update rule stay the same.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Loss (SSR)</dt><dd>The sum of the squared residuals: how badly the line fits.</dd>
+            <dt>Learning rate</dt><dd>Scales each step; 0.01 in the video.</dd>
+            <dt>Mini batch</dt><dd>A small subset of samples used per step.</dd>
+            <dt>Schedule</dt><dd>The rule that shrinks the learning rate as steps go on.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Start</b>intercept 0, slope 1</li>
+            <li><b>Pick one sample</b>at random: weight 3, height 3.3</li>
+            <li><b>Plug it in</b>both derivatives, that sample only</li>
+            <li><b>Step size</b>derivative × 0.01</li>
+            <li><b>Update</b>new = old − step size</li>
+          </ol>
+          <p class="loop">↺ repeat 2 to 5 with a new random sample until the steps are tiny</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\frac{\partial L_j}{\partial b}=-2\big(h_j-(b+m\,w_j)\big)$$
+          $$\frac{\partial L_j}{\partial m}=-2\,w_j\big(h_j-(b+m\,w_j)\big)$$
+          $$b_{\text{new}}=b_{\text{old}}-\frac{\partial L_j}{\partial b}\times\eta$$
+          <ul class="keys">
+            <li>\(j\) is the one random sample, with height \(h_j\) and weight \(w_j\).</li>
+            <li>\(b\) is the intercept, \(m\) the slope, \(\eta\) the learning rate, 0.01 here.</li>
+            <li>The sum over all \(n\) samples is gone.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>step</th><th>intercept</th><th>slope</th></tr>
+            <tr><td>start</td><td>0</td><td>1</td></tr>
+            <tr><td>slopes at (3, 3.3)</td><td>−0.6</td><td>−1.8</td></tr>
+            <tr><td>after one step</td><td>0.006</td><td>1.018</td></tr>
+            <tr class="final"><td>many steps</td><td>0.85</td><td>0.68</td></tr>
+          </table>
+          <p class="hand">Least squares gives 0.87, 0.68; a mini batch of 3, 0.86. New point (1.1, 2): one step to 0.878, 0.7.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Everyone uses exactly one sample per step.</span><span class="yes">That is the strict meaning. Real work almost always uses a mini batch, so say which.</span></li>
+            <li><span class="no">Any fixed learning rate will do.</span><span class="yes">Start fairly large and shrink it each step. If parameters never settle, adjust the schedule first.</span></li>
+            <li><span class="no">Single-sample steps are steady.</span><span class="yes">Each follows one point, so steps are noisy. A mini batch got the intercept closer to 0.87.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="56-gradient-descent-step-by-step.html"><small>Previous</small>Gradient Descent, Step-by-Step</a> <a href="58-adaboost.html"><small>Next</small>AdaBoost</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

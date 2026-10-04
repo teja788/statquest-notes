@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Population and Estimated Parameters — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>06</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 06 · 14.5 min</div>
+    <h1>Population and Estimated Parameters</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=vikkiwjQqfU" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video explains what a <strong>population</strong> is, what its <strong>parameters</strong> are, and why we spend our lives estimating them from small samples.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>A population is every single unit you could measure, such as all 240 billion cells in a liver. Fit a curve to that full set of data, and the numbers defining the curve are the population parameters. In real work you measure only a handful of units, so you estimate those parameters from a small sample. Every repeat gives slightly different estimates, and more data pulls them closer to the truth. Statistics then says how much confidence to place in the estimates, which is what makes results reproducible.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh counts the number of mRNA transcripts for gene X in five liver cells. An mRNA transcript is a copy of a gene that the cell has made, so the count is a whole number. If genetics means nothing to you, count green apples in five grocery stores instead.</p>
+    <p>The five cells gave 3, 13, 19, 24 and 29. Now imagine unlimited time and money. You would measure all 240 billion cells in the liver. That complete set is the <strong>population</strong>. Its histogram shows most cells had between 20 and 30 transcripts, and few had under 10 or over 30.</p>
+    <p>A histogram of 240 billion cells is clumsy, so we replace it with a smooth curve of the same shape. Here that is a normal distribution with mean 20 and standard deviation 10. The mean sits in the middle. The standard deviation says how far the data spread around the mean. Those two numbers fully define the curve, so they are the <strong>population parameters</strong>.</p>
+    <p>The catch is that nobody measures 240 billion cells. We measure five, and use them to <strong>estimate</strong> the two parameters. The figure below shows the arrangement.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 400" role="img" aria-label="A normal curve for the whole population of liver cells above a number line showing the five measured cells, with boxes for the true population parameters and the estimates made from the sample">
+        <defs>
+          <marker id="arr1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" class="sv-ink2"></path></marker>
+        </defs>
+
+        <rect x="20" y="20" width="420" height="194" rx="8" class="sv-paper2"></rect>
+        <text x="36" y="38" class="sv-tb">Population: all 240 billion liver cells</text>
+
+        <polygon class="sv-key-soft" points="256,107 273.5,125 291,141 308.5,154 326,164 343.5,170 361,175 378.5,177 396,179 396,180 256,180"></polygon>
+        <polyline class="sv-stroke-acc" stroke-width="2.5" stroke-linejoin="round" points="46,164 63.5,154 81,141 98.5,125 116,107 133.5,89 151,74 168.5,64 186,60 203.5,64 221,74 238.5,89 256,107 273.5,125 291,141 308.5,154 326,164 343.5,170 361,175 378.5,177 396,179"></polyline>
+        <line x1="186" y1="60" x2="186" y2="180" class="sv-line" stroke-width="1.5" stroke-dasharray="4 3"></line>
+        <text x="186" y="52" class="sv-ts" text-anchor="middle">mean = 20</text>
+        <rect x="292" y="96" width="128" height="20" rx="4" class="sv-paper"></rect>
+        <text x="356" y="110" class="sv-ts" text-anchor="middle">shaded area = 0.16</text>
+
+        <line x1="42" y1="180" x2="410" y2="180" class="sv-line" stroke-width="1.5"></line>
+        <line x1="46" y1="180" x2="46" y2="186" class="sv-line" stroke-width="1.5"></line>
+        <line x1="256" y1="180" x2="256" y2="186" class="sv-line" stroke-width="1.5"></line>
+        <line x1="396" y1="180" x2="396" y2="186" class="sv-line" stroke-width="1.5"></line>
+        <text x="46" y="200" class="sv-ts" text-anchor="middle">0</text>
+        <text x="256" y="200" class="sv-ts" text-anchor="middle">30</text>
+        <text x="396" y="200" class="sv-ts" text-anchor="middle">50</text>
+
+        <rect x="500" y="30" width="240" height="84" rx="8" class="sv-acc-soft"></rect>
+        <text x="516" y="54" class="sv-tm">POPULATION PARAMETERS</text>
+        <text x="516" y="78" class="sv-t">mean &#956; = 20</text>
+        <text x="516" y="100" class="sv-t">SD &#963; = 10</text>
+
+        <line x1="140" y1="220" x2="140" y2="248" class="sv-line" stroke-width="1.5" marker-end="url(#arr1)"></line>
+        <text x="152" y="240" class="sv-ts">measure only 5 cells</text>
+
+        <rect x="20" y="252" width="420" height="118" rx="8" class="sv-paper2"></rect>
+        <text x="36" y="276" class="sv-tb">Sample: the 5 cells we really measured</text>
+        <line x1="42" y1="330" x2="410" y2="330" class="sv-line" stroke-width="1.5"></line>
+        <circle cx="67" cy="330" r="6" class="sv-good"></circle>
+        <circle cx="137" cy="330" r="6" class="sv-good"></circle>
+        <circle cx="179" cy="330" r="6" class="sv-good"></circle>
+        <circle cx="214" cy="330" r="6" class="sv-good"></circle>
+        <circle cx="249" cy="330" r="6" class="sv-good"></circle>
+        <text x="67" y="315" class="sv-ts" text-anchor="middle">3</text>
+        <text x="137" y="315" class="sv-ts" text-anchor="middle">13</text>
+        <text x="179" y="315" class="sv-ts" text-anchor="middle">19</text>
+        <text x="214" y="315" class="sv-ts" text-anchor="middle">24</text>
+        <text x="249" y="315" class="sv-ts" text-anchor="middle">29</text>
+        <text x="226" y="358" class="sv-ts" text-anchor="middle">mRNA transcripts for gene X (same scale in both panels)</text>
+
+        <line x1="446" y1="306" x2="494" y2="306" class="sv-line" stroke-width="1.5" marker-end="url(#arr1)"></line>
+        <text x="470" y="296" class="sv-ts" text-anchor="middle">estimate</text>
+
+        <rect x="500" y="252" width="240" height="88" rx="8" class="sv-good-soft"></rect>
+        <text x="516" y="276" class="sv-tm">ESTIMATES FROM 5 CELLS</text>
+        <text x="516" y="300" class="sv-t">estimated mean = 17.6</text>
+        <text x="516" y="322" class="sv-t">estimated SD = 10.1</text>
+
+        <line x1="620" y1="246" x2="620" y2="122" class="sv-line" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arr1)"></line>
+        <text x="632" y="190" class="sv-ts">aims at the truth</text>
+      </svg>
+      <figcaption>The two estimates, 17.6 and 10.1, sit close to the true values 20 and 10, but do not equal them.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Measure five liver cells. Josh counts 3, 13, 19, 24 and 29 transcripts for gene X.</li>
+      <li>Imagine measuring the whole population instead: all 240 billion cells, drawn as one huge histogram.</li>
+      <li>Ask the histogram a question. For the chance of 30 or more transcripts, divide 38 billion cells by 240 billion. That gives 0.16.</li>
+      <li>Replace the histogram with a smooth curve. A normal distribution with mean 20 and standard deviation 10 fits.</li>
+      <li>Ask the curve the same question. The tail area above 30 is also 0.16. The curve stands in well for the real data.</li>
+      <li>Learn the words. The full set of cells is the population, and the numbers defining the fitted curve are its parameters. An exponential curve has a rate; a gamma curve has a shape and a rate.</li>
+      <li>Face reality. You rarely have the population, so you estimate from a sample. The five cells give an estimated mean of 17.6 and an estimated standard deviation of 10.1.</li>
+      <li>Repeat the experiment. A second set of five cells gives 19.2 and 12.7. Both sets differ from each other and from the true 20 and 10.</li>
+      <li>Add more data. With two, three and then five measurements the estimates walk towards the truth, as the next figure shows.</li>
+      <li>Quantify your confidence with p-values and confidence intervals. Here they say the two experiments are not significantly different, so the results should replicate.</li>
+    </ol>
+
+    <p>This answers the worry about reproducibility. Different answers every time sound alarming. But the estimates tighten around the true parameters as the sample grows.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Two line charts showing the estimated mean rising towards 20 and the estimated standard deviation falling towards 10 as the sample grows from two to five measurements">
+        <rect x="20" y="20" width="350" height="260" rx="8" class="sv-paper2"></rect>
+        <text x="36" y="38" class="sv-tb">Estimated mean climbs towards 20</text>
+        <line x1="60" y1="60" x2="60" y2="250" class="sv-line" stroke-width="1.5"></line>
+        <line x1="60" y1="250" x2="340" y2="250" class="sv-line" stroke-width="1.5"></line>
+        <line x1="60" y1="86" x2="340" y2="86" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="5 4"></line>
+        <text x="340" y="78" class="sv-ts" text-anchor="end">true mean = 20</text>
+        <polyline class="sv-stroke-acc" stroke-width="2.5" points="100,234 190,163 310,126"></polyline>
+        <circle cx="100" cy="234" r="5" class="sv-acc"></circle>
+        <circle cx="190" cy="163" r="5" class="sv-acc"></circle>
+        <circle cx="310" cy="126" r="5" class="sv-acc"></circle>
+        <text x="100" y="224" class="sv-ts" text-anchor="middle">11</text>
+        <text x="190" y="153" class="sv-ts" text-anchor="middle">15.3</text>
+        <text x="310" y="116" class="sv-ts" text-anchor="middle">17.6</text>
+        <text x="100" y="270" class="sv-ts" text-anchor="middle">n = 2</text>
+        <text x="190" y="270" class="sv-ts" text-anchor="middle">n = 3</text>
+        <text x="310" y="270" class="sv-ts" text-anchor="middle">n = 5</text>
+
+        <rect x="390" y="20" width="350" height="260" rx="8" class="sv-paper2"></rect>
+        <text x="406" y="38" class="sv-tb">Estimated SD drops towards 10</text>
+        <line x1="430" y1="60" x2="430" y2="250" class="sv-line" stroke-width="1.5"></line>
+        <line x1="430" y1="250" x2="710" y2="250" class="sv-line" stroke-width="1.5"></line>
+        <line x1="430" y1="229" x2="710" y2="229" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="5 4"></line>
+        <text x="710" y="244" class="sv-ts" text-anchor="end">true SD = 10</text>
+        <polyline class="sv-stroke-acc" stroke-width="2.5" points="470,91 560,123 680,218"></polyline>
+        <circle cx="470" cy="91" r="5" class="sv-acc"></circle>
+        <circle cx="560" cy="123" r="5" class="sv-acc"></circle>
+        <circle cx="680" cy="218" r="5" class="sv-acc"></circle>
+        <text x="470" y="81" class="sv-ts" text-anchor="middle">11.3</text>
+        <text x="560" y="113" class="sv-ts" text-anchor="middle">11</text>
+        <text x="680" y="208" class="sv-ts" text-anchor="middle">10.1</text>
+        <text x="470" y="270" class="sv-ts" text-anchor="middle">n = 2</text>
+        <text x="560" y="270" class="sv-ts" text-anchor="middle">n = 3</text>
+        <text x="680" y="270" class="sv-ts" text-anchor="middle">n = 5</text>
+      </svg>
+      <figcaption>Each point sits nearer the dashed true value than the one before it. More data buys accuracy.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">The same probability, two ways</span>
+      <div class="math">$$ P(X \ge 30) = \frac{38\ \text{billion cells}}{240\ \text{billion cells}} = 0.16 \qquad P(X \ge 30) = \frac{\text{area above } 30}{\text{total area}} = \frac{0.16}{1} = 0.16 $$</div>
+      <p class="explain"><b>Symbols:</b> \(X\) is the count in one cell picked at random. On the left you divide cells by cells. On the right you divide area by area, and the total area is always 1. <b>What it tells you:</b> both routes give 0.16, so the curve replaces the raw data fairly.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">The normal curve and its two parameters</span>
+      <div class="math">$$ X \sim \mathcal{N}(\mu = 20,\ \sigma = 10), \qquad f(x) = \frac{1}{\sigma\sqrt{2\pi}}\, e^{-\frac{(x-\mu)^2}{2\sigma^2}} $$</div>
+      <p class="explain"><b>Symbols:</b> \(\sim\) reads "is distributed as" and \(\mathcal{N}\) is the normal distribution. \(\mu\) (mu) is the population mean, the centre. \(\sigma\) (sigma) is the population standard deviation, the width. \(f(x)\) is the height of the curve above count \(x\). <b>What it tells you:</b> once you know \(\mu\) and \(\sigma\) the whole curve is fixed, so those two numbers are the population parameters.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Other shapes, other parameters</span>
+      <div class="math">$$ f(x) = \lambda e^{-\lambda x},\ \ \lambda = 0.1 \qquad\qquad X \sim \text{Gamma}(\text{shape},\ \text{rate}) $$</div>
+      <p class="explain"><b>Symbols:</b> \(\lambda\) (lambda) is the rate of an exponential distribution; Josh uses 0.1. Gamma needs two numbers, a shape and a rate. <b>What it tells you:</b> "parameter" does not mean mean and standard deviation. It means whichever numbers define the curve you chose.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Parameter versus estimate</span>
+      <div class="math">$$ \hat{\mu} = 17.6 \ \longrightarrow\ \mu = 20 \qquad\qquad \hat{\sigma} = 10.1 \ \longrightarrow\ \sigma = 10 $$</div>
+      <p class="explain"><b>Symbols:</b> a plain \(\mu\) or \(\sigma\) is the true, fixed population value. The hat marks a value computed from a sample. The arrow means "aims at". <b>What it tells you:</b> hatted numbers change with every repeat; unhatted ones never change.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>The population of 240 billion liver cells follows a normal curve with \(\mu = 20\) and \(\sigma = 10\). Of those, 38 billion have 30 or more transcripts of gene X, so the probability is \(38/240 = 0.16\).</p>
+      <p>Now do the experiment. Josh measures five cells and gets 3, 13, 19, 24 and 29, which give an estimated mean of 17.6 and an estimated standard deviation of 10.1. A repeat on five fresh cells gives 19.2 and 12.7. Neither pair equals the truth or each other.</p>
+      <p>Watch the estimates improve as the sample grows:</p>
+      <table>
+        <tr><th>Measurements used</th><th>Estimated mean</th><th>Estimated SD</th></tr>
+        <tr><td>2 cells</td><td>11.0 (true value 20)</td><td>11.3 (true value 10)</td></tr>
+        <tr><td>3 cells</td><td>15.3</td><td>11.0</td></tr>
+        <tr><td>5 cells</td><td>17.6</td><td>10.1</td></tr>
+      </table>
+      <p>Ten cells would do better still. A p-value or confidence interval says that 17.6 and 19.2 are not significantly different. So both experiments support the same conclusions.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>A parameter is not the number you calculated. The population mean is 20 and never moves. The 17.6 from your five cells is only an estimate of it. Say "estimated mean" when you mean the sample value.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Different estimates on every repeat are normal, not a bug. Josh gets 17.6 and then 19.2 from the same population. What matters is whether the gap is large enough to worry about.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>The population is fixed by your question, not by its size. It can be every liver cell, or every store in one grocery chain. Change the chain and your estimated parameters no longer describe it.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Do not assume a normal curve. Josh trusts it only because the curve and the raw histogram both give 0.16. Other data need an exponential or a gamma curve.</p>
+    </div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>What is the difference between a population parameter and an estimate?</summary>
+      <div class="a">A population parameter is a fixed number describing the whole population, such as a mean of 20 across every liver cell. An estimate is what you compute from the sample you could afford, such as 17.6 from five cells. The parameter never changes. The estimate changes with every new sample.</div>
+    </details>
+
+    <details class="qa" open><summary>Why estimate parameters instead of just describing your data?</summary>
+      <div class="a">Because we want results others can reproduce. A description of my five cells is only about my five cells. If I estimate the parameters of the population they came from, my conclusions carry over to anyone sampling the same population.</div>
+    </details>
+
+    <details class="qa" open><summary>Two runs gave different estimates. Is something wrong?</summary>
+      <div class="a">Not by itself. Two samples from the same population almost always give different estimates. The right move is to quantify the difference with a confidence interval or a p-value. In the video 17.6 and 19.2 were not significantly different.</div>
+    </details>
+
+    <details class="qa" open><summary>How does sample size affect your estimates?</summary>
+      <div class="a">More data means more accurate estimates and more confidence in them. With two cells the estimated mean was 11 against a true 20. With three it went to 15.3, and with five to 17.6. Larger samples also give narrower confidence intervals.</div>
+    </details>
+
+    <details class="qa" open><summary>How does this map onto machine learning?</summary>
+      <div class="a">Josh makes the link directly. The five measurements are the training data. The curve that represents the population is what the method is trying to predict.</div>
+    </details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>A population is every unit you could measure, such as all 240 billion cells in a liver.</li>
+      <li>Fit a curve to the population histogram, and the numbers defining that curve are the population parameters.</li>
+      <li>For a normal curve those are the mean and the standard deviation, here 20 and 10.</li>
+      <li>Other shapes have other parameters: an exponential has a rate, a gamma has a shape and a rate.</li>
+      <li>We rarely measure a whole population, so we estimate the parameters from a sample.</li>
+      <li>Every repeat gives different estimates, so an estimate is a guess at the parameter, not the parameter.</li>
+      <li>The more data you collect, the closer the estimates sit to the true values.</li>
+      <li>P-values and confidence intervals say how much confidence to place in the estimates, which makes results reproducible.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Population and estimated parameters</span><span class="board-tag">small samples aim at the fixed truth</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 236" role="img" aria-label="Two bell curves over the mRNA count for gene X, from 0 to 50. The solid curve is the population, with mean 20 and SD 10. The dashed curve uses the estimates from 5 measured cells, mean 17.6 and SD 10.1, and sits close to it but not on it. The 5 cells are dots on the axis.">
+            <polyline points="30,173.8 47,164 64,151 81,135.1 98,117.2 115,99.4 132,84.1 149,73.7 166,70 183,73.7 200,84.1 217,99.4 234,117.2 251,135.1 268,151 285,164 302,173.8 319,180.5 336,184.7 353,187.3 370,188.7" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="30,164 46.7,151.4 63.8,135.6 81,117.9 98.2,100.3 115.4,85.2 132.5,74.9 149.7,71.2 166.9,74.9 184.1,85.2 201.2,100.3 218.4,117.9 235.6,135.6 252.8,151.4 269.9,164.3 287.1,173.9 304.3,180.5 321.5,184.8 338.6,187.3 355.8,188.7 370,189.3" class="sv-stroke-key" stroke-width="3" stroke-dasharray="6 7" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M24 190 H376 M30 190 V196 M370 190 V196" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="50.4" cy="190" r="6" class="sv-good"/>
+              <circle cx="118.4" cy="190" r="6" class="sv-good"/>
+              <circle cx="159.2" cy="190" r="6" class="sv-good"/>
+              <circle cx="193.2" cy="190" r="6" class="sv-good"/>
+              <circle cx="227.2" cy="190" r="6" class="sv-good"/>
+            </g>
+            <line x1="14" y1="20" x2="44" y2="20" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round"/>
+            <text x="52" y="26" class="sv-t">population: mean 20, SD 10</text>
+            <line x1="14" y1="46" x2="44" y2="46" class="sv-stroke-key" stroke-width="3" stroke-dasharray="6 7" stroke-linecap="round"/>
+            <text x="52" y="52" class="sv-t">5 cells: mean 17.6, SD 10.1</text>
+            <text x="388" y="100" text-anchor="end" class="sv-t">close, not equal</text>
+            <text x="30" y="214" text-anchor="middle" class="sv-ts">0</text>
+            <text x="200" y="214" text-anchor="middle" class="sv-ts">mRNA count per cell</text>
+            <text x="370" y="214" text-anchor="middle" class="sv-ts">50</text>
+          </svg>
+          <p>The population is every cell, and its curve's mean 20 and SD 10 are fixed parameters. Five measured cells give estimates, 17.6 and 10.1: close, not equal. Repeats differ, and more data pulls them closer.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Population</dt><dd>Every unit you could measure, like all 240 billion liver cells.</dd>
+            <dt>Parameter</dt><dd>A number that defines the population's curve. Fixed; it never moves.</dd>
+            <dt>Sample</dt><dd>The few units you really measure, here 5 cells.</dd>
+            <dt>Estimate</dt><dd>A parameter's value computed from a sample. Marked with a hat.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Measure 5 cells</b>3, 13, 19, 24, 29</li>
+            <li><b>Imagine all cells</b>240 billion: the population</li>
+            <li><b>Fit a curve</b>normal, mean 20, SD 10</li>
+            <li><b>Name parameters</b>the numbers that define the curve</li>
+            <li><b>Estimate</b>17.6 and 10.1 from the sample</li>
+            <li><b>Quantify confidence</b>p-values, confidence intervals</li>
+          </ol>
+          <p class="loop">↺ each repeat gives new estimates; more data pulls them closer</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$P(X\ge 30)=\tfrac{38}{240}=0.16$$
+          $$X\sim\mathcal{N}(\mu=20,\ \sigma=10)$$
+          $$\hat{\mu}=17.6\ \longrightarrow\ \mu=20$$
+          <ul class="keys">
+            <li>38 of 240 billion cells; the curve's tail above 30 also gives 0.16.</li>
+            <li>\(\mu\), \(\sigma\): parameters. Exponential has a rate; gamma, a shape and a rate.</li>
+            <li>A hat marks an estimate; the arrow means "aims at".</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>sample</th><th>est. mean</th><th>est. SD</th></tr>
+            <tr><td>2 cells</td><td>11.0</td><td>11.3</td></tr>
+            <tr><td>3 cells</td><td>15.3</td><td>11.0</td></tr>
+            <tr><td>5 cells</td><td>17.6</td><td>10.1</td></tr>
+            <tr><td>5 fresh cells</td><td>19.2</td><td>12.7</td></tr>
+            <tr class="final"><td>population</td><td>20</td><td>10</td></tr>
+          </table>
+          <p class="hand">More cells pull the estimates toward 20 and 10. A fresh sample gives new ones, not significantly different.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">My 17.6 is the population mean.</span><span class="yes">The parameter is 20 and never moves. 17.6 is only an estimate of it.</span></li>
+            <li><span class="no">A repeat that disagrees means a bug.</span><span class="yes">Normal: 17.6, then 19.2. What matters is whether the gap is large enough to worry about.</span></li>
+            <li><span class="no">A normal curve always fits.</span><span class="yes">Josh trusts it only because curve and histogram both give 0.16. Others need exponential or gamma.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="03-the-normal-distribution.html"><small>Previous</small>The Normal Distribution</a> <a href="07-calculating-the-mean-variance-and-standard-deviation.html"><small>Next</small>Calculating the Mean, Variance and Standard Deviation</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

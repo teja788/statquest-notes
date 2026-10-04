@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Long Short-Term Memory (LSTM) — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>88</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 88 · 20.8 min</div>
+    <h1>Long Short-Term Memory (LSTM)</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=YCzL96nL7j0" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: Neural Networks / Deep Learning (video 16)</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video explains Long Short-Term Memory (LSTM), a type of recurrent neural network built to avoid the exploding and vanishing gradient problem. Josh walks through one LSTM unit with real numbers, then shows it remembering an early value in a stock price sequence.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>A basic recurrent neural network uses one feedback loop for all memories, so its gradients can explode or vanish. An LSTM keeps separate paths for long-term and short-term memory. The long-term path has no weights on it, so it flows safely through many unrolled units. Three stages decide how much long-term memory to keep, what to add, and what short-term memory to pass on.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh starts with the problem from the previous video. In a basic, or vanilla, recurrent neural network, the input is multiplied by the feedback weight once per unrolled step. With 50 days of data, a weight of 2 gives \(2^{50}\), and the gradient explodes. A weight of 0.5 gives \(0.5^{50}\), and the gradient vanishes.</p>
+    <p>The LSTM fixes this with one simple change. Instead of one feedback loop for events from long ago and from yesterday, it uses two separate paths. The <strong>cell state</strong> (the green line across the top) carries long-term memory. The <strong>hidden state</strong> (the pink line along the bottom) carries short-term memory.</p>
+    <p>The key detail is that no weights or biases touch the long-term memory directly. It is changed only by one multiplication and one addition. This lack of weights keeps the gradient from exploding or vanishing. The short-term memory, in contrast, is directly connected to weights.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 390" role="img" aria-label="One LSTM unit: long-term memory line on top, short-term memory line at bottom, and three stages called forget gate, input gate and output gate, with the numbers from the video">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker>
+        </defs>
+        <text x="380" y="30" text-anchor="middle" class="sv-t">Long-term memory (cell state): no weights touch it</text>
+        <!-- stage backgrounds -->
+        <rect x="110" y="50" width="170" height="290" rx="8" class="sv-paper2"/>
+        <rect x="300" y="50" width="220" height="290" rx="8" class="sv-paper2"/>
+        <rect x="540" y="50" width="200" height="290" rx="8" class="sv-paper2"/>
+        <text x="195" y="364" text-anchor="middle" class="sv-tb">1 · Forget gate</text>
+        <text x="410" y="364" text-anchor="middle" class="sv-tb">2 · Input gate</text>
+        <text x="640" y="364" text-anchor="middle" class="sv-tb">3 · Output gate</text>
+        <!-- long-term line -->
+        <path d="M20 90H740" class="sv-stroke-good" stroke-width="4"/>
+        <text x="22" y="78" class="sv-ts">long-term 2</text>
+        <text x="300" y="80" text-anchor="middle" class="sv-tm">1.99</text>
+        <text x="736" y="80" text-anchor="end" class="sv-tm">2.96</text>
+        <!-- short-term line -->
+        <path d="M20 320H590" class="sv-stroke-key" stroke-width="4"/>
+        <text x="22" y="310" class="sv-ts">short-term 1</text>
+        <text x="22" y="340" class="sv-ts">input 1</text>
+        <!-- stage 1 -->
+        <path d="M195 320V222" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"/>
+        <rect x="170" y="190" width="50" height="30" rx="5" class="sv-acc-soft"/>
+        <text x="195" y="211" text-anchor="middle" class="sv-tb">σ</text>
+        <path d="M195 190V104" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"/>
+        <text x="203" y="150" class="sv-tm">0.997</text>
+        <circle cx="195" cy="90" r="12" class="sv-paper"/>
+        <circle cx="195" cy="90" r="12" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="195" y="95" text-anchor="middle" class="sv-t">×</text>
+        <!-- stage 2 -->
+        <path d="M350 320V222" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"/>
+        <rect x="325" y="190" width="50" height="30" rx="5" class="sv-acc-soft"/>
+        <text x="350" y="211" text-anchor="middle" class="sv-tb">σ</text>
+        <path d="M460 320V222" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"/>
+        <rect x="430" y="190" width="60" height="30" rx="5" class="sv-key-soft"/>
+        <text x="460" y="210" text-anchor="middle" class="sv-t">tanh</text>
+        <path d="M350 190V150H391" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"/>
+        <path d="M460 190V150H419" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"/>
+        <text x="312" y="172" class="sv-tm">1.0</text>
+        <text x="468" y="172" class="sv-tm">0.97</text>
+        <circle cx="405" cy="150" r="12" class="sv-paper"/>
+        <circle cx="405" cy="150" r="12" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="405" y="155" text-anchor="middle" class="sv-t">×</text>
+        <path d="M405 138V104" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"/>
+        <circle cx="405" cy="90" r="12" class="sv-paper"/>
+        <circle cx="405" cy="90" r="12" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="405" y="95" text-anchor="middle" class="sv-t">+</text>
+        <!-- stage 3 -->
+        <path d="M690 90V128" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"/>
+        <rect x="660" y="130" width="60" height="30" rx="5" class="sv-key-soft"/>
+        <text x="690" y="150" text-anchor="middle" class="sv-t">tanh</text>
+        <path d="M690 160V201" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"/>
+        <text x="698" y="186" class="sv-tm">0.99</text>
+        <path d="M590 320V232" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"/>
+        <rect x="565" y="200" width="50" height="30" rx="5" class="sv-acc-soft"/>
+        <text x="590" y="221" text-anchor="middle" class="sv-tb">σ</text>
+        <path d="M615 215H676" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"/>
+        <text x="630" y="207" class="sv-tm">0.99</text>
+        <circle cx="690" cy="215" r="12" class="sv-paper"/>
+        <circle cx="690" cy="215" r="12" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="690" y="220" text-anchor="middle" class="sv-t">×</text>
+        <path d="M690 227V320H738" class="sv-stroke-key" stroke-width="3" marker-end="url(#ah)"/>
+        <text x="700" y="290" class="sv-tm">0.98</text>
+      </svg>
+      <figcaption>The green long-term memory changes only by one multiply and one add; each sigmoid (σ) picks a percentage, and 0.98 is the output.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li><strong>Two activation functions.</strong> Unlike earlier networks in the series, an LSTM uses sigmoid and tanh. The sigmoid turns any input into a number between 0 and 1. The tanh (hyperbolic tangent) turns any input into a number between −1 and 1.</li>
+      <li><strong>Stage 1: how much long-term memory to keep.</strong> The short-term memory and the input are weighted, summed with a bias, and passed through a sigmoid. The long-term memory is multiplied by that percentage. Oddly, this stage is called the <strong>forget gate</strong>.</li>
+      <li><strong>Stage 2: create a potential memory.</strong> One block combines the short-term memory and the input with weights and a bias, then applies tanh. The result is a potential long-term memory.</li>
+      <li><strong>Stage 2: decide how much of it to add.</strong> A second block uses the same sigmoid method to pick a percentage of that potential memory. That share is added to the long-term memory. This stage is usually called the <strong>input gate</strong>.</li>
+      <li><strong>Stage 3: update the short-term memory.</strong> The new long-term memory goes through tanh to give a potential short-term memory. A sigmoid block picks what percentage of it to pass on, and the product is the new short-term memory.</li>
+      <li><strong>The output.</strong> The new short-term memory is also the output of the whole unit, so this stage is called the <strong>output gate</strong>.</li>
+      <li><strong>Unroll over time.</strong> For sequential data, the unit is unrolled once per data point, passing both memories forward. Every unrolled copy uses the exact same weights and biases, so the LSTM can handle sequences of different lengths.</li>
+    </ol>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>Below, \(C\) is the long-term memory, \(h\) is the short-term memory, and \(x\) is the input. Every \(w\) is a weight and every \(b\) is a bias. Each stage uses its own weights and bias.</p>
+    <div class="formula"><span class="lbl">Sigmoid activation</span><div class="math">$$ \sigma(z) = \frac{1}{1 + e^{-z}} $$</div><p class="explain"><b>Symbols:</b> \(z\) is the x-axis coordinate going in. \(e\) is Euler's number, about 2.718. \(\sigma(z)\) is the y-axis coordinate coming out. <b>What it tells you:</b> any input becomes a number between 0 and 1, so the LSTM uses it as a percentage. For example, \(\sigma(10) = 0.99995\) and \(\sigma(-5) \approx 0.01\).</p></div>
+    <div class="formula"><span class="lbl">Tanh activation</span><div class="math">$$ \tanh(z) = \frac{e^{z} - e^{-z}}{e^{z} + e^{-z}} $$</div><p class="explain"><b>Symbols:</b> \(z\) is the input, and \(e\) is Euler's number again. <b>What it tells you:</b> any input becomes a number between −1 and 1, so the LSTM uses it to make potential memories. For example, \(\tanh(2) = 0.96\) and \(\tanh(-5) \approx -1\).</p></div>
+    <div class="formula"><span class="lbl">Stage 1: forget gate</span><div class="math">$$ f = \sigma(w_1 h + w_2 x + b_1), \qquad C' = f \cdot C $$</div><p class="explain"><b>Symbols:</b> \(f\) is the percentage of long-term memory to remember. \(C'\) is the long-term memory after this stage. <b>What it tells you:</b> the long-term memory is only scaled down, never pushed through a weight.</p></div>
+    <div class="formula"><span class="lbl">Stage 2: input gate</span><div class="math">$$ g = \tanh(w_3 h + w_4 x + b_2), \quad i = \sigma(w_5 h + w_6 x + b_3), \quad C_{\text{new}} = C' + i \cdot g $$</div><p class="explain"><b>Symbols:</b> \(g\) is the potential long-term memory. \(i\) is the percentage of it to add. \(C_{\text{new}}\) is the new long-term memory. <b>What it tells you:</b> new information enters the long-term memory only by addition.</p></div>
+    <div class="formula"><span class="lbl">Stage 3: output gate</span><div class="math">$$ o = \sigma(w_7 h + w_8 x + b_4), \qquad h_{\text{new}} = o \cdot \tanh(C_{\text{new}}) $$</div><p class="explain"><b>Symbols:</b> \(o\) is the percentage of the potential short-term memory to pass on. \(h_{\text{new}}\) is the new short-term memory and the unit's output. <b>What it tells you:</b> the short-term memory is rebuilt from the new long-term memory at every step.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example 1: one unit</span>
+      <p>Start with long-term memory 2, short-term memory 1, and input 1.</p>
+      <p><b>Stage 1.</b> \(1 \times 2.7 + 1 \times 1.63 + 1.62 = 5.95\). Then \(\sigma(5.95) = 0.997\), and \(2 \times 0.997 = 1.99\). The long-term memory shrank a little. With an input of −10, the sigmoid would give 0 and the long-term memory would be completely forgotten.</p>
+      <p><b>Stage 2.</b> The tanh block sums to 2.03, and \(\tanh(2.03) = 0.97\), the potential memory. The sigmoid block sums to 4.27, and \(\sigma(4.27) = 1.0\), so all of it is kept. The new long-term memory is \(1.99 + 0.97 = 2.96\).</p>
+      <p><b>Stage 3.</b> \(\tanh(2.96) = 0.99\) is the potential short-term memory. The sigmoid block gives 0.99. The new short-term memory, and the output, is \(0.99 \times 0.99 = 0.98\).</p>
+    </div>
+    <div class="example"><span class="lbl">Example 2: two companies' stock prices</span>
+      <p>Company A and Company B have five days of stock prices. They differ only on day 1 and day 5. On day 1, A is 0 and B is 1. On day 5, A returns to 0 and B returns to 1. Days 2, 3, and 4 are identical. To predict day 5 correctly, the LSTM must remember day 1.</p>
+      <p><b>Company A.</b> Both memories start at 0. Day 1's value, 0, goes in. The new long-term memory is −0.20 and the new short-term memory is −0.13, rounded to −0.1. The unit is unrolled and day 2's value, 0.5, goes in, then days 3 and 4. The final short-term memory is 0.0, which correctly predicts A's day 5 value.</p>
+      <p><b>Company B.</b> The same LSTM, with the same weights and biases, starts again from 0. Day 1's value, 1, goes in. The new long-term memory is 0.5 and the new short-term memory is 0.28, rounded to 0.3. After days 2 to 4, the final short-term memory is 1.0, which correctly predicts B's day 5 value.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> The forget gate does not output "how much to forget." Its sigmoid output is the percentage of long-term memory that is <em>remembered</em>. A value near 1 keeps almost everything, and a value of 0 forgets everything.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> "No weights on the long-term path" does not mean the long-term memory never changes. The forget gate scales it, and the input gate adds to it, at every step.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>Why are vanilla RNNs hard to train?</summary><div class="a">When we unroll a vanilla RNN, the input gets multiplied by the feedback weight once per step. Over 50 steps, a weight of 2 gives 2 to the 50th power, so the gradient explodes. A weight of 0.5 gives a number near zero, so the gradient vanishes.</div></details>
+    <details class="qa" open><summary>What is the main idea behind an LSTM?</summary><div class="a">Instead of one feedback loop for everything, an LSTM uses two paths. The cell state carries long-term memory and the hidden state carries short-term memory. The long-term path has no weights on it, so it can pass through many unrolled steps without exploding or vanishing gradients.</div></details>
+    <details class="qa" open><summary>Walk me through the three gates.</summary><div class="a">The forget gate uses a sigmoid to decide what percentage of the long-term memory to keep. The input gate uses tanh to build a potential memory and a sigmoid to decide how much of it to add. The output gate passes the new long-term memory through tanh, then uses a sigmoid to decide how much becomes the new short-term memory, which is also the output.</div></details>
+    <details class="qa" open><summary>Why use sigmoid in some places and tanh in others?</summary><div class="a">Sigmoid outputs a number between 0 and 1, so it works as a percentage of what to keep. Tanh outputs a number between −1 and 1, so it is used to create candidate memories that can be positive or negative.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Vanilla RNNs suffer from exploding or vanishing gradients when unrolled many times.</li>
+      <li>An LSTM uses separate paths for long-term memory (cell state) and short-term memory (hidden state).</li>
+      <li>The long-term path has no weights acting on it, so gradients stay stable across many steps.</li>
+      <li>The forget gate keeps a percentage of the long-term memory, and the input gate adds a share of a new potential memory.</li>
+      <li>The output gate makes the new short-term memory, which is also the unit's output.</li>
+      <li>The same weights and biases are reused at every step, and the LSTM correctly predicted day 5 for both companies.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Long Short-Term Memory</span><span class="board-tag">two memory lines, one with no weights</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 270" role="img" aria-label="Long-term memory 2 runs along the top line, which no weights touch: keeping 0.997 of it gives 1.99, and adding 0.97 gives 2.96. Short-term memory 1 runs along the bottom, and the output gate passes on 0.99 to make the output 0.98.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <path d="M16 90 H380" class="sv-stroke-good" stroke-width="4" marker-end="url(#board-arr)"/>
+            <path d="M16 210 H316" class="sv-stroke-key" stroke-width="4" stroke-linecap="round"/>
+            <path d="M344 210 H380" class="sv-stroke-key" stroke-width="4" marker-end="url(#board-arr)"/>
+            <path d="M150 208 V106" class="sv-stroke-ink" stroke-width="2.5" marker-end="url(#board-arr)"/>
+            <path d="M250 208 V106" class="sv-stroke-ink" stroke-width="2.5" marker-end="url(#board-arr)"/>
+            <path d="M330 96 V193" class="sv-stroke-ink" stroke-width="2.5" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="150" cy="90" r="14" class="sv-paper"/>
+              <circle cx="250" cy="90" r="14" class="sv-paper"/>
+              <circle cx="330" cy="90" r="6" class="sv-good"/>
+              <circle cx="330" cy="210" r="14" class="sv-paper"/>
+              <rect x="95" y="121" width="110" height="30" rx="15" class="sv-paper"/>
+              <rect x="204" y="161" width="92" height="30" rx="15" class="sv-paper"/>
+              <rect x="280" y="121" width="100" height="30" rx="15" class="sv-paper"/>
+            </g>
+            <path d="M144 84 L156 96 M156 84 L144 96 M250 83 V97 M243 90 H257 M324 204 L336 216 M336 204 L324 216" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round"/>
+            <text x="220" y="42" text-anchor="middle" class="sv-ts">no weights touch it</text>
+            <text x="16" y="66" class="sv-tb">long-term 2</text>
+            <text x="200" y="72" text-anchor="middle" class="sv-tm">1.99</text>
+            <text x="290" y="72" text-anchor="middle" class="sv-tm">2.96</text>
+            <text x="150" y="142" text-anchor="middle" class="sv-t">keep 0.997</text>
+            <text x="250" y="182" text-anchor="middle" class="sv-t">add 0.97</text>
+            <text x="330" y="142" text-anchor="middle" class="sv-t">pass 0.99</text>
+            <text x="16" y="250" class="sv-tb">short-term 1</text>
+            <text x="388" y="250" text-anchor="end" class="sv-tb">0.98 = output</text>
+          </svg>
+          <p>Long-term memory rides its own line with no weights, so its gradient does not explode or vanish. It changes only by one multiply and one add. Short-term memory runs through the weights and is rebuilt at every step.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Exploding / vanishing gradient</dt><dd>Vanilla RNN over 50 days: weight 2 gives \(2^{50}\) (explodes), 0.5 gives \(0.5^{50}\) (vanishes).</dd>
+            <dt>Cell state</dt><dd>The long-term memory line. No weights or biases touch it.</dd>
+            <dt>Hidden state</dt><dd>The short-term memory line, directly connected to weights.</dd>
+            <dt>Sigmoid (σ)</dt><dd>Turns any input into a number from 0 to 1, used as a percentage.</dd>
+            <dt>Tanh</dt><dd>Turns any input into a number from −1 to 1, for potential memories.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Two activations</b>σ for percentages, tanh for memories</li>
+            <li><b>Forget gate</b>keep σ % of long-term</li>
+            <li><b>Input gate</b>add σ % of potential memory</li>
+            <li><b>Output gate</b>pass σ % of tanh(long-term)</li>
+          </ol>
+          <p class="loop">↺ unroll once per data point, passing both memories forward with the same weights and biases</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$C' = f \cdot C$$
+          $$C_{\text{new}} = C' + i \cdot g$$
+          $$h_{\text{new}} = o \cdot \tanh(C_{\text{new}})$$
+          <ul class="keys">
+            <li>\(C\) is long-term memory, \(h\) short-term, \(x\) the input.</li>
+            <li>\(f, i, o = \sigma(w\,h + w\,x + b)\): percentages, each stage with its own weights and bias.</li>
+            <li>\(g = \tanh(w\,h + w\,x + b)\): the potential memory.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>stage</th><th>gate</th><th>long</th><th>short</th></tr>
+            <tr><td>start</td><td>–</td><td>2</td><td>1</td></tr>
+            <tr><td>forget</td><td>σ = 0.997</td><td>1.99</td><td>1</td></tr>
+            <tr><td>input</td><td>1.0 × 0.97</td><td>2.96</td><td>1</td></tr>
+            <tr class="final"><td>output</td><td>0.99 × 0.99</td><td>2.96</td><td>0.98 ✓</td></tr>
+          </table>
+          <p class="hand">Long-term goes 2 → 1.99 → 2.96. Unrolled over days 1 to 4, the same weights predict day 5: 0.0 for A, 1.0 for B.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">The forget gate outputs how much to forget.</span><span class="yes">Its sigmoid gives the percentage remembered: near 1 keeps almost everything, 0 forgets everything.</span></li>
+            <li><span class="no">No weights means long-term memory never changes.</span><span class="yes">At every step the forget gate scales it and the input gate adds to it.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="87-recurrent-neural-networks-rnns.html"><small>Previous</small>Recurrent Neural Networks (RNNs)</a> <a href="89-word-embedding-and-word2vec.html"><small>Next</small>Word Embedding and Word2Vec</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

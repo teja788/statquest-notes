@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>p-values: What they are and how to interpret them — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>11</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 11 · 11.3 min</div>
+    <h1>p-values: What they are and how to interpret them</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=vemZtEM63GY" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">A p-value is a number between 0 and 1. It says how confident you can be that two groups are really different, and not just different by luck.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh compares drug A with drug B. Testing one person per drug proves nothing, because random things happen to people. With many people, a huge gap between the drugs is clearly real. When the gap is small, a p-value decides. You compare it to a threshold picked in advance, usually 0.05, which is the false positive rate you accept.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Imagine two drugs, drug A and drug B. You give each one to a single person. The person on drug A is cured; the person on drug B is not. You cannot conclude that drug A is better.</p>
+    <p>Drug B could have failed for ordinary reasons: a bad reaction with another medicine, a rare allergy, or a missed dose. Drug A may not even work, with the placebo effect deserving all the credit.</p>
+    <p>So you redo the experiment with two people per drug. Both people on drug A are cured. On drug B, one is cured and one is not. You still cannot answer, because a drug may have been mislabelled.</p>
+    <p>Now test many people. Drug A cures 1,043 of its 1,046 people, which is 99.7%. Drug B cures only 2 of its 1,434 people, which is 0.1%. A few placebo cures and a few rare allergies cannot explain a gap that large. Random chance is not a serious explanation here.</p>
+    <p>Now change the numbers. Drug A cures 37% of its group and drug B cures 31%. Drug A still looks better, but only a little. No study is perfect, so how confident can you be? That is the question a p-value answers. The closer it is to 0, the more confident you are that the drugs differ.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 352" role="img" aria-label="Two experiments side by side. A huge gap between drug A and drug B points to a tiny p-value. A small gap points to a p-value of 0.24 on a scale from 0 to 1 with the 0.05 threshold marked.">
+        <defs>
+          <marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink"/></marker>
+        </defs>
+        <rect x="25" y="25" width="340" height="250" rx="8" class="sv-paper2"/>
+        <rect x="395" y="25" width="340" height="250" rx="8" class="sv-paper2"/>
+        <text x="195" y="50" text-anchor="middle" class="sv-tb">Very different results</text>
+        <text x="565" y="50" text-anchor="middle" class="sv-tb">Nearly the same results</text>
+        <line x1="60" y1="200" x2="330" y2="200" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="430" y1="200" x2="700" y2="200" class="sv-stroke-ink" stroke-width="1.5"/>
+        <rect x="120" y="90" width="60" height="110" class="sv-acc"/>
+        <rect x="240" y="197" width="60" height="3" class="sv-key"/>
+        <rect x="490" y="159" width="60" height="41" class="sv-acc"/>
+        <rect x="610" y="166" width="60" height="34" class="sv-key"/>
+        <text x="150" y="82" text-anchor="middle" class="sv-ts">Drug A 99.7% cured</text>
+        <text x="270" y="190" text-anchor="middle" class="sv-ts">Drug B 0.1% cured</text>
+        <text x="520" y="151" text-anchor="middle" class="sv-ts">Drug A 37% cured</text>
+        <text x="640" y="158" text-anchor="middle" class="sv-ts">Drug B 31% cured</text>
+        <rect x="45" y="222" width="300" height="34" rx="6" class="sv-good-soft"/>
+        <text x="195" y="244" text-anchor="middle" class="sv-ts">p is tiny, so call the drugs different</text>
+        <rect x="415" y="222" width="300" height="34" rx="6" class="sv-key-soft"/>
+        <text x="565" y="244" text-anchor="middle" class="sv-ts">p is 0.24, so we are not confident</text>
+        <path d="M195,258 L102,295" class="sv-stroke-ink" stroke-width="1.2" marker-end="url(#ah1)"/>
+        <path d="M565,258 L243,295" class="sv-stroke-ink" stroke-width="1.2" marker-end="url(#ah1)"/>
+        <rect x="90" y="298" width="31" height="14" class="sv-good-soft"/>
+        <line x1="90" y1="305" x2="700" y2="305" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="90" y1="299" x2="90" y2="311" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="121" y1="298" x2="121" y2="312" class="sv-stroke-good" stroke-width="2"/>
+        <line x1="700" y1="299" x2="700" y2="311" class="sv-stroke-ink" stroke-width="1.5"/>
+        <circle cx="96" cy="305" r="4.5" class="sv-acc"/>
+        <circle cx="237" cy="305" r="4.5" class="sv-key"/>
+        <text x="22" y="310" class="sv-ts">p-value</text>
+        <text x="90" y="330" text-anchor="middle" class="sv-ts">0</text>
+        <text x="132" y="330" class="sv-ts">0.05 threshold</text>
+        <text x="700" y="330" text-anchor="middle" class="sv-ts">1</text>
+      </svg>
+      <figcaption>Notice that both experiments favour drug A, but only the huge gap lands to the left of the 0.05 threshold.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Write down the null hypothesis: the claim that drug A and drug B are the same. This is the boring explanation you want to rule out.</li>
+      <li>Pick a threshold before you look at the results. The common choice is 0.05.</li>
+      <li>Run the experiment on enough people. With one or two people per group, random events decide the outcome.</li>
+      <li>Calculate the p-value from the data. It is one number between 0 and 1.</li>
+      <li>Compare the p-value to the threshold. If it is smaller, reject the null hypothesis and call the drugs different.</li>
+      <li>If it is larger, say you failed to see a difference. That is not the same as proving the drugs are equal.</li>
+      <li>Remember the price. A 0.05 threshold means you accept a wrong "different" call 5% of the time.</li>
+    </ol>
+    <p>Step seven deserves a picture. Imagine giving the same drug to two different groups. Any difference now comes only from random things, such as a rare allergy or a strong placebo reaction. Usually the p-value is large, for example 0.9, and you correctly fail to see a difference.</p>
+    <p>But once in a while all the rare allergies land in one group, and all the strong placebo reactions land in the other. The p-value for that run can be 0.01, so you call the groups different even though they took the same drug. That is a <strong>false positive</strong>.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="A grid of one hundred squares. Ninety-five squares show a p-value above 0.05 and five coloured squares show false positives below 0.05.">
+        <text x="380" y="42" text-anchor="middle" class="sv-tb">Same drug in both groups, experiment repeated 100 times</text>
+    <rect x="150" y="70" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="172" y="70" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="194" y="70" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="216" y="70" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="238" y="70" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="260" y="70" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="282" y="70" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="304" y="70" width="16" height="16" rx="2" class="sv-key"/>
+    <rect x="326" y="70" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="348" y="70" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="370" y="70" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="392" y="70" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="414" y="70" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="436" y="70" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="458" y="70" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="480" y="70" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="502" y="70" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="524" y="70" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="546" y="70" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="568" y="70" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="150" y="92" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="172" y="92" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="194" y="92" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="216" y="92" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="238" y="92" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="260" y="92" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="282" y="92" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="304" y="92" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="326" y="92" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="348" y="92" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="370" y="92" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="392" y="92" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="414" y="92" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="436" y="92" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="458" y="92" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="480" y="92" width="16" height="16" rx="2" class="sv-key"/>
+    <rect x="502" y="92" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="524" y="92" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="546" y="92" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="568" y="92" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="150" y="114" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="172" y="114" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="194" y="114" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="216" y="114" width="16" height="16" rx="2" class="sv-key"/>
+    <rect x="238" y="114" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="260" y="114" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="282" y="114" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="304" y="114" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="326" y="114" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="348" y="114" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="370" y="114" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="392" y="114" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="414" y="114" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="436" y="114" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="458" y="114" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="480" y="114" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="502" y="114" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="524" y="114" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="546" y="114" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="568" y="114" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="150" y="136" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="172" y="136" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="194" y="136" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="216" y="136" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="238" y="136" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="260" y="136" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="282" y="136" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="304" y="136" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="326" y="136" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="348" y="136" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="370" y="136" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="392" y="136" width="16" height="16" rx="2" class="sv-key"/>
+    <rect x="414" y="136" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="436" y="136" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="458" y="136" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="480" y="136" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="502" y="136" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="524" y="136" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="546" y="136" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="568" y="136" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="150" y="158" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="172" y="158" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="194" y="158" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="216" y="158" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="238" y="158" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="260" y="158" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="282" y="158" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="304" y="158" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="326" y="158" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="348" y="158" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="370" y="158" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="392" y="158" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="414" y="158" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="436" y="158" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="458" y="158" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="480" y="158" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="502" y="158" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="524" y="158" width="16" height="16" rx="2" class="sv-acc-soft"/>
+    <rect x="546" y="158" width="16" height="16" rx="2" class="sv-key"/>
+    <rect x="568" y="158" width="16" height="16" rx="2" class="sv-acc-soft"/>
+        <rect x="150" y="204" width="16" height="16" rx="2" class="sv-acc-soft"/>
+        <text x="176" y="217" class="sv-ts">p above 0.05, so no difference is seen (about 95 runs)</text>
+        <rect x="150" y="232" width="16" height="16" rx="2" class="sv-key"/>
+        <text x="176" y="245" class="sv-ts">p below 0.05, so we wrongly call them different (about 5 runs)</text>
+        <text x="380" y="280" text-anchor="middle" class="sv-ts">The threshold you choose is the false positive rate you accept.</text>
+      </svg>
+      <figcaption>Notice that the 5 coloured runs are not mistakes in the maths; they are the cost that a 0.05 threshold builds in.</figcaption>
+    </figure>
+
+    <p>The threshold is your choice. If being correct really matters, use 0.00001, which gives one false positive per 100,000 experiments. For a light question, such as when the ice cream truck arrives, 0.2 is fine and accepts two false positives in ten. Most people stay at 0.05, because pushing below 5% usually costs more than it is worth.</p>
+    <p>The fancy names are simple. Deciding whether the drugs are the same is called <strong>hypothesis testing</strong>. The claim that they are the same is the <strong>null hypothesis</strong>. The p-value helps you decide whether to reject it.</p>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>Josh does not show how a p-value is calculated. He shows how to read one and how to act on it. These short rules capture what he says.</p>
+
+    <div class="formula"><span class="lbl">The decision rule</span>
+      <div class="math">$$ \text{reject } H_0 \quad \text{when} \quad p &lt; \alpha $$</div>
+      <p class="explain"><b>Symbols:</b> \(H_0\) is the null hypothesis, the claim that drug A and drug B are the same. \(p\) is the p-value from your data. \(\alpha\) (alpha) is the threshold you chose before the experiment, usually 0.05. <b>What it tells you:</b> the whole decision is one comparison between two numbers.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">What the threshold buys you</span>
+      <div class="math">$$ P\big(p &lt; \alpha \;\big|\; H_0 \text{ is true}\big) = \alpha $$</div>
+      <p class="explain"><b>Symbols:</b> \(P(\cdot)\) means "the probability that", and the vertical bar means "given that". So the left side is the chance of a small p-value in a world where the drugs really are the same. <b>What it tells you:</b> \(\alpha\) is the false positive rate you accept. Run \(N\) such experiments and expect about \(N \times \alpha\) false positives.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">The definition behind Josh's plain words</span>
+      <div class="math">$$ p = P\big(\text{a result this different or more} \;\big|\; H_0 \text{ is true}\big) $$</div>
+      <p class="explain"><b>Symbols:</b> the same \(P\), bar and \(H_0\) as above. "This different or more" means the gap you saw, or a bigger one. <b>What it tells you:</b> the p-value assumes there is no difference, so it is never the probability that the drugs are the same.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh's second set of results is the interesting one. Drug A cured 37% of its group, and drug B cured 31%. The gap is 6 percentage points, so drug A looks better.</p>
+      <p>The threshold was fixed at 0.05 before the experiment. The p-value for this data is 0.24. Now do the one comparison that matters:</p>
+      <div class="math">$$ p = 0.24 \quad\text{and}\quad \alpha = 0.05 \quad\Rightarrow\quad 0.24 > 0.05 $$</div>
+      <p>So you do not reject the null hypothesis, and you are not confident that the drugs differ.</p>
+      <p>Josh then shows the reverse case. A much larger experiment gives a p-value of 0.04, small enough to reject the null hypothesis, even though the gap is only 1 percentage point.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+
+    <div class="pitfall"><span class="lbl">Watch out</span> A small p-value does not tell you how big the difference is. In the video a 6-point gap gives p = 0.24, while a 1-point gap in a larger study gives p = 0.04. Always report the size of the difference next to the p-value.</div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span> A large p-value is not proof that the two groups are the same. Josh is careful to say you "failed to see a difference". A real difference may exist that your study was too small to detect.</div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span> False positives do not disappear with careful work. With a 0.05 threshold, 5% of experiments that have no real difference still give a p-value below 0.05. Run twenty such tests and expect about one to look significant.</div>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 250" role="img" aria-label="A small study with a six point gap gives a p-value of 0.24, while a much larger study with a one point gap gives a p-value of 0.04.">
+        <rect x="25" y="25" width="340" height="195" rx="8" class="sv-paper2"/>
+        <rect x="395" y="25" width="340" height="195" rx="8" class="sv-paper2"/>
+        <text x="195" y="50" text-anchor="middle" class="sv-tb">Smaller study</text>
+        <text x="565" y="50" text-anchor="middle" class="sv-tb">Much larger study</text>
+        <rect x="60" y="70" width="180" height="22" rx="3" class="sv-acc"/>
+        <text x="250" y="86" class="sv-ts">6-point gap</text>
+        <rect x="430" y="70" width="30" height="22" rx="3" class="sv-acc"/>
+        <text x="470" y="86" class="sv-ts">1-point gap</text>
+        <rect x="60" y="143" width="45" height="14" class="sv-good-soft"/>
+        <rect x="430" y="143" width="45" height="14" class="sv-good-soft"/>
+        <line x1="60" y1="150" x2="330" y2="150" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="430" y1="150" x2="700" y2="150" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="105" y1="143" x2="105" y2="157" class="sv-stroke-good" stroke-width="2"/>
+        <line x1="475" y1="143" x2="475" y2="157" class="sv-stroke-good" stroke-width="2"/>
+        <text x="105" y="136" text-anchor="middle" class="sv-ts">0.05</text>
+        <text x="475" y="136" text-anchor="middle" class="sv-ts">0.05</text>
+        <circle cx="276" cy="150" r="5" class="sv-key"/>
+        <circle cx="452" cy="150" r="5" class="sv-good"/>
+        <text x="276" y="174" text-anchor="middle" class="sv-ts">p = 0.24</text>
+        <text x="452" y="174" text-anchor="middle" class="sv-ts">p = 0.04</text>
+        <text x="195" y="202" text-anchor="middle" class="sv-ts">Not confident of a difference</text>
+        <text x="565" y="202" text-anchor="middle" class="sv-ts">Confident of a difference</text>
+      </svg>
+      <figcaption>Notice that the bigger gap gets the bigger p-value here, because the p-value also depends on how many people were tested.</figcaption>
+    </figure>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>What is a p-value, in plain language?</summary><div class="a">It is a number between 0 and 1 that measures how surprising my data would be if there were no real difference. A value close to 0 means the data would be surprising, so I have confidence the groups differ. A value close to 1 means the data look like ordinary random variation. It never tells me how large the difference is.</div></details>
+
+    <details class="qa" open><summary>Why 0.05, and what does that threshold actually control?</summary><div class="a">0.05 is a convention rather than a rule of nature. It controls the false positive rate. If the groups really are the same and I repeat the experiment many times, about 5% of runs still give a p-value below 0.05. I lower the threshold when a wrong claim would be costly, and raise it when the decision is low stakes.</div></details>
+
+    <details class="qa" open><summary>Your p-value is 0.24. Can you say the two drugs are the same?</summary><div class="a">No. I can only say I failed to see a difference at my threshold. The data are consistent with no difference, but also with a real difference my study was too small to detect. I would report the observed gap alongside the p-value.</div></details>
+
+    <details class="qa" open><summary>A colleague reports p = 0.001 and calls the effect large. What do you say?</summary><div class="a">I would separate the two questions. The p-value says the difference is unlikely to be pure chance, and that is all it says. In the video a one-point gap gives p = 0.04 while a six-point gap gives p = 0.24. So I would ask for the size of the effect before agreeing it is large.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Random things happen to individual people, so tiny experiments cannot settle anything.</li>
+      <li>When drug A cures 99.7% and drug B cures 0.1%, chance is not a believable explanation.</li>
+      <li>A p-value sits between 0 and 1, and closer to 0 means more confidence that the groups differ.</li>
+      <li>You compare it to a threshold chosen beforehand, usually 0.05, which is your false positive rate: 5% wrong calls when nothing really differs.</li>
+      <li>The null hypothesis says the groups are the same, and a small p-value lets you reject it.</li>
+      <li>A small p-value never tells you how big the difference is, so always report the effect size too.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">p-values</span><span class="board-tag">real or luck? compare p to 0.05</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 250" role="img" aria-label="Two experiments land on one p-value scale from 0 to 1. Drug A 99.7% against drug B 0.1% gives a tiny p, left of the 0.05 threshold, so the drugs are called different. Drug A 37% against drug B 31% gives p = 0.24, right of the threshold, so we are not confident.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <line x1="34" y1="108" x2="156" y2="108" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="238" y1="108" x2="360" y2="108" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <rect x="46" y="28.2" width="44" height="79.8" class="sv-acc"/>
+              <rect x="250" y="78.4" width="44" height="29.6" class="sv-acc"/>
+              <rect x="304" y="83.2" width="44" height="24.8" class="sv-key"/>
+            </g>
+            <rect x="100" y="104" width="44" height="4" class="sv-key"/>
+            <text x="95" y="134" text-anchor="middle" class="sv-ts">A 99.7%, B 0.1%</text>
+            <text x="95" y="158" text-anchor="middle" class="sv-t">p tiny: different</text>
+            <text x="299" y="134" text-anchor="middle" class="sv-ts">A 37%, B 31%</text>
+            <text x="299" y="158" text-anchor="middle" class="sv-t">p = 0.24: not sure</text>
+            <line x1="39.5" y1="168" x2="39.5" y2="180" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <path d="M299 167 C299 188 113 166 113 182" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <rect x="32" y="186" width="16.8" height="24" class="sv-good-soft"/>
+            <line x1="32" y1="198" x2="368" y2="198" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round"/>
+            <line x1="368" y1="190" x2="368" y2="206" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="48.8" y1="186" x2="48.8" y2="214" class="sv-stroke-good" stroke-width="3" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="39.5" cy="198" r="5.5" class="sv-good"/>
+              <circle cx="112.6" cy="198" r="7" class="sv-key"/>
+            </g>
+            <text x="24" y="204" text-anchor="end" class="sv-t">0</text>
+            <text x="376" y="204" class="sv-t">1</text>
+            <text x="34" y="236" class="sv-tb">0.05 threshold</text>
+            <text x="368" y="236" text-anchor="end" class="sv-ts">p-value</text>
+          </svg>
+          <p>A huge gap is clearly real; a small one needs a p-value. It runs from 0 to 1, and closer to 0 means more confidence the drugs differ. Below the threshold picked first, usually 0.05, call them different.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>p-value</dt><dd>A number from 0 to 1; closer to 0, more confident the groups differ.</dd>
+            <dt>Null hypothesis</dt><dd>The claim that drug A and drug B are the same.</dd>
+            <dt>Threshold</dt><dd>Cutoff picked before the experiment, usually 0.05.</dd>
+            <dt>False positive</dt><dd>Calling the groups different when they are really the same.</dd>
+            <dt>Hypothesis testing</dt><dd>Deciding whether the drugs are the same.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Null hypothesis</b>drugs A and B are the same</li>
+            <li><b>Pick a threshold</b>before the results, usually 0.05</li>
+            <li><b>Test enough people</b>not one or two per group</li>
+            <li><b>Get the p-value</b>one number from 0 to 1</li>
+            <li><b>p &lt; threshold</b>reject the null: call them different</li>
+            <li><b>p &gt; threshold</b>you failed to see a difference</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{reject } H_0 \text{ when } p &lt; \alpha$$
+          $$P\big(p &lt; \alpha \mid H_0\text{ true}\big)=\alpha$$
+          $$p=P\big(\text{a gap this big or bigger}\mid H_0\big)$$
+          <ul class="keys">
+            <li>\(H_0\): the drugs are the same. The bar \(\mid\) means "given that".</li>
+            <li>\(\alpha\): threshold picked first, usually 0.05; it is the false positive rate.</li>
+            <li>p assumes no difference, so it is never the chance the drugs are the same.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>what</th><th>value</th></tr>
+            <tr><td>cured, A vs B</td><td>37% vs 31%</td></tr>
+            <tr><td>gap</td><td>6 points</td></tr>
+            <tr><td>threshold, set first</td><td>0.05</td></tr>
+            <tr><td>p-value</td><td>0.24</td></tr>
+            <tr class="final"><td>0.24 &gt; 0.05</td><td>do not reject H₀</td></tr>
+          </table>
+          <p class="hand">So we are not confident the drugs differ. A much larger study with a 1-point gap gave p = 0.04: reject.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">A small p-value means a big difference.</span><span class="yes">A 6-point gap gave p = 0.24; a 1-point gap, larger study, gave 0.04. Report the gap too.</span></li>
+            <li><span class="no">A large p-value proves the groups are the same.</span><span class="yes">You only failed to see a difference. A small study can miss a real one.</span></li>
+            <li><span class="no">Careful work gets rid of false positives.</span><span class="yes">At 0.05, 5% of no-difference tests still give p below 0.05: about 1 in 20.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="10-alternative-hypotheses-main-ideas.html"><small>Previous</small>Alternative Hypotheses: Main Ideas</a> <a href="12-fisher-s-exact-test-and-the-hypergeometric-distribution.html"><small>Next</small>Fisher&#x27;s Exact Test and the Hypergeometric Distribution</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

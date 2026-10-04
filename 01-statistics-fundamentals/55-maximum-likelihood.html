@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Maximum Likelihood — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>55</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 55 · 6.2 min</div>
+    <h1>Maximum Likelihood</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=XepXtl9YKwc" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Maximum likelihood is how we fit a distribution to data. We pick the distribution settings that make our observed data as likely as possible.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh weighs a bunch of mice and describes the weights with a curve. He picks a normal curve, because most weights sit near the average. He then slides that curve along the axis. At each position he asks how likely the measured weights would be. The best position is the maximum likelihood estimate of the mean. He repeats the search for the standard deviation.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>A distribution is a smooth curve that says which values are common and which are rare. Fitting one to your data is useful because a curve is easier to work with than a pile of numbers. It is also more general, so it applies to every experiment of the same type.</p>
+    <p>There are many shapes to choose from: normal, exponential, gamma, and more. Josh chooses the normal shape, because most mice weigh close to the average and the values are not badly skewed. Choosing the shape is only half the job. A normal curve can be skinny or wide, and it can sit anywhere on the axis. Maximum likelihood picks those settings for you.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 310" role="img" aria-label="The same normal curve placed at three positions over the mouse weights; only the middle position sits on top of the data">
+        <text x="20" y="26" class="sv-tb">Slide the same curve along the axis and ask: how likely is this data?</text>
+        <path d="M 100 250 C 160 250 175 120 220 120 C 265 120 280 250 340 250" class="sv-stroke-ink" stroke-width="1.5" stroke-dasharray="5 4" opacity="0.55"/>
+        <path d="M 420 250 C 480 250 495 120 540 120 C 585 120 600 250 660 250" class="sv-stroke-ink" stroke-width="1.5" stroke-dasharray="5 4" opacity="0.55"/>
+        <path d="M 260 250 C 320 250 335 120 380 120 C 425 120 440 250 500 250" class="sv-stroke-acc" stroke-width="2.5"/>
+        <line x1="220" y1="120" x2="220" y2="250" class="sv-line" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="540" y1="120" x2="540" y2="250" class="sv-line" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="380" y1="120" x2="380" y2="250" class="sv-stroke-acc" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="60" y1="250" x2="700" y2="250" class="sv-stroke-ink" stroke-width="1.5"/>
+        <circle cx="300" cy="250" r="4" class="sv-key"/>
+        <circle cx="326" cy="250" r="4" class="sv-key"/>
+        <circle cx="345" cy="250" r="4" class="sv-key"/>
+        <circle cx="361" cy="250" r="4" class="sv-key"/>
+        <circle cx="376" cy="250" r="4" class="sv-key"/>
+        <circle cx="389" cy="250" r="4" class="sv-key"/>
+        <circle cx="403" cy="250" r="4" class="sv-key"/>
+        <circle cx="418" cy="250" r="4" class="sv-key"/>
+        <circle cx="437" cy="250" r="4" class="sv-key"/>
+        <circle cx="462" cy="250" r="4" class="sv-key"/>
+        <text x="220" y="110" text-anchor="middle" class="sv-ts">centre too far left</text>
+        <text x="540" y="110" text-anchor="middle" class="sv-ts">centre too far right</text>
+        <rect x="284" y="92" width="192" height="22" rx="4" class="sv-paper"/>
+        <text x="380" y="108" text-anchor="middle" class="sv-tb">centre on the data</text>
+        <text x="220" y="273" text-anchor="middle" class="sv-ts">low likelihood</text>
+        <text x="380" y="273" text-anchor="middle" class="sv-t">highest likelihood</text>
+        <text x="540" y="273" text-anchor="middle" class="sv-ts">low likelihood</text>
+        <text x="380" y="290" text-anchor="middle" class="sv-ts">mouse weight (each dot is one weighed mouse)</text>
+      </svg>
+      <figcaption>The curve keeps its shape; only its centre moves. Notice that the data dots only sit under the tall part of the middle curve.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Look at the data and choose a family of distributions. Josh chooses the normal family, because the weights cluster near the average and are roughly symmetrical.</li>
+      <li>Pick any centre for the curve and check the fit. With the centre far from the data, most measured weights fall in the thin tail, so their likelihood is low.</li>
+      <li>Shift the centre until it matches the average weight. Now the measurements sit under the tall part of the curve and the likelihood is high.</li>
+      <li>Keep shifting past the data and the likelihood drops again. Plot likelihood against the centre position and take the peak. That position is the maximum likelihood estimate of the mean.</li>
+      <li>Repeat the search for the standard deviation, which sets the width. The two winning values give the fitted distribution.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Likelihood plotted against the candidate value for the mean, with a single peak marked as the maximum likelihood estimate">
+        <text x="20" y="26" class="sv-tb">Likelihood as a function of where you put the centre</text>
+        <line x1="90" y1="245" x2="710" y2="245" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="90" y1="50" x2="90" y2="245" class="sv-stroke-ink" stroke-width="1.5"/>
+        <path d="M 110 232 C 230 228 305 90 395 78 C 485 90 560 228 690 236" class="sv-stroke-acc" stroke-width="2.5"/>
+        <line x1="395" y1="78" x2="395" y2="245" class="sv-stroke-key" stroke-width="1.2" stroke-dasharray="4 4"/>
+        <line x1="90" y1="78" x2="395" y2="78" class="sv-stroke-key" stroke-width="1.2" stroke-dasharray="4 4"/>
+        <circle cx="395" cy="78" r="6" class="sv-key"/>
+        <rect x="415" y="60" width="214" height="24" rx="4" class="sv-paper"/>
+        <text x="425" y="77" class="sv-t">maximum likelihood estimate</text>
+        <text x="150" y="215" class="sv-ts">too far left</text>
+        <text x="600" y="215" class="sv-ts">too far right</text>
+        <text x="400" y="272" text-anchor="middle" class="sv-ts">candidate value for the mean of the distribution</text>
+        <text x="76" y="150" text-anchor="middle" class="sv-ts" transform="rotate(-90 76 150)">likelihood of the data</text>
+      </svg>
+      <figcaption>The search has one clear winner: the peak of this curve is the value we report as the estimate.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>The video stays graphical. The likelihood is the product of the curve heights at your data points.</p>
+    <div class="formula"><span class="lbl">Likelihood of the data</span><div class="math">$$ L(\mu,\sigma \mid x_1,\dots,x_n) \;=\; \prod_{i=1}^{n} \frac{1}{\sigma\sqrt{2\pi}}\, e^{-\frac{(x_i-\mu)^2}{2\sigma^2}} $$</div><p class="explain"><b>Symbols:</b> \(x_1,\dots,x_n\) are the measured mouse weights; \(n\) is how many mice; \(\mu\) is the candidate centre; \(\sigma\) is the candidate width; \(\prod\) means multiply the terms together. <b>What it tells you:</b> it scores one candidate curve by multiplying its height above every data point.</p></div>
+    <div class="formula"><span class="lbl">The values that win, for a normal curve</span><div class="math">$$ \hat{\mu} = \frac{1}{n}\sum_{i=1}^{n} x_i \qquad\qquad \hat{\sigma} = \sqrt{\frac{1}{n}\sum_{i=1}^{n}\left(x_i-\hat{\mu}\right)^2} $$</div><p class="explain"><b>Symbols:</b> the hat means "the estimate that maximises the likelihood"; \(\sum\) means add up over all the mice. <b>What it tells you:</b> for a normal curve the search lands on the average of the data. That is why Josh says the two means agree here.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh lays the mouse weights on one axis and drops a normal curve far to the left. The score for that curve is the height above the first mouse, times the height above the second, and so on. Out in the tail every height is tiny, so the product is tiny too.</p>
+      <p>He then slides the curve until its centre matches the average weight. Now the mice sit under the peak, so the heights are large and the product is as big as it gets.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> In everyday speech, probability and likelihood mean the same thing. In statistics they do not. Likelihood scores a candidate curve against data you already observed.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Josh estimates the mean of the distribution, not the mean of the data. Those are different ideas. They happen to give the same number for a normal curve, which hides the distinction.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Maximum likelihood does not choose the shape for you. You choose normal, exponential, or gamma first. Maximum likelihood only tunes the settings inside that choice.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is maximum likelihood in plain words?</summary><div class="a">It is a way to fit a distribution to data. You try different values for the settings of the distribution, such as the mean and the standard deviation. For each set of values you ask how likely your observed data would be. You keep the values that make the observed data most likely.</div></details>
+    <details class="qa" open><summary>How is likelihood different from probability?</summary><div class="a">In casual speech they are the same word. In statistics, probability describes data given fixed settings for the distribution. Likelihood flips it around: the data is fixed because you already measured it, and you vary the settings to see which ones explain it best.</div></details>
+    <details class="qa" open><summary>For a normal distribution, what does maximum likelihood give you?</summary><div class="a">It gives the average of the data as the estimate of the mean. For the standard deviation it gives the root mean squared distance from that average. So the fitted centre lands exactly on the average of the measurements.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Fitting a distribution turns a pile of measurements into one curve that is easier to use.</li>
+      <li>You first choose the family, such as normal, based on the shape of your data.</li>
+      <li>Likelihood scores a candidate curve by how plausible it makes the measured data.</li>
+      <li>Sliding the curve too far left or right makes the likelihood small.</li>
+      <li>The position that maximises the likelihood is the maximum likelihood estimate of the mean.</li>
+      <li>You then run the same search for the standard deviation, which sets the width.</li>
+      <li>For a normal curve the estimated mean equals the average of the data.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Maximum likelihood</span><span class="board-tag">slide the curve, keep the highest likelihood</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 300" role="img" aria-label="A normal curve slides from far left onto the mouse weights. Above the data its heights are tall, and multiplying them gives the likelihood. Plotted against the candidate centre, the likelihood peaks at the average weight.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <line x1="14" y1="146" x2="388" y2="146" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <polyline points="17.5,143.7 25,141.6 32.5,138 40,132.5 47.5,124.4 55,113.5 62.5,100.2 70,85.3 77.5,70.5 85,57.8 92.5,49.1 100,46 107.5,49.1 115,57.8 122.5,70.5 130,85.3 137.5,100.2 145,113.5 152.5,124.4 160,132.5 167.5,138 175,141.6 182.5,143.7" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="6 5" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="125,144.9 132.5,143.7 140,141.6 147.5,138 155,132.5 162.5,124.4 170,113.5 177.5,100.2 185,85.3 192.5,70.5 200,57.8 207.5,49.1 215,46 222.5,49.1 230,57.8 237.5,70.5 245,85.3 252.5,100.2 260,113.5 267.5,124.4 275,132.5 282.5,138 290,141.6 297.5,143.7 305,144.9" class="sv-stroke-acc" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <g class="sv-stroke-key" stroke-width="3" stroke-linecap="round">
+              <line x1="179" y1="141" x2="179" y2="97.3"/>
+              <line x1="197" y1="141" x2="197" y2="62.5"/>
+              <line x1="209" y1="141" x2="209" y2="48"/>
+              <line x1="221" y1="141" x2="221" y2="48"/>
+              <line x1="233" y1="141" x2="233" y2="62.5"/>
+              <line x1="251" y1="141" x2="251" y2="97.3"/>
+            </g>
+            <circle cx="179" cy="146" r="4.5" class="sv-ink"/>
+            <circle cx="197" cy="146" r="4.5" class="sv-ink"/>
+            <circle cx="209" cy="146" r="4.5" class="sv-ink"/>
+            <circle cx="221" cy="146" r="4.5" class="sv-ink"/>
+            <circle cx="233" cy="146" r="4.5" class="sv-ink"/>
+            <circle cx="251" cy="146" r="4.5" class="sv-ink"/>
+            <line x1="110" y1="30" x2="198" y2="30" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="215" y1="153" x2="215" y2="189" class="sv-stroke-good" stroke-width="2" stroke-dasharray="4 4" stroke-linecap="round"/>
+            <line x1="14" y1="268" x2="388" y2="268" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <polyline points="80,267.2 91.3,266.4 102.5,265 113.8,262.6 125,258.8 136.3,253.3 147.5,245.9 158.8,236.9 170,226.8 181.3,216.7 192.5,208 203.8,202.1 215,200 226.3,202.1 237.5,208 248.8,216.7 260,226.8 271.3,236.9 282.5,245.9 293.8,253.3 305,258.8 316.3,262.6 327.5,265 338.8,266.4 350,267.2" class="sv-stroke-key" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <g class="sv-stroke-ink" stroke-width="2"><circle cx="215" cy="200" r="7" class="sv-good"/></g>
+            <text x="157" y="54" text-anchor="middle" class="sv-t">slide</text>
+            <text x="276" y="84" class="sv-tb">heights</text>
+            <text x="276" y="110" class="sv-t">multiplied</text>
+            <text x="388" y="165" text-anchor="end" class="sv-ts">mouse weight</text>
+            <text x="204" y="190" text-anchor="end" class="sv-tb">best centre</text>
+            <text x="226" y="190" class="sv-t">= average</text>
+            <text x="24" y="236" class="sv-t">likelihood</text>
+            <text x="388" y="288" text-anchor="end" class="sv-ts">candidate centre</text>
+          </svg>
+          <p>Slide a normal curve along the mouse weights and multiply its heights above every mouse. The product peaks when the curve sits on the data, at the average weight: the maximum likelihood estimate of the mean.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Distribution</dt><dd>A smooth curve saying which values are common and which are rare.</dd>
+            <dt>Family</dt><dd>The curve's shape, chosen first: normal, exponential, gamma.</dd>
+            <dt>Likelihood</dt><dd>Scores a candidate curve against data you already observed.</dd>
+            <dt>Maximum likelihood estimate</dt><dd>The setting at the likelihood peak, such as the best mean.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Pick a family</b>normal: weights cluster near average</li>
+            <li><b>Try a centre</b>far off: data in thin tail</li>
+            <li><b>Shift it</b>on the average: likelihood high</li>
+            <li><b>Take the peak</b>best centre = estimate of mean</li>
+            <li><b>Repeat for width</b>same search for standard deviation</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$L=\prod_{i=1}^{n}\frac{1}{\sigma\sqrt{2\pi}}\,e^{-\frac{(x_i-\mu)^2}{2\sigma^2}}$$
+          $$\hat\mu=\frac{1}{n}\sum_{i=1}^{n}x_i$$
+          $$\hat\sigma=\sqrt{\frac{1}{n}\sum_{i=1}^{n}(x_i-\hat\mu)^2}$$
+          <ul class="keys">
+            <li>\(x_i\) are the mouse weights; \(n\) is how many mice; \(\mu\) and \(\sigma\) are the candidate centre and width.</li>
+            <li>\(\prod\) multiplies the heights; the hat marks the value that maximises the likelihood.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>centre</th><th>mice sit in</th><th>likelihood</th></tr>
+            <tr><td>far left</td><td>thin tail</td><td>low</td></tr>
+            <tr><td>far right</td><td>thin tail</td><td>low</td></tr>
+            <tr class="final"><td>average</td><td>tall part</td><td>highest ✓</td></tr>
+          </table>
+          <p class="hand">The score multiplies the heights above every mouse, so tiny tail heights make a tiny product.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Likelihood is just another word for probability.</span><span class="yes">In statistics they differ. Likelihood scores a candidate curve against data already observed.</span></li>
+            <li><span class="no">It estimates the mean of the data.</span><span class="yes">It estimates the mean of the distribution. For a normal curve both give the same number.</span></li>
+            <li><span class="no">Maximum likelihood picks the shape too.</span><span class="yes">You choose normal, exponential or gamma first; it only tunes the settings.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="54-in-statistics-probability-is-not-likelihood.html"><small>Previous</small>In Statistics, Probability is not Likelihood.</a> <a href="56-maximum-likelihood-for-the-exponential-distribution.html"><small>Next</small>Maximum Likelihood for the Exponential Distribution</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

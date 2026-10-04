@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MDS and PCoA — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>37</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 37 · 8.3 min</div>
+    <h1>MDS and PCoA</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=GEn-_dAyYME" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Multi-dimensional scaling (MDS) and principal coordinate analysis (PCoA) draw a 2D map of your samples from the distances between them. They are the distance-based cousins of PCA.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>PCA starts from correlations among samples. MDS and PCoA start from distances among samples. After that first step, the two methods are the same: the same eigen decomposition, and the same kind of output. Josh only covers classical (metric) MDS here, which is exactly the same thing as PCoA. The real freedom you gain is the choice of distance, because you are no longer locked into what correlation measures.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Imagine some normal cells that look identical from the outside. You suspect that a few are one type, a few are another type, and a few are a third type. You cannot see the difference, so you sequence the messenger RNA in each cell. That tells you which genes are active, and therefore what each cell is doing. If the samples were people instead of cells, you would measure height, blood pressure, reading level, and so on.</p>
+    <p>The result is a table. Each column is one cell, each row is one gene, and each number says how much that gene is transcribed in that cell. PCA turns the correlations among those columns into a 2D plot, and highly correlated samples land near each other. MDS and PCoA do the same job, but they feed the machine distances instead of correlations. Samples that are close in the original measurements sit close together in the final plot.</p>
+    <p>So the only thing that changes is the first step. You calculate the distance between cell 1 and cell 2, between cell 1 and cell 3, between cell 1 and cell 4, between cell 2 and cell 3, and so on for every pair. After that, the fancy math (eigen decomposition) and the output are identical to PCA.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Flow chart comparing PCA, which starts from correlations, with MDS and PCoA, which start from distances, before both reach the same eigen decomposition and the same output">
+        <defs>
+          <marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" class="sv-ink2"></path>
+          </marker>
+        </defs>
+
+        <rect x="20" y="110" width="140" height="80" rx="6" class="sv-paper2"></rect>
+        <rect x="20" y="110" width="140" height="80" rx="6" class="sv-line" stroke-width="1"></rect>
+        <text x="90" y="140" text-anchor="middle" class="sv-tb">The data</text>
+        <text x="90" y="160" text-anchor="middle" class="sv-ts">genes down,</text>
+        <text x="90" y="176" text-anchor="middle" class="sv-ts">samples across</text>
+
+        <path d="M 165 145 L 205 70" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah1)"></path>
+        <path d="M 165 155 L 205 230" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah1)"></path>
+
+        <rect x="210" y="40" width="185" height="70" rx="6" class="sv-acc-soft"></rect>
+        <rect x="210" y="40" width="185" height="70" rx="6" class="sv-stroke-acc" stroke-width="1.5"></rect>
+        <text x="302" y="66" text-anchor="middle" class="sv-tb">PCA</text>
+        <text x="302" y="88" text-anchor="middle" class="sv-ts">correlations among samples</text>
+
+        <rect x="210" y="195" width="185" height="70" rx="6" class="sv-key-soft"></rect>
+        <rect x="210" y="195" width="185" height="70" rx="6" class="sv-stroke-key" stroke-width="1.5"></rect>
+        <text x="302" y="221" text-anchor="middle" class="sv-tb">MDS / PCoA</text>
+        <text x="302" y="243" text-anchor="middle" class="sv-ts">distances among samples</text>
+
+        <path d="M 400 80 L 440 132" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah1)"></path>
+        <path d="M 400 225 L 440 172" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah1)"></path>
+
+        <rect x="445" y="115" width="130" height="75" rx="6" class="sv-paper2"></rect>
+        <rect x="445" y="115" width="130" height="75" rx="6" class="sv-line" stroke-width="1"></rect>
+        <text x="510" y="143" text-anchor="middle" class="sv-tb">Same math</text>
+        <text x="510" y="165" text-anchor="middle" class="sv-ts">eigen</text>
+        <text x="510" y="180" text-anchor="middle" class="sv-ts">decomposition</text>
+
+        <path d="M 580 152 L 605 152" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah1)"></path>
+
+        <rect x="610" y="105" width="130" height="95" rx="6" class="sv-good-soft"></rect>
+        <rect x="610" y="105" width="130" height="95" rx="6" class="sv-stroke-good" stroke-width="1.5"></rect>
+        <text x="675" y="130" text-anchor="middle" class="sv-tb">Same output</text>
+        <text x="675" y="152" text-anchor="middle" class="sv-ts">plot coordinates</text>
+        <text x="675" y="170" text-anchor="middle" class="sv-ts">% variation per axis</text>
+        <text x="675" y="188" text-anchor="middle" class="sv-ts">loading scores</text>
+      </svg>
+      <figcaption>Notice that the two methods differ only in the very first box; everything after it is shared.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Measure every sample. In the video each cell gets a column of gene transcription values. Any set of numeric measurements works.</li>
+      <li>Choose a distance. Euclidean distance is the usual default, but it is only one option among many.</li>
+      <li>Calculate the distance for every pair of samples. Cell 1 to cell 2, cell 1 to cell 3, cell 2 to cell 3, and so on, until the whole matrix is filled.</li>
+      <li>Run the eigen decomposition on that distance matrix. This is the same fancy math that PCA uses, so nothing new needs to be learned here.</li>
+      <li>Read the output. You get coordinates for a 2D plot, the percent of variation each axis accounts for, and loading scores that say which variables had the largest effect.</li>
+      <li>Interpret the plot. The closer two samples sit, the smaller the distance between them was, so tight groups on the plot are clusters of similar samples.</li>
+    </ol>
+    <p>Step 2 is where the thinking happens. If you only had two genes, the Euclidean distance between two cells is just the hypotenuse of a right triangle, exactly as in the Pythagorean theorem. One leg is the difference in gene 1, the other leg is the difference in gene 2. With more genes you simply add one more squared difference for each extra gene.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 330" role="img" aria-label="Scatter plot with two genes as axes, showing cell 1 and cell 2 joined by a hypotenuse whose legs are the gene 1 difference and the gene 2 difference">
+        <path d="M 80 40 L 80 280 L 420 280" class="sv-stroke-ink" stroke-width="1.5"></path>
+        <text x="250" y="308" text-anchor="middle" class="sv-ts">Gene 1</text>
+        <text x="46" y="160" text-anchor="middle" class="sv-ts" transform="rotate(-90 46 160)">Gene 2</text>
+
+        <path d="M 100 232 L 320 232" class="sv-stroke-key" stroke-width="2"></path>
+        <path d="M 320 232 L 320 106" class="sv-stroke-key" stroke-width="2"></path>
+        <path d="M 100 232 L 320 106" class="sv-stroke-acc" stroke-width="2.5"></path>
+        <path d="M 320 232 L 304 232 L 304 216 L 320 216 Z" class="sv-line" stroke-width="1"></path>
+
+        <circle cx="320" cy="106" r="6" class="sv-ink"></circle>
+        <circle cx="100" cy="232" r="6" class="sv-ink"></circle>
+        <text x="332" y="102" class="sv-tm">cell 1 (3, 2.9)</text>
+        <text x="88" y="256" class="sv-tm">cell 2 (0.25, 0.8)</text>
+
+        <rect x="150" y="238" width="122" height="20" rx="3" class="sv-paper"></rect>
+        <text x="211" y="253" text-anchor="middle" class="sv-ts">gene 1 difference</text>
+        <rect x="326" y="160" width="118" height="20" rx="3" class="sv-paper"></rect>
+        <text x="332" y="175" class="sv-ts">gene 2 difference</text>
+        <rect x="112" y="152" width="132" height="22" rx="3" class="sv-paper"></rect>
+        <text x="118" y="168" class="sv-t">Euclidean distance</text>
+        <path d="M 190 176 L 200 190" class="sv-stroke-acc" stroke-width="1.2"></path>
+
+        <rect x="470" y="70" width="270" height="150" rx="6" class="sv-paper2"></rect>
+        <rect x="470" y="70" width="270" height="150" rx="6" class="sv-line" stroke-width="1"></rect>
+        <text x="492" y="102" class="sv-tb">With more genes</text>
+        <text x="492" y="130" class="sv-ts">Add one squared difference</text>
+        <text x="492" y="150" class="sv-ts">for every extra gene, then</text>
+        <text x="492" y="170" class="sv-ts">take the square root.</text>
+        <text x="492" y="198" class="sv-tm">gene 1, gene 2, gene 3, ...</text>
+      </svg>
+      <figcaption>Notice that the distance is the hypotenuse: each gene contributes one squared difference under the square root.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">Euclidean distance, two genes</span><div class="math">$$ d(c_1,c_2)=\sqrt{(x_{1,1}-x_{1,2})^2+(x_{2,1}-x_{2,2})^2} $$</div><p class="explain"><b>Symbols:</b> \(c_1\) and \(c_2\) are the two cells. \(x_{g,i}\) is the measured value of gene \(g\) in cell \(i\). So \(x_{1,1}-x_{1,2}\) is the gene 1 difference, and \(x_{2,1}-x_{2,2}\) is the gene 2 difference. <b>What it tells you:</b> the straight-line gap between the two cells when they are plotted on a gene 1 versus gene 2 graph.</p></div>
+
+    <div class="formula"><span class="lbl">Euclidean distance, all genes</span><div class="math">$$ d(c_1,c_2)=\sqrt{\sum_{g=1}^{G}\left(x_{g,1}-x_{g,2}\right)^2} $$</div><p class="explain"><b>Symbols:</b> \(G\) is the total number of genes measured. \(\sum_{g=1}^{G}\) means add the term once for every gene, from the first to the last. Everything else is as above. <b>What it tells you:</b> the same hypotenuse idea, extended to as many genes as you have. Each gene adds one squared difference before the square root.</p></div>
+
+    <div class="formula"><span class="lbl">Average absolute log fold change</span><div class="math">$$ d(c_1,c_2)=\frac{1}{G}\sum_{g=1}^{G}\left|\log_2\!\frac{x_{g,1}}{x_{g,2}}\right| $$</div><p class="explain"><b>Symbols:</b> \(x_{g,1}/x_{g,2}\) is the ratio of gene \(g\) between the two cells, called the fold change. \(\log_2\) turns that ratio into a log fold change. The vertical bars mean absolute value, which drops the minus sign. \(\frac{1}{G}\sum\) takes the average over all genes. <b>What it tells you:</b> how far apart two cells are on a scale biologists already think in. The absolute value stops negative fold changes from cancelling out positive ones.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh compares cell 1 and cell 2 using the average absolute log fold change. Gene 1 reads 3 in cell 1 and 0.25 in cell 2, so its log fold change is \(\log_2(3/0.25)=3.58\). Gene 2 reads 2.9 and 0.8, so its log fold change is \(\log_2(2.9/0.8)=1.86\). The same calculation runs for every gene in between. Gene 8 reads 1 and 2.7, so its log fold change is \(\log_2(1/2.7)=-1.43\).</p>
+      <p>The list of log fold changes is therefore 3.58, 1.86, and so on down to −1.43. Next take the absolute value of each one, which turns −1.43 into 1.43. Finally take the average of all those numbers. That average is the distance between cell 1 and cell 2.</p>
+      <p>Repeat this for every pair of cells, hand the finished distance matrix to the eigen decomposition, and you get an MDS plot. It will look different from the PCA plot of the same data, because it measured closeness in a different way.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> If you use the Euclidean distance, the MDS plot is identical to the PCA plot. Clustering by minimising linear distances is the same as clustering by maximising linear correlations. So MDS with Euclidean distance buys you nothing new, although people still choose it sometimes.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> There are two kinds of MDS. Classical, also called metric, MDS is the one covered here, and it is exactly the same thing as principal coordinate analysis. Non-metric MDS is a different method and is not covered in this video.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Take the absolute value before averaging log fold changes. Without it, a gene that went up and a gene that went down would cancel each other, and two very different cells could look identical.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> There is no single correct distance. Manhattan distance, Hamming distance and great circle distance are all available, and a biologist may pick log fold change simply because that is how the field thinks. Choosing the right one is part of the art of data science.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is the difference between PCA and MDS or PCoA?</summary><div class="a">PCA starts by calculating the correlations among the samples. MDS and PCoA start by calculating the distances among the samples instead. After that first step everything is the same: the same eigen decomposition, and the same output of coordinates, percent variation per axis, and loading scores.</div></details>
+    <details class="qa" open><summary>Are MDS and PCoA the same thing?</summary><div class="a">Classical MDS, sometimes called metric MDS, is exactly the same thing as principal coordinate analysis. Non-metric MDS is a separate method with a different fitting procedure. When someone says MDS without qualifying it, it is worth asking which one they mean.</div></details>
+    <details class="qa" open><summary>If MDS is more flexible, why does anyone still use PCA?</summary><div class="a">Because with a Euclidean distance the two give you the same picture. Minimising linear distances and maximising linear correlations turn out to be the same thing. MDS only earns its keep when you have a good reason to measure closeness differently.</div></details>
+    <details class="qa" open><summary>How would you choose a distance metric?</summary><div class="a">I would start from what the domain cares about. In gene expression work, people reason in log fold changes, so the average absolute log fold change is a natural distance. In other settings Manhattan, Hamming or great circle distance may fit better. There is no formula for this; it is a judgement call you should be able to defend.</div></details>
+    <details class="qa" open><summary>How do you read an MDS plot?</summary><div class="a">Points that sit close together were close in the original measurements, so tight groups are clusters of similar samples. I would also check the percent of variation on each axis before I trust the layout, and look at the loading scores to see which variables pushed the samples apart.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>MDS and PCoA turn distances among samples into a 2D plot, while PCA turns correlations into that plot.</li>
+      <li>Classical or metric MDS is exactly the same thing as principal coordinate analysis.</li>
+      <li>You calculate a distance for every pair of samples, then run the same eigen decomposition PCA uses.</li>
+      <li>The output is the same in kind: plot coordinates, percent variation per axis, and loading scores.</li>
+      <li>Euclidean distance is the hypotenuse idea, with one squared difference per gene under the square root.</li>
+      <li>With Euclidean distance the MDS plot is identical to the PCA plot, so nothing is gained.</li>
+      <li>Other distances, such as the average absolute log fold change, give genuinely different plots.</li>
+      <li>Picking the distance that suits your data and your field is part of the art of data science.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">MDS and PCoA</span><span class="board-tag">swap correlations for distances, keep the math</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 300" role="img" aria-label="A distance matrix, one distance per pair of cells, goes through the eigen decomposition, the same math as PCA, and comes out as a map where close points are similar cells. Below, picking the distance fills the matrix: Euclidean distance gives a plot identical to PCA, and log fold change gives a different one.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <text x="20" y="36" class="sv-ts">one distance per pair</text>
+            <g class="sv-stroke-ink" stroke-width="2.5" stroke-linejoin="round">
+              <rect x="22" y="50" width="80" height="80" rx="3" class="sv-key-soft"/>
+            </g>
+            <line x1="42" y1="53" x2="42" y2="127" class="sv-stroke-key" stroke-width="2" stroke-linecap="round"/>
+            <line x1="62" y1="53" x2="62" y2="127" class="sv-stroke-key" stroke-width="2" stroke-linecap="round"/>
+            <line x1="82" y1="53" x2="82" y2="127" class="sv-stroke-key" stroke-width="2" stroke-linecap="round"/>
+            <line x1="25" y1="70" x2="99" y2="70" class="sv-stroke-key" stroke-width="2" stroke-linecap="round"/>
+            <line x1="25" y1="90" x2="99" y2="90" class="sv-stroke-key" stroke-width="2" stroke-linecap="round"/>
+            <line x1="25" y1="110" x2="99" y2="110" class="sv-stroke-key" stroke-width="2" stroke-linecap="round"/>
+            <line x1="116" y1="90" x2="266" y2="90" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="190" y="74" text-anchor="middle" class="sv-ts">eigen decomposition</text>
+            <text x="190" y="114" text-anchor="middle" class="sv-ts">same math as PCA</text>
+            <line x1="284" y1="40" x2="284" y2="140" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="284" y1="140" x2="384" y2="140" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="306" cy="66" r="7" class="sv-acc"/>
+              <circle cx="322" cy="80" r="7" class="sv-acc"/>
+              <circle cx="350" cy="116" r="7" class="sv-good"/>
+              <circle cx="366" cy="102" r="7" class="sv-good"/>
+            </g>
+            <text x="334" y="164" text-anchor="middle" class="sv-ts">close = similar</text>
+            <line x1="62" y1="194" x2="62" y2="142" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="20" y="216" class="sv-t">pick a distance</text>
+            <line x1="146" y1="210" x2="170" y2="236" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="146" y1="214" x2="170" y2="266" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="178" y="244" class="sv-ts">Euclidean: identical to PCA</text>
+            <text x="178" y="276" class="sv-ts">log fold change: different</text>
+          </svg>
+          <p>PCA starts from correlations; MDS and PCoA start from a distance for every pair of samples. The same eigen decomposition turns that into a map where close means similar. The freedom is the distance: Euclidean gives the PCA plot back.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Distance matrix</dt><dd>One distance for every pair of samples.</dd>
+            <dt>Classical MDS</dt><dd>Also called metric MDS; exactly the same as PCoA.</dd>
+            <dt>Eigen decomposition</dt><dd>The fancy math PCA uses, run here on distances.</dd>
+            <dt>Euclidean distance</dt><dd>The hypotenuse: one squared difference per gene, then a square root.</dd>
+            <dt>Log fold change</dt><dd>log₂ of one gene's ratio between two cells.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Measure</b>a column of values per sample</li>
+            <li><b>Pick a distance</b>Euclidean is just the default</li>
+            <li><b>Every pair</b>fill the whole distance matrix</li>
+            <li><b>Same math</b>PCA's eigen math, on distances</li>
+            <li><b>Read output</b>coordinates, % variation, loading scores</li>
+            <li><b>Interpret</b>closer points, smaller distance</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$d=\sqrt{\sum_{g=1}^{G}\left(x_{g,1}-x_{g,2}\right)^2}$$
+          $$d=\frac{1}{G}\sum_{g=1}^{G}\left|\log_2\frac{x_{g,1}}{x_{g,2}}\right|$$
+          <ul class="keys">
+            <li>\(x_{g,i}\): gene \(g\) in cell \(i\); \(G\): the number of genes.</li>
+            <li>Top: Euclidean, one squared difference per gene. Bottom: average absolute log fold change.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>gene</th><th>cell 1</th><th>cell 2</th><th>log fold change</th></tr>
+            <tr><td>1</td><td>3</td><td>0.25</td><td>3.58</td></tr>
+            <tr><td>2</td><td>2.9</td><td>0.8</td><td>1.86</td></tr>
+            <tr><td>3 to 7</td><td>…</td><td>…</td><td>…</td></tr>
+            <tr><td>8</td><td>1</td><td>2.7</td><td>−1.43 → 1.43</td></tr>
+            <tr class="final"><td>d</td><td colspan="3">average of the absolute values</td></tr>
+          </table>
+          <p class="hand">Absolute values turn −1.43 into 1.43, so ups and downs cannot cancel. Repeat for every pair of cells.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Euclidean MDS shows something PCA cannot.</span><span class="yes">It gives the identical plot: minimising linear distances equals maximising linear correlations.</span></li>
+            <li><span class="no">MDS always means PCoA.</span><span class="yes">Classical, or metric, MDS is PCoA; non-metric MDS is a different method.</span></li>
+            <li><span class="no">Average the raw log fold changes.</span><span class="yes">Take absolute values first, or ups and downs cancel and different cells look identical.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="35-linear-discriminant-analysis-lda.html"><small>Previous</small>Linear Discriminant Analysis (LDA).</a> <a href="38-mds-and-pcoa-in-r.html"><small>Next</small>MDS and PCoA in R</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

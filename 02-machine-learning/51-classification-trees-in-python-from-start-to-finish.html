@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Classification Trees in Python from Start to Finish — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>51</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 51 · 66.4 min</div>
+    <h1>Classification Trees in Python from Start to Finish</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=q90UDEgYqeI" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Josh builds one complete classification tree in Python, from a raw file to a pruned, readable tree that predicts heart disease.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>The data is the heart disease set from the UCI machine learning repository. Josh loads it with pandas, names the columns, finds missing values hidden as question marks, and drops those six rows. He then one-hot encodes the categorical columns, because scikit-learn trees do not natively support categorical data. A first tree grown without limits is huge and overfits the training data. Cost complexity pruning, with cross-validation to choose the pruning strength alpha, gives a small tree that scores better on the test data.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Classification trees are useful when you must explain a prediction, not just make it. Each split is a plain question about one column, so you can trace any patient down the tree. Josh notes that doctors use them for this reason, and that they also show which features matter most.</p>
+    <p>Most of the work is not the model. It is getting the data into the shape scikit-learn expects. That means finding missing values, deciding what to do with them, and turning category codes into columns of zeros and ones.</p>
+    <p>The second big idea is pruning. A tree with no limits keeps splitting until the leaves are almost pure. It then memorises the training data instead of learning the pattern. Cost complexity pruning fixes this with one number, alpha, that charges a price for every leaf. Larger alpha means a smaller tree.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 250" role="img" aria-label="Ten stage pipeline from importing data to the final pruned tree">
+        <defs>
+          <marker id="ah" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L7,3 L0,6 z" class="sv-ink3"></path>
+          </marker>
+        </defs>
+        <rect x="20" y="40" width="120" height="52" rx="6" class="sv-acc-soft"></rect>
+        <rect x="170" y="40" width="120" height="52" rx="6" class="sv-acc-soft"></rect>
+        <rect x="320" y="40" width="120" height="52" rx="6" class="sv-acc-soft"></rect>
+        <rect x="470" y="40" width="120" height="52" rx="6" class="sv-acc-soft"></rect>
+        <rect x="620" y="40" width="120" height="52" rx="6" class="sv-acc-soft"></rect>
+        <text x="80" y="71" text-anchor="middle" class="sv-ts">Import data</text>
+        <text x="230" y="71" text-anchor="middle" class="sv-ts">Find missing</text>
+        <text x="380" y="71" text-anchor="middle" class="sv-ts">Drop 6 rows</text>
+        <text x="530" y="71" text-anchor="middle" class="sv-ts">Split X and y</text>
+        <text x="680" y="71" text-anchor="middle" class="sv-ts">One-hot encode</text>
+        <path d="M140,66 H166" class="sv-line" stroke-width="1.5" marker-end="url(#ah)"></path>
+        <path d="M290,66 H316" class="sv-line" stroke-width="1.5" marker-end="url(#ah)"></path>
+        <path d="M440,66 H466" class="sv-line" stroke-width="1.5" marker-end="url(#ah)"></path>
+        <path d="M590,66 H616" class="sv-line" stroke-width="1.5" marker-end="url(#ah)"></path>
+        <path d="M680,92 V112 H80 V136" class="sv-line" stroke-width="1.5" marker-end="url(#ah)"></path>
+        <rect x="20" y="142" width="120" height="52" rx="6" class="sv-paper2"></rect>
+        <rect x="170" y="142" width="120" height="52" rx="6" class="sv-paper2"></rect>
+        <rect x="320" y="142" width="120" height="52" rx="6" class="sv-key-soft"></rect>
+        <rect x="470" y="142" width="120" height="52" rx="6" class="sv-key-soft"></rect>
+        <rect x="620" y="142" width="120" height="52" rx="6" class="sv-good-soft"></rect>
+        <text x="80" y="173" text-anchor="middle" class="sv-ts">First big tree</text>
+        <text x="230" y="173" text-anchor="middle" class="sv-ts">Confusion matrix</text>
+        <text x="380" y="173" text-anchor="middle" class="sv-ts">Alpha path</text>
+        <text x="530" y="173" text-anchor="middle" class="sv-ts">Cross-validate</text>
+        <text x="680" y="173" text-anchor="middle" class="sv-ts">Pruned tree</text>
+        <path d="M140,168 H166" class="sv-line" stroke-width="1.5" marker-end="url(#ah)"></path>
+        <path d="M290,168 H316" class="sv-line" stroke-width="1.5" marker-end="url(#ah)"></path>
+        <path d="M440,168 H466" class="sv-line" stroke-width="1.5" marker-end="url(#ah)"></path>
+        <path d="M590,168 H616" class="sv-line" stroke-width="1.5" marker-end="url(#ah)"></path>
+        <text x="20" y="222" class="sv-ts">Top row: prepare the data. Bottom row: fit a baseline tree, prune it, and keep the final tree.</text>
+      </svg>
+      <figcaption>Notice that the first five of the ten stages happen before any model is fitted.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>
+        <p>Load pandas for the data, NumPy for means and standard deviations, matplotlib for plots, and the scikit-learn pieces for the tree.</p>
+        <pre><code>import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.metrics import confusion_matrix, plot_confusion_matrix</code></pre>
+      </li>
+      <li>
+        <p>Read the heart disease file into a data frame, then replace the column numbers with the names from the UCI page.</p>
+        <pre><code>df = pd.read_csv('processed.cleveland.data', header=None)
+df.columns = ['age', 'sex', 'cp', 'restbp', 'chol', 'fbs', 'restecg',
+              'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal', 'hd']
+df.head()</code></pre>
+      </li>
+      <li>
+        <p>Check the data types. Two columns, <code>ca</code> and <code>thal</code>, come back as <code>object</code>, which means they mix numbers with something else.</p>
+        <pre><code>df.dtypes
+df['ca'].unique()     # 0.0, 3.0, 2.0, 1.0, '?'
+df['thal'].unique()   # 6.0, 3.0, 7.0, '?'</code></pre>
+      </li>
+      <li>
+        <p>The question marks are the missing values. Count the affected rows, then keep only the rows without them.</p>
+        <pre><code>len(df.loc[(df['ca'] == '?') | (df['thal'] == '?')])   # 6
+len(df)                                                # 303
+
+df_no_missing = df.loc[(df['ca'] != '?') &amp; (df['thal'] != '?')]
+len(df_no_missing)                                     # 297</code></pre>
+      </li>
+      <li>
+        <p>Split the columns into <code>X</code>, the features used to predict, and <code>y</code>, the heart disease column being predicted.</p>
+        <pre><code>X = df_no_missing.drop('hd', axis=1).copy()
+y = df_no_missing['hd'].copy()</code></pre>
+      </li>
+      <li>
+        <p>One-hot encode the four categorical columns that have more than two categories. <code>get_dummies</code> turns each one into a set of zero or one columns.</p>
+        <pre><code>X_encoded = pd.get_dummies(X, columns=['cp', 'restecg', 'slope', 'thal'])
+X_encoded.head()   # cp becomes cp_1.0, cp_2.0, cp_3.0, cp_4.0</code></pre>
+      </li>
+      <li>
+        <p>The target holds five levels, zero plus four grades of disease. Fold every value above zero into one, so the tree does simple yes or no classification.</p>
+        <pre><code>y_not_zero_index = y &gt; 0
+y[y_not_zero_index] = 1
+y.unique()   # array([0, 1])</code></pre>
+      </li>
+      <li>
+        <p>Split into training and test sets, fit a tree with no limits, and score it on the test set with a confusion matrix.</p>
+        <pre><code>X_train, X_test, y_train, y_test = train_test_split(X_encoded, y, random_state=42)
+
+clf_dt = DecisionTreeClassifier(random_state=42)
+clf_dt = clf_dt.fit(X_train, y_train)
+
+plot_confusion_matrix(clf_dt, X_test, y_test,
+                      display_labels=["Does not have HD", "Has HD"])</code></pre>
+      </li>
+      <li>
+        <p>Ask the tree for the alphas worth trying, drop the largest one, and build a pruned tree for each remaining alpha.</p>
+        <pre><code>path = clf_dt.cost_complexity_pruning_path(X_train, y_train)
+ccp_alphas = path.ccp_alphas
+ccp_alphas = ccp_alphas[:-1]        # the largest alpha leaves only the root
+
+clf_dts = []
+for ccp_alpha in ccp_alphas:
+    clf = DecisionTreeClassifier(random_state=0, ccp_alpha=ccp_alpha)
+    clf.fit(X_train, y_train)
+    clf_dts.append(clf)</code></pre>
+      </li>
+      <li>
+        <p>A single train and test split makes alpha look best near 0.016. Cross-validation scores each alpha on several different splits and moves the answer.</p>
+        <pre><code>alpha_loop_values = []
+for ccp_alpha in ccp_alphas:
+    clf = DecisionTreeClassifier(random_state=0, ccp_alpha=ccp_alpha)
+    scores = cross_val_score(clf, X_train, y_train, cv=5)
+    alpha_loop_values.append([ccp_alpha, np.mean(scores), np.std(scores)])
+
+results = pd.DataFrame(alpha_loop_values,
+                       columns=['alpha', 'mean_accuracy', 'std'])
+results.plot(x='alpha', y='mean_accuracy', yerr='std',
+             marker='o', linestyle='--')</code></pre>
+      </li>
+      <li>
+        <p>Read the best alpha off the curve, narrow the range, and convert it from a pandas series to a plain float.</p>
+        <pre><code>ideal_ccp_alpha = results[(results['alpha'] &gt; 0.014)
+                        &amp; (results['alpha'] &lt; 0.015)]['alpha']
+ideal_ccp_alpha = float(ideal_ccp_alpha)</code></pre>
+      </li>
+      <li>
+        <p>Fit the final tree with that alpha, score it, and draw it. This tree is small enough to read node by node.</p>
+        <pre><code>clf_dt_pruned = DecisionTreeClassifier(random_state=42,
+                                       ccp_alpha=ideal_ccp_alpha)
+clf_dt_pruned = clf_dt_pruned.fit(X_train, y_train)
+
+plot_confusion_matrix(clf_dt_pruned, X_test, y_test,
+                      display_labels=["Does not have HD", "Has HD"])
+
+plot_tree(clf_dt_pruned, filled=True, rounded=True,
+          class_names=["No HD", "Yes HD"],
+          feature_names=X_encoded.columns)</code></pre>
+      </li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Accuracy of training and test data plotted against the pruning parameter alpha">
+        <rect x="60" y="30" width="640" height="220" class="sv-paper"></rect>
+        <path d="M60,30 V250 H700" class="sv-line" stroke-width="1.5"></path>
+        <path d="M60,40 H700 M60,145 H700" class="sv-line" stroke-width="1"></path>
+        <text x="52" y="44" text-anchor="end" class="sv-ts">1.0</text>
+        <text x="52" y="149" text-anchor="end" class="sv-ts">0.8</text>
+        <text x="52" y="254" text-anchor="end" class="sv-ts">0.6</text>
+        <text x="380" y="284" text-anchor="middle" class="sv-ts">pruning parameter alpha (larger alpha, smaller tree)</text>
+        <path d="M60,40 L140,42 L220,55 L316,76 L360,86 L460,112 L560,145 L700,196" class="sv-stroke-acc" stroke-width="2.5"></path>
+        <path d="M60,175 L140,168 L220,150 L316,110 L360,122 L440,150 L560,162 L700,196" class="sv-stroke-key" stroke-width="2.5"></path>
+        <path d="M316,110 V250" class="sv-line" stroke-width="1.5" stroke-dasharray="4 4"></path>
+        <circle cx="316" cy="110" r="5" class="sv-key"></circle>
+        <rect x="136" y="86" width="160" height="20" rx="4" class="sv-paper"></rect>
+        <text x="216" y="100" text-anchor="middle" class="sv-ts">one split: alpha ≈ 0.016</text>
+        <rect x="440" y="44" width="110" height="20" rx="4" class="sv-paper"></rect>
+        <text x="495" y="58" text-anchor="middle" class="sv-ts">accuracy</text>
+        <path d="M470,222 h24" class="sv-stroke-acc" stroke-width="2.5"></path>
+        <text x="500" y="226" class="sv-ts">training data</text>
+        <path d="M600,222 h24" class="sv-stroke-key" stroke-width="2.5"></path>
+        <text x="630" y="226" class="sv-ts">test data</text>
+      </svg>
+      <figcaption>Notice that training accuracy falls as alpha grows, while test accuracy rises first. Cross-validation later moves the choice to about 0.014.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">Gini impurity of a node</span><div class="math">$$ G = 1 - \sum_{i=1}^{k} p_i^{\,2} $$</div><p class="explain"><b>Symbols:</b> \(k\) is the number of classes, here two, and \(p_i\) is the share of the samples in that node belonging to class \(i\). <b>What it tells you:</b> Gini is zero when a node holds one class only, and near 0.5 for a two-class fifty-fifty node. In the drawn tree, darker colour means lower Gini, so a cleaner split.</p></div>
+    <div class="formula"><span class="lbl">Cost complexity score</span><div class="math">$$ R_\alpha(T) = R(T) + \alpha\,|T| $$</div><p class="explain"><b>Symbols:</b> \(T\) is a tree, \(R(T)\) is its total weighted leaf impurity, \(|T|\) is its number of leaves, and \(\alpha\) is the price charged per leaf. <b>What it tells you:</b> Every extra leaf must lower the impurity by more than \(\alpha\), or it is cut. At \(\alpha = 0\) you keep the full tree; at the largest alpha only the root is left.</p></div>
+    <p>Josh points out why these alphas look small. The earlier StatQuest on pruning used regression trees scored by the sum of squared residuals, which can be a huge number. Gini stays between 0 and 1, so the useful alphas here are around 0.01 instead.</p>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>The test set holds 75 patients: 42 without heart disease and 33 with it. The unpruned tree gets 31 of the 42 healthy patients right, which is 74 percent, and 26 of the 33 sick patients right, which is 79 percent.</p>
+      <p>After pruning with the cross-validated alpha near 0.014, the same test set gives 81 percent on the healthy patients and 85 percent on the sick ones. Overall accuracy moves from about \( (31+26)/75 = 76\% \) to about 83 percent.</p>
+      <p>The smaller tree wins. Its first split is on <code>ca</code>, the number of blood vessels lit up during fluoroscopy, at the threshold 0.5. That root node holds 118 patients without heart disease and 104 with it, so the class shown is "no heart disease". Further down, after <code>ca</code>, the thallium heart scan and <code>oldpeak</code>, one leaf is almost entirely patients without heart disease.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not feed coded categories to the tree as numbers. Chest pain is stored as 1, 2, 3, 4. Left as a float, the tree treats 4 as closer to 3 than to 1, which is not true for these labels. One-hot encoding removes that false order.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Missing data can hide as text. Here it is a question mark, which is why <code>ca</code> and <code>thal</code> show the <code>object</code> data type. Always print the unique values of any suspicious column.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Deal with missing rows before you split X from y and before the train and test split. Otherwise rows in X stop matching rows in y, and dropping rows late can unbalance the test set. Imputing values is the opposite: do that after the split.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not trust an alpha read off one train and test split. That single split suggested 0.016, but cross-validation showed some folds did badly there and preferred a value near 0.014. Also drop the largest alpha in the path, since it prunes the tree down to the root.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>Why do you one-hot encode before a scikit-learn decision tree?</summary><div class="a">Scikit-learn trees split on numbers, so they read a category code as an ordered quantity. With chest pain coded 1 to 4, the tree would group 3 and 4 together as if they were similar. One-hot encoding gives each category its own zero or one column, so no category is nearer to any other. In pandas I use <code>get_dummies</code>, though <code>ColumnTransformer</code> is more common in production pipelines.</div></details>
+    <details class="qa" open><summary>What is cost complexity pruning, and what does alpha control?</summary><div class="a">It scores a tree as its leaf impurity plus alpha times the number of leaves. Alpha is the price of keeping a leaf, so a split survives only if it buys more impurity reduction than it costs. Alpha of zero leaves the full tree, and a large alpha collapses it to the root. In scikit-learn I get the candidate values from <code>cost_complexity_pruning_path</code> and pass the chosen one as <code>ccp_alpha</code>.</div></details>
+    <details class="qa" open><summary>Why use cross-validation to pick alpha?</summary><div class="a">Accuracy on a single test split is noisy, so the best alpha on that split may be lucky. In this example the single split pointed to 0.016, but across folds that value was unstable and a value near 0.014 did better on average. I loop over the candidate alphas, take the mean and standard deviation of the cross-validated scores, and pick from the plot. Grid search does the same job if I am tuning other parameters at the same time.</div></details>
+    <details class="qa" open><summary>How did you know the first tree was overfitting?</summary><div class="a">The full tree was almost perfect on the training data but only about 76 percent accurate on the test data. That gap is the signal. After pruning, training accuracy dropped and test accuracy rose to roughly 83 percent, which confirms the big tree had memorised the training set rather than learned the pattern.</div></details>
+    <details class="qa" open><summary>Why choose a single tree over a random forest here?</summary><div class="a">Interpretability. A pruned tree lets you show a clinician the exact path: number of vessels, then the thallium scan, then oldpeak. Random forests are similar but harder to interpret, because each prediction comes from many trees. For sheer interpretability and simplicity, a single tree is the best choice.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>The goal is to predict heart disease from the UCI heart disease data using a classification tree in scikit-learn.</li>
+      <li>Missing values appear as question marks in <code>ca</code> and <code>thal</code>, and the 6 affected rows of 303 are dropped, leaving 297.</li>
+      <li>The data is split into X, the predictors, and y, the heart disease column, only after the missing rows are removed.</li>
+      <li>Categorical columns with more than two categories are one-hot encoded with <code>get_dummies</code>, and y is folded to zero or one.</li>
+      <li>An unpruned tree is huge and scores about 74 and 79 percent on the two test groups, which is the baseline to beat.</li>
+      <li>Cost complexity pruning charges alpha per leaf, and the alpha path gives the candidate values to test.</li>
+      <li>Cross-validation picks an alpha near 0.014 instead of the 0.016 suggested by one split.</li>
+      <li>The pruned tree scores about 81 and 85 percent, and it is small enough to read and explain.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Classification trees</span><span class="board-tag">clean the data, then prune the tree</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 250" role="img" aria-label="A big tree grown with no limits scores about 76% on the test set; pruning with alpha near 0.014, chosen with cv=5, leaves a small tree whose root splits on ca at 0.5 and scores about 83%.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <path d="M90 60 L52 96 M90 60 L128 96 M52 96 L33 132 M52 96 L71 132 M128 96 L109 132 M128 96 L147 132 M33 132 L24 168 M33 132 L42 168 M71 132 L62 168 M71 132 L80 168 M109 132 L100 168 M109 132 L118 168 M147 132 L138 168 M147 132 L156 168" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="90" cy="60" r="8" class="sv-paper2"/>
+              <circle cx="52" cy="96" r="7" class="sv-paper2"/>
+              <circle cx="128" cy="96" r="7" class="sv-paper2"/>
+              <circle cx="33" cy="132" r="6" class="sv-paper2"/>
+              <circle cx="71" cy="132" r="6" class="sv-paper2"/>
+              <circle cx="109" cy="132" r="6" class="sv-paper2"/>
+              <circle cx="147" cy="132" r="6" class="sv-paper2"/>
+              <circle cx="24" cy="168" r="5" class="sv-ink3"/>
+              <circle cx="42" cy="168" r="5" class="sv-ink3"/>
+              <circle cx="62" cy="168" r="5" class="sv-ink3"/>
+              <circle cx="80" cy="168" r="5" class="sv-ink3"/>
+              <circle cx="100" cy="168" r="5" class="sv-ink3"/>
+              <circle cx="118" cy="168" r="5" class="sv-ink3"/>
+              <circle cx="138" cy="168" r="5" class="sv-ink3"/>
+              <circle cx="156" cy="168" r="5" class="sv-ink3"/>
+            </g>
+            <path d="M318 64 L284 104 M318 64 L352 104 M284 104 L264 144 M284 104 L304 144" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2.5">
+              <circle cx="318" cy="64" r="11" class="sv-good"/>
+              <circle cx="284" cy="104" r="9" class="sv-good"/>
+              <circle cx="352" cy="104" r="9" class="sv-good"/>
+              <circle cx="264" cy="144" r="8" class="sv-good"/>
+              <circle cx="304" cy="144" r="8" class="sv-good"/>
+            </g>
+            <line x1="172" y1="114" x2="238" y2="114" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="206" y="102" text-anchor="middle" class="sv-tb">α ≈ 0.014</text>
+            <text x="206" y="137" text-anchor="middle" class="sv-tm">cv=5</text>
+            <text x="318" y="38" text-anchor="middle" class="sv-t">ca at 0.5</text>
+            <text x="90" y="202" text-anchor="middle" class="sv-tb">no limits</text>
+            <text x="90" y="228" text-anchor="middle" class="sv-t">test ≈ 76%</text>
+            <text x="318" y="202" text-anchor="middle" class="sv-tb">pruned</text>
+            <text x="318" y="228" text-anchor="middle" class="sv-t">test ≈ 83%</text>
+          </svg>
+          <p>An unlimited tree splits until its leaves are almost pure, memorising the training data: about 76% on test. Pruning charges alpha per leaf; cross-validation picks alpha near 0.014, and the small tree scores about 83%.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>object dtype</dt><dd>Numbers mixed with something else; here '?' marks missing.</dd>
+            <dt>get_dummies</dt><dd>Turns each category into its own 0/1 column.</dd>
+            <dt>Gini impurity</dt><dd>0 for a one-class node, near 0.5 for fifty-fifty.</dd>
+            <dt>ccp_alpha</dt><dd>The price per leaf; larger alpha, smaller tree.</dd>
+            <dt>Cross-validation</dt><dd>Scores each alpha on several splits, not just one.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Load, clean</b>303 rows, drop 6 with '?'</li>
+            <li><b>Encode</b>one-hot X; fold y to 0/1</li>
+            <li><b>Big tree</b>no limits; about 76% on test</li>
+            <li><b>Alpha path</b>one pruned tree per alpha</li>
+            <li><b>Cross-validate</b>5 folds pick alpha ≈ 0.014</li>
+            <li><b>Final tree</b>about 83%, root splits on ca</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$G=1-\sum_{i=1}^{k}p_i^{2}$$
+          $$R_\alpha(T)=R(T)+\alpha\,|T|$$
+          <ul class="keys">
+            <li>\(p_i\): class \(i\)'s share of the node; here \(k=2\).</li>
+            <li>\(R(T)\): leaf impurity; \(|T|\): leaves. Each leaf must cut \(R\) by more than \(\alpha\).</li>
+            <li>Gini stays between 0 and 1, so alphas here are near 0.01.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>test group</th><th>n</th><th>unpruned</th><th>pruned</th></tr>
+            <tr><td>no HD</td><td>42</td><td>74%</td><td>81%</td></tr>
+            <tr><td>has HD</td><td>33</td><td>79%</td><td>85%</td></tr>
+            <tr class="final"><td>overall</td><td>75</td><td>76%</td><td>≈ 83%</td></tr>
+          </table>
+          <p class="hand">Unpruned got 31 of 42 and 26 of 33 right. Pruning wins on both groups.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Category codes can go in as numbers.</span><span class="yes">Chest pain 1 to 4 looks ordered, 4 nearer 3 than 1. One-hot encode it.</span></li>
+            <li><span class="no">Missing values show up on their own.</span><span class="yes">Here they hide as '?'. Drop those rows before splitting X from y.</span></li>
+            <li><span class="no">One split's best alpha is the answer.</span><span class="yes">One split said 0.016; cross-validation preferred about 0.014. Also drop the largest alpha: it leaves only the root.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="50-one-hot-label-target-and-k-fold-target-encoding.html"><small>Previous</small>One-Hot, Label, Target and K-Fold Target Encoding</a> <a href="52-random-forests-part-1-building-using-and-evaluating.html"><small>Next</small>Random Forests Part 1 - Building, Using and Evaluating</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

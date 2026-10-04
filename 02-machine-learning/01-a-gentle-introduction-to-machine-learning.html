@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A Gentle Introduction to Machine Learning — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>01</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 01 · 12.8 min</div>
+    <h1>A Gentle Introduction to Machine Learning</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=Gv9_4yMHFhI" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video says what machine learning is for, in the simplest way. It is about making predictions and classifications, and about choosing a method with testing data.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh shows two toy examples. A decision tree asks a few questions and classifies a person as someone who loves StatQuest or not. A straight line fitted to yam and running speed predicts how fast a new person runs. Both are machine learning, because both make predictions. The main lesson is that we judge any method on new data, called testing data, not on the data used to build it.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh starts with a silly song that asks three questions. Do you like silly songs? Are you interested in machine learning? Are you interested in statistics? The answers lead to a verdict: you will love StatQuest, or you might not. Those questions and answers form a <strong>decision tree</strong>, which is a simple machine learning method.</p>
+    <p>The tree does a job called <strong>classification</strong>. It puts a person into one of two groups. If you understand how a person walks down this tree and gets a label, you already understand the shape of machine learning.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 310" role="img" aria-label="Decision tree that classifies a person as loving StatQuest or not, using three yes or no questions">
+        <defs>
+          <marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" class="sv-ink3"></path>
+          </marker>
+        </defs>
+        <line x1="370" y1="56" x2="195" y2="94" class="sv-line" stroke-width="1.5" marker-end="url(#ar1)"></line>
+        <line x1="370" y1="56" x2="545" y2="94" class="sv-line" stroke-width="1.5" marker-end="url(#ar1)"></line>
+        <line x1="195" y1="132" x2="120" y2="170" class="sv-line" stroke-width="1.5" marker-end="url(#ar1)"></line>
+        <line x1="195" y1="132" x2="300" y2="170" class="sv-line" stroke-width="1.5" marker-end="url(#ar1)"></line>
+        <line x1="545" y1="132" x2="470" y2="170" class="sv-line" stroke-width="1.5" marker-end="url(#ar1)"></line>
+        <line x1="545" y1="132" x2="640" y2="170" class="sv-line" stroke-width="1.5" marker-end="url(#ar1)"></line>
+        <line x1="300" y1="208" x2="245" y2="246" class="sv-line" stroke-width="1.5" marker-end="url(#ar1)"></line>
+        <line x1="300" y1="208" x2="355" y2="246" class="sv-line" stroke-width="1.5" marker-end="url(#ar1)"></line>
+        <line x1="640" y1="208" x2="585" y2="246" class="sv-line" stroke-width="1.5" marker-end="url(#ar1)"></line>
+        <line x1="640" y1="208" x2="695" y2="246" class="sv-line" stroke-width="1.5" marker-end="url(#ar1)"></line>
+
+        <rect x="275" y="24" width="190" height="32" rx="5" class="sv-acc-soft"></rect>
+        <rect x="275" y="24" width="190" height="32" rx="5" class="sv-stroke-acc" stroke-width="1.5"></rect>
+        <text x="370" y="45" text-anchor="middle" class="sv-t">Like silly songs?</text>
+
+        <rect x="115" y="100" width="160" height="32" rx="5" class="sv-paper2"></rect>
+        <rect x="115" y="100" width="160" height="32" rx="5" class="sv-line" stroke-width="1.5"></rect>
+        <text x="195" y="121" text-anchor="middle" class="sv-t">Like ML?</text>
+
+        <rect x="465" y="100" width="160" height="32" rx="5" class="sv-paper2"></rect>
+        <rect x="465" y="100" width="160" height="32" rx="5" class="sv-line" stroke-width="1.5"></rect>
+        <text x="545" y="121" text-anchor="middle" class="sv-t">Like ML?</text>
+
+        <rect x="65" y="176" width="110" height="32" rx="5" class="sv-good-soft"></rect>
+        <rect x="65" y="176" width="110" height="32" rx="5" class="sv-stroke-good" stroke-width="1.5"></rect>
+        <text x="120" y="197" text-anchor="middle" class="sv-t">Loves it</text>
+
+        <rect x="225" y="176" width="150" height="32" rx="5" class="sv-paper2"></rect>
+        <rect x="225" y="176" width="150" height="32" rx="5" class="sv-line" stroke-width="1.5"></rect>
+        <text x="300" y="197" text-anchor="middle" class="sv-t">Like statistics?</text>
+
+        <rect x="415" y="176" width="110" height="32" rx="5" class="sv-good-soft"></rect>
+        <rect x="415" y="176" width="110" height="32" rx="5" class="sv-stroke-good" stroke-width="1.5"></rect>
+        <text x="470" y="197" text-anchor="middle" class="sv-t">Loves it</text>
+
+        <rect x="565" y="176" width="150" height="32" rx="5" class="sv-paper2"></rect>
+        <rect x="565" y="176" width="150" height="32" rx="5" class="sv-line" stroke-width="1.5"></rect>
+        <text x="640" y="197" text-anchor="middle" class="sv-t">Like statistics?</text>
+
+        <rect x="195" y="252" width="100" height="32" rx="5" class="sv-good-soft"></rect>
+        <rect x="195" y="252" width="100" height="32" rx="5" class="sv-stroke-good" stroke-width="1.5"></rect>
+        <text x="245" y="273" text-anchor="middle" class="sv-t">Loves it</text>
+
+        <rect x="310" y="252" width="90" height="32" rx="5" class="sv-key-soft"></rect>
+        <rect x="310" y="252" width="90" height="32" rx="5" class="sv-stroke-key" stroke-width="1.5"></rect>
+        <text x="355" y="273" text-anchor="middle" class="sv-t">Maybe not</text>
+
+        <rect x="535" y="252" width="100" height="32" rx="5" class="sv-good-soft"></rect>
+        <rect x="535" y="252" width="100" height="32" rx="5" class="sv-stroke-good" stroke-width="1.5"></rect>
+        <text x="585" y="273" text-anchor="middle" class="sv-t">Loves it</text>
+
+        <rect x="650" y="252" width="90" height="32" rx="5" class="sv-key-soft"></rect>
+        <rect x="650" y="252" width="90" height="32" rx="5" class="sv-stroke-key" stroke-width="1.5"></rect>
+        <text x="695" y="273" text-anchor="middle" class="sv-t">Maybe not</text>
+
+        <text x="262" y="82" text-anchor="middle" class="sv-ts">Yes</text>
+        <text x="478" y="82" text-anchor="middle" class="sv-ts">No</text>
+      </svg>
+      <figcaption>Every left branch is a "yes" and every right branch is a "no"; each person ends at one label, which is what classification means.</figcaption>
+    </figure>
+    <p>The second example predicts a number instead of a label. Josh imagines measuring how much yam a person eats and how fast that person runs 100 metres. In the pretend data, people who eat more yam run faster. A straight black line drawn through the points shows the trend. Give the line a new yam amount, and it returns a predicted speed. That is a <strong>prediction</strong>, and it makes the line a machine learning method too.</p>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <p>Josh then uses the yam data to show how we choose between two methods. The order below follows the video.</p>
+    <ol class="steps">
+      <li>Call the original data the <strong>training data</strong>. This is the data we use to build or fit the method.</li>
+      <li>Fit a simple black line to the training data. It passes near the points but not through them.</li>
+      <li>Fit a wiggly green curve to the same training data. This green squiggle passes through the points almost perfectly.</li>
+      <li>Collect data from new people. Measure their yam and their speed. Together these new people are the <strong>testing data</strong>.</li>
+      <li>For each new person, read the predicted speed off the black line. Measure the distance between the real speed and the predicted speed. Add these distances up.</li>
+      <li>Do the same with the green squiggle. Measure each distance and add them up.</li>
+      <li>Compare the two totals. The smaller total wins, so we keep that method for future predictions.</li>
+    </ol>
+    <p>When Josh does this, the green squiggle has the larger total. The black line fitted the training data worse, but it predicted the testing data better. So the black line is the method we keep.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 352" role="img" aria-label="Left panel shows training points with a black line and a green squiggle; right panel shows testing points with distances to the black line, and two bars comparing total distances">
+        <line x1="60" y1="250" x2="350" y2="250" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <line x1="60" y1="40" x2="60" y2="250" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <text x="205" y="272" text-anchor="middle" class="sv-ts">Yam eaten</text>
+        <text x="-145" y="30" transform="rotate(-90)" text-anchor="middle" class="sv-ts">Speed</text>
+        <text x="60" y="28" class="sv-tb">Training data</text>
+        <path d="M75,242 Q110,236 130,196 Q150,190 170,196 Q190,180 210,158 Q230,152 250,150 Q270,140 290,128 Q310,110 330,92" class="sv-stroke-good" stroke-width="2.5"></path>
+        <line x1="75" y1="235" x2="340" y2="95" class="sv-stroke-ink" stroke-width="2.5"></line>
+        <circle cx="90" cy="236" r="5" class="sv-key"></circle>
+        <circle cx="130" cy="196" r="5" class="sv-key"></circle>
+        <circle cx="170" cy="196" r="5" class="sv-key"></circle>
+        <circle cx="210" cy="158" r="5" class="sv-key"></circle>
+        <circle cx="250" cy="150" r="5" class="sv-key"></circle>
+        <circle cx="290" cy="128" r="5" class="sv-key"></circle>
+        <circle cx="330" cy="92" r="5" class="sv-key"></circle>
+        <rect x="150" y="212" width="80" height="18" rx="3" class="sv-paper"></rect>
+        <text x="190" y="225" text-anchor="middle" class="sv-ts">black line</text>
+        <rect x="222" y="96" width="106" height="18" rx="3" class="sv-paper"></rect>
+        <text x="275" y="109" text-anchor="middle" class="sv-ts">green squiggle</text>
+
+        <line x1="430" y1="250" x2="720" y2="250" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <line x1="430" y1="40" x2="430" y2="250" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <text x="575" y="272" text-anchor="middle" class="sv-ts">Yam eaten</text>
+        <text x="430" y="28" class="sv-tb">Testing data</text>
+        <line x1="445" y1="235" x2="710" y2="95" class="sv-stroke-ink" stroke-width="2.5"></line>
+        <line x1="480" y1="200" x2="480" y2="217" class="sv-stroke-key" stroke-width="2.5" stroke-dasharray="4 3"></line>
+        <line x1="545" y1="196" x2="545" y2="182" class="sv-stroke-key" stroke-width="2.5" stroke-dasharray="4 3"></line>
+        <line x1="620" y1="152" x2="620" y2="143" class="sv-stroke-key" stroke-width="2.5" stroke-dasharray="4 3"></line>
+        <line x1="690" y1="96" x2="690" y2="106" class="sv-stroke-key" stroke-width="2.5" stroke-dasharray="4 3"></line>
+        <circle cx="480" cy="200" r="5" class="sv-acc"></circle>
+        <circle cx="545" cy="196" r="5" class="sv-acc"></circle>
+        <circle cx="620" cy="152" r="5" class="sv-acc"></circle>
+        <circle cx="690" cy="96" r="5" class="sv-acc"></circle>
+        <rect x="470" y="150" width="130" height="18" rx="3" class="sv-paper"></rect>
+        <text x="535" y="163" text-anchor="middle" class="sv-ts">distance to the line</text>
+
+        <text x="60" y="304" class="sv-ts">Black line total</text>
+        <rect x="200" y="292" width="120" height="15" rx="3" class="sv-ink"></rect>
+        <text x="60" y="328" class="sv-ts">Green squiggle total</text>
+        <rect x="200" y="316" width="245" height="15" rx="3" class="sv-good"></rect>
+        <text x="470" y="328" class="sv-ts">shorter bar is better</text>
+      </svg>
+      <figcaption>Notice that the green squiggle wins on the left panel but loses on the right, where only the testing data counts.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>The video shows no algebra, but it does add up distances and count correct answers. These two lines write down exactly what Josh draws.</p>
+    <div class="formula"><span class="lbl">Total distance on testing data</span><div class="math">$$ D \;=\; \sum_{i=1}^{n} \left| y_i - \hat{y}_i \right| $$</div><p class="explain"><b>Symbols:</b> \(n\) is the number of people in the testing data. \(y_i\) is the real speed of person \(i\). \(\hat{y}_i\) is the speed the method predicts for that person. The bars \(|\cdot|\) mean distance, so the value is never negative. The sign \(\sum\) means add the distances over all testing people. <b>What it tells you:</b> \(D\) is one number that scores a method on new data, and the method with the smaller \(D\) is the better predictor.</p></div>
+    <div class="formula"><span class="lbl">Score for a classifier</span><div class="math">$$ \text{Accuracy} \;=\; \frac{c}{n} $$</div><p class="explain"><b>Symbols:</b> \(c\) is the number of testing people the decision tree labelled correctly. \(n\) is the number of people in the testing data. <b>What it tells you:</b> when the method returns a label instead of a number, we count correct labels instead of measuring distances, and the higher fraction wins.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh uses four people in the testing data for the yam and speed example. For the first person, the black line predicts a slightly slower speed than the real one, so he saves that distance. He repeats this for the second, third and fourth person and keeps a running total:</p>
+      <div class="math">$$ D_{\text{line}} = d_1 + d_2 + d_3 + d_4 $$</div>
+      <p>Then he repeats the whole process with the green squiggle and gets a second total:</p>
+      <div class="math">$$ D_{\text{squiggle}} = g_1 + g_2 + g_3 + g_4 $$</div>
+      <p>The bars in the video show that \(D_{\text{squiggle}} > D_{\text{line}}\). The squiggle hugged the training points, yet it missed the new points by more. So we pick the black line.</p>
+      <p>The decision tree is scored the same way. The first testing person disliked silly songs, machine learning and statistics, so the tree said "might not love StatQuest". That person actually loves StatQuest, so the tree was wrong. The second person liked silly songs and machine learning, so the tree said "loves StatQuest", and that was right. After two people the score is \(1/2\), and we keep going down the rest of the testing data.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> A good fit to the training data proves nothing. The green squiggle passed through every training point and still lost. Josh calls this trap the bias-variance tradeoff, and a later StatQuest covers it properly.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not judge a method by how modern or complicated it sounds. Josh points out that a deep learning network and a plain black line are compared in exactly the same way: by how they perform on testing data.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The split into training and testing data is a real choice, not an afterthought. In the video the red dots were training data only by an arbitrary decision, and the blue dots could have played that role instead. Proper methods for splitting exist, and cross validation is the next video.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Prediction and classification are different outputs of the same idea. The line returns a number, the tree returns a label, so their scores are computed differently.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is machine learning, in one or two sentences?</summary><div class="a">Machine learning is a set of methods that make predictions and classifications from data. A method is fitted to training data, then judged on testing data it has never seen. Anything from a straight line to a deep network fits that description.</div></details>
+    <details class="qa" open><summary>Why not simply keep the model that fits the training data best?</summary><div class="a">Because fitting the training data is not the goal; predicting new data is. A wiggly curve can pass through every training point and still miss new points badly. That is why we always hold out testing data and compare methods there.</div></details>
+    <details class="qa" open><summary>How do you compare two regression models on testing data?</summary><div class="a">I take each testing point, read off the predicted value, and measure the distance between the real value and the prediction. I add those distances into one total for each model. The model with the smaller total is the better predictor.</div></details>
+    <details class="qa" open><summary>Would you ever prefer a simple model over a modern one?</summary><div class="a">Yes, whenever the simple model scores better on testing data. The name of the method does not decide anything; the testing score does. A simple model is also easier to explain and to maintain, so it is a fair default until something beats it.</div></details>
+    <details class="qa" open><summary>How do you decide which rows become training data and which become testing data?</summary><div class="a">Picking a split by hand is arbitrary, and the answer can change with the split you happen to choose. So I use a systematic scheme such as cross validation, which rotates every block of data through the testing role. That gives a score that does not depend on one lucky split.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Machine learning is about making predictions and classifications.</li>
+      <li>A decision tree asks a few questions and gives each person a label, which is classification.</li>
+      <li>A line fitted to yam and speed returns a number for a new person, which is prediction.</li>
+      <li>The data used to build a method is called training data.</li>
+      <li>The fresh data used to judge it is called testing data.</li>
+      <li>For numbers, add the distances between real and predicted values, and prefer the smaller total.</li>
+      <li>The green squiggle fitted the training data best but lost on testing data, so the black line was kept.</li>
+      <li>Choose a method by its testing performance, not by how fancy it sounds.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Machine learning</span><span class="board-tag">fit on training data, judge on testing data</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 270" role="img" aria-label="Two panels with the same black line and green squiggle. On the training data the squiggle passes through every point. On the testing data the new points sit near the line and far from the squiggle, so the line misses less and is kept.">
+            <text x="18" y="30" class="sv-tb">training data</text>
+            <text x="214" y="30" class="sv-tb">testing data</text>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 44 V186 H188"/>
+              <path d="M214 44 V186 H384"/>
+            </g>
+            <line x1="26" y1="176" x2="184" y2="60" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round"/>
+            <line x1="222" y1="176" x2="380" y2="60" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round"/>
+            <path d="M26,176 C32.7,159.6 39.3,144.2 46,139.3 C60.6,128.6 71.4,164.6 86,153.9 C100.6,143.3 111.4,91.3 126,80.6 C140.6,69.9 151.4,105.9 166,95.2 C172.7,90.3 179.3,74.9 186,58.5" class="sv-stroke-good" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M222,176 C228.7,159.6 235.3,144.2 242,139.3 C256.6,128.6 267.4,164.6 282,153.9 C296.6,143.3 307.4,91.3 322,80.6 C336.6,69.9 347.4,105.9 362,95.2 C368.7,90.3 375.3,74.9 382,58.5" class="sv-stroke-good" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <g class="sv-stroke-key" stroke-width="2.5" stroke-dasharray="4 3">
+              <line x1="244" y1="162" x2="244" y2="141"/>
+              <line x1="284" y1="128.5" x2="284" y2="149.5"/>
+              <line x1="324" y1="103" x2="324" y2="82"/>
+              <line x1="364" y1="69.7" x2="364" y2="90.5"/>
+            </g>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="46" cy="139.3" r="6" class="sv-key"/>
+              <circle cx="86" cy="153.9" r="6" class="sv-key"/>
+              <circle cx="126" cy="80.6" r="6" class="sv-key"/>
+              <circle cx="166" cy="95.2" r="6" class="sv-key"/>
+              <circle cx="244" cy="169.9" r="6" class="sv-acc"/>
+              <circle cx="284" cy="120.5" r="6" class="sv-acc"/>
+              <circle cx="324" cy="111.1" r="6" class="sv-acc"/>
+              <circle cx="364" cy="61.7" r="6" class="sv-acc"/>
+            </g>
+            <text x="26" y="60" class="sv-ts">speed</text>
+            <text x="186" y="172" text-anchor="end" class="sv-ts">yam →</text>
+            <text x="103" y="214" text-anchor="middle" class="sv-t">squiggle fits best</text>
+            <text x="299" y="214" text-anchor="middle" class="sv-t">line misses less ✓</text>
+            <text x="200" y="252" text-anchor="middle" class="sv-tb">keep the black line</text>
+          </svg>
+          <p>Machine learning makes predictions, like a speed from yam, and classifications, like a decision tree's verdict. Fit methods on training data and judge them on testing data: the squiggle fits training best but misses new points by more.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Prediction</dt><dd>A number out, like a speed for a new yam amount.</dd>
+            <dt>Classification</dt><dd>A label out, like the tree's verdict on a person.</dd>
+            <dt>Training data</dt><dd>The data used to build or fit a method.</dd>
+            <dt>Testing data</dt><dd>New data used to judge and compare methods.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Training data</b>the data used to fit</li>
+            <li><b>Fit two methods</b>black line and green squiggle</li>
+            <li><b>Testing data</b>yam and speed of new people</li>
+            <li><b>Score the line</b>add up real-to-predicted distances</li>
+            <li><b>Score the squiggle</b>same distances, second total</li>
+            <li><b>Keep the smaller</b>the black line wins</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$D=\sum_{i=1}^{n}\left|y_i-\hat{y}_i\right|$$
+          $$\text{Accuracy}=\frac{c}{n}$$
+          <ul class="keys">
+            <li>\(y_i\): real speed; \(\hat{y}_i\): predicted speed; \(n\): testing people.</li>
+            <li>\(c\): testing people the tree labelled correctly.</li>
+            <li>Smaller \(D\) wins; higher accuracy wins.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th></th><th>squiggle</th><th>line</th></tr>
+            <tr><td>training fit</td><td>near perfect</td><td>passes near</td></tr>
+            <tr><td>testing total</td><td>\(g_1+g_2+g_3+g_4\)</td><td>\(d_1+d_2+d_3+d_4\)</td></tr>
+            <tr class="final"><td>on new data</td><td>larger ✗</td><td>smaller ✓</td></tr>
+          </table>
+          <p class="hand">Keep the black line. The tree is scored by counting: one wrong, one right, so 1/2 after two people.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">The best fit to training data wins.</span><span class="yes">The squiggle hit every training point and still lost on testing data.</span></li>
+            <li><span class="no">A modern, complicated method must be better.</span><span class="yes">A deep network and a black line are compared the same way: on testing data.</span></li>
+            <li><span class="no">Which points are training data hardly matters.</span><span class="yes">The split is a real choice. Cross validation, the next video, does it properly.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="index.html"><small>Previous</small>Back to Machine Learning</a> <a href="02-machine-learning-fundamentals-cross-validation.html"><small>Next</small>Machine Learning Fundamentals: Cross Validation</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

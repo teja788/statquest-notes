@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>False Discovery Rates, FDR — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>15</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 15 · 18.4 min</div>
+    <h1>False Discovery Rates, FDR</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=L3nlGfSyHV0" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video explains false discovery rates. Josh sums them up in one line: false discovery rates are a tool to weed out bad data that looks good.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>One test at a 0.05 cutoff gives a false positive about 5% of the time. Run 10,000 tests, one per gene, and about 500 results look interesting but are not. The fix rests on one fact. Genes the drug did not touch give p-values spread evenly between 0 and 1. Genes the drug did touch give p-values bunched near zero. You can see that flat background in a histogram and cut it away by eye. The Benjamini-Hochberg method turns that cut into a small formula.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh starts with RNA sequencing, which measures how strongly a gene is switched on. He measures an imaginary gene, gene X, in normal wild-type mice. Sequencing is not perfect, so every mouse gives a slightly different count. Across all normal mice the counts form a bell-shaped curve, with most values near the mean and rare values far out on either side.</p>
+    <p>Now take three mice and call them sample one. Take three more normal mice and call them sample two. Both samples come from the same curve, so they usually overlap and the statistical test returns a large p-value above 0.05. Very rarely the two samples miss each other completely. Then the p-value falls below 0.05 and the test says the mice are different, which is false. That is a false positive.</p>
+    <p>False positives are rare for one gene, but mouse and human cells transcribe at least 10,000 genes. Five percent of 10,000 is 500. So comparing two groups of identical mice across every gene still hands you about 500 genes that look interesting when nothing is going on.</p>
+    <p>To see the way out, Josh generates 10,000 p-values from pairs of samples taken from the same distribution. The histogram is flat: each bin holds about 500 p-values, and 510 of them (5.1%) land below 0.05. Then he repeats the experiment with two genuinely different distributions, control mice and drugged mice. Now the p-values pile up near zero. The few that land above 0.05 are false negatives, and a larger sample size reduces them.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 316" role="img" aria-label="Two histograms of 10,000 p-values: a flat one when both samples come from the same distribution, and a right-skewed one when they come from two different distributions">
+        <defs>
+          <marker id="arw1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker>
+        </defs>
+
+        <text x="40" y="38" class="sv-tb">Same distribution</text>
+        <text x="40" y="58" class="sv-ts">p-values spread out evenly</text>
+        <rect x="40" y="190" width="30" height="70" class="sv-key-soft"/>
+        <rect x="40" y="190" width="30" height="70" class="sv-stroke-key" stroke-width="1.4" fill="none"/>
+        <rect x="72" y="190" width="30" height="70" class="sv-acc-soft"/>
+        <rect x="104" y="190" width="30" height="70" class="sv-acc-soft"/>
+        <rect x="136" y="190" width="30" height="70" class="sv-acc-soft"/>
+        <rect x="168" y="190" width="30" height="70" class="sv-acc-soft"/>
+        <rect x="200" y="190" width="30" height="70" class="sv-acc-soft"/>
+        <rect x="232" y="190" width="30" height="70" class="sv-acc-soft"/>
+        <rect x="264" y="190" width="30" height="70" class="sv-acc-soft"/>
+        <rect x="296" y="190" width="30" height="70" class="sv-acc-soft"/>
+        <rect x="328" y="190" width="30" height="70" class="sv-acc-soft"/>
+        <path d="M38 260 L360 260" class="sv-line" stroke-width="1.5"/>
+        <g class="sv-key"><text x="40" y="168" font-size="12">5% land here: about 500 false positives</text></g>
+        <path d="M52 174 L54 186" class="sv-stroke-ink" stroke-width="1.2" marker-end="url(#arw1)"/>
+        <text x="40" y="278" class="sv-ts">0</text>
+        <text x="358" y="278" class="sv-ts" text-anchor="end">1</text>
+        <text x="199" y="298" class="sv-ts" text-anchor="middle">p-value</text>
+
+        <text x="420" y="38" class="sv-tb">Two different distributions</text>
+        <text x="420" y="58" class="sv-ts">p-values pile up near zero</text>
+        <rect x="420" y="130" width="30" height="130" class="sv-good-soft"/>
+        <rect x="420" y="130" width="30" height="130" class="sv-stroke-good" stroke-width="1.4" fill="none"/>
+        <rect x="452" y="175" width="30" height="85" class="sv-good-soft"/>
+        <rect x="484" y="210" width="30" height="50" class="sv-good-soft"/>
+        <rect x="516" y="228" width="30" height="32" class="sv-good-soft"/>
+        <rect x="548" y="238" width="30" height="22" class="sv-good-soft"/>
+        <rect x="580" y="244" width="30" height="16" class="sv-good-soft"/>
+        <rect x="612" y="248" width="30" height="12" class="sv-good-soft"/>
+        <rect x="644" y="251" width="30" height="9" class="sv-good-soft"/>
+        <rect x="676" y="252" width="30" height="8" class="sv-good-soft"/>
+        <rect x="708" y="253" width="30" height="7" class="sv-good-soft"/>
+        <path d="M418 260 L740 260" class="sv-line" stroke-width="1.5"/>
+        <g class="sv-good"><text x="470" y="112" font-size="12">most p-values are below 0.05</text></g>
+        <path d="M466 118 L442 126" class="sv-stroke-ink" stroke-width="1.2" marker-end="url(#arw1)"/>
+        <text x="579" y="298" class="sv-ts" text-anchor="middle">p-value</text>
+      </svg>
+      <figcaption>Notice the shapes: nothing happening gives a flat histogram, a real effect gives a histogram squashed against zero.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <p>Josh then puts the two shapes together. Imagine 10,000 active genes in neuronal cells, where the drug affects 1,000 of them and leaves 9,000 alone. The histogram you actually see is the sum of one skewed histogram and one flat histogram.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 348" role="img" aria-label="Histogram of 10,000 p-values with a flat level of about 450 per bin; the first bin is much taller and splits into true positives above the line and false positives below it">
+        <defs>
+          <marker id="arw2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker>
+        </defs>
+        <text x="30" y="32" class="sv-tb">10,000 genes: 1,000 affected by the drug, 9,000 not</text>
+
+        <rect x="60" y="100" width="30" height="140" class="sv-acc-soft"/>
+        <rect x="60" y="100" width="30" height="140" class="sv-stroke-acc" stroke-width="1.4" fill="none"/>
+        <rect x="60" y="240" width="30" height="50" class="sv-key-soft"/>
+        <rect x="60" y="240" width="30" height="50" class="sv-stroke-key" stroke-width="1.4" fill="none"/>
+
+        <rect x="92" y="228" width="30" height="62" class="sv-paper2"/>
+        <rect x="124" y="234" width="30" height="56" class="sv-paper2"/>
+        <rect x="156" y="238" width="30" height="52" class="sv-paper2"/>
+        <rect x="188" y="240" width="30" height="50" class="sv-paper2"/>
+        <rect x="220" y="239" width="30" height="51" class="sv-paper2"/>
+        <rect x="252" y="241" width="30" height="49" class="sv-paper2"/>
+        <rect x="284" y="240" width="30" height="50" class="sv-paper2"/>
+        <rect x="316" y="238" width="30" height="52" class="sv-paper2"/>
+        <rect x="348" y="242" width="30" height="48" class="sv-paper2"/>
+        <rect x="380" y="240" width="30" height="50" class="sv-paper2"/>
+        <rect x="412" y="241" width="30" height="49" class="sv-paper2"/>
+        <rect x="444" y="239" width="30" height="51" class="sv-paper2"/>
+        <rect x="476" y="240" width="30" height="50" class="sv-paper2"/>
+        <rect x="508" y="242" width="30" height="48" class="sv-paper2"/>
+        <rect x="540" y="240" width="30" height="50" class="sv-paper2"/>
+        <rect x="572" y="238" width="30" height="52" class="sv-paper2"/>
+        <rect x="604" y="241" width="30" height="49" class="sv-paper2"/>
+        <rect x="636" y="240" width="30" height="50" class="sv-paper2"/>
+        <rect x="668" y="240" width="30" height="50" class="sv-paper2"/>
+
+        <path d="M55 240 L706 240" class="sv-stroke-ink" stroke-width="1.5" stroke-dasharray="5 4"/>
+        <path d="M55 290 L706 290" class="sv-line" stroke-width="1.5"/>
+
+        <g class="sv-acc"><text x="112" y="128" font-size="12">about 450 true positives, above the line</text></g>
+        <path d="M108 124 L94 136" class="sv-stroke-ink" stroke-width="1.2" marker-end="url(#arw2)"/>
+        <rect x="108" y="257" width="238" height="18" class="sv-paper"/>
+        <g class="sv-key"><text x="112" y="270" font-size="12">about 450 false positives, below the line</text></g>
+        <path d="M108 266 L94 266" class="sv-stroke-ink" stroke-width="1.2" marker-end="url(#arw2)"/>
+        <rect x="520" y="220" width="186" height="17" class="sv-paper"/>
+        <text x="704" y="233" class="sv-ts" text-anchor="end">flat level: about 450 per bin</text>
+
+        <text x="75" y="308" class="sv-ts" text-anchor="middle">p &lt; 0.05</text>
+        <text x="698" y="308" class="sv-ts" text-anchor="end">p = 1</text>
+        <text x="380" y="330" class="sv-ts" text-anchor="middle">p-value</text>
+      </svg>
+      <figcaption>Notice that the tall first bin is a mixture: the part above the flat line is signal, the part below it is luck.</figcaption>
+    </figure>
+    <ol class="steps">
+      <li>Draw the histogram of all 10,000 p-values. The right-hand part is flat, because the 9,000 unaffected genes spread their p-values evenly.</li>
+      <li>Read the flat level by eye. In this example each bin in the flat part holds about 450 p-values.</li>
+      <li>Extend that line to the left, across the small p-values. Below the line sit roughly 450 false positives; above it sit roughly 450 true positives.</li>
+      <li>Keep only the 450 smallest p-values. This works because the p-values from affected genes are skewed towards zero inside the bin, while the unaffected ones are spread evenly across it.</li>
+      <li>Benjamini and Hochberg turned that eyeball cut into arithmetic. Sort the p-values from smallest to largest and give them ranks 1 to \(m\).</li>
+      <li>Leave the largest p-value alone. Its adjusted value is itself.</li>
+      <li>Move down the list. Each adjusted value is the smaller of two things: the adjusted value you just computed above it, or the current p-value times \(m\) divided by its rank.</li>
+      <li>Compare the adjusted values against 0.05. Adjusting only ever makes a p-value larger, so borderline results drop out and the strong ones survive.</li>
+    </ol>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">How many false positives to expect</span><div class="math">$$ \text{false positives} \approx \alpha \times m $$</div><p class="explain"><b>Symbols:</b> \(\alpha\) is your significance cutoff, usually 0.05; \(m\) is the number of tests you run, one per gene. <b>What it tells you:</b> with 10,000 genes and a 0.05 cutoff you should expect about 500 significant results even when nothing is different.</p></div>
+    <div class="formula"><span class="lbl">What the false discovery rate means</span><div class="math">$$ \text{FDR} = \frac{\text{false positives}}{\text{all results you call significant}} $$</div><p class="explain"><b>Symbols:</b> the top is the number of genes on your significant list that are not really affected; the bottom is the length of that list. <b>What it tells you:</b> if you keep everything with an adjusted p-value below 0.05, then fewer than 5% of the results on your list are false positives, and the other 95% are real.</p></div>
+    <div class="formula"><span class="lbl">Benjamini-Hochberg adjustment</span><div class="math">$$ p^{adj}_{(m)} = p_{(m)} $$</div><div class="math">$$ p^{adj}_{(i)} = \min\left( p^{adj}_{(i+1)},\; p_{(i)} \times \frac{m}{i} \right) $$</div><p class="explain"><b>Symbols:</b> \(p_{(i)}\) is the \(i\)-th smallest p-value after sorting; \(i\) is its rank, from 1 for the smallest to \(m\) for the largest; \(m\) is the total number of p-values; \(p^{adj}\) is the adjusted p-value, often called the q-value or the FDR. <b>What it tells you:</b> start at the bottom of the sorted list and work upwards, and at each rank take the smaller of the value above you and the rank-scaled p-value. The \(m/i\) factor punishes p-values that are not small enough for their rank, which is exactly the flat background the eyeball method cut away.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh takes 10 pairs of samples from the same distribution. All 10 genes are unaffected, so every p-value should be large. By bad luck one of them is below 0.05, which is a false positive. First he sorts the 10 p-values from smallest to largest and ranks them 1 to 10.</p>
+      <p>The largest p-value is 0.91, at rank 10. It stays at 0.91, because the largest adjusted value equals the largest p-value.</p>
+      <p>Next comes rank 9, where the p-value is 0.81. The two options are the previous adjusted value, 0.91, and \(0.81 \times \tfrac{10}{9} = 0.90\). The smaller one wins, so the adjusted value is 0.90.</p>
+      <p>Rank 8 offers 0.90 from above and 0.89 from the formula. Again the smaller one wins, so the adjusted value is 0.89. Repeating this down to rank 1 lifts the false positive above 0.05, so it is no longer significant.</p>
+      <p>Josh then runs the same method on a large set of genes. The p-values from affected genes stay below 0.05 after adjustment, and every false positive is pushed above 0.05. The result matches the line he drew by eye.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Adjusting p-values means making them larger, never smaller. A p-value of 0.04 can become 0.06 after correction and stop being significant. That is the method working, not a bug in your code.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> An FDR below 0.05 is a promise about the whole list, not about one gene. It says that about 5% of the genes on your significant list are wrong. It does not say that a specific gene has a 5% chance of being wrong.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> You will lose some real hits. Not every affected gene has a very small p-value, so the ones near 0.05 usually fail after adjustment. That is the price of a clean list.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is the false discovery rate, in plain words?</summary><div class="a">It is the share of your significant results that are actually false positives. When I run thousands of tests at once, a plain 0.05 cutoff produces a long list where many entries are luck. Controlling the false discovery rate lets me say that only about 5% of the list is noise. In practice people use the term for the Benjamini-Hochberg method that delivers that guarantee.</div></details>
+    <details class="qa"><summary>You test 10,000 genes at p below 0.05. What goes wrong?</summary><div class="a">Each single test has a 5% chance of a false positive when nothing is different. Across 10,000 genes that is about 500 genes that look interesting and are not. You cannot tell them apart from the real hits by looking at raw p-values, so you need a correction before you report anything.</div></details>
+    <details class="qa"><summary>Walk me through Benjamini-Hochberg.</summary><div class="a">I sort all the p-values from smallest to largest and rank them. The largest one keeps its value. Then I walk upwards, and at each rank I take the smaller of two numbers: the adjusted value from the rank below me, or the current p-value times the number of tests divided by its rank. Finally I compare those adjusted values to 0.05 instead of the raw p-values.</div></details>
+    <details class="qa"><summary>Why does the method work at all?</summary><div class="a">Because p-values from tests where nothing is happening are uniformly distributed. Their histogram is flat, so I can read off the background level and see how much of the small-p region is just noise. Genes with a real effect crowd near zero instead. Benjamini-Hochberg is that visual cut written as a formula.</div></details>
+    <details class="qa"><summary>Some genes you believed in lost significance after correction. What now?</summary><div class="a">I accept it rather than reverting to raw p-values. Those genes had modest p-values, and modest p-values are exactly what the correction cannot distinguish from luck. If I want them back, the right move is more statistical power, which usually means a larger sample size, since bigger samples cut down false negatives.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>False discovery rates are a tool to weed out bad data that looks good.</li>
+      <li>Testing 10,000 genes at a 0.05 cutoff gives about 500 false positives even when nothing is different.</li>
+      <li>When two samples come from the same distribution, their p-values are spread evenly between 0 and 1.</li>
+      <li>When they come from two different distributions, the p-values bunch up close to zero.</li>
+      <li>A real experiment mixes both, so the histogram is a flat background with a tall spike at the left.</li>
+      <li>By eye you can draw the flat level, extend it, and keep only the p-values above that line.</li>
+      <li>Benjamini-Hochberg does the same job by sorting, ranking, and taking the smaller of two numbers at each rank.</li>
+      <li>Adjusted p-values are always larger, and keeping those below 0.05 leaves a list that is about 95% real.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">False discovery rates</span><span class="board-tag">weed out bad data that looks good</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 240" role="img" aria-label="Histogram of 10,000 p-values: 9,000 unaffected genes make a flat level of about 450 per bin, and that level, extended across the first bin below 0.05, splits it into about 450 true positives above and about 450 false positives below.">
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <rect x="166" y="70" width="34" height="65" class="sv-good"/>
+              <rect x="166" y="135" width="34" height="65" class="sv-key"/>
+              <rect x="200" y="135" width="34" height="65" class="sv-key-soft"/>
+              <rect x="234" y="135" width="34" height="65" class="sv-key-soft"/>
+              <rect x="268" y="135" width="34" height="65" class="sv-key-soft"/>
+              <rect x="302" y="135" width="34" height="65" class="sv-key-soft"/>
+              <rect x="336" y="135" width="34" height="65" class="sv-key-soft"/>
+            </g>
+            <line x1="160" y1="200" x2="384" y2="200" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round"/>
+            <line x1="16" y1="135" x2="384" y2="135" class="sv-stroke-acc" stroke-width="3" stroke-dasharray="8 6" stroke-linecap="round"/>
+            <text x="16" y="34" class="sv-tb">10,000 p-values</text>
+            <text x="154" y="98" text-anchor="end" class="sv-tb">≈ 450</text>
+            <text x="154" y="121" text-anchor="end" class="sv-t">true positives</text>
+            <text x="154" y="158" text-anchor="end" class="sv-t">false positives</text>
+            <text x="154" y="182" text-anchor="end" class="sv-tb">≈ 450</text>
+            <text x="380" y="96" text-anchor="end" class="sv-ts">9,000 unaffected</text>
+            <text x="380" y="120" text-anchor="end" class="sv-t">flat ≈ 450 per bin</text>
+            <text x="183" y="224" text-anchor="middle" class="sv-ts">p &lt; 0.05</text>
+            <text x="380" y="224" text-anchor="end" class="sv-ts">p-value →</text>
+          </svg>
+          <p>Test 10,000 genes at 0.05 and about 500 look interesting by luck. Unaffected genes give a flat histogram; affected genes pile up near zero. Extend the flat level across the first bin: above it is signal, below it is luck.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>False positive</dt><dd>The test says two groups differ when they do not.</dd>
+            <dt>False discovery rate</dt><dd>The share of your significant results that are false positives.</dd>
+            <dt>Adjusted p-value</dt><dd>The corrected p-value, or q-value. Never smaller than the raw one.</dd>
+            <dt>Benjamini-Hochberg</dt><dd>The eyeball cut written as a small formula.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Plot p-values</b>all 10,000 genes</li>
+            <li><b>Read flat level</b>about 450 per bin, by eye</li>
+            <li><b>Extend the line</b>keep the 450 smallest p-values</li>
+            <li><b>Sort and rank</b>ranks 1 to \(m\); largest stays</li>
+            <li><b>Adjust</b>smaller of two, at each rank</li>
+            <li><b>Compare to 0.05</b>keep adjusted values below it</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{false positives}\approx\alpha\times m$$
+          $$\text{FDR}=\frac{\text{false positives}}{\text{all called significant}}$$
+          $$p^{adj}_{(i)}=\min\Big(p^{adj}_{(i+1)},\;p_{(i)}\times\tfrac{m}{i}\Big)$$
+          <ul class="keys">
+            <li>\(\alpha\) is the cutoff, usually 0.05; \(m\) is the number of tests.</li>
+            <li>\(p_{(i)}\) is the \(i\)-th smallest p-value.</li>
+            <li>Keep adjusted values below 0.05: under 5% of that list is false.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>rank</th><th>p</th><th>p × 10/rank</th><th>adjusted</th></tr>
+            <tr><td>10</td><td>0.91</td><td>stays</td><td>0.91</td></tr>
+            <tr><td>9</td><td>0.81</td><td>0.90</td><td>0.90</td></tr>
+            <tr><td>8</td><td>…</td><td>0.89</td><td>0.89</td></tr>
+            <tr><td>…</td><td>…</td><td>…</td><td>…</td></tr>
+            <tr class="final"><td>1</td><td>&lt; 0.05</td><td>…</td><td>&gt; 0.05 ✓</td></tr>
+          </table>
+          <p class="hand">Ten unaffected genes: the lone false positive is lifted above 0.05.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Adjusting can make a p-value smaller.</span><span class="yes">Never: 0.04 can become 0.06. That is the method working.</span></li>
+            <li><span class="no">FDR 0.05 means each gene is 5% likely wrong.</span><span class="yes">It promises that about 5% of the whole list is wrong.</span></li>
+            <li><span class="no">Every real hit survives the correction.</span><span class="yes">Real hits near 0.05 usually fail. That is the price of a clean list.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="14-p-hacking-what-it-is-and-how-to-avoid-it.html"><small>Previous</small>p-hacking: What it is and how to avoid it</a> <a href="16-statistical-power.html"><small>Next</small>Statistical Power</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

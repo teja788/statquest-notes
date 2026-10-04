@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Chain Rule — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>55</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 55 · 18.4 min</div>
+    <h1>The Chain Rule</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=wl1myxrtQHQ" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: Neural Networks / Deep Learning (video 3)</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">The chain rule lets you find a derivative when one thing changes a second thing, and that second thing changes a third. You multiply the derivatives along the chain.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh starts with a quick review of the power rule. He then builds a chain: weight predicts height, and height predicts shoe size. The derivative of shoe size with respect to weight is the product of the two smaller derivatives. He repeats this with hunger and ice cream craving. He also shows the "stuff inside the parentheses" trick for when two equations are jammed into one. He ends with the squared residual, and finds the intercept that makes it smallest.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>A derivative is a slope. It tells you how fast one measurement changes when another measurement changes. Josh reminds us of the power rule first. If awesomeness equals likes-StatQuest squared, then the derivative of awesomeness is 2 times likes-StatQuest.</p>
+    <p>Now imagine two separate fitted lines. The first line uses weight to predict height. For every one unit of extra weight, height goes up two units, so its slope is 2. The second line uses height to predict shoe size. For every one unit of extra height, shoe size goes up one quarter of a unit, so its slope is one quarter.</p>
+    <p>Height is the link between the two lines. If you get heavier, you get taller, and because you are taller your shoe size grows. To find how shoe size changes with weight, you multiply the two slopes: 2 times one quarter equals one half. That multiplication is the chain rule.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 330" role="img" aria-label="Weight predicts height with slope 2, height predicts shoe size with slope one quarter, and the two multiply to one half">
+        <defs>
+          <marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,1 L9,5 L0,9 z" class="sv-ink2"/>
+          </marker>
+        </defs>
+        <rect x="40" y="30" width="150" height="44" rx="6" class="sv-acc-soft"/>
+        <rect x="40" y="30" width="150" height="44" rx="6" class="sv-stroke-acc" stroke-width="1.5"/>
+        <text x="115" y="58" text-anchor="middle" class="sv-tb">Weight (W)</text>
+        <rect x="305" y="30" width="150" height="44" rx="6" class="sv-acc-soft"/>
+        <rect x="305" y="30" width="150" height="44" rx="6" class="sv-stroke-acc" stroke-width="1.5"/>
+        <text x="380" y="58" text-anchor="middle" class="sv-tb">Height (H)</text>
+        <rect x="570" y="30" width="150" height="44" rx="6" class="sv-acc-soft"/>
+        <rect x="570" y="30" width="150" height="44" rx="6" class="sv-stroke-acc" stroke-width="1.5"/>
+        <text x="645" y="58" text-anchor="middle" class="sv-tb">Shoe size (S)</text>
+        <line x1="192" y1="52" x2="300" y2="52" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ar1)"/>
+        <text x="246" y="44" text-anchor="middle" class="sv-tm">dH/dW = 2</text>
+        <line x1="457" y1="52" x2="565" y2="52" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ar1)"/>
+        <text x="511" y="44" text-anchor="middle" class="sv-tm">dS/dH = 1/4</text>
+
+        <text x="80" y="102" class="sv-ts">height vs weight</text>
+        <line x1="80" y1="110" x2="80" y2="240" class="sv-line" stroke-width="1.4"/>
+        <line x1="80" y1="240" x2="330" y2="240" class="sv-line" stroke-width="1.4"/>
+        <line x1="80" y1="240" x2="290" y2="60" class="sv-stroke-good" stroke-width="2.6"/>
+        <line x1="150" y1="180" x2="220" y2="180" class="sv-stroke-ink" stroke-width="1.2" stroke-dasharray="4 3"/>
+        <line x1="220" y1="180" x2="220" y2="120" class="sv-stroke-ink" stroke-width="1.2" stroke-dasharray="4 3"/>
+        <text x="185" y="197" text-anchor="middle" class="sv-ts">1</text>
+        <text x="230" y="156" class="sv-ts">2</text>
+
+        <text x="450" y="102" class="sv-ts">shoe size vs height</text>
+        <line x1="450" y1="110" x2="450" y2="240" class="sv-line" stroke-width="1.4"/>
+        <line x1="450" y1="240" x2="700" y2="240" class="sv-line" stroke-width="1.4"/>
+        <line x1="450" y1="240" x2="660" y2="150" class="sv-stroke-key" stroke-width="2.6"/>
+        <line x1="520" y1="210" x2="590" y2="210" class="sv-stroke-ink" stroke-width="1.2" stroke-dasharray="4 3"/>
+        <line x1="590" y1="210" x2="590" y2="180" class="sv-stroke-ink" stroke-width="1.2" stroke-dasharray="4 3"/>
+        <text x="555" y="227" text-anchor="middle" class="sv-ts">1</text>
+        <text x="600" y="200" class="sv-ts">1/4</text>
+
+        <rect x="40" y="272" width="680" height="34" rx="6" class="sv-key-soft"/>
+        <text x="380" y="294" text-anchor="middle" class="sv-t">dS/dW = dS/dH × dH/dW = 2 × 1/4 = 1/2</text>
+      </svg>
+      <figcaption>Notice that the middle box, height, is the link. Its two slopes multiply to give the slope from weight straight to shoe size.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Find the chain. Ask which measurement sits in the middle and connects the outer two. In the first example that middle measurement is height.</li>
+      <li>Write each link as its own equation. Height equals 2 times weight. Shoe size equals one quarter times height. Both lines pass through the origin, so neither equation has an intercept.</li>
+      <li>Take the derivative of each link on its own. Use the power rule for each one. Here they are the two slopes, 2 and one quarter.</li>
+      <li>Multiply the derivatives together. The result is the derivative of the outer measurement with respect to the inner one, one half in this case.</li>
+      <li>When the two equations are already combined into one, look for a piece you can put inside parentheses. Josh calls that piece "the stuff inside". It plays the role of the middle measurement.</li>
+      <li>Differentiate the outer function with respect to the stuff inside, then differentiate the stuff inside with respect to the input, then multiply. You get the same answer as the two-equation route.</li>
+    </ol>
+    <p>Josh then uses the same steps on the squared residual. A residual is the observed height minus the height the line predicts. The intercept changes the residual, and the residual changes the squared residual.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 292" role="img" aria-label="The intercept changes the residual, the residual changes the squared residual, and the squared residual curve has slope zero at its minimum">
+        <defs>
+          <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,1 L9,5 L0,9 z" class="sv-ink2"/>
+          </marker>
+        </defs>
+        <g transform="translate(0,12)">
+        <rect x="30" y="34" width="170" height="46" rx="6" class="sv-acc-soft"/>
+        <rect x="30" y="34" width="170" height="46" rx="6" class="sv-stroke-acc" stroke-width="1.5"/>
+        <text x="115" y="63" text-anchor="middle" class="sv-tb">Intercept</text>
+        <rect x="295" y="34" width="170" height="46" rx="6" class="sv-acc-soft"/>
+        <rect x="295" y="34" width="170" height="46" rx="6" class="sv-stroke-acc" stroke-width="1.5"/>
+        <text x="380" y="63" text-anchor="middle" class="sv-tb">Residual</text>
+        <rect x="560" y="34" width="170" height="46" rx="6" class="sv-acc-soft"/>
+        <rect x="560" y="34" width="170" height="46" rx="6" class="sv-stroke-acc" stroke-width="1.5"/>
+        <text x="645" y="63" text-anchor="middle" class="sv-tb">Residual squared</text>
+        <line x1="202" y1="57" x2="290" y2="57" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ar2)"/>
+        <text x="246" y="26" text-anchor="middle" class="sv-tm">slope = -1</text>
+        <line x1="467" y1="57" x2="555" y2="57" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ar2)"/>
+        <text x="511" y="26" text-anchor="middle" class="sv-tm">slope = 2 × residual</text>
+
+        <line x1="140" y1="112" x2="140" y2="236" class="sv-line" stroke-width="1.4"/>
+        <line x1="140" y1="236" x2="660" y2="236" class="sv-line" stroke-width="1.4"/>
+        <path d="M180 120 Q 380 260 580 120" class="sv-stroke-key" stroke-width="2.6"/>
+        <line x1="318" y1="190" x2="442" y2="190" class="sv-stroke-good" stroke-width="2.2"/>
+        <circle cx="380" cy="190" r="4.5" class="sv-good"/>
+        <line x1="380" y1="236" x2="380" y2="242" class="sv-stroke-ink" stroke-width="1.4"/>
+        <text x="380" y="258" text-anchor="middle" class="sv-ts">intercept = 1</text>
+        <text x="392" y="214" class="sv-ts">slope = 0 here</text>
+        <text x="600" y="258" class="sv-ts">intercept</text>
+        <text x="128" y="118" text-anchor="end" class="sv-ts">squared residual</text>
+        </g>
+      </svg>
+      <figcaption>Notice that the squared residual dips to a lowest point. The best intercept is the one where the tangent line is flat, so the derivative is zero.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Power rule (the review)</span>
+      <div class="math">$$ \frac{d}{dx}\,x^{n} \;=\; n\,x^{\,n-1} $$</div>
+      <p class="explain"><b>Symbols:</b> \(x\) is the input measurement. \(n\) is the power that \(x\) is raised to. <b>What it tells you:</b> bring the power down in front, then lower the power by one. In the video, awesomeness \(= x^{2}\), so the derivative is \(2x\).</p>
+    </div>
+
+    <div class="formula"><span class="lbl">The chain rule</span>
+      <div class="math">$$ \frac{dS}{dW} \;=\; \frac{dS}{dH}\times\frac{dH}{dW} $$</div>
+      <p class="explain"><b>Symbols:</b> \(W\) is weight, \(H\) is height, \(S\) is shoe size. \(\frac{dH}{dW}\) is the change in height per unit change in weight. \(\frac{dS}{dH}\) is the change in shoe size per unit change in height. <b>What it tells you:</b> when \(H\) links \(W\) to \(S\), the two derivatives multiply. Here \(\tfrac{1}{4}\times 2=\tfrac{1}{2}\), so one extra unit of weight gives half a unit of shoe size.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Harder example, worked in three steps</span>
+      <div class="math">$$ h = t^{2} + \tfrac{1}{2}, \qquad c = \sqrt{h} $$</div>
+      <p class="explain"><b>Symbols:</b> \(t\) is time since the last snack, \(h\) is hunger, \(c\) is craving for ice cream. Hunger grows faster and faster, so Josh fits a curve that bends upward, with intercept one half. Craving levels off, so he fits a square root.</p>
+      <div class="math">$$ \text{Step 1:}\quad \frac{dh}{dt} = 2t $$</div>
+      <p class="explain">The power rule on \(t^{2}\) gives \(2t\). The constant one half disappears, because a constant never changes.</p>
+      <div class="math">$$ \text{Step 2:}\quad \frac{dc}{dh} = \frac{1}{2\sqrt{h}} $$</div>
+      <p class="explain">A square root is the power one half, so the power rule gives one half times \(h^{-1/2}\). That is the same as one over two root \(h\).</p>
+      <div class="math">$$ \text{Step 3:}\quad \frac{dc}{dt} = \frac{1}{2\sqrt{h}}\times 2t \;=\; \frac{t}{\sqrt{t^{2}+\tfrac{1}{2}}} $$</div>
+      <p class="explain">Multiply the two derivatives, because hunger links time to craving. Then put the equation for \(h\) back in and cancel the twos. The result tells you how fast craving changes over time.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">The "stuff inside" version</span>
+      <div class="math">$$ u = t^{2}+\tfrac{1}{2},\qquad c=\sqrt{u},\qquad \frac{dc}{dt}=\frac{dc}{du}\times\frac{du}{dt}=\frac{1}{2\sqrt{u}}\times 2t $$</div>
+      <p class="explain"><b>Symbols:</b> \(u\) is the stuff inside the parentheses, the piece under the square root. <b>What it tells you:</b> with only one combined equation, name the inner piece and treat it as the middle link. The power rule gives each derivative. After you put \(u\) back and cancel the twos, the answer matches Step 3.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Derivative of the squared residual</span>
+      <div class="math">$$ r \;=\; h_{\text{obs}} - \big(i + 1\times w\big) $$</div>
+      <p class="explain"><b>Symbols:</b> \(r\) is the residual, \(h_{\text{obs}}\) is the observed height, \(w\) is the observed weight, \(i\) is the intercept. The slope of the green line is fixed at 1, so only \(i\) can move.</p>
+      <div class="math">$$ \text{Step 1:}\quad \frac{dr^{2}}{dr} = 2r $$</div>
+      <p class="explain">The power rule on \(r^{2}\) gives 2 times the residual. This is the outer link, from the residual to the squared residual.</p>
+      <div class="math">$$ \text{Step 2:}\quad r = h_{\text{obs}} - i - w \;\;\Rightarrow\;\; \frac{dr}{di} = 0 - 1 - 0 = -1 $$</div>
+      <p class="explain">Multiply the brackets by minus one first, so each term stands alone. The observed height and the weight term hold no intercept, so each gives zero. Only the \(-i\) term remains, and it gives \(-1\).</p>
+      <div class="math">$$ \text{Step 3:}\quad \frac{dr^{2}}{di} = \frac{dr^{2}}{dr}\times\frac{dr}{di} = 2r\times(-1) = -2\big(h_{\text{obs}} - i - w\big) $$</div>
+      <p class="explain">Multiply the two derivatives, because the residual links the intercept to the squared residual. Then put the equation for \(r\) back in, so the answer is in terms of the intercept.</p>
+      <div class="math">$$ \text{Step 4:}\quad -2\big(h_{\text{obs}} - i - w\big) = 0 \;\;\Rightarrow\;\; i = h_{\text{obs}} - w $$</div>
+      <p class="explain">Set the derivative to zero and solve, because the slope is zero at the lowest point of the curve.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Weight, height and shoe size. The green line gives height \(= 2 \times\) weight, because height rises two units for each unit of weight. The orange line gives shoe size \(= \tfrac{1}{4}\times\) height. Plugging the first equation into the second gives shoe size \(= \tfrac{1}{4}\times 2\times\) weight. The derivative of a straight line is its slope, so \(\frac{dS}{dW} = \tfrac{1}{4}\times 2 = \tfrac{1}{2}\). Every extra unit of weight adds half a unit of shoe size.</p>
+    </div>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Finding the best intercept. Josh measures one person's weight and height, and the line is height \(= i + 1\times\) weight. He plugs the observed height and weight into Step 4 and solves. The answer is an intercept of 1. There the squared residual is smallest, so this is the best fitting line.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not forget the inner derivative. The derivative of \(\sqrt{t^{2}+\tfrac{1}{2}}\) is not just \(\frac{1}{2\sqrt{\cdot}}\). You must still multiply by \(2t\).</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The minus sign in the residual is easy to lose. Multiply the brackets out before you differentiate, as Josh does. The derivative of the residual with respect to the intercept is \(-1\), not \(+1\).</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> After you multiply, put the stuff inside back in. If \(h\) or \(u\) is still in the answer, it is not yet in terms of time or the intercept.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is the chain rule, in plain words?</summary><div class="a">It is the rule for the derivative of a function inside another function. If a middle quantity links input to output, you differentiate each link and multiply. For example, weight changes height, and height changes shoe size. So the slopes 2 and one quarter multiply to one half.</div></details>
+    <details class="qa" open><summary>How do you spot the chain rule when there is only one equation?</summary><div class="a">I look for a piece that could sit inside parentheses, such as the part under a square root. I name it "the stuff inside". I differentiate the outer function with respect to it, then the stuff inside with respect to the input. Then I multiply.</div></details>
+    <details class="qa" open><summary>Why does the chain rule matter in machine learning?</summary><div class="a">Loss functions such as the squared residual are nested. The loss depends on the residual, and the residual depends on the intercept. The chain rule gives the derivative of the loss with respect to the intercept. Setting it to zero finds the best fitting line.</div></details>
+    <details class="qa" open><summary>Walk me through the derivative of the squared residual with respect to the intercept.</summary><div class="a">The residual links the intercept to the squared residual. The derivative of the squared residual with respect to the residual is 2 times the residual. The residual's derivative with respect to the intercept is minus one. Multiplying gives minus 2 times the residual.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>A derivative is the slope of the tangent line, and the power rule is the quick way to find it.</li>
+      <li>The chain rule applies whenever a middle quantity links the input to the output.</li>
+      <li>You take the derivative of each link on its own, then multiply the derivatives together.</li>
+      <li>Weight to height to shoe size gives 2 times one quarter, which equals one half.</li>
+      <li>When two equations are already combined, name the piece inside the parentheses and treat it as the middle link.</li>
+      <li>The hunger and ice cream example gives \(t\) divided by the square root of \(t^{2}+\tfrac{1}{2}\).</li>
+      <li>For the squared residual, the derivative with respect to the intercept is minus 2 times the residual.</li>
+      <li>Setting that derivative to zero gives the best intercept, which is 1 in the video.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">The chain rule</span><span class="board-tag">multiply the slopes along the chain</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 212" role="img" aria-label="Three bars on one baseline. One extra unit of weight gives 2 more units of height, because that slope is 2. Those 2 units of height give 1/2 a unit of shoe size, because that slope is 1/4. The slopes multiply.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <line x1="24" y1="168" x2="376" y2="168" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <rect x="44" y="112" width="56" height="56" rx="4" class="sv-acc"/>
+              <rect x="172" y="56" width="56" height="112" rx="4" class="sv-key"/>
+              <rect x="300" y="140" width="56" height="28" rx="4" class="sv-good"/>
+            </g>
+            <text x="72" y="100" text-anchor="middle" class="sv-tb">+1</text>
+            <text x="200" y="44" text-anchor="middle" class="sv-tb">+2</text>
+            <text x="328" y="128" text-anchor="middle" class="sv-tb">+1/2</text>
+            <line x1="108" y1="152" x2="162" y2="152" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="236" y1="152" x2="290" y2="152" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="135" y="136" text-anchor="middle" class="sv-tb">× 2</text>
+            <text x="263" y="136" text-anchor="middle" class="sv-tb">× 1/4</text>
+            <text x="72" y="194" text-anchor="middle" class="sv-t">weight</text>
+            <text x="200" y="194" text-anchor="middle" class="sv-t">height</text>
+            <text x="328" y="194" text-anchor="middle" class="sv-t">shoe size</text>
+          </svg>
+          <p>A unit of weight adds 2 units of height, and each unit of height adds a quarter unit of shoe size. Height links them, so the slopes multiply.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Derivative</dt><dd>A slope: how fast one measurement changes when another changes.</dd>
+            <dt>Power rule</dt><dd>Bring the power down in front, then lower it by one.</dd>
+            <dt>Chain rule</dt><dd>When a middle quantity links input to output, multiply the derivatives.</dd>
+            <dt>Stuff inside</dt><dd>The piece inside the parentheses, treated as the middle link.</dd>
+            <dt>Residual</dt><dd>Observed height minus the height the line predicts.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Find the chain</b>height links the outer two</li>
+            <li><b>Write each link</b>H = 2W, S = ¼H</li>
+            <li><b>Multiply slopes</b>2 × ¼ = ½</li>
+            <li><b>One equation?</b>name the stuff inside</li>
+            <li><b>Outer × inner</b>then put the inside back</li>
+            <li><b>Set to zero</b>squared residual: intercept 1</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\frac{dS}{dW}=\frac{dS}{dH}\times\frac{dH}{dW}=\tfrac{1}{4}\times2=\tfrac{1}{2}$$
+          $$\frac{dc}{dt}=\frac{dc}{du}\times\frac{du}{dt}=\frac{1}{2\sqrt{u}}\times2t$$
+          $$\frac{d\,r^{2}}{d\,i}=\frac{d\,r^{2}}{d\,r}\times\frac{dr}{di}=2r\times(-1)$$
+          <ul class="keys">
+            <li>\(W\), \(H\), \(S\) are weight, height and shoe size.</li>
+            <li>\(u=t^{2}+\tfrac{1}{2}\) is the stuff inside; put it back to get \(t/\sqrt{t^{2}+\tfrac{1}{2}}\).</li>
+            <li>\(r\) is the residual and \(i\) the intercept, so the result is \(-2r\).</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>link</th><th>equation</th><th>slope</th></tr>
+            <tr><td>W → H</td><td>H = 2W</td><td>2</td></tr>
+            <tr><td>H → S</td><td>S = ¼H</td><td>¼</td></tr>
+            <tr class="final"><td>W → S</td><td>S = ¼ × 2W</td><td>½</td></tr>
+          </table>
+          <p class="hand">Each extra unit of weight adds half a unit of shoe size. The squared residual's best intercept is 1.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">The derivative of \(\sqrt{t^{2}+\tfrac{1}{2}}\) is just \(\frac{1}{2\sqrt{\cdot}}\).</span><span class="yes">Multiply by the inner derivative too, here \(2t\).</span></li>
+            <li><span class="no">The residual's derivative for the intercept is +1.</span><span class="yes">It is −1. Multiply the brackets out first, so the minus sign stays.</span></li>
+            <li><span class="no">Done once the derivatives are multiplied.</span><span class="yes">Put the stuff inside back in. If \(h\) or \(u\) remains, you are not done.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="54-random-forests-in-r.html"><small>Previous</small>Random Forests in R</a> <a href="56-gradient-descent-step-by-step.html"><small>Next</small>Gradient Descent, Step-by-Step</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

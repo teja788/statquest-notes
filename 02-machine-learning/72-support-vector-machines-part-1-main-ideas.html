@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Support Vector Machines Part 1 (of 3): Main Ideas — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>72</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 72 · 20.5 min</div>
+    <h1>Support Vector Machines Part 1 (of 3): Main Ideas</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=efR1C6CvhmE" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: —</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video builds up to support vector machines in three steps: maximal margin classifiers, support vector classifiers, and then support vector machines with kernels. Each step fixes a weakness of the one before it.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>A maximal margin classifier puts the threshold halfway between the edge observations of two classes, but one outlier can ruin it. A support vector classifier uses a soft margin that allows some misclassifications, and cross-validation picks how many. When the classes overlap too much for any flat boundary, a support vector machine moves the data into a higher dimension and finds a support vector classifier there. Kernel functions, such as the polynomial and radial kernels, do this in a systematic way. The kernel trick computes the high-dimensional relationships without actually transforming the data.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh starts with the mass of some mice. Some mice are not obese and some are obese. We want a threshold: a cut-off point on the mass line that splits the two groups. A good choice is the midpoint between the observations on the edge of each cluster.</p>
+    <p>The shortest distance between the observations and the threshold is called the <strong>margin</strong>. The midpoint makes this margin as large as possible. Using the threshold with the largest margin is called a <strong>maximal margin classifier</strong>. Its problem is outliers. One not-obese mouse that sits close to the obese mice drags the threshold right next to the obese group.</p>
+    <p>The fix is to allow misclassifications. When we allow them, the distance between the observations and the threshold is called a <strong>soft margin</strong>. A classifier that uses a soft margin is a <strong>soft margin classifier</strong>, also called a <strong>support vector classifier</strong>. The observations on the edge of the soft margin and inside it are the <strong>support vectors</strong>.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 320" role="img" aria-label="Two number lines of mouse mass. Top: maximal margin threshold pulled next to the obese mice by one outlier. Bottom: soft margin threshold that misclassifies the outlier, with support vectors ringed.">
+        <text class="sv-tb" x="20" y="36">Maximal margin classifier: one outlier pulls the threshold</text>
+        <line class="sv-stroke-ink" stroke-width="1.5" x1="40" y1="100" x2="690" y2="100"/>
+        <text class="sv-ts" x="698" y="104">mass</text>
+        <circle class="sv-key" cx="80" cy="100" r="9"/>
+        <circle class="sv-key" cx="120" cy="100" r="9"/>
+        <circle class="sv-key" cx="150" cy="100" r="9"/>
+        <circle class="sv-key" cx="190" cy="100" r="9"/>
+        <circle class="sv-key" cx="230" cy="100" r="9"/>
+        <circle class="sv-key" cx="470" cy="100" r="9"/>
+        <circle class="sv-good" cx="500" cy="100" r="9"/>
+        <circle class="sv-good" cx="540" cy="100" r="9"/>
+        <circle class="sv-good" cx="580" cy="100" r="9"/>
+        <circle class="sv-good" cx="620" cy="100" r="9"/>
+        <circle class="sv-good" cx="660" cy="100" r="9"/>
+        <line class="sv-stroke-ink" stroke-width="2.5" x1="485" y1="70" x2="485" y2="125"/>
+        <text class="sv-ts" x="485" y="62" text-anchor="middle">threshold</text>
+        <text class="sv-ts" x="470" y="142" text-anchor="middle">outlier</text>
+
+        <text class="sv-tb" x="20" y="172">Soft margin: allow one misclassification</text>
+        <rect class="sv-acc-soft" x="230" y="208" width="270" height="44"/>
+        <line class="sv-stroke-acc" stroke-width="1.5" stroke-dasharray="5 4" x1="230" y1="204" x2="230" y2="256"/>
+        <line class="sv-stroke-acc" stroke-width="1.5" stroke-dasharray="5 4" x1="500" y1="204" x2="500" y2="256"/>
+        <line class="sv-stroke-ink" stroke-width="1.5" x1="40" y1="230" x2="690" y2="230"/>
+        <text class="sv-ts" x="698" y="234">mass</text>
+        <circle class="sv-key" cx="80" cy="230" r="9"/>
+        <circle class="sv-key" cx="120" cy="230" r="9"/>
+        <circle class="sv-key" cx="150" cy="230" r="9"/>
+        <circle class="sv-key" cx="190" cy="230" r="9"/>
+        <circle class="sv-key" cx="230" cy="230" r="9"/>
+        <circle class="sv-key" cx="470" cy="230" r="9"/>
+        <circle class="sv-good" cx="500" cy="230" r="9"/>
+        <circle class="sv-good" cx="540" cy="230" r="9"/>
+        <circle class="sv-good" cx="580" cy="230" r="9"/>
+        <circle class="sv-good" cx="620" cy="230" r="9"/>
+        <circle class="sv-good" cx="660" cy="230" r="9"/>
+        <circle class="sv-stroke-ink" stroke-width="1.5" cx="230" cy="230" r="14"/>
+        <circle class="sv-stroke-ink" stroke-width="1.5" cx="470" cy="230" r="14"/>
+        <circle class="sv-stroke-ink" stroke-width="1.5" cx="500" cy="230" r="14"/>
+        <line class="sv-stroke-ink" stroke-width="2.5" x1="365" y1="200" x2="365" y2="262"/>
+        <text class="sv-ts" x="365" y="194" text-anchor="middle">threshold</text>
+        <text class="sv-ts" x="290" y="194" text-anchor="middle">soft margin</text>
+        <text class="sv-ts" x="470" y="276" text-anchor="middle">outlier: misclassified</text>
+        <text class="sv-ts" x="720" y="194" text-anchor="end">ringed = support vectors</text>
+
+        <circle class="sv-key" cx="30" cy="292" r="7"/>
+        <text class="sv-ts" x="44" y="296">not obese</text>
+        <circle class="sv-good" cx="140" cy="292" r="7"/>
+        <text class="sv-ts" x="154" y="296">obese</text>
+      </svg>
+      <figcaption>Notice how the soft margin lets the outlier be misclassified, so the threshold moves back toward the middle of the two groups.</figcaption>
+    </figure>
+    <p>Support vector classifiers still fail when the classes overlap a lot. A support vector machine handles this. It moves the data into a higher dimension, then finds a support vector classifier there.</p>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Pick a threshold at the midpoint between the edge observations of each class. New observations are classified by which side of the threshold they fall on.</li>
+      <li>This maximal margin classifier is very sensitive to outliers in the training data. An outlier can place the threshold far from most of its own class.</li>
+      <li>Allow misclassifications to get a soft margin. This is the bias-variance trade-off, where fitting the training data less closely helps on new data. The threshold has higher bias, but lower variance.</li>
+      <li>Use cross-validation to decide how many misclassifications and how many observations to allow inside the soft margin. Cross-validation tests each choice on data held back from training.</li>
+      <li>With one measurement the support vector classifier is a point. With two it is a line, and with three it is a plane. With four or more it is a hyperplane. Technically, all of these flat boundaries are hyperplanes, but we use the word only when we cannot draw it.</li>
+      <li>For drug dosages where only the middle dosages cure patients, no single point separates the classes. So we add a y-axis equal to dosage squared, which makes the data two-dimensional.</li>
+      <li>In two dimensions, a line (a support vector classifier) now separates cured from not cured. New dosages are squared and classified by which side of the line they land on.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 400" role="img" aria-label="Dosage data on a one-dimensional line, lifted into two dimensions by using dosage squared as the y-axis, where a straight line separates cured from not cured.">
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="sv-ink" d="M0,0 L10,5 L0,10 z"/></marker>
+        </defs>
+        <text class="sv-tb" x="40" y="40">1-D: dosage only</text>
+        <line class="sv-stroke-ink" stroke-width="1.5" x1="40" y1="220" x2="340" y2="220"/>
+        <text class="sv-ts" x="190" y="250" text-anchor="middle">dosage</text>
+        <circle class="sv-key" cx="77.5" cy="220" r="7"/>
+        <circle class="sv-key" cx="100" cy="220" r="7"/>
+        <circle class="sv-key" cx="122.5" cy="220" r="7"/>
+        <circle class="sv-good" cx="160" cy="220" r="7"/>
+        <circle class="sv-good" cx="182.5" cy="220" r="7"/>
+        <circle class="sv-good" cx="205" cy="220" r="7"/>
+        <circle class="sv-good" cx="227.5" cy="220" r="7"/>
+        <circle class="sv-key" cx="265" cy="220" r="7"/>
+        <circle class="sv-key" cx="287.5" cy="220" r="7"/>
+        <circle class="sv-key" cx="310" cy="220" r="7"/>
+        <text class="sv-tm" x="77.5" y="200" text-anchor="middle">0.5² = 0.25</text>
+        <circle class="sv-key" cx="50" cy="300" r="7"/>
+        <text class="sv-ts" x="64" y="304">not cured</text>
+        <circle class="sv-good" cx="160" cy="300" r="7"/>
+        <text class="sv-ts" x="174" y="304">cured</text>
+
+        <line class="sv-stroke-ink" stroke-width="2" x1="350" y1="160" x2="405" y2="160" marker-end="url(#arr)"/>
+        <text class="sv-ts" x="378" y="140" text-anchor="middle">square each</text>
+        <text class="sv-ts" x="378" y="154" text-anchor="middle">dosage</text>
+
+        <text class="sv-tb" x="440" y="40">2-D: add y = dosage²</text>
+        <line class="sv-stroke-ink" stroke-width="1.5" x1="420" y1="360" x2="720" y2="360"/>
+        <line class="sv-stroke-ink" stroke-width="1.5" x1="420" y1="360" x2="420" y2="55"/>
+        <text class="sv-ts" x="720" y="380" text-anchor="end">dosage</text>
+        <text class="sv-ts" x="428" y="64">dosage²</text>
+        <line class="sv-stroke-acc" stroke-width="2" x1="486.8" y1="360" x2="683.3" y2="115"/>
+        <circle class="sv-key" cx="457.5" cy="354.3" r="4"/>
+        <circle class="sv-key" cx="480" cy="345.3" r="4"/>
+        <circle class="sv-key" cx="502.5" cy="332.2" r="4"/>
+        <circle class="sv-good" cx="540" cy="301.1" r="4"/>
+        <circle class="sv-good" cx="562.5" cy="277" r="4"/>
+        <circle class="sv-good" cx="585" cy="248.7" r="4"/>
+        <circle class="sv-good" cx="607.5" cy="216.3" r="4"/>
+        <circle class="sv-key" cx="645" cy="153" r="4"/>
+        <circle class="sv-key" cx="667.5" cy="109.5" r="4"/>
+        <circle class="sv-key" cx="690" cy="61.9" r="4"/>
+        <rect class="sv-paper" x="588" y="292" width="140" height="36"/>
+        <text class="sv-ts" x="596" y="306">support vector</text>
+        <text class="sv-ts" x="596" y="321">classifier (a line)</text>
+      </svg>
+      <figcaption>Notice that no single point splits the 1-D dosages, but after squaring, one straight line separates cured from not cured.</figcaption>
+    </figure>
+    <p>Josh sums up the main ideas of a support vector machine in three steps. Start with data in a relatively low dimension. Move the data into a higher dimension. Find a support vector classifier that separates the higher-dimensional data into two groups.</p>
+    <p>But why dosage squared, and not dosage cubed? Support vector machines use <strong>kernel functions</strong> to find support vector classifiers in higher dimensions in a systematic way. The <strong>polynomial kernel</strong> has a parameter \(d\), the degree of the polynomial. It computes the relationships between each pair of observations in \(d\) dimensions, and those relationships are used to find the support vector classifier. Cross-validation finds a good value for \(d\).</p>
+    <p>The <strong>radial kernel</strong>, also called the radial basis function kernel, finds support vector classifiers in infinite dimensions. On a new observation, it behaves like a weighted nearest neighbour model. The closest observations have a lot of influence on the classification, and far observations have little.</p>
+    <p>Kernels do not actually transform the data. They only calculate the relationships between every pair of points as if they were in the higher dimension. This is the <strong>kernel trick</strong>. It saves computation, and it makes the infinite dimensions of the radial kernel possible.</p>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>This video is about main ideas, so it has only simple formulas. The kernel formulas themselves come in Parts 2 and 3.</p>
+    <div class="formula"><span class="lbl">Maximal margin threshold</span><div class="math">$$\text{threshold} = \frac{x_{\text{edge, class A}} + x_{\text{edge, class B}}}{2}$$</div><p class="explain"><b>Symbols:</b> \(x_{\text{edge, class A}}\) is the observation of the first class that is closest to the other class; \(x_{\text{edge, class B}}\) is the same for the second class. <b>What it tells you:</b> the midpoint makes the distance to both edge observations equal, which gives the largest possible margin.</p></div>
+    <div class="formula"><span class="lbl">Lifting 1-D data into 2-D</span><div class="math">$$\text{dosage} \;\longrightarrow\; (x,\,y) = (\text{dosage},\ \text{dosage}^2)$$</div><p class="explain"><b>Symbols:</b> \(x\) is the original dosage; \(y\) is the dosage squared. <b>What it tells you:</b> each observation gets a second coordinate, so a straight line in two dimensions can separate classes that no single point could separate in one dimension.</p></div>
+    <div class="formula"><span class="lbl">Polynomial kernel dimensions</span><div class="math">$$d = 1:\ (\text{dosage}) \qquad d = 2:\ (\text{dosage},\ \text{dosage}^2) \qquad d = 3:\ (\text{dosage},\ \text{dosage}^2,\ \text{dosage}^3)$$</div><p class="explain"><b>Symbols:</b> \(d\) is the degree of the polynomial. Each step up in \(d\) adds one dimension, based on the next power of the dosage. <b>What it tells you:</b> setting \(d\) systematically increases the dimensions in which the kernel looks for a support vector classifier; pick \(d\) with cross-validation.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>The drug works only when the dosage is just right. Low and high dosages do not cure patients. On a single dosage line, any threshold makes many misclassifications.</p>
+      <p>Take the observation with dosage 0.5. Its new y-axis value is \(0.5^2 = 0.25\), so it moves to the point \((0.5,\ 0.25)\). Do the same for every other observation. The data are now two-dimensional, and a support vector classifier (a line) separates cured from not cured.</p>
+      <p>For a new patient, square the dosage to get the y-coordinate. If the point lands on the not-cured side of the line, classify the patient as not cured. If it lands on the other side, classify the patient as cured.</p>
+      <p>Earlier in the video, cross-validation picks a soft margin that allows one misclassification and two correctly classified observations inside the soft margin.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> A maximal margin classifier has low bias but high variance. One outlier in the training data can put the threshold in a bad place, so it performs poorly on new data.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Support vectors are not only the two closest points. They are all observations on the edge of the soft margin and inside it, including misclassified ones.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not choose the soft margin by eye. Cross-validation decides how many misclassifications and observations to allow inside it. Cross-validation also picks the degree \(d\) of a polynomial kernel.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Kernels do not actually move the data to a higher dimension. The kernel trick only computes the pairwise relationships as if the data were there.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>How do maximal margin classifiers, support vector classifiers, and support vector machines differ?</summary><div class="a">A maximal margin classifier puts the threshold where the margin is largest, and it allows no misclassifications, so outliers hurt it. A support vector classifier uses a soft margin that allows some misclassifications. A support vector machine moves the data into a higher dimension with a kernel, then finds a support vector classifier there.</div></details>
+    <details class="qa" open><summary>What is a soft margin, and how do you choose it?</summary><div class="a">A soft margin is the distance between the observations and the threshold when we allow misclassifications. It trades a bit more bias for lower variance on new data. I would use cross-validation to decide how many misclassifications and observations to allow inside it.</div></details>
+    <details class="qa" open><summary>What are support vectors?</summary><div class="a">They are the observations on the edge of the soft margin and inside it. They set where the support vector classifier goes, which is where the name comes from.</div></details>
+    <details class="qa" open><summary>What is the kernel trick?</summary><div class="a">A kernel calculates the relationships between every pair of observations as if they were in a higher dimension, without actually transforming the data. This reduces computation. It also makes the radial kernel possible, because that kernel works in infinite dimensions.</div></details>
+    <details class="qa" open><summary>How does the radial kernel behave on a new observation?</summary><div class="a">It behaves like a weighted nearest neighbour model. The closest observations have a lot of influence on the classification, and observations that are far away have relatively little.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>The margin is the shortest distance between the observations and the threshold.</li>
+      <li>A maximal margin classifier uses the midpoint between the edge observations, but outliers ruin it.</li>
+      <li>A support vector classifier uses a soft margin that allows misclassifications, chosen with cross-validation.</li>
+      <li>Support vectors are the observations on the edge of the soft margin and inside it.</li>
+      <li>The classifier is a point in 1-D, a line in 2-D, a plane in 3-D, and a hyperplane in higher dimensions.</li>
+      <li>A support vector machine moves data to a higher dimension, for example by adding dosage squared, and finds a support vector classifier there.</li>
+      <li>The polynomial kernel adds dimensions with degree \(d\); the radial kernel works in infinite dimensions and acts like weighted nearest neighbours.</li>
+      <li>The kernel trick computes high-dimensional relationships without actually transforming the data.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Support Vector Machines</span><span class="board-tag">soften the margin, then lift the data</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 300" role="img" aria-label="Dosages on a line, with the cured ones in the middle, cannot be split by one point, but lifting each to y = dosage squared (0.5 goes to 0.25) lets one straight line split cured from not cured.">
+            <line x1="30" y1="232" x2="385" y2="232" class="sv-stroke-ink" stroke-width="2"/>
+            <line x1="30" y1="18" x2="30" y2="232" class="sv-stroke-ink" stroke-width="2"/>
+            <g stroke-width="2" stroke-dasharray="2 5" stroke-linecap="round">
+              <line x1="60" y1="232" x2="60" y2="213.1" class="sv-stroke-key"/>
+              <line x1="77.6" y1="232" x2="77.6" y2="210.3" class="sv-stroke-key"/>
+              <line x1="196.4" y1="232" x2="196.4" y2="167.1" class="sv-stroke-good"/>
+              <line x1="214" y1="232" x2="214" y2="157.1" class="sv-stroke-good"/>
+              <line x1="231.6" y1="232" x2="231.6" y2="146.2" class="sv-stroke-good"/>
+              <line x1="350.4" y1="232" x2="350.4" y2="48.1" class="sv-stroke-key"/>
+              <line x1="368" y1="232" x2="368" y2="30" class="sv-stroke-key"/>
+            </g>
+            <line x1="91.3" y1="216" x2="380" y2="44.4" class="sv-stroke-acc" stroke-width="3" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="60" cy="232" r="6" class="sv-key"/>
+              <circle cx="77.6" cy="232" r="6" class="sv-key"/>
+              <circle cx="196.4" cy="232" r="6" class="sv-good"/>
+              <circle cx="214" cy="232" r="6" class="sv-good"/>
+              <circle cx="231.6" cy="232" r="6" class="sv-good"/>
+              <circle cx="350.4" cy="232" r="6" class="sv-key"/>
+              <circle cx="368" cy="232" r="6" class="sv-key"/>
+              <circle cx="60" cy="213.1" r="6" class="sv-key"/>
+              <circle cx="77.6" cy="210.3" r="6" class="sv-key"/>
+              <circle cx="196.4" cy="167.1" r="6" class="sv-good"/>
+              <circle cx="214" cy="157.1" r="6" class="sv-good"/>
+              <circle cx="231.6" cy="146.2" r="6" class="sv-good"/>
+              <circle cx="350.4" cy="48.1" r="6" class="sv-key"/>
+              <circle cx="368" cy="30" r="6" class="sv-key"/>
+            </g>
+            <text x="40" y="30" class="sv-t">y = dosage²</text>
+            <text x="338" y="54" text-anchor="end" class="sv-t">not cured</text>
+            <text x="230" y="120" text-anchor="end" class="sv-tb">2-D: a line splits</text>
+            <text x="246" y="164" class="sv-t">cured</text>
+            <text x="40" y="258" class="sv-tm">0.5² = 0.25</text>
+            <text x="385" y="258" text-anchor="end" class="sv-ts">dosage →</text>
+            <text x="214" y="284" text-anchor="middle" class="sv-tb">1-D: no point splits</text>
+          </svg>
+          <p>A threshold midway between the edge observations gives the widest margin, but one outlier ruins it, so a soft margin allows some misclassifications. When no point splits the classes, a support vector machine moves the data to a higher dimension and splits them there.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Margin</dt><dd>Shortest distance between the observations and the threshold.</dd>
+            <dt>Soft margin</dt><dd>The margin when misclassifications are allowed.</dd>
+            <dt>Support vectors</dt><dd>Observations on the edge of the soft margin and inside it.</dd>
+            <dt>Support vector classifier</dt><dd>Soft margin classifier. A point in 1-D, a line in 2-D, a plane in 3-D.</dd>
+            <dt>Kernel function</dt><dd>Finds support vector classifiers in higher dimensions, systematically.</dd>
+            <dt>Radial kernel</dt><dd>Works in infinite dimensions; acts like weighted nearest neighbours.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Maximal margin</b>midpoint threshold, but outliers ruin it</li>
+            <li><b>Soft margin</b>misclassify a few: lower variance</li>
+            <li><b>Cross-validate</b>pick how many to allow</li>
+            <li><b>Lift to 2-D</b>add y = dosage²</li>
+            <li><b>Draw a line</b>classify new points by side</li>
+            <li><b>Use kernels</b>polynomial (degree d) or radial</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{threshold}=\frac{x_A+x_B}{2}$$
+          $$x\;\to\;(x,\ x^2)$$
+          $$d=3:\ (x,\ x^2,\ x^3)$$
+          <ul class="keys">
+            <li>\(x_A\) and \(x_B\) are the edge observations of the two classes.</li>
+            <li>\(x\) is the dosage, and \(x^2\) is its new y.</li>
+            <li>\(d\) is the polynomial degree, picked by cross-validation.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>dosage</th><th>y = dosage²</th><th>2-D point</th></tr>
+            <tr><td>0.5</td><td>0.5² = 0.25</td><td>(0.5, 0.25)</td></tr>
+            <tr><td>every other</td><td>squared</td><td>lifted too</td></tr>
+            <tr class="final"><td>new patient</td><td>squared</td><td>side → class</td></tr>
+          </table>
+          <p class="hand">In 1-D any threshold misclassifies many; in 2-D one line splits cured from not cured.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">The maximal margin threshold is always best.</span><span class="yes">Low bias but high variance: one outlier can misplace it, hurting new data.</span></li>
+            <li><span class="no">Support vectors are just the two closest points.</span><span class="yes">They are all observations on the edge of the soft margin and inside it, misclassified ones too.</span></li>
+            <li><span class="no">Kernels actually move the data to a higher dimension.</span><span class="yes">The kernel trick only computes pairwise relationships as if the data were there.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="71-cosine-similarity.html"><small>Previous</small>Cosine Similarity</a> <a href="73-support-vector-machines-part-2-the-polynomial-kernel-part-2.html"><small>Next</small>Support Vector Machines Part 2: The Polynomial Kernel (Part 2 of 3)</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

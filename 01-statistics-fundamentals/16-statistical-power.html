@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Statistical Power — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>16</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 16 · 8.3 min</div>
+    <h1>Statistical Power</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=Rsc5znwR5FA" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Assumes you know p-values and the normal distribution</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Power is the probability that a test correctly rejects the null hypothesis when the null hypothesis is really false. It tells you how likely your experiment is to find a difference that truly exists.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh uses two groups of mice: one group on a special diet and one group on normal food. When the two weight distributions barely overlap, almost every repeat of the experiment gives a small p-value, so power is high. When the distributions overlap a lot and the sample is small, most repeats give a large p-value, so power is low. Power only makes sense when the two groups really are different, because only then is there a null hypothesis to correctly reject. You can always raise power by collecting more measurements, and a power analysis tells you how many.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Start with two distributions. The one on the left is the weight of mice on a special diet. The one on the right is the weight of mice on normal food. A distribution here is just a picture of which weights are common and which are rare. Because the two pictures barely overlap, most mice on the special diet weigh less than mice on normal food.</p>
+    <p>Now take a small set of measurements from each diet and compare the two means. In this case the test gives a p-value of 0.0004. That p-value is below 0.05, so we reject the null hypothesis that both sets of data came from the same distribution. That rejection is correct, because we know the data came from two different distributions.</p>
+    <p>The key word is <strong>repeat</strong>. If you ran that experiment many times, most runs would give a small p-value. Once in a while the two samples would overlap by bad luck, and you would get a large p-value and fail to reject. Power is simply the share of repeats that give the correct rejection. Little overlap means high power. Heavy overlap, especially with few measurements, means low power.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 290" role="img" aria-label="Two panels comparing distributions with little overlap and high power against distributions with heavy overlap and low power">
+        <rect x="0" y="0" width="760" height="290" class="sv-paper"></rect>
+
+        <text x="190" y="34" text-anchor="middle" class="sv-tb">Little overlap</text>
+        <text x="560" y="34" text-anchor="middle" class="sv-tb">A lot of overlap, n = 3</text>
+
+        <line x1="375" y1="20" x2="375" y2="272" class="sv-line" stroke-width="1"></line>
+
+        <path d="M 40,180 C 82,180 82,85 125,85 C 168,85 168,180 210,180" class="sv-stroke-acc" stroke-width="2.5"></path>
+        <path d="M 170,180 C 212,180 212,85 255,85 C 298,85 298,180 340,180" class="sv-stroke-key" stroke-width="2.5"></path>
+        <line x1="30" y1="180" x2="350" y2="180" class="sv-line" stroke-width="1.5"></line>
+        <text x="120" y="76" text-anchor="middle" class="sv-ts">special diet</text>
+        <text x="262" y="76" text-anchor="middle" class="sv-ts">normal food</text>
+        <circle cx="100" cy="205" r="4.5" class="sv-acc"></circle>
+        <circle cx="122" cy="205" r="4.5" class="sv-acc"></circle>
+        <circle cx="143" cy="205" r="4.5" class="sv-acc"></circle>
+        <circle cx="240" cy="205" r="4.5" class="sv-key"></circle>
+        <circle cx="262" cy="205" r="4.5" class="sv-key"></circle>
+        <circle cx="284" cy="205" r="4.5" class="sv-key"></circle>
+        <rect x="72" y="220" width="236" height="24" rx="4" class="sv-paper2"></rect>
+        <text x="190" y="237" text-anchor="middle" class="sv-tm">p = 0.0004, reject the null</text>
+        <text x="190" y="266" text-anchor="middle" class="sv-tb">High power</text>
+
+        <path d="M 410,180 C 455,180 455,85 500,85 C 545,85 545,180 590,180" class="sv-stroke-acc" stroke-width="2.5"></path>
+        <path d="M 505,180 C 550,180 550,85 595,85 C 640,85 640,180 685,180" class="sv-stroke-key" stroke-width="2.5"></path>
+        <line x1="400" y1="180" x2="720" y2="180" class="sv-line" stroke-width="1.5"></line>
+        <text x="494" y="72" text-anchor="end" class="sv-ts">special diet</text>
+        <text x="602" y="72" text-anchor="start" class="sv-ts">normal food</text>
+        <circle cx="500" cy="205" r="4.5" class="sv-acc"></circle>
+        <circle cx="536" cy="205" r="4.5" class="sv-acc"></circle>
+        <circle cx="566" cy="205" r="4.5" class="sv-acc"></circle>
+        <circle cx="518" cy="205" r="4.5" class="sv-key"></circle>
+        <circle cx="552" cy="205" r="4.5" class="sv-key"></circle>
+        <circle cx="590" cy="205" r="4.5" class="sv-key"></circle>
+        <rect x="446" y="220" width="228" height="24" rx="4" class="sv-paper2"></rect>
+        <text x="560" y="237" text-anchor="middle" class="sv-tm">p = 0.34, cannot reject</text>
+        <text x="560" y="266" text-anchor="middle" class="sv-tb">Low power</text>
+      </svg>
+      <figcaption>Notice that the two panels use the same test. Only the overlap and the sample size change, and that alone decides whether a real difference shows up.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Assume the two groups really do come from different distributions. Only then can a rejection of the null hypothesis be correct.</li>
+      <li>Draw a sample from each group. In the video these are weights of mice on the special diet and mice on normal food.</li>
+      <li>Compare the two means with a statistical test and read the p-value. A p-value below 0.05 rejects the null hypothesis that both samples came from one distribution.</li>
+      <li>Repeat the whole experiment many times. Each repeat gives a fresh sample and a fresh p-value, and the p-values will not all agree.</li>
+      <li>Count the repeats that gave a small p-value. That fraction is the power of your test.</li>
+      <li>If the fraction is low, collect more measurements. More data shrinks the spread of the sample means, so real differences show up more often.</li>
+    </ol>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 276" role="img" aria-label="Two rows of eight repeated experiments, one row mostly correct rejections and one row mostly failures to reject">
+        <rect x="0" y="0" width="760" height="276" class="sv-paper"></rect>
+
+        <text x="30" y="34" class="sv-t">Little overlap: 8 repeats of the experiment</text>
+        <rect x="30" y="46" width="78" height="40" rx="4" class="sv-good-soft"></rect>
+        <rect x="118" y="46" width="78" height="40" rx="4" class="sv-good-soft"></rect>
+        <rect x="206" y="46" width="78" height="40" rx="4" class="sv-good-soft"></rect>
+        <rect x="294" y="46" width="78" height="40" rx="4" class="sv-good-soft"></rect>
+        <rect x="382" y="46" width="78" height="40" rx="4" class="sv-paper2"></rect>
+        <rect x="470" y="46" width="78" height="40" rx="4" class="sv-good-soft"></rect>
+        <rect x="558" y="46" width="78" height="40" rx="4" class="sv-good-soft"></rect>
+        <rect x="646" y="46" width="78" height="40" rx="4" class="sv-good-soft"></rect>
+        <path d="M 61,67 l 5,7 l 11,-15" class="sv-stroke-good" stroke-width="3"></path>
+        <path d="M 149,67 l 5,7 l 11,-15" class="sv-stroke-good" stroke-width="3"></path>
+        <path d="M 237,67 l 5,7 l 11,-15" class="sv-stroke-good" stroke-width="3"></path>
+        <path d="M 325,67 l 5,7 l 11,-15" class="sv-stroke-good" stroke-width="3"></path>
+        <line x1="410" y1="66" x2="432" y2="66" class="sv-line" stroke-width="3"></line>
+        <path d="M 501,67 l 5,7 l 11,-15" class="sv-stroke-good" stroke-width="3"></path>
+        <path d="M 589,67 l 5,7 l 11,-15" class="sv-stroke-good" stroke-width="3"></path>
+        <path d="M 677,67 l 5,7 l 11,-15" class="sv-stroke-good" stroke-width="3"></path>
+        <text x="30" y="108" class="sv-tm">7 of these 8 repeats correctly rejected: high power</text>
+
+        <text x="30" y="152" class="sv-t">Heavy overlap and n = 3: the same 8 repeats</text>
+        <rect x="30" y="164" width="78" height="40" rx="4" class="sv-paper2"></rect>
+        <rect x="118" y="164" width="78" height="40" rx="4" class="sv-paper2"></rect>
+        <rect x="206" y="164" width="78" height="40" rx="4" class="sv-paper2"></rect>
+        <rect x="294" y="164" width="78" height="40" rx="4" class="sv-good-soft"></rect>
+        <rect x="382" y="164" width="78" height="40" rx="4" class="sv-paper2"></rect>
+        <rect x="470" y="164" width="78" height="40" rx="4" class="sv-paper2"></rect>
+        <rect x="558" y="164" width="78" height="40" rx="4" class="sv-paper2"></rect>
+        <rect x="646" y="164" width="78" height="40" rx="4" class="sv-paper2"></rect>
+        <line x1="58" y1="184" x2="80" y2="184" class="sv-line" stroke-width="3"></line>
+        <line x1="146" y1="184" x2="168" y2="184" class="sv-line" stroke-width="3"></line>
+        <line x1="234" y1="184" x2="256" y2="184" class="sv-line" stroke-width="3"></line>
+        <path d="M 325,185 l 5,7 l 11,-15" class="sv-stroke-good" stroke-width="3"></path>
+        <line x1="410" y1="184" x2="432" y2="184" class="sv-line" stroke-width="3"></line>
+        <line x1="498" y1="184" x2="520" y2="184" class="sv-line" stroke-width="3"></line>
+        <line x1="586" y1="184" x2="608" y2="184" class="sv-line" stroke-width="3"></line>
+        <line x1="674" y1="184" x2="696" y2="184" class="sv-line" stroke-width="3"></line>
+        <text x="30" y="226" class="sv-tm">only 1 of these 8 repeats correctly rejected: low power</text>
+
+        <text x="30" y="254" class="sv-ts">Tick = small p-value, null correctly rejected. Dash = large p-value, no rejection.</text>
+      </svg>
+      <figcaption>Power is a property of the whole set of repeats, not of any single experiment, so one p-value can never tell you your power.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>The video keeps everything visual and does not write a formula. The two blocks below state the same ideas in symbols, so the wording stays easy to reuse in an interview.</p>
+
+    <div class="formula"><span class="lbl">Definition of power</span>
+      <div class="math">$$ \text{Power} \;=\; P\!\left(\text{reject } H_0 \;\middle|\; H_1 \text{ is true}\right) \;=\; 1 - \beta $$</div>
+      <p class="explain"><b>Symbols:</b> \(H_0\) is the null hypothesis, the claim that both samples came from the same distribution. \(H_1\) is the alternative, the claim that the two groups really differ. \(P(A \mid B)\) is the probability of \(A\) given that \(B\) is true. \(\beta\) is the probability of a Type II error, which means failing to reject a null hypothesis that is false. <b>What it tells you:</b> power is the long-run fraction of repeated experiments that correctly find the real difference.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">What moves power</span>
+      <div class="math">$$ \text{Power} \uparrow \quad \text{when} \quad n \uparrow, \qquad |\mu_1 - \mu_2| \uparrow, \qquad \sigma \downarrow $$</div>
+      <p class="explain"><b>Symbols:</b> \(n\) is the number of measurements per group. \(\mu_1\) and \(\mu_2\) are the true means of the two distributions, so \(|\mu_1 - \mu_2|\) is the size of the real difference. \(\sigma\) is the spread of each distribution. <b>What it tells you:</b> less overlap between the two curves raises power, and you control overlap of the sample means through the sample size, which is the one lever you can always pull.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>In the first case the special diet works well, so the two weight distributions sit far apart. Josh takes a small set of weights from each diet and compares the means. The test returns \(p = 0.0004\), which is well below 0.05, so the null hypothesis is correctly rejected. Repeat that experiment many times and almost every run behaves the same way, so power is high. Only rarely do the two samples overlap enough to give a large p-value.</p>
+      <p>In the second case the special diet still helps, but only a little, so the distributions overlap a lot. Josh weighs three mice on the special diet and three on normal food. The test returns \(p = 0.34\), so he fails to reject the null hypothesis even though the two groups truly differ. Across many repeats only one run gave a small p-value. That is what low power looks like.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Power does not apply when the two groups share the same distribution. If the special diet has no effect at all, the null hypothesis is true, so there is no such thing as correctly rejecting it. Power is only defined when a real difference exists.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A large p-value is not proof that the groups are the same. In the low-power case the groups really did differ, yet \(p = 0.34\). With a small sample and heavy overlap, failing to reject tells you almost nothing.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Power belongs to the design, not to one result. You cannot look at a single p-value and say the study was well powered. You only see power by imagining the experiment repeated many times.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is statistical power in plain words?</summary><div class="a">Power is the probability that my test correctly rejects the null hypothesis when the groups really are different. Put another way, it is the probability of getting a small p-value when there is something real to find. If I ran the same experiment many times, power is the fraction of runs that would detect the effect.</div></details>
+    <details class="qa" open><summary>What drives power up or down?</summary><div class="a">Two things decide it: how much the two distributions overlap, and how many measurements I collect. Little overlap means almost every run finds the difference, so power is high. Heavy overlap with a small sample means most runs miss it. Overlap is set by the size of the effect and the spread of the data, so sample size is usually the lever I control.</div></details>
+    <details class="qa" open><summary>My p-value was 0.34, so are the groups the same?</summary><div class="a">Not necessarily. In the mouse diet example the groups genuinely differed and the test still returned 0.34, because there were only three mice per group and the distributions overlapped heavily. A large p-value with low power means the study could not have found the effect even if it was there, so I would treat it as no evidence rather than evidence of no difference.</div></details>
+    <details class="qa" open><summary>How do power and Type II error relate?</summary><div class="a">A Type II error is failing to reject a null hypothesis that is false, and its probability is beta. Power is one minus beta, so they are two views of the same number. Raising power means shrinking the chance that I miss a real effect.</div></details>
+    <details class="qa" open><summary>How would you decide the sample size before running the study?</summary><div class="a">I would run a power analysis. It tells me how many measurements per group I need for a good amount of power. That way I learn whether the study is worth running before I spend the money.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap">
+      <ul>
+        <li>Power is the probability that we correctly reject the null hypothesis.</li>
+        <li>The same idea in other words: power is the probability of correctly getting a small p-value.</li>
+        <li>Two distributions with little overlap give high power, because almost every repeat detects the difference.</li>
+        <li>Two distributions with heavy overlap and a small sample give low power, so most repeats fail to reject.</li>
+        <li>In the video these two cases produced p-values of 0.0004 and 0.34 for the same kind of test.</li>
+        <li>Power does not apply when the groups share one distribution, because there is nothing to correctly reject.</li>
+        <li>You can always raise power by collecting more measurements.</li>
+        <li>A power analysis tells you how many measurements you need, and that is the topic of the next video.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Statistical power</span><span class="board-tag">how often you find a real difference</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 260" role="img" aria-label="Weight curves for special diet and normal food: with little overlap, 7 of 8 repeated runs reject the null, so power is high; with heavy overlap and 3 mice per diet, only 1 of 8 runs rejects, so power is low.">
+            <line x1="20" y1="16" x2="42" y2="16" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round"/>
+            <text x="50" y="22" class="sv-ts">special diet</text>
+            <line x1="176" y1="16" x2="198" y2="16" class="sv-stroke-key" stroke-width="4" stroke-linecap="round"/>
+            <text x="206" y="22" class="sv-ts">normal food</text>
+
+            <text x="20" y="60" class="sv-t">little overlap</text>
+            <text x="221" y="60" class="sv-tb">high power</text>
+            <line x1="16" y1="135" x2="204" y2="135" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M20 135 C46 135 50 80 70 80 C90 80 94 135 120 135" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M100 135 C126 135 130 80 150 80 C170 80 174 135 200 135" class="sv-stroke-key" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="228" cy="92" r="7" class="sv-good"/>
+              <circle cx="248" cy="92" r="7" class="sv-good"/>
+              <circle cx="268" cy="92" r="7" class="sv-good"/>
+              <circle cx="288" cy="92" r="7" class="sv-good"/>
+              <circle cx="308" cy="92" r="7" class="sv-paper2"/>
+              <circle cx="328" cy="92" r="7" class="sv-good"/>
+              <circle cx="348" cy="92" r="7" class="sv-good"/>
+              <circle cx="368" cy="92" r="7" class="sv-good"/>
+            </g>
+            <text x="298" y="124" text-anchor="middle" class="sv-ts">7/8 runs reject</text>
+
+            <text x="20" y="170" class="sv-t">heavy overlap, n = 3</text>
+            <text x="221" y="170" class="sv-tb">low power</text>
+            <line x1="16" y1="245" x2="204" y2="245" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M50 245 C76 245 80 190 100 190 C120 190 124 245 150 245" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M70 245 C96 245 100 190 120 190 C140 190 144 245 170 245" class="sv-stroke-key" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="228" cy="202" r="7" class="sv-paper2"/>
+              <circle cx="248" cy="202" r="7" class="sv-paper2"/>
+              <circle cx="268" cy="202" r="7" class="sv-paper2"/>
+              <circle cx="288" cy="202" r="7" class="sv-good"/>
+              <circle cx="308" cy="202" r="7" class="sv-paper2"/>
+              <circle cx="328" cy="202" r="7" class="sv-paper2"/>
+              <circle cx="348" cy="202" r="7" class="sv-paper2"/>
+              <circle cx="368" cy="202" r="7" class="sv-paper2"/>
+            </g>
+            <text x="298" y="234" text-anchor="middle" class="sv-ts">1/8 runs reject</text>
+          </svg>
+          <p>Power is the share of repeated experiments that correctly reject the null when the groups really differ. Little overlap: almost every repeat gets a small p-value. Heavy overlap with few measurements: most repeats miss the real difference.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Power</dt><dd>The chance of correctly rejecting the null when the groups really differ.</dd>
+            <dt>Null hypothesis</dt><dd>Both samples came from one distribution.</dd>
+            <dt>Type II error</dt><dd>Failing to reject a false null. Its probability is \(\beta\).</dd>
+            <dt>Power analysis</dt><dd>Tells you how many measurements per group you need.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Assume a difference</b>the groups truly differ</li>
+            <li><b>Sample each group</b>special diet vs normal food</li>
+            <li><b>Test the means</b>p &lt; 0.05 rejects the null</li>
+            <li><b>Count rejections</b>that share is the power</li>
+            <li><b>Too low?</b>collect more measurements</li>
+          </ol>
+          <p class="loop">↺ repeat steps 2 and 3 many times, each with a fresh p-value</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{Power}=P(\text{reject }H_0\mid H_1)=1-\beta$$
+          $$\text{Power}\uparrow\text{ when }n\uparrow,\ |\mu_1-\mu_2|\uparrow,\ \sigma\downarrow$$
+          <ul class="keys">
+            <li>\(H_0\): one shared distribution; \(H_1\): the groups really differ.</li>
+            <li>\(\beta\): the chance of a Type II error.</li>
+            <li>\(n\): measurements per group; \(|\mu_1-\mu_2|\): the real difference; \(\sigma\): the spread.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>overlap</th><th>little</th><th>heavy</th></tr>
+            <tr><td>mice per diet</td><td>small set</td><td>3</td></tr>
+            <tr><td>p-value</td><td>0.0004</td><td>0.34</td></tr>
+            <tr><td>null rejected?</td><td>yes</td><td>no</td></tr>
+            <tr><td>repeats rejecting</td><td>almost all</td><td>only 1</td></tr>
+            <tr class="final"><td>power</td><td>high</td><td>low</td></tr>
+          </table>
+          <p class="hand">The groups truly differed both times; heavy overlap and 3 mice per diet hid it.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Power applies even when the diet does nothing.</span><span class="yes">Then the null is true, so there is nothing to correctly reject.</span></li>
+            <li><span class="no">A large p-value proves the groups are the same.</span><span class="yes">They truly differed, yet p = 0.34. Failing to reject says almost nothing here.</span></li>
+            <li><span class="no">One p-value shows whether a study was well powered.</span><span class="yes">Power belongs to the design; you only see it across many repeats.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="15-false-discovery-rates-fdr.html"><small>Previous</small>False Discovery Rates, FDR</a> <a href="17-power-analysis.html"><small>Next</small>Power Analysis</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

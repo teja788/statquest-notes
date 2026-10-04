@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>One-Hot, Label, Target and K-Fold Target Encoding — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>50</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 50 · 15.4 min</div>
+    <h1>One-Hot, Label, Target and K-Fold Target Encoding</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=589nCGeWG1w" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Many popular algorithms, including neural networks and XGBoost, do not work well with discrete columns. This video shows four ways to turn a discrete column into numbers, and how to reduce data leakage.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>One-hot encoding makes one new column per option, which fails when the options are many. Label encoding uses one number per option, which is compact but invents an order. Target encoding uses the mean of the target for each option, so the number carries signal. A weighted version pulls rare options toward the overall mean. Target encoding leaks the target, and k-fold target encoding reduces that leakage.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh starts with a table of seven people. He uses favorite color and height to predict who loves Troll 2. Favorite color has three discrete values: blue, red and green. Discrete means the value is one of a fixed set of labels, not a number on a scale.</p>
+    <p>In theory most algorithms handle such a column. In practice many popular ones cannot, so we turn the labels into numbers first. <b>One-hot encoding</b> makes one 0/1 column per option. <b>Label encoding</b> gives each option a number. <b>Target encoding</b> replaces each option with the mean of the target for that option. The target is the thing we want to predict.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 240" role="img" aria-label="Table showing the favorite colour column encoded four ways: one-hot, label, plain target mean and weighted target mean">
+        <!-- header bands -->
+        <rect class="sv-paper2" x="20" y="30" width="720" height="52"></rect>
+        <!-- body cells -->
+        <rect class="sv-paper" x="20" y="82" width="520" height="114"></rect>
+        <rect class="sv-key-soft" x="540" y="82" width="200" height="114"></rect>
+        <!-- grid: horizontals -->
+        <path class="sv-line" stroke-width="1" d="M20 30H740 M20 56H740 M20 82H740 M20 120H740 M20 158H740 M20 196H740"></path>
+        <!-- grid: verticals full height -->
+        <path class="sv-line" stroke-width="1" d="M20 30V196 M120 30V196 M300 30V196 M390 30V196 M740 30V196"></path>
+        <!-- grid: verticals below the group row -->
+        <path class="sv-line" stroke-width="1" d="M180 56V196 M240 56V196 M540 56V196"></path>
+        <!-- group headers -->
+        <text class="sv-tb" x="70" y="49" text-anchor="middle">Original</text>
+        <text class="sv-tb" x="210" y="49" text-anchor="middle">One-hot encoding</text>
+        <text class="sv-tb" x="345" y="49" text-anchor="middle">Label</text>
+        <text class="sv-tb" x="565" y="49" text-anchor="middle">Target encoding</text>
+        <!-- sub headers -->
+        <text class="sv-ts" x="70" y="74" text-anchor="middle">favorite color</text>
+        <text class="sv-ts" x="150" y="74" text-anchor="middle">blue</text>
+        <text class="sv-ts" x="210" y="74" text-anchor="middle">red</text>
+        <text class="sv-ts" x="270" y="74" text-anchor="middle">green</text>
+        <text class="sv-ts" x="345" y="74" text-anchor="middle">number</text>
+        <text class="sv-ts" x="465" y="74" text-anchor="middle">plain mean</text>
+        <text class="sv-ts" x="640" y="74" text-anchor="middle">weighted, m = 2</text>
+        <!-- row 1: blue -->
+        <text class="sv-t" x="70" y="106" text-anchor="middle">blue</text>
+        <text class="sv-tm" x="150" y="106" text-anchor="middle">1</text>
+        <text class="sv-tm" x="210" y="106" text-anchor="middle">0</text>
+        <text class="sv-tm" x="270" y="106" text-anchor="middle">0</text>
+        <text class="sv-tm" x="345" y="106" text-anchor="middle">0</text>
+        <text class="sv-tm" x="465" y="106" text-anchor="middle">0.33</text>
+        <text class="sv-tm" x="640" y="106" text-anchor="middle">0.37</text>
+        <!-- row 2: red -->
+        <text class="sv-t" x="70" y="144" text-anchor="middle">red</text>
+        <text class="sv-tm" x="150" y="144" text-anchor="middle">0</text>
+        <text class="sv-tm" x="210" y="144" text-anchor="middle">1</text>
+        <text class="sv-tm" x="270" y="144" text-anchor="middle">0</text>
+        <text class="sv-tm" x="345" y="144" text-anchor="middle">1</text>
+        <text class="sv-tm" x="465" y="144" text-anchor="middle">0.00</text>
+        <text class="sv-tm" x="640" y="144" text-anchor="middle">0.29</text>
+        <!-- row 3: green -->
+        <text class="sv-t" x="70" y="182" text-anchor="middle">green</text>
+        <text class="sv-tm" x="150" y="182" text-anchor="middle">0</text>
+        <text class="sv-tm" x="210" y="182" text-anchor="middle">0</text>
+        <text class="sv-tm" x="270" y="182" text-anchor="middle">1</text>
+        <text class="sv-tm" x="345" y="182" text-anchor="middle">2</text>
+        <text class="sv-tm" x="465" y="182" text-anchor="middle">0.67</text>
+        <text class="sv-tm" x="640" y="182" text-anchor="middle">0.57</text>
+        <!-- footnote -->
+        <text class="sv-ts" x="20" y="216">One-hot needs three columns. The other three methods need only one.</text>
+      </svg>
+      <figcaption>The same column, four ways. Notice that only the target columns carry information about who loves Troll 2.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Count the options in the discrete column. Favorite color has three. The target, loves Troll 2, has two, so yes becomes 1 and no becomes 0.</li>
+      <li>If the count is small, use one-hot encoding. Three options become three new columns of 0s and 1s.</li>
+      <li>One-hot fails when the count is large. United States postal codes have 41,683 options, so one column becomes 41,683 columns.</li>
+      <li>Try label encoding instead: blue is 0, red is 1, green is 2. It keeps one column, but the numbers are arbitrary.</li>
+      <li>Use target encoding to make the numbers mean something. Of the three people who like blue, one loves Troll 2, so blue becomes 1/3 = 0.33. Only one person likes red and that person does not love Troll 2, so red becomes 0. Two of the three green people love Troll 2, so green becomes 0.67.</li>
+      <li>Fix the confidence problem with a weighted mean. Red is based on one person only, so 0 is a weak estimate. The weighted version blends each option mean with the overall target mean, using a weight <code>m</code> you choose.</li>
+      <li>Reduce leakage with k-fold target encoding. Split the data into k equal subsets. Encode each subset using only the target values from the other subsets.</li>
+    </ol>
+
+    <p>The picture below shows what the weighted mean does. Blue and green have three rows each, so their values barely move. Red has one row, so it is pulled a long way toward the overall mean.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 270" role="img" aria-label="Number line showing how the weighted mean pulls each colour toward the overall mean of the target">
+        <defs>
+          <marker id="f2-a-key" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="sv-key" d="M0 0L10 5L0 10z"></path></marker>
+          <marker id="f2-a-acc" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="sv-acc" d="M0 0L10 5L0 10z"></path></marker>
+          <marker id="f2-a-good" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="sv-good" d="M0 0L10 5L0 10z"></path></marker>
+        </defs>
+        <!-- reference line for the overall mean -->
+        <path class="sv-stroke-acc" stroke-width="1.5" stroke-dasharray="5 4" d="M388 62V214"></path>
+        <text class="sv-ts" x="388" y="52" text-anchor="middle">overall mean = 3/7 = 0.43</text>
+        <!-- axes -->
+        <path class="sv-line" stroke-width="1.5" d="M140 90H720 M140 200H720"></path>
+        <text class="sv-ts" x="20" y="94">Plain mean</text>
+        <text class="sv-ts" x="20" y="204">Weighted</text>
+        <!-- arrows -->
+        <path class="sv-stroke-key" stroke-width="2" marker-end="url(#f2-a-key)" d="M140 96L306 192"></path>
+        <path class="sv-stroke-acc" stroke-width="2" marker-end="url(#f2-a-acc)" d="M331 96L353 190"></path>
+        <path class="sv-stroke-good" stroke-width="2" marker-end="url(#f2-a-good)" d="M529 96L473 190"></path>
+        <!-- top points -->
+        <circle class="sv-key" cx="140" cy="90" r="5"></circle>
+        <circle class="sv-acc" cx="331" cy="90" r="5"></circle>
+        <circle class="sv-good" cx="529" cy="90" r="5"></circle>
+        <text class="sv-ts" x="140" y="76" text-anchor="middle">red 0.00 (n = 1)</text>
+        <text class="sv-ts" x="331" y="76" text-anchor="middle">blue 0.33 (n = 3)</text>
+        <text class="sv-ts" x="529" y="76" text-anchor="middle">green 0.67 (n = 3)</text>
+        <!-- bottom points -->
+        <circle class="sv-key" cx="308" cy="200" r="5"></circle>
+        <circle class="sv-acc" cx="355" cy="200" r="5"></circle>
+        <circle class="sv-good" cx="471" cy="200" r="5"></circle>
+        <text class="sv-tm" x="300" y="222" text-anchor="middle">0.29</text>
+        <text class="sv-tm" x="363" y="222" text-anchor="middle">0.37</text>
+        <text class="sv-tm" x="471" y="222" text-anchor="middle">0.57</text>
+        <!-- axis ends -->
+        <text class="sv-ts" x="140" y="242" text-anchor="middle">0</text>
+        <text class="sv-ts" x="720" y="242" text-anchor="middle">1</text>
+      </svg>
+      <figcaption>Notice how far red travels. With only one row behind it, the weighted mean trusts the overall mean instead.</figcaption>
+    </figure>
+
+    <p>Josh shows k-fold target encoding with two folds. Seven rows do not split evenly, so subset A gets four rows and B gets three. A's values come from B's targets, and B's values come from A's targets.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 340" role="img" aria-label="Two subsets of the data, each encoded using the target values of the other subset">
+        <defs>
+          <marker id="f3-a-acc" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="sv-acc" d="M0 0L10 5L0 10z"></path></marker>
+          <marker id="f3-a-key" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="sv-key" d="M0 0L10 5L0 10z"></path></marker>
+        </defs>
+        <!-- panel A -->
+        <text class="sv-tb" x="180" y="34" text-anchor="middle">Subset A (4 rows)</text>
+        <rect class="sv-paper2" x="20" y="46" width="320" height="26"></rect>
+        <rect class="sv-paper" x="20" y="72" width="110" height="128"></rect>
+        <rect class="sv-acc-soft" x="130" y="72" width="105" height="128"></rect>
+        <rect class="sv-key-soft" x="235" y="72" width="105" height="128"></rect>
+        <path class="sv-line" stroke-width="1" d="M20 46H340 M20 72H340 M20 104H340 M20 136H340 M20 168H340 M20 200H340 M20 46V200 M130 46V200 M235 46V200 M340 46V200"></path>
+        <text class="sv-ts" x="75" y="64" text-anchor="middle">favorite color</text>
+        <text class="sv-ts" x="182" y="64" text-anchor="middle">loves Troll 2</text>
+        <text class="sv-ts" x="287" y="64" text-anchor="middle">encoded</text>
+        <text class="sv-t" x="75" y="93" text-anchor="middle">blue</text><text class="sv-t" x="182" y="93" text-anchor="middle">Yes</text><text class="sv-tm" x="287" y="93" text-anchor="middle">0.22</text>
+        <text class="sv-t" x="75" y="125" text-anchor="middle">blue</text><text class="sv-t" x="182" y="125" text-anchor="middle">No</text><text class="sv-tm" x="287" y="125" text-anchor="middle">0.22</text>
+        <text class="sv-t" x="75" y="157" text-anchor="middle">red</text><text class="sv-t" x="182" y="157" text-anchor="middle">No</text><text class="sv-tm" x="287" y="157" text-anchor="middle">0.33</text>
+        <text class="sv-t" x="75" y="189" text-anchor="middle">green</text><text class="sv-t" x="182" y="189" text-anchor="middle">Yes</text><text class="sv-tm" x="287" y="189" text-anchor="middle">0.42</text>
+        <!-- panel B -->
+        <text class="sv-tb" x="580" y="34" text-anchor="middle">Subset B (3 rows)</text>
+        <rect class="sv-paper2" x="420" y="46" width="320" height="26"></rect>
+        <rect class="sv-paper" x="420" y="72" width="110" height="96"></rect>
+        <rect class="sv-acc-soft" x="530" y="72" width="105" height="96"></rect>
+        <rect class="sv-key-soft" x="635" y="72" width="105" height="96"></rect>
+        <path class="sv-line" stroke-width="1" d="M420 46H740 M420 72H740 M420 104H740 M420 136H740 M420 168H740 M420 46V168 M530 46V168 M635 46V168 M740 46V168"></path>
+        <text class="sv-ts" x="475" y="64" text-anchor="middle">favorite color</text>
+        <text class="sv-ts" x="582" y="64" text-anchor="middle">loves Troll 2</text>
+        <text class="sv-ts" x="687" y="64" text-anchor="middle">encoded</text>
+        <text class="sv-t" x="475" y="93" text-anchor="middle">blue</text><text class="sv-t" x="582" y="93" text-anchor="middle">No</text><text class="sv-tm" x="687" y="93" text-anchor="middle">0.50</text>
+        <text class="sv-t" x="475" y="125" text-anchor="middle">green</text><text class="sv-t" x="582" y="125" text-anchor="middle">Yes</text><text class="sv-tm" x="687" y="125" text-anchor="middle">0.67</text>
+        <text class="sv-t" x="475" y="157" text-anchor="middle">green</text><text class="sv-t" x="582" y="157" text-anchor="middle">No</text><text class="sv-tm" x="687" y="157" text-anchor="middle">0.67</text>
+        <!-- crossing arrows -->
+        <text class="sv-ts" x="390" y="244" text-anchor="middle">B's target values produce A's encodings</text>
+        <path class="sv-stroke-acc" stroke-width="2" marker-end="url(#f3-a-acc)" d="M560 256H220"></path>
+        <path class="sv-stroke-key" stroke-width="2" marker-end="url(#f3-a-key)" d="M220 292H560"></path>
+        <text class="sv-ts" x="390" y="312" text-anchor="middle">A's target values produce B's encodings</text>
+      </svg>
+      <figcaption>Blue is 0.22 in one subset and 0.50 in the other. Different values are fine, because favorite color is now a continuous variable.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Plain target encoding</span>
+      <div class="math">$$ \bar{y}_c \;=\; \frac{1}{n_c}\sum_{i \,\in\, c} y_i $$</div>
+      <p class="explain"><b>Symbols:</b> \(c\) is one option of the discrete column, for example blue. \(n_c\) is how many rows have that option. \(y_i\) is the target value of row \(i\), here 1 for loves Troll 2 and 0 for not. <b>What it tells you:</b> each label becomes the share of its rows with a target of 1.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Weighted target encoding</span>
+      <div class="math">$$ \text{encoding}(c) \;=\; \frac{n_c \cdot \bar{y}_c \;+\; m \cdot \bar{y}}{n_c + m} $$</div>
+      <p class="explain"><b>Symbols:</b> \(n_c\) is the number of rows with option \(c\). \(\bar{y}_c\) is the mean of the target for those rows. \(\bar{y}\) is the overall mean of the target across all rows, here \(3/7\). \(m\) is a weight you choose, called a hyperparameter; the video uses \(m = 2\). <b>What it tells you:</b> the encoding blends the option mean with the overall mean. The option mean wins only when enough rows support it.</p>
+    </div>
+
+    <p>With \(m = 2\), an option needs at least three rows before its own mean counts for more than the overall mean. Think of the overall mean as the best guess with no data. Because it blends a guess with data, some people call this Bayesian mean encoding.</p>
+
+    <div class="formula"><span class="lbl">K-fold version</span>
+      <div class="math">$$ \text{encoding}(c \mid \text{fold } k) \;=\; \frac{n_c^{(-k)} \cdot \bar{y}_c^{(-k)} \;+\; m \cdot \bar{y}^{(-k)}}{n_c^{(-k)} + m} $$</div>
+      <p class="explain"><b>Symbols:</b> the superscript \((-k)\) means "computed from every fold except fold \(k\)". The other symbols mean the same as above. <b>What it tells you:</b> it is the same blend, but no row uses its own target value, which reduces the leakage.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Seven people. Three of them love Troll 2, so the overall mean is \(\bar{y} = 3/7 \approx 0.43\). Three people like blue and one of them loves Troll 2, so \(\bar{y}_{\text{blue}} = 1/3\) and \(n = 3\). With \(m = 2\):</p>
+      <div class="math">$$ \text{blue} \;=\; \frac{3 \cdot \tfrac{1}{3} \;+\; 2 \cdot \tfrac{3}{7}}{3 + 2} \;=\; \frac{1 + 0.857}{5} \;=\; 0.37 $$</div>
+      <p>One person likes red and does not love Troll 2, so \(\bar{y}_{\text{red}} = 0\) and \(n = 1\):</p>
+      <div class="math">$$ \text{red} \;=\; \frac{1 \cdot 0 \;+\; 2 \cdot \tfrac{3}{7}}{1 + 2} \;=\; \frac{0.857}{3} \;=\; 0.29 $$</div>
+      <p>Two of the three green people love Troll 2, so \(\bar{y}_{\text{green}} = 2/3\) and \(n = 3\), which gives 0.57. Compare these with the plain means of 0.33, 0.00 and 0.67. Blue and green hardly moved, but red jumped from 0.00 to 0.29.</p>
+      <p>Now the two-fold version, for the blue rows in subset A. We ignore A's targets and use subset B. In B one person likes blue and does not love Troll 2, so \(\bar{y}_{\text{blue}} = 0/1\) and \(n = 1\). One of B's three people loves Troll 2, so \(\bar{y} = 1/3\). With \(m = 2\):</p>
+      <div class="math">$$ \text{blue in A} \;=\; \frac{1 \cdot 0 \;+\; 2 \cdot \tfrac{1}{3}}{1 + 2} \;=\; \frac{0.667}{3} \;=\; 0.22 $$</div>
+      <p>Red in A is a special case. Subset B has nobody who likes red, so \(\bar{y}_c = 0\) and \(n = 0\). The formula still works and returns the overall mean of B, which gives 0.33.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Label encoding invents an order. Some algorithms treat the numbers as if the order means something. A decision tree would be forced to group red with green, or blue with red. That grouping comes from our arbitrary numbers, not from the data.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Target encoding uses the target to build a feature, and that is data leakage. Leakage gives a model that works well on training data but poorly on testing data. In other words, it overfits. K-fold target encoding is one popular way to reduce it.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A rare option gives a fragile mean. Red was based on one person, so its plain mean of 0 means little. The weight \(m\) pulls such options toward the overall mean.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>When would you choose target encoding over one-hot encoding?</summary><div class="a">I choose target encoding when the column has many distinct options. One-hot on United States postal codes would add 41,683 columns, which is hard to work with. Target encoding keeps one numeric column that carries signal about the target. The cost is that I must manage leakage.</div></details>
+
+    <details class="qa" open><summary>What is wrong with label encoding for a nominal feature?</summary><div class="a">Label encoding assigns arbitrary numbers, and some algorithms read those numbers as an order. A decision tree splitting on that column must group options that sit next to each other numerically. That grouping reflects my numbering, not any real structure in the data.</div></details>
+
+    <details class="qa" open><summary>Why do we use a weighted mean in target encoding, and what does m control?</summary><div class="a">An option with only a few rows gives a noisy mean, so I should not trust it fully. The weighted mean blends the option mean with the overall target mean. With m equal to 2, an option needs at least three rows before its own mean counts for more. So m is a hyperparameter that sets how far rare options are pulled toward the overall mean.</div></details>
+
+    <details class="qa" open><summary>How does k-fold target encoding reduce leakage?</summary><div class="a">I split the data into k subsets and encode each one using only the target values from the other subsets. That way no row uses its own target value for its encoding. If k equals the number of rows, it is called leave-one-out target encoding. Some people also have success with k equal to five.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Many algorithms need numbers, so discrete columns must be converted first.</li>
+      <li>One-hot encoding makes one 0/1 column per option, but it fails when there are many options.</li>
+      <li>Label encoding is compact but assigns arbitrary numbers that algorithms may read as an order.</li>
+      <li>Target encoding uses the target mean per option: blue 0.33, red 0.00 and green 0.67.</li>
+      <li>The weighted version blends in the overall mean with weight m, giving 0.37, 0.29 and 0.57.</li>
+      <li>Target encoding leaks the target, so k-fold encoding computes each subset from the other subsets.</li>
+      <li>Leave-one-out is the case where k equals the number of rows.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Encoding discrete columns</span><span class="board-tag">labels into numbers, without leaking the target</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 250" role="img" aria-label="Seven people grouped by favorite color, with filled dots for those who love Troll 2: blue has 1 of 3, a mean of 0.33, weighted 0.37; red has one person who does not, 0.00, weighted 0.29; green has 2 of 3, 0.67, weighted 0.57; each weighted value is pulled toward the overall mean, 0.43.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <g class="sv-stroke-ink" stroke-width="2"><circle cx="28" cy="28" r="8" class="sv-key"/></g>
+            <text x="44" y="34" class="sv-ts">loves Troll 2</text>
+            <text x="234" y="34" class="sv-ts">mean → weighted</text>
+            <text x="20" y="85" class="sv-tb">blue</text>
+            <text x="20" y="135" class="sv-tb">red</text>
+            <text x="20" y="185" class="sv-tb">green</text>
+            <g class="sv-stroke-ink" stroke-width="2.5">
+              <circle cx="102" cy="78" r="10" class="sv-key"/>
+              <circle cx="128" cy="78" r="10" class="sv-paper"/>
+              <circle cx="154" cy="78" r="10" class="sv-paper"/>
+              <circle cx="102" cy="128" r="10" class="sv-paper"/>
+              <circle cx="102" cy="178" r="10" class="sv-key"/>
+              <circle cx="128" cy="178" r="10" class="sv-key"/>
+              <circle cx="154" cy="178" r="10" class="sv-paper"/>
+            </g>
+            <line x1="178" y1="78" x2="210" y2="78" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="178" y1="128" x2="210" y2="128" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="178" y1="178" x2="210" y2="178" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2"><rect x="226" y="113" width="122" height="30" rx="8" class="sv-paper"/></g>
+            <text x="234" y="84" class="sv-tm">0.33 → 0.37</text>
+            <text x="234" y="134" class="sv-tm">0.00 → 0.29</text>
+            <text x="234" y="184" class="sv-tm">0.67 → 0.57</text>
+            <text x="20" y="230" class="sv-t">each pulled toward overall mean 0.43</text>
+          </svg>
+          <p>Target encoding groups the rows by color and takes the share that love Troll 2: blue 0.33, red 0, green 0.67. A weighted mean pulls each toward the overall 0.43, most of all red, which rests on one person.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Discrete</dt><dd>One of a fixed set of labels.</dd>
+            <dt>Target</dt><dd>What we predict; yes is 1, no is 0.</dd>
+            <dt>One-hot encoding</dt><dd>One new 0/1 column per option.</dd>
+            <dt>Label encoding</dt><dd>One arbitrary number per option.</dd>
+            <dt>Target encoding</dt><dd>The target's mean for each option.</dd>
+            <dt>Data leakage</dt><dd>A feature built from the target; it overfits.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Count options</b>favorite color has 3</li>
+            <li><b>One-hot</b>3 columns; 41,683 for postal codes</li>
+            <li><b>Label</b>blue 0, red 1, green 2</li>
+            <li><b>Target mean</b>blue 0.33, red 0, green 0.67</li>
+            <li><b>Weighted mean</b>pull rare options toward 0.43</li>
+            <li><b>K-fold</b>encode each subset from the others</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\bar{y}_c=\frac{1}{n_c}\sum_{i\in c}y_i$$
+          $$\text{encoding}(c)=\frac{n_c\,\bar{y}_c+m\,\bar{y}}{n_c+m}$$
+          <ul class="keys">
+            <li>\(n_c\) rows have option \(c\); each \(y_i\) is 1 or 0.</li>
+            <li>\(\bar{y}=3/7\) is the overall mean. With \(m=2\), an option needs 3 rows before its mean outweighs \(\bar{y}\).</li>
+            <li>K-fold: the same blend, without the row's own fold.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>color</th><th>n</th><th>mean</th><th>weighted</th></tr>
+            <tr><td>blue</td><td>3</td><td>0.33</td><td>0.37</td></tr>
+            <tr><td>red</td><td>1</td><td>0.00</td><td>0.29</td></tr>
+            <tr><td>green</td><td>3</td><td>0.67</td><td>0.57</td></tr>
+            <tr class="final"><td>blue in A</td><td>1</td><td>0.00</td><td>0.22</td></tr>
+          </table>
+          <p class="hand">Red, one person, jumps from 0 to 0.29. Blue in A uses only subset B, whose overall mean is 1/3.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Label numbers are only names.</span><span class="yes">Some algorithms read an order: a tree must group red with green, or blue with red.</span></li>
+            <li><span class="no">Using the target is harmless.</span><span class="yes">It is leakage: good on training data, poor on testing. K-fold reduces it.</span></li>
+            <li><span class="no">Red's 0 is a solid estimate.</span><span class="yes">It rests on one person; m pulls it toward the overall mean.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="49-how-to-prune-regression-trees.html"><small>Previous</small>How to Prune Regression Trees</a> <a href="51-classification-trees-in-python-from-start-to-finish.html"><small>Next</small>Classification Trees in Python from Start to Finish</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

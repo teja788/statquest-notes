@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PCA main ideas in only 5 minutes — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>31</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 31 · 6.1 min</div>
+    <h1>PCA main ideas in only 5 minutes</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=HMOI_lkzW08" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video gives the short version of principal component analysis. It shows what a PCA plot is for, and how to read one.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh starts with cells that look the same from the outside. He measures many genes in each cell, so each cell has many numbers. Two cells can be compared on a simple plot, and three cells on a rotating 3D plot, but four or more cells cannot. PCA solves this. It turns the correlations among all the cells into one 2D plot, where similar cells sit close together.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh has normal-looking cells and suspects there are three hidden types. He cannot see the difference from the outside, so he sequences the messenger RNA in each cell. That tells him which genes are active, and therefore what each cell is doing. If the samples were people, the measurements could be weight, blood pressure or reading level.</p>
+    <p>With only two cells, the comparison is easy. Put cell 1 on one axis and cell 2 on the other, then plot one dot per gene. In Josh's data the dots slope downward: gene 1 is high in cell 1 and low in cell 2, while gene 9 is the reverse. That inverse correlation says the two cells use different genes, so they are probably different types.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 320" role="img" aria-label="Two scatter plots. Cell 1 against cell 2 slopes down, showing inverse correlation. Cell 1 against cell 3 slopes up, showing positive correlation.">
+        <rect x="70" y="40" width="270" height="200" class="sv-paper2"></rect>
+        <rect x="430" y="40" width="270" height="200" class="sv-paper2"></rect>
+        <path d="M70 240 H340 M70 40 V240" class="sv-line" stroke-width="1.5"></path>
+        <path d="M430 240 H700 M430 40 V240" class="sv-line" stroke-width="1.5"></path>
+        <circle cx="100" cy="70" r="5" class="sv-acc"></circle>
+        <circle cx="140" cy="98" r="5" class="sv-acc"></circle>
+        <circle cx="175" cy="128" r="5" class="sv-acc"></circle>
+        <circle cx="215" cy="145" r="5" class="sv-acc"></circle>
+        <circle cx="250" cy="180" r="5" class="sv-acc"></circle>
+        <circle cx="285" cy="196" r="5" class="sv-acc"></circle>
+        <circle cx="315" cy="222" r="5" class="sv-acc"></circle>
+        <circle cx="460" cy="216" r="5" class="sv-good"></circle>
+        <circle cx="497" cy="192" r="5" class="sv-good"></circle>
+        <circle cx="533" cy="170" r="5" class="sv-good"></circle>
+        <circle cx="570" cy="138" r="5" class="sv-good"></circle>
+        <circle cx="608" cy="116" r="5" class="sv-good"></circle>
+        <circle cx="645" cy="88" r="5" class="sv-good"></circle>
+        <circle cx="678" cy="66" r="5" class="sv-good"></circle>
+        <rect x="108" y="56" width="66" height="18" class="sv-paper"></rect>
+        <text x="112" y="70" class="sv-ts">gene 9</text>
+        <rect x="248" y="214" width="62" height="18" class="sv-paper"></rect>
+        <text x="252" y="228" class="sv-ts">gene 1</text>
+        <text x="205" y="264" text-anchor="middle" class="sv-t">Cell 1</text>
+        <text x="565" y="264" text-anchor="middle" class="sv-t">Cell 1</text>
+        <text x="58" y="145" text-anchor="middle" class="sv-t" transform="rotate(-90 58 145)">Cell 2</text>
+        <text x="418" y="145" text-anchor="middle" class="sv-t" transform="rotate(-90 418 145)">Cell 3</text>
+        <text x="205" y="30" text-anchor="middle" class="sv-tb">Inverse correlation</text>
+        <text x="565" y="30" text-anchor="middle" class="sv-tb">Positive correlation</text>
+        <text x="205" y="292" text-anchor="middle" class="sv-ts">different types of cells</text>
+        <text x="565" y="292" text-anchor="middle" class="sv-ts">similar types of cells</text>
+      </svg>
+      <figcaption>Each dot is one gene. The slope of the cloud tells you whether two cells use their genes in the same way.</figcaption>
+    </figure>
+    <p>The trouble starts at four cells. You would need a plot for every pair, or one graph with an axis per cell. A PCA plot replaces them with a single 2D picture of all the cells.</p>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Measure many variables in every sample. Here Josh measures how active each gene is in each cell.</li>
+      <li>Notice that pairwise plots do not scale. Two cells give one plot, three give a rotating 3D plot, four or more give chaos.</li>
+      <li>Run PCA. It converts the correlations among the cells into a 2D graph.</li>
+      <li>Read the clusters. Highly correlated cells land close together. Colour code the groups to see them clearly.</li>
+      <li>Go back to the original cells. Josh finds three clusters, which confirms his suspicion of three cell types.</li>
+      <li>Respect the ranking of the axes. PC1 carries more variation than PC2, so the same gap means more along PC1.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 340" role="img" aria-label="A PCA plot with three coloured clusters. Two clusters separated along PC1 are more different than two clusters separated by the same distance along PC2.">
+        <path d="M110 270 H700" class="sv-stroke-ink" stroke-width="1.5"></path>
+        <path d="M110 270 V40" class="sv-stroke-ink" stroke-width="1.5"></path>
+        <text x="405" y="312" text-anchor="middle" class="sv-t">PC1 — the most important differences</text>
+        <text x="86" y="155" text-anchor="middle" class="sv-t" transform="rotate(-90 86 155)">PC2 — second most</text>
+        <circle cx="200" cy="80" r="6" class="sv-good"></circle>
+        <circle cx="222" cy="96" r="6" class="sv-good"></circle>
+        <circle cx="182" cy="102" r="6" class="sv-good"></circle>
+        <circle cx="208" cy="114" r="6" class="sv-good"></circle>
+        <circle cx="200" cy="216" r="6" class="sv-acc"></circle>
+        <circle cx="224" cy="232" r="6" class="sv-acc"></circle>
+        <circle cx="180" cy="238" r="6" class="sv-acc"></circle>
+        <circle cx="206" cy="250" r="6" class="sv-acc"></circle>
+        <circle cx="540" cy="216" r="6" class="sv-key"></circle>
+        <circle cx="564" cy="232" r="6" class="sv-key"></circle>
+        <circle cx="520" cy="238" r="6" class="sv-key"></circle>
+        <circle cx="546" cy="250" r="6" class="sv-key"></circle>
+        <path d="M150 100 V232" class="sv-stroke-ink" stroke-width="1.2" stroke-dasharray="5 4" marker-start="url(#ah)" marker-end="url(#ah)"></path>
+        <path d="M232 286 H532" class="sv-stroke-ink" stroke-width="1.2" stroke-dasharray="5 4" marker-start="url(#ah)" marker-end="url(#ah)"></path>
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" class="sv-ink"></path>
+          </marker>
+        </defs>
+        <rect x="160" y="152" width="150" height="22" rx="3" class="sv-paper"></rect>
+        <text x="164" y="168" class="sv-ts">same gap on the page…</text>
+        <rect x="380" y="96" width="290" height="22" rx="3" class="sv-paper"></rect>
+        <text x="384" y="112" class="sv-ts">…but the PC1 gap means a bigger difference</text>
+        <text x="590" y="200" class="sv-ts">cluster 3</text>
+        <text x="244" y="208" text-anchor="end" class="sv-ts">cluster 2</text>
+        <text x="244" y="72" text-anchor="end" class="sv-ts">cluster 1</text>
+      </svg>
+      <figcaption>Notice that the vertical and horizontal gaps look equal, yet the pair split along PC1 is the more different pair.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>This short video has no equations. It only states that the axes are ranked by importance. Here is that rule written out.</p>
+    <div class="formula"><span class="lbl">Rule of thumb</span><div class="math">$$ \text{Var}(\text{PC}_1) \ \ge\ \text{Var}(\text{PC}_2) \ \ge\ \dots \ \ge\ \text{Var}(\text{PC}_p) $$</div><p class="explain"><b>Symbols:</b> \(\text{PC}_k\) is the \(k\)-th axis of the PCA plot. \(\text{Var}(\text{PC}_k)\) is how spread out the samples are along that axis. \(p\) is the number of components. <b>What it tells you:</b> the components come out in order of decreasing importance, so a gap along PC1 means more than an equal gap along PC2.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh has a table of cells and genes. With two cells he plots one dot per gene. Gene 1 sits high on the cell 1 axis and low on the cell 2 axis, while gene 9 sits the other way round. The cloud slopes down, so cell 1 and cell 2 are inversely correlated.</p>
+      <p>He then adds cell 3. Cell 1 against cell 3 slopes up, so those two are alike. Cell 2 against cell 3 slopes down, so cell 2 differs. All three fit on a rotating 3D plot, but a fourth cell breaks the trick. The PCA plot handles them all and shows three coloured clusters.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not read the two axes as equally important. Josh is explicit that PC1 outranks PC2, so equal distances on screen do not mean equal differences.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> In this example the plot axes are the cells and the dots are the genes. It is easy to flip the roles, so check what one dot stands for.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> PCA finds clusters, but it does not name them. Josh goes back to the original cells to work out what each cluster means. PCA is also only one option: heat maps, t-SNE and multiple dimension scaling do similar jobs.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>In one minute, what does a PCA plot do?</summary><div class="a">It takes data with far too many measurements to picture and squeezes it into a 2D graph. The graph keeps the correlation structure, so samples that behave alike end up near each other. In the gene example, three clusters mean three types of cell.</div></details>
+    <details class="qa" open><summary>Why not just plot every pair of variables instead?</summary><div class="a">That works for two, and a rotating 3D plot works for three. Beyond that the number of pairwise plots grows quickly and no one can hold them all in their head. PCA gives you one picture instead of many.</div></details>
+    <details class="qa" open><summary>Two clusters are far apart on PC2 and two others are the same distance apart on PC1. Which pair differs more?</summary><div class="a">The pair separated along PC1. The components are ranked by how much variation they capture, and PC1 always captures the most. So the same visual distance means a larger real difference on PC1.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Samples that look identical can still differ, so we measure many variables in each one.</li>
+      <li>Two samples can be compared on a scatter plot, and three on a rotating 3D plot.</li>
+      <li>Four or more samples break both of those approaches.</li>
+      <li>PCA turns the correlations among the samples into a single 2D plot.</li>
+      <li>Samples that are highly correlated cluster together, and colour coding makes the groups easy to see.</li>
+      <li>The axes are ranked, so differences along PC1 matter more than equal differences along PC2.</li>
+      <li>Heat maps, t-SNE and multiple dimension scaling are other tools for the same job.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">PCA main ideas</span><span class="board-tag">one flat map where alike cells cluster</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 270" role="img" aria-label="A table of four or more cells by many genes goes through PCA and comes out as one 2D map, where each dot is a cell and the cells form three clusters. Two equal gaps are marked: the one along PC1 means a bigger difference than the one along PC2.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <rect x="34" y="92" width="72" height="100" rx="3" class="sv-paper"/>
+              <path d="M52 92 V192 M70 92 V192 M88 92 V192 M34 112 H106 M34 132 H106 M34 152 H106 M34 172 H106"/>
+            </g>
+            <line x1="114" y1="142" x2="154" y2="142" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="170" y1="222" x2="170" y2="34" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="170" y1="222" x2="382" y2="222" class="sv-stroke-ink" stroke-width="4" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="215" y1="98" x2="215" y2="147" class="sv-stroke-ink" stroke-width="2.5" marker-start="url(#board-arr)" marker-end="url(#board-arr)"/>
+            <line x1="239" y1="170" x2="288" y2="170" class="sv-stroke-ink" stroke-width="2.5" marker-start="url(#board-arr)" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="205" cy="67" r="6.5" class="sv-good"/>
+              <circle cx="223" cy="65" r="6.5" class="sv-good"/>
+              <circle cx="209" cy="84" r="6.5" class="sv-good"/>
+              <circle cx="226" cy="81" r="6.5" class="sv-good"/>
+              <circle cx="205" cy="162" r="6.5" class="sv-acc"/>
+              <circle cx="223" cy="160" r="6.5" class="sv-acc"/>
+              <circle cx="209" cy="179" r="6.5" class="sv-acc"/>
+              <circle cx="226" cy="176" r="6.5" class="sv-acc"/>
+              <circle cx="300" cy="162" r="6.5" class="sv-key"/>
+              <circle cx="318" cy="160" r="6.5" class="sv-key"/>
+              <circle cx="304" cy="179" r="6.5" class="sv-key"/>
+              <circle cx="321" cy="176" r="6.5" class="sv-key"/>
+            </g>
+            <text x="70" y="80" text-anchor="middle" class="sv-tb">4+ cells</text>
+            <text x="24" y="142" text-anchor="middle" transform="rotate(-90 24 142)" class="sv-ts">genes</text>
+            <text x="135" y="128" text-anchor="middle" class="sv-tb">PCA</text>
+            <text x="184" y="38" class="sv-t">PC2 · less variation</text>
+            <text x="382" y="250" text-anchor="end" class="sv-t">PC1 · more variation</text>
+            <text x="226" y="128" class="sv-ts">smaller difference</text>
+            <text x="263" y="208" text-anchor="middle" class="sv-ts">bigger difference</text>
+            <text x="382" y="96" text-anchor="end" class="sv-ts">1 dot = 1 cell</text>
+          </svg>
+          <p>PCA turns a table of many cells into one 2D map. Highly correlated cells land close together, so three clusters mean three cell types. PC1 carries more variation than PC2, so the same gap means more along PC1.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>PCA plot</dt><dd>One 2D graph that sums up all the cells.</dd>
+            <dt>Inverse correlation</dt><dd>Dots slope down: the two cells use different genes.</dd>
+            <dt>Positive correlation</dt><dd>Dots slope up: the two cells are alike.</dd>
+            <dt>Cluster</dt><dd>Highly correlated cells landing close together.</dd>
+            <dt>PC1, PC2</dt><dd>The plot's axes, ranked by variation.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Measure</b>many genes in every cell</li>
+            <li><b>Pairs fail</b>2 cells: a plot; 4+: chaos</li>
+            <li><b>Run PCA</b>correlations → one 2D graph</li>
+            <li><b>Read clusters</b>colour code the close groups</li>
+            <li><b>Go back</b>3 clusters = 3 cell types</li>
+            <li><b>Rank the axes</b>PC1 gaps mean more</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{Var}(\text{PC}_1)\ge\text{Var}(\text{PC}_2)\ge\cdots\ge\text{Var}(\text{PC}_p)$$
+          <ul class="keys">
+            <li>\(\text{Var}(\text{PC}_k)\) is how spread out the samples are along axis \(k\).</li>
+            <li>\(p\) is the number of components.</li>
+            <li>So a gap along PC1 means more than an equal gap along PC2.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>cells</th><th>slope</th><th>so</th></tr>
+            <tr><td>1 vs 2</td><td>down</td><td>likely different</td></tr>
+            <tr><td>1 vs 3</td><td>up</td><td>alike</td></tr>
+            <tr><td>2 vs 3</td><td>down</td><td>cell 2 differs</td></tr>
+            <tr class="final"><td>4+ cells</td><td>PCA plot</td><td>3 clusters</td></tr>
+          </table>
+          <p class="hand">In these pair plots each dot is a gene: gene 1 is high in cell 1, low in cell 2; gene 9 the reverse.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">PC1 and PC2 count equally.</span><span class="yes">PC1 outranks PC2, so equal distances on screen do not mean equal differences.</span></li>
+            <li><span class="no">A dot is always a sample.</span><span class="yes">In the pair plots the axes are cells and the dots are genes. Check what one dot is.</span></li>
+            <li><span class="no">PCA tells you what clusters mean.</span><span class="yes">It only finds them. Go back to the original cells to name each one.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="30-principal-component-analysis-pca-step-by-step.html"><small>Previous</small>Principal Component Analysis (PCA), Step-by-Step</a> <a href="32-pca-practical-tips.html"><small>Next</small>PCA - Practical Tips</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

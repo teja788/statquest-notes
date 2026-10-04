@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sample Size and Effective Sample Size — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>27</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 27 · 6.5 min</div>
+    <h1>Sample Size and Effective Sample Size</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=67zCIqdeXpo" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Sample size is not the number of tubes you measured. It is the number of independent pieces of information you hold.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>The letter \(n\) is shorthand for sample size. The question you want to answer decides what counts as one sample. Measuring the same individual twice does not give you two individuals. Two individuals who are very alike, such as twins, do not give you two separate pieces of information either. The effective sample size puts a number on that overlap.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh starts with blue dudes. A blue dude can be a strain of mouse, or a type of tree, or any group you like. He takes a blood sample from each of three blue dudes and measures gene expression, which means how active a gene is. He wants to report on blue dudes, so each dude is one sample and \(n = 3\).</p>
+    <p>Now he measures each blue dude twice. The claim is still about dudes, so \(n\) is still three. The repeated pairs are technical replicates. They tell you how accurate your measuring method is. They do not tell you how blue dudes differ. They count as samples only when the claim is about the method, and there \(n = 4\).</p>
+    <p>The same picture shows the limit of any study. If you want to report on blue ladies, then \(n = 0\).</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Table showing that the same experiment gives a different sample size depending on the question asked">
+        <text x="20" y="26" class="sv-tb">Same experiment, three questions, three sample sizes</text>
+        <text x="20" y="58" class="sv-ts">The question you are asking</text>
+        <text x="380" y="58" class="sv-ts">What counts as one sample</text>
+        <text x="660" y="58" class="sv-ts">Sample size</text>
+        <line x1="20" y1="68" x2="740" y2="68" class="sv-line" stroke-width="1.5"></line>
+
+        <text x="20" y="104" class="sv-t">How accurate is my measuring method?</text>
+        <rect x="380" y="88" width="26" height="22" rx="4" class="sv-paper2"></rect>
+        <rect x="380" y="88" width="26" height="22" rx="4" class="sv-line" stroke-width="1"></rect>
+        <rect x="414" y="88" width="26" height="22" rx="4" class="sv-paper2"></rect>
+        <rect x="414" y="88" width="26" height="22" rx="4" class="sv-line" stroke-width="1"></rect>
+        <rect x="448" y="88" width="26" height="22" rx="4" class="sv-paper2"></rect>
+        <rect x="448" y="88" width="26" height="22" rx="4" class="sv-line" stroke-width="1"></rect>
+        <rect x="482" y="88" width="26" height="22" rx="4" class="sv-paper2"></rect>
+        <rect x="482" y="88" width="26" height="22" rx="4" class="sv-line" stroke-width="1"></rect>
+        <text x="380" y="128" class="sv-ts">each measurement</text>
+        <text x="660" y="104" class="sv-tb">n = 4</text>
+        <line x1="20" y1="146" x2="740" y2="146" class="sv-line" stroke-width="1"></line>
+
+        <text x="20" y="186" class="sv-t">What is gene expression in blue dudes?</text>
+        <circle cx="393" cy="178" r="14" class="sv-acc"></circle>
+        <circle cx="435" cy="178" r="14" class="sv-acc"></circle>
+        <circle cx="477" cy="178" r="14" class="sv-acc"></circle>
+        <text x="380" y="210" class="sv-ts">each blue dude</text>
+        <text x="660" y="186" class="sv-tb">n = 3</text>
+        <line x1="20" y1="228" x2="740" y2="228" class="sv-line" stroke-width="1"></line>
+
+        <text x="20" y="266" class="sv-t">What is gene expression in blue ladies?</text>
+        <rect x="380" y="248" width="128" height="26" rx="6" class="sv-paper2"></rect>
+        <text x="444" y="266" text-anchor="middle" class="sv-ts">nobody measured</text>
+        <text x="660" y="266" class="sv-tb">n = 0</text>
+      </svg>
+      <figcaption>Notice that the data never changed. Only the question changed, and the question decides what you may count.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Write down the claim first. A claim about a method and a claim about dudes need different counts.</li>
+      <li>Count the independent sources that match that claim. Repeated measurements of one individual stay one individual.</li>
+      <li>To speak about dudes in general, widen the study. Josh adds an orange dude and a green dude, so \(n = 3\).</li>
+      <li>Now add the blue dude's twin. He is a fourth person, but the twins share a genome, so their gene expression is highly correlated.</li>
+      <li>Estimate that correlation and put it into the effective sample size formula. The pair then counts as between one and two people.</li>
+      <li>Add that effective count to the independent individuals. That gives the effective sample size of the whole study.</li>
+    </ol>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Four dudes where two are twins, and a curve showing the effective sample size of the twin pair falling from two to one as their correlation rises">
+        <text x="20" y="26" class="sv-tb">Four people, but not four independent samples</text>
+        <circle cx="60" cy="112" r="18" class="sv-warn"></circle>
+        <circle cx="130" cy="112" r="18" class="sv-good"></circle>
+        <circle cx="240" cy="112" r="18" class="sv-acc"></circle>
+        <circle cx="310" cy="112" r="18" class="sv-acc"></circle>
+        <path d="M240,90 Q275,52 310,90" class="sv-stroke-acc" stroke-width="1.6"></path>
+        <text x="275" y="46" text-anchor="middle" class="sv-tm">r</text>
+        <text x="240" y="146" class="sv-ts">twins</text>
+        <text x="20" y="182" class="sv-t">The twins share a genome, so their two</text>
+        <text x="20" y="200" class="sv-t">measurements overlap and count as less than two.</text>
+        <text x="20" y="238" class="sv-tb">r = 0.7  gives  2 + 1.18 = 3.18</text>
+        <text x="20" y="264" class="sv-tb">r = 0.1  gives  2 + 1.82 = 3.82</text>
+
+        <line x1="420" y1="70" x2="420" y2="232" class="sv-stroke-ink" stroke-width="1.2"></line>
+        <line x1="420" y1="232" x2="730" y2="232" class="sv-stroke-ink" stroke-width="1.2"></line>
+        <path d="M420,70 L450,99 L480,123 L510,144 L540,161 L570,177 L600,190 L630,202 L660,212 L690,222 L720,230" class="sv-stroke-acc" stroke-width="2.2"></path>
+        <circle cx="450" cy="99" r="5" class="sv-key"></circle>
+        <circle cx="630" cy="202" r="5" class="sv-key"></circle>
+        <rect x="462" y="86" width="52" height="20" rx="4" class="sv-paper"></rect>
+        <text x="466" y="101" class="sv-tm">1.82</text>
+        <rect x="642" y="190" width="52" height="20" rx="4" class="sv-paper"></rect>
+        <text x="646" y="205" class="sv-tm">1.18</text>
+        <text x="404" y="74" text-anchor="end" class="sv-ts">2</text>
+        <text x="404" y="236" text-anchor="end" class="sv-ts">1</text>
+        <text x="420" y="252" class="sv-ts">r = 0</text>
+        <text x="730" y="252" text-anchor="end" class="sv-ts">r = 1</text>
+        <text x="420" y="52" class="sv-ts">effective sample size of the pair</text>
+      </svg>
+      <figcaption>Notice how the curve falls smoothly. Two almost unrelated people count as nearly two; two almost identical people count as one.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">Effective sample size</span>
+      <div class="math">$$ n_{\text{eff}} \;=\; \frac{n}{1 + (n-1)\,r} $$</div>
+      <p class="explain"><b>Symbols:</b> \(n\) is how many measurements are in the correlated group, so two for twins. \(r\) is the correlation between them, a number from 0 to 1 saying how much they move together. \(n_{\text{eff}}\) is how many truly separate samples that group is worth. <b>What it tells you:</b> correlated samples repeat information, so the group is worth less than its head count.</p>
+    </div>
+    <div class="formula"><span class="lbl">The two ends of the scale</span>
+      <div class="math">$$ r = 0 \;\Rightarrow\; n_{\text{eff}} = \frac{n}{1} = n \qquad\qquad r = 1 \;\Rightarrow\; n_{\text{eff}} = \frac{n}{n} = 1 $$</div>
+      <p class="explain"><b>Symbols:</b> the same \(n\) and \(r\) as above. <b>What it tells you:</b> with no correlation everybody counts fully. With perfect correlation the whole group counts as one sample.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>The study has an orange dude, a green dude, a blue dude, and the blue dude's twin. The twins are the correlated pair, so \(n = 2\) goes into the formula.</p>
+      <p>First Josh sets the correlation between the twins to 0.7, which is high:</p>
+      <div class="math">$$ n_{\text{eff}} = \frac{2}{1 + (2-1)\times 0.7} = \frac{2}{1.7} = 1.18 $$</div>
+      <p>The twins count as 1.18 people instead of two. With the orange and green dudes added, the study is worth \(2 + 1.18 = 3.18\) samples.</p>
+      <p>Then he lowers the correlation to 0.1, which is low:</p>
+      <div class="math">$$ n_{\text{eff}} = \frac{2}{1 + (2-1)\times 0.1} = \frac{2}{1.1} = 1.82 $$</div>
+      <p>Now the twins count as 1.82 people, almost the full two. The study is worth \(2 + 1.82 = 3.82\) samples.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Repeated measurements are not extra subjects. Measuring three blue dudes twice each still gives you three blue dudes when the claim is about dudes.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Technical replicates do count, but only for a claim about the method. Decide the claim first, then count, never the other way round.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The effective sample size is not a rounding rule. It is a smooth number between one and the head count. It falls as the correlation rises.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Josh warns that real calculations of effective sample size get more complicated. The idea stays the same: correlated samples do not count as separate samples.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What does sample size actually count?</summary><div class="a">It counts the independent units that match the claim I want to make. If I report on blue dudes, each dude is one unit, however often I measure him. If I report on my method, each measurement is a unit.</div></details>
+    <details class="qa" open><summary>What is effective sample size, in one sentence?</summary><div class="a">It is how many truly independent samples my data are worth after I allow for correlation. For \(n\) correlated measurements with correlation \(r\), it is \(n\) divided by \(1 + (n-1)r\). It always sits between one and \(n\).</div></details>
+    <details class="qa" open><summary>Twins in a study, correlation 0.7. How many samples is that pair worth?</summary><div class="a">Two divided by 1.7, so about 1.18. The twins share a genome, so their measurements repeat the same information. At a correlation of 0.1 the pair is worth about 1.82, which is nearly two full people.</div></details>
+    <details class="qa" open><summary>Why does it matter if you overstate the sample size?</summary><div class="a">An inflated count makes your uncertainty look smaller than it really is. You then report a finding as solid when the data cannot support it. The effective sample size keeps that uncertainty honest.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>The letter \(n\) is shorthand for sample size, and the claim you want to make decides what one sample is.</li>
+      <li>Three blue dudes give \(n = 3\), even if you measure each one twice.</li>
+      <li>Technical replicates count as samples only when the claim is about the method.</li>
+      <li>You can say nothing about a group you never measured, so blue ladies give \(n = 0\).</li>
+      <li>The effective sample size is \(n\) divided by \(1 + (n-1)r\), where \(r\) is the correlation.</li>
+      <li>Twins with correlation 0.7 count as 1.18 people, and with correlation 0.1 as 1.82 people.</li>
+      <li>The four-person study is therefore worth 3.18 or 3.82 samples, not a flat four.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Effective sample size</span><span class="board-tag">count independent information, not tubes</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 260" role="img" aria-label="Three blue dudes, each measured twice, still give n = 3. In a study of four people, the twins overlap with correlation 0.7, so the study is worth 2 + 1.18 = 3.18 samples.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <text x="14" y="30" class="sv-ts">each dude measured twice</text>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="40" cy="64" r="15" class="sv-acc"/>
+              <circle cx="100" cy="64" r="15" class="sv-acc"/>
+              <circle cx="160" cy="64" r="15" class="sv-acc"/>
+              <rect x="28" y="88" width="9" height="24" rx="3" class="sv-key-soft"/>
+              <rect x="43" y="88" width="9" height="24" rx="3" class="sv-key-soft"/>
+              <rect x="88" y="88" width="9" height="24" rx="3" class="sv-key-soft"/>
+              <rect x="103" y="88" width="9" height="24" rx="3" class="sv-key-soft"/>
+              <rect x="148" y="88" width="9" height="24" rx="3" class="sv-key-soft"/>
+              <rect x="163" y="88" width="9" height="24" rx="3" class="sv-key-soft"/>
+            </g>
+            <line x1="190" y1="80" x2="234" y2="80" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="246" y="86" class="sv-tb">n = 3</text>
+            <text x="246" y="108" class="sv-ts">dudes, not tubes</text>
+            <line x1="14" y1="134" x2="386" y2="134" class="sv-line" stroke-width="2" stroke-dasharray="4 6" stroke-linecap="round"/>
+            <text x="159" y="170" text-anchor="middle" class="sv-t">twins, r = 0.7</text>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <circle cx="40" cy="200" r="15" class="sv-warn"/>
+              <circle cx="92" cy="200" r="15" class="sv-good"/>
+              <circle cx="150" cy="200" r="15" class="sv-acc"/>
+              <circle cx="168" cy="200" r="15" class="sv-acc"/>
+              <path d="M159 188 A15 15 0 0 1 159 212 A15 15 0 0 1 159 188 Z" class="sv-key"/>
+            </g>
+            <line x1="196" y1="200" x2="234" y2="200" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="246" y="206" class="sv-tb">worth 3.18</text>
+            <text x="246" y="230" class="sv-ts">= 2 + 1.18</text>
+            <text x="104" y="244" text-anchor="middle" class="sv-ts">4 people</text>
+          </svg>
+          <p>The claim decides what one sample is, so a dude measured twice is still one dude. Correlated people, like twins, repeat information, so the pair counts as less than two.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Sample size \(n\)</dt><dd>How many independent units match the claim you want to make.</dd>
+            <dt>Technical replicate</dt><dd>Measuring one individual again; it shows how accurate the method is.</dd>
+            <dt>Correlation \(r\)</dt><dd>From 0 to 1: how much two samples move together.</dd>
+            <dt>Effective sample size</dt><dd>How many truly separate samples a correlated group is worth.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>State the claim</b>about the method, or dudes?</li>
+            <li><b>Count independents</b>repeats stay one individual</li>
+            <li><b>Widen the study</b>add orange, green: n = 3</li>
+            <li><b>Add a twin</b>shared genome, highly correlated</li>
+            <li><b>Plug in r</b>pair counts as one to two</li>
+            <li><b>Add it up</b>independents + the pair's count</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$n_{\text{eff}}=\frac{n}{1+(n-1)\,r}$$
+          $$r=0\;\Rightarrow\;n_{\text{eff}}=n$$
+          $$r=1\;\Rightarrow\;n_{\text{eff}}=1$$
+          <ul class="keys">
+            <li>\(n\) is the size of the correlated group, 2 for twins.</li>
+            <li>No correlation: all count fully. Perfect correlation: the group counts as one.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>twins, n = 2</th><th>r = 0.7</th><th>r = 0.1</th></tr>
+            <tr><td>1 + (2−1)r</td><td>1.7</td><td>1.1</td></tr>
+            <tr><td>twins worth</td><td>1.18</td><td>1.82</td></tr>
+            <tr><td>+ orange, green</td><td>+ 2</td><td>+ 2</td></tr>
+            <tr class="final"><td>study worth</td><td>3.18</td><td>3.82</td></tr>
+          </table>
+          <p class="hand">Four people, but not a flat four. At low correlation the twins are worth almost the full two.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Measuring each dude twice doubles the sample.</span><span class="yes">Three dudes measured twice are still three dudes when the claim is about dudes.</span></li>
+            <li><span class="no">Count first, then pick the claim.</span><span class="yes">Decide the claim first. Technical replicates count only for a claim about the method.</span></li>
+            <li><span class="no">Effective sample size is a rounding rule.</span><span class="yes">It is a smooth number between one and the head count, falling as correlation rises.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="26-the-difference-between-technical-and-biological-replicates.html"><small>Previous</small>The Difference Between Technical and Biological Replicates</a> <a href="28-standard-deviation-vs-standard-error.html"><small>Next</small>Standard Deviation vs Standard Error</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

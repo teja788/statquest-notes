@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Recurrent Neural Networks (RNNs) — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>87</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 87 · 16.6 min</div>
+    <h1>Recurrent Neural Networks (RNNs)</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=AsNTP8Kwu80" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: Neural Networks / Deep Learning (video 15)</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video shows how a recurrent neural network uses a feedback loop to make predictions from sequential data of any length. It also explains why basic RNNs are hard to train, which is the reason fancier models like LSTMs exist.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Stock prices come as sequences, and different companies have different amounts of history. Earlier networks in the series took a fixed number of inputs, so they cannot handle this. An RNN adds a feedback loop that lets earlier values influence the prediction made with later values. Unrolling the loop makes one copy of the network per input, and all copies share the same weights and biases. The catch is the vanishing / exploding gradient problem. Gradients are the derivatives that training uses to update each weight. The feedback weight is multiplied in once per copy, so long sequences make gradients huge or tiny.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh wants a network that predicts tomorrow's stock price. One company may have nine days of data and another only five. So the network must be flexible in how much sequential data it uses. Sequential data means values that come in a fixed order, like prices over time.</p>
+    <p>The networks seen earlier in the series were rigid. One took exactly one input. Another took exactly two inputs. The image classifier took exactly a 6 by 6 pixel image. None of them can take nine values for one company and five for another.</p>
+    <p>An RNN has the usual weights, biases, layers and activation functions. The big difference is a feedback loop. The output of the activation function is sent back and added into the sum for the next input. This way, yesterday's value can influence the prediction made with today's value.</p>
+    <p>The loop is easier to see if you unroll it. Unrolling means making one copy of the network for each input value. Instead of pointing the loop back at itself, each copy points to the sum in the next copy. Only the last output is the prediction we want.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 290" role="img" aria-label="An RNN unrolled into three copies that share w1, b1 and w2">
+        <defs>
+          <marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker>
+          <marker id="ah1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-acc"/></marker>
+        </defs>
+        <rect x="0" y="0" width="760" height="290" class="sv-paper"/>
+        <text x="380" y="35" text-anchor="middle" class="sv-tb">Every copy uses the same w1, b1 and w2</text>
+
+        <!-- copy 1 -->
+        <rect x="60" y="44" width="160" height="30" rx="6" class="sv-paper2"/>
+        <text x="140" y="64" text-anchor="middle" class="sv-ts">output ignored</text>
+        <line x1="140" y1="124" x2="140" y2="78" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ah1)"/>
+        <rect x="70" y="124" width="140" height="50" rx="8" class="sv-acc-soft"/>
+        <text x="140" y="154" text-anchor="middle" class="sv-tm">Σ + b1 → act.</text>
+        <line x1="140" y1="234" x2="140" y2="178" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ah1)"/>
+        <text x="148" y="210" class="sv-tm">× w1</text>
+        <rect x="60" y="234" width="160" height="30" rx="6" class="sv-key-soft"/>
+        <text x="140" y="254" text-anchor="middle" class="sv-ts">day before yesterday</text>
+
+        <!-- copy 2 -->
+        <rect x="300" y="44" width="160" height="30" rx="6" class="sv-paper2"/>
+        <text x="380" y="64" text-anchor="middle" class="sv-ts">output ignored</text>
+        <line x1="380" y1="124" x2="380" y2="78" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ah1)"/>
+        <rect x="310" y="124" width="140" height="50" rx="8" class="sv-acc-soft"/>
+        <text x="380" y="154" text-anchor="middle" class="sv-tm">Σ + b1 → act.</text>
+        <line x1="380" y1="234" x2="380" y2="178" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ah1)"/>
+        <text x="388" y="210" class="sv-tm">× w1</text>
+        <rect x="300" y="234" width="160" height="30" rx="6" class="sv-key-soft"/>
+        <text x="380" y="254" text-anchor="middle" class="sv-ts">yesterday</text>
+
+        <!-- copy 3 -->
+        <rect x="540" y="44" width="160" height="30" rx="6" class="sv-good-soft"/>
+        <text x="620" y="64" text-anchor="middle" class="sv-tb">prediction for tomorrow</text>
+        <line x1="620" y1="124" x2="620" y2="78" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ah1)"/>
+        <rect x="550" y="124" width="140" height="50" rx="8" class="sv-acc-soft"/>
+        <text x="620" y="154" text-anchor="middle" class="sv-tm">Σ + b1 → act.</text>
+        <line x1="620" y1="234" x2="620" y2="178" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ah1)"/>
+        <text x="628" y="210" class="sv-tm">× w1</text>
+        <rect x="540" y="234" width="160" height="30" rx="6" class="sv-key-soft"/>
+        <text x="620" y="254" text-anchor="middle" class="sv-ts">today</text>
+
+        <!-- feedback links -->
+        <line x1="210" y1="149" x2="306" y2="149" class="sv-stroke-acc" stroke-width="2.2" marker-end="url(#ah1a)"/>
+        <text x="258" y="140" text-anchor="middle" class="sv-tm">× w2</text>
+        <line x1="450" y1="149" x2="546" y2="149" class="sv-stroke-acc" stroke-width="2.2" marker-end="url(#ah1a)"/>
+        <text x="498" y="140" text-anchor="middle" class="sv-tm">× w2</text>
+      </svg>
+      <figcaption>Values go in from oldest to newest; the w2 links carry earlier days forward, and only the last output is used.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Scale the prices so the network sees simple numbers: low is 0, medium is 0.5 and high is 1.</li>
+      <li>Put yesterday's value into the input and do the math as in any neural network. Call the activation function's output \(y_1\).</li>
+      <li>\(y_1\) could go to the output, which would predict today's price. We already know today's price, so we ignore that output.</li>
+      <li>Instead, \(y_1\) goes around the feedback loop. The sum adds \(y_1 \times w_2\) to today's value times \(w_1\). Now both days influence the prediction.</li>
+      <li>Unroll the loop into one copy per input. The last copy's output is the prediction for tomorrow.</li>
+      <li>For three days of data, unroll three times. Plug in the day before yesterday, then yesterday, then today, always from oldest to newest.</li>
+      <li>All copies share the same weights and biases. Unrolling more never increases the number of parameters to train.</li>
+      <li>The weakness: the more you unroll, the harder the network is to train. This is the vanishing / exploding gradient problem, which comes from \(w_2\) being copied with every unroll.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 280" role="img" aria-label="Bar charts of w2 to the power n for w2 equal to 2 and w2 equal to 0.5">
+        <rect x="0" y="0" width="760" height="280" class="sv-paper"/>
+        <text x="208" y="40" text-anchor="middle" class="sv-tb">w2 = 2 (above 1): explodes</text>
+        <text x="568" y="40" text-anchor="middle" class="sv-tb">w2 = 0.5 (below 1): vanishes</text>
+        <line x1="50" y1="240" x2="366" y2="240" class="sv-stroke-ink" stroke-width="1.2"/>
+        <line x1="410" y1="240" x2="726" y2="240" class="sv-stroke-ink" stroke-width="1.2"/>
+        <rect x="60" y="230" width="40" height="10" class="sv-acc"/>
+        <rect x="124" y="220" width="40" height="20" class="sv-acc"/>
+        <rect x="188" y="200" width="40" height="40" class="sv-acc"/>
+        <rect x="252" y="160" width="40" height="80" class="sv-acc"/>
+        <rect x="316" y="80" width="40" height="160" class="sv-acc"/>
+        <text x="80" y="224" text-anchor="middle" class="sv-tm">1</text>
+        <text x="144" y="214" text-anchor="middle" class="sv-tm">2</text>
+        <text x="208" y="194" text-anchor="middle" class="sv-tm">4</text>
+        <text x="272" y="154" text-anchor="middle" class="sv-tm">8</text>
+        <text x="336" y="74" text-anchor="middle" class="sv-tm">16</text>
+        <rect x="420" y="80" width="40" height="160" class="sv-key"/>
+        <rect x="484" y="160" width="40" height="80" class="sv-key"/>
+        <rect x="548" y="200" width="40" height="40" class="sv-key"/>
+        <rect x="612" y="220" width="40" height="20" class="sv-key"/>
+        <rect x="676" y="230" width="40" height="10" class="sv-key"/>
+        <text x="440" y="74" text-anchor="middle" class="sv-tm">1</text>
+        <text x="504" y="154" text-anchor="middle" class="sv-tm">0.5</text>
+        <text x="568" y="194" text-anchor="middle" class="sv-tm">0.25</text>
+        <text x="632" y="214" text-anchor="middle" class="sv-tm">0.125</text>
+        <text x="696" y="224" text-anchor="middle" class="sv-tm">0.0625</text>
+        <text x="208" y="257" text-anchor="middle" class="sv-ts">multiplier on input 1 after 0 to 4 unrolls</text>
+        <text x="568" y="257" text-anchor="middle" class="sv-ts">multiplier on input 1 after 0 to 4 unrolls</text>
+      </svg>
+      <figcaption>Each unroll multiplies the first input by w2 again, so it grows to 16 when w2 = 2 and shrinks toward zero when w2 = 0.5 (each panel has its own scale).</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">The sum inside one copy</span>
+      <div class="math">$$ s_t = x_t\, w_1 + y_{t-1}\, w_2 + b_1, \qquad y_t = \text{activation}(s_t) $$</div>
+      <p class="explain"><b>Symbols:</b> \(x_t\) is the input value for day \(t\). \(w_1\) is the weight on the input. \(y_{t-1}\) is the activation output from the previous copy, which is the feedback. \(w_2\) is the weight on the feedback loop. \(b_1\) is the bias. \(s_t\) is the sum, and \(y_t\) is the activation function's output. The first copy has no previous day, so it has no feedback term. <b>What it tells you:</b> each step mixes the new value with what came before, using the same \(w_1\), \(w_2\) and \(b_1\) every time.</p>
+    </div>
+    <div class="formula"><span class="lbl">How far the first input is scaled</span>
+      <div class="math">$$ \text{input}_1 \times w_2^{\,n} $$</div>
+      <p class="explain"><b>Symbols:</b> \(\text{input}_1\) is the first (oldest) input value. \(w_2\) is the feedback weight. \(n\) is the number of times the network is unrolled. <b>What it tells you:</b> the first input is multiplied by \(w_2\) once per unroll before it reaches the last copy, so \(w_2\) gets raised to a power.</p>
+      <p class="explain">With \(w_2 = 2\) and four unrolls: \(2^4 = 16\), so the first input is amplified 16 times.</p>
+      <p class="explain">With 50 days of data: \(2^{50} \approx 1.1 \times 10^{15}\), a huge number. This is the exploding gradient.</p>
+      <p class="explain">With \(w_2 = 0.5\) and 50 days: \(0.5^{50} \approx 8.9 \times 10^{-16}\), super close to zero. This is the vanishing gradient.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>In StatLand, stock prices follow four simple patterns. Josh scales them to low = 0, medium = 0.5 and high = 1.</p>
+      <ul>
+        <li>Low, then low (0, 0): tomorrow stays low.</li>
+        <li>Low, then medium (0, 0.5): tomorrow goes even higher.</li>
+        <li>High, then medium (1, 0.5): tomorrow goes even lower.</li>
+        <li>High, then high (1, 1): tomorrow stays high.</li>
+      </ul>
+      <p>For the first case, Josh puts yesterday's 0 into the first copy and follows the link to the second copy's sum. Then he puts today's 0 into the second input. The final output is 0, which matches the observed pattern. The other three cases also give the correct value for tomorrow.</p>
+      <p>Then the trouble. Set \(w_2 = 2\) and unroll four times: input 1 is multiplied by \(2 \times 2 \times 2 \times 2 = 16\). With 50 days, which is not much data, it becomes \(2^{50}\). That huge number finds its way into the gradients. Gradient descent then takes large steps and bounces around instead of finding the best parameters. Set \(w_2 = 0.5\) instead, and \(0.5^{50}\) is nearly zero. Now the steps are too small, and training hits the maximum number of steps before finding the best value.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Unrolling does not add parameters. Every copy uses the same \(w_1\), \(b_1\), \(w_2\) and the other weights and biases. A network unrolled 50 times trains exactly as many parameters as one unrolled twice.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The outputs from the earlier copies are predictions for days we already know. They are ignored. Only the last copy's output is the prediction for tomorrow.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Inputs go in order, from the oldest value to the newest. Order matters because each value is carried forward through \(w_2\).</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Keeping \(w_2\) below 1 does not fix the problem. It only swaps an exploding gradient for a vanishing one. That is why basic RNNs are seen as a stepping stone to LSTMs and Transformers.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>Why do we need recurrent neural networks?</summary><div class="a">Many problems have sequential data of different lengths, like stock prices where one company has nine days of history and another has five. A regular network takes a fixed number of inputs. An RNN uses a feedback loop, so the same network can take as many sequential values as we have.</div></details>
+    <details class="qa" open><summary>What does it mean to unroll an RNN?</summary><div class="a">We make one copy of the network for each input value. Instead of the loop feeding back into itself, each copy feeds its activation output into the sum of the next copy. We put values in from oldest to newest, and the last output is the prediction.</div></details>
+    <details class="qa" open><summary>Does a longer sequence mean more parameters?</summary><div class="a">No. The weights and biases are shared across every copy. So no matter how many times we unroll the network, the number of weights and biases to train stays the same.</div></details>
+    <details class="qa" open><summary>Explain the vanishing and exploding gradient problem.</summary><div class="a">The feedback weight is multiplied in once per unroll, so the first input gets scaled by that weight raised to the number of unrolls. If the weight is above 1, say 2, then 2 to the 50th is huge, and gradient descent takes giant steps and bounces around. If it is below 1, say 0.5, then 0.5 to the 50th is nearly zero, and the steps are so small that we run out of steps before reaching the best value.</div></details>
+    <details class="qa" open><summary>Why are basic RNNs not used very often?</summary><div class="a">The more you unroll them, the harder they are to train, because of vanishing and exploding gradients. Restricting the feedback weight does not help, since it just moves you from one problem to the other. Long Short-Term Memory networks are a popular solution.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>RNNs handle sequential data of different lengths, which fixed-input networks cannot.</li>
+      <li>A feedback loop adds the previous activation output, times \(w_2\), into the next sum.</li>
+      <li>Unrolling makes one copy per input, fed from oldest to newest, and the last output is the prediction.</li>
+      <li>All copies share the same weights and biases, so longer sequences do not add parameters.</li>
+      <li>In the StatLand example, the RNN correctly predicts tomorrow's price for all four patterns.</li>
+      <li>The first input is scaled by \(w_2\) raised to the number of unrolls.</li>
+      <li>With \(w_2\) above 1 gradients explode; with \(w_2\) below 1 they vanish, and both make training hard.</li>
+      <li>LSTMs, covered next, are a popular fix.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Recurrent neural networks</span><span class="board-tag">one loop, shared weights, any length</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 294" role="img" aria-label="Three copies of the network in a row, fed oldest to newest. Each input enters times w1, each copy passes its output into the next sum times w2, every copy shares w1, b1 and w2, and only the last output, tomorrow, is used. With 50 days, 2 to the 50 explodes and 0.5 to the 50 vanishes.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <text x="14" y="34" class="sv-tb">shared w1, b1, w2</text>
+            <g class="sv-stroke-good" stroke-width="2.5"><rect x="274" y="18" width="112" height="32" rx="16" class="sv-good-soft"/></g>
+            <text x="330" y="40" text-anchor="middle" class="sv-tb">tomorrow</text>
+            <path d="M70 90V62M200 90V62" class="sv-stroke-ink" stroke-width="2.5" stroke-dasharray="4 6" stroke-linecap="round"/>
+            <path d="M330 91V57" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <path d="M100 120H166" class="sv-stroke-key" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <path d="M230 120H296" class="sv-stroke-key" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="134" y="108" text-anchor="middle" class="sv-tm">× w2</text>
+            <text x="264" y="108" text-anchor="middle" class="sv-tm">× w2</text>
+            <g class="sv-stroke-ink" stroke-width="3">
+              <circle cx="70" cy="120" r="26" class="sv-paper"/>
+              <circle cx="200" cy="120" r="26" class="sv-paper"/>
+              <circle cx="330" cy="120" r="26" class="sv-paper"/>
+            </g>
+            <path d="M70 192V153" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <path d="M200 192V153" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <path d="M330 192V153" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="80" y="176" class="sv-tm">× w1</text>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <rect x="42" y="196" width="56" height="30" rx="8" class="sv-key-soft"/>
+              <rect x="172" y="196" width="56" height="30" rx="8" class="sv-key-soft"/>
+              <rect x="302" y="196" width="56" height="30" rx="8" class="sv-key-soft"/>
+            </g>
+            <text x="200" y="250" text-anchor="middle" class="sv-ts">oldest → newest</text>
+            <text x="200" y="278" text-anchor="middle" class="sv-tb">2⁵⁰ explodes, 0.5⁵⁰ vanishes</text>
+          </svg>
+          <p>A feedback loop adds each copy's output, times \(w_2\), into the next sum. Every day gets a copy with the same weights; only the last output predicts. Since \(w_2\) multiplies in once per copy, gradients explode or vanish.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Sequential data</dt><dd>Values in a fixed order, like prices.</dd>
+            <dt>Feedback loop</dt><dd>Sends the activation output into the next input's sum.</dd>
+            <dt>Unrolling</dt><dd>One copy of the network per input value.</dd>
+            <dt>Gradient</dt><dd>The derivative training uses to update a weight.</dd>
+            <dt>Vanishing / exploding gradient</dt><dd>Gradients turn tiny or huge because \(w_2\) is multiplied in per copy.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Scale prices</b>low 0, medium 0.5, high 1</li>
+            <li><b>Run yesterday</b>get \(y_1\), ignore its output</li>
+            <li><b>Feed it back</b>today × \(w_1\) + \(y_1\) × \(w_2\)</li>
+            <li><b>Unroll</b>one copy per day; last predicts</li>
+            <li><b>Share weights</b>no new parameters</li>
+            <li><b>The catch</b>\(w_2\) copied every unroll</li>
+          </ol>
+          <p class="loop">↺ one pass per day, oldest to newest, same weights</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$s_t=x_t\,w_1+y_{t-1}\,w_2+b_1$$
+          $$y_t=\text{activation}(s_t)$$
+          $$\text{input}_1\times w_2^{\,n}$$
+          <ul class="keys">
+            <li>\(x_t\): day \(t\)'s input. \(y_{t-1}\): the previous copy's output (none for the first).</li>
+            <li>\(n\) is the number of unrolls. With 50 days, \(2^{50}\approx1.1\times10^{15}\) and \(0.5^{50}\approx8.9\times10^{-16}\).</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>yesterday</th><th>today</th><th>tomorrow</th></tr>
+            <tr><td>low 0</td><td>low 0</td><td>stays low</td></tr>
+            <tr><td>low 0</td><td>medium 0.5</td><td>even higher</td></tr>
+            <tr><td>high 1</td><td>medium 0.5</td><td>even lower</td></tr>
+            <tr><td>high 1</td><td>high 1</td><td>stays high</td></tr>
+            <tr class="final"><td>low 0</td><td>low 0</td><td>RNN outputs 0 ✓</td></tr>
+          </table>
+          <p class="hand">The other three patterns also come out right. With \(w_2 = 2\), four unrolls multiply input 1 by 16.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Unrolling more adds parameters.</span><span class="yes">All copies share \(w_1\), \(b_1\), \(w_2\): 50 unrolls train as many as two.</span></li>
+            <li><span class="no">Every copy's output is a prediction.</span><span class="yes">Earlier outputs are days we already know. Only the last predicts tomorrow.</span></li>
+            <li><span class="no">Keeping \(w_2\) below 1 fixes it.</span><span class="yes">It swaps exploding for vanishing. Basic RNNs are a stepping stone to LSTMs.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="86-neural-networks-part-8-image-classification-with-convolution.html"><small>Previous</small>Neural Networks Part 8: Image Classification with Convolutional Neural Networks (CNNs)</a> <a href="88-long-short-term-memory-lstm.html"><small>Next</small>Long Short-Term Memory (LSTM)</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

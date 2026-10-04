@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>In Statistics, Probability is not Likelihood. — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>54</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 54 · 5 min</div>
+    <h1>In Statistics, Probability is not Likelihood.</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=pYxNSUDSFH4" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">In everyday speech, "probability" and "likelihood" mean the same thing. In statistics they mean two different things, and this video shows the difference with one picture each.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Probability asks how much of a fixed curve falls inside a range of data. You read it as an area. Likelihood asks how well a curve fits data you already measured. You read it as a height. So in probability the curve is fixed and the data changes. In likelihood the data is fixed and the curve moves.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh uses one example the whole way through: the weights of mice. The weights follow a normal distribution with mean 32 grams and standard deviation 2.5. The mean is the centre of the bell. The standard deviation says how wide the bell is. The weights run from 24 grams at the low end to 40 grams at the high end.</p>
+    <p>Now ask a probability question. What is the chance a randomly selected mouse weighs between 32 and 34 grams? You have not weighed any mouse yet. The answer is the area under the curve between those two weights. That area is 0.29, so the chance is 29 percent.</p>
+    <p>Notice what stays fixed. The curve never moves. You only change the range of weights you ask about. The same idea works for every continuous distribution.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="A normal curve of mouse weights with mean 32 and standard deviation 2.5, with the area between 32 and 34 grams shaded and labelled 0.29">
+        <path class="sv-acc-soft" d="M390,240 L390,70 L428.8,83.1 L467.5,116.6 L467.5,240 Z"/>
+        <path class="sv-line" stroke-width="1" d="M390,240 L390,70"/>
+        <path class="sv-line" stroke-width="1" d="M467.5,240 L467.5,116.6"/>
+        <path class="sv-stroke-acc" stroke-width="2.5" d="M80,239 L118.8,236.6 L157.5,230.5 L196.3,217 L235,192.7 L273.8,157.3 L312.5,116.6 L351.3,83.1 L390,70 L428.8,83.1 L467.5,116.6 L506.3,157.3 L545,192.7 L583.8,217 L622.5,230.5 L661.3,236.6 L700,239"/>
+        <path class="sv-stroke-ink" stroke-width="1.5" d="M60,240 L720,240"/>
+        <text class="sv-ts" x="80" y="260" text-anchor="middle">24</text>
+        <text class="sv-ts" x="390" y="260" text-anchor="middle">32</text>
+        <text class="sv-ts" x="467.5" y="260" text-anchor="middle">34</text>
+        <text class="sv-ts" x="700" y="260" text-anchor="middle">40</text>
+        <text class="sv-ts" x="390" y="282" text-anchor="middle">mouse weight in grams</text>
+        <rect class="sv-paper" x="490" y="150" width="150" height="26" rx="4"/>
+        <text class="sv-tb" x="500" y="169">area = 0.29</text>
+        <text class="sv-tm" x="390" y="52" text-anchor="middle">mean = 32, sd = 2.5 (fixed)</text>
+        <text class="sv-ts" x="150" y="120">the curve never moves</text>
+      </svg>
+      <figcaption>Probability is an area. The bell stays where it is, and only the shaded range of weights changes.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Fix the distribution. Here it is a normal curve with mean 32 grams and standard deviation 2.5.</li>
+      <li>Choose a range of weights, such as 32 to 34 grams. This is the part you may change.</li>
+      <li>Read the area under the curve for that range. It is 0.29, and that is the probability.</li>
+      <li>Now switch to likelihood. Weigh the mouse first. It weighs 34 grams, and that value is now fixed.</li>
+      <li>Read the height of the curve above 34 grams. It is 0.12, the likelihood of this distribution.</li>
+      <li>Slide the distribution so its mean sits at 34. The height above the same mouse is now 0.21.</li>
+    </ol>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 320" role="img" aria-label="Two normal curves over the same 34 gram mouse: the curve centred at 32 gives a height of 0.12, and the curve shifted to a mean of 34 gives a height of 0.21">
+        <path class="sv-line" stroke-width="1.5" stroke-dasharray="4 4" d="M456,240 L456,58"/>
+        <path class="sv-stroke-acc" stroke-width="2.5" d="M126,239 L159,236.6 L192,230.5 L225,217 L258,192.7 L291,157.3 L324,116.6 L357,83.1 L390,70 L423,83.1 L456,116.6 L489,157.3 L522,192.7 L555,217 L588,230.5 L621,236.6 L654,239"/>
+        <path class="sv-stroke-key" stroke-width="2.5" stroke-dasharray="7 4" d="M192,239 L225,236.6 L258,230.5 L291,217 L324,192.7 L357,157.3 L390,116.6 L423,83.1 L456,70 L489,83.1 L522,116.6 L555,157.3 L588,192.7 L621,217 L654,230.5 L687,236.6 L720,239"/>
+        <path class="sv-stroke-ink" stroke-width="1.5" d="M60,240 L730,240"/>
+        <circle class="sv-acc" cx="456" cy="116.6" r="5.5"/>
+        <circle class="sv-key" cx="456" cy="70" r="5.5"/>
+        <rect class="sv-paper" x="474" y="104" width="176" height="24" rx="4"/>
+        <text class="sv-t" x="482" y="121">height = 0.12 (mean 32)</text>
+        <rect class="sv-paper" x="474" y="58" width="176" height="24" rx="4"/>
+        <text class="sv-t" x="482" y="75">height = 0.21 (mean 34)</text>
+        <text class="sv-ts" x="456" y="260" text-anchor="middle">34</text>
+        <text class="sv-tm" x="456" y="282" text-anchor="middle">the weighed mouse (fixed)</text>
+        <text class="sv-ts" x="150" y="150">curves are free to move</text>
+      </svg>
+      <figcaption>Likelihood is a height. The 34 gram mouse stays put, and the curve that rises higher above it fits that mouse better.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">Probability of data</span><div class="math">$$ p(\,32 < \text{weight} < 34 \;\mid\; \mu = 32,\; \sigma = 2.5\,) = 0.29 $$</div><p class="explain"><b>Symbols:</b> \(p\) is probability. The bar \(\mid\) means "given". \(\mu\) is the mean, the centre of the curve. \(\sigma\) is the standard deviation, the width of the curve. <b>What it tells you:</b> the curve on the right is fixed, and the area over the range on the left is 0.29.</p></div>
+    <div class="formula"><span class="lbl">Likelihood of a distribution</span><div class="math">$$ L(\,\mu = 32,\; \sigma = 2.5 \;\mid\; \text{weight} = 34\,) = 0.12 $$</div><p class="explain"><b>Symbols:</b> \(L\) is likelihood. The left side now holds the curve you are testing, and the right side holds the weight you already measured. <b>What it tells you:</b> with the 34 gram mouse held fixed, this particular curve has height 0.12 above it.</p></div>
+    <div class="formula"><span class="lbl">The pattern to remember</span><div class="math">$$ p(\text{data} \mid \text{distribution}) \qquad\text{versus}\qquad L(\text{distribution} \mid \text{data}) $$</div><p class="explain"><b>Symbols:</b> "distribution" means the mean and standard deviation. <b>What it tells you:</b> the thing before the bar is what you ask about. The thing after the bar is held fixed.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Before weighing anything, the area from 32 to 34 grams is 0.29. Ask instead for "more than 34 grams" and you shade a different piece of the same curve.</p>
+      <p>Now weigh a mouse. It is 34 grams. The curve with mean 32 has height 0.12 above it. Slide that curve right until its mean is 34, and the height becomes 0.21. The second curve fits this mouse better.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> A likelihood is not a probability. The value 0.12 is a height on the y axis, not a chance of anything. Areas under a continuous curve add up to 1, but heights do not have to.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Read the bar in the right direction. Whatever sits after the bar is the given. Swapping the two sides is the most common slip, and Josh says even he mixes them up.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A single point has no area. That is why we do not talk about the probability of a mouse weighing exactly 34 grams, and why likelihood reads the height of the curve instead.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is the difference between probability and likelihood?</summary><div class="a">Probability holds the distribution fixed and asks about the data. It is the area under the curve over a range, so 32 to 34 grams gives 0.29. Likelihood holds the data fixed and asks about the distribution. It is the height above a measurement, so a 34 gram mouse gives 0.12.</div></details>
+    <details class="qa" open><summary>Why do we use the height of the curve for likelihood instead of an area?</summary><div class="a">Likelihood starts after the data is collected, so we look at one exact value, not a range. For a continuous curve the area over a single point is zero, so that would tell us nothing. The height at that point is not zero, and it changes as we move the curve. So it can rank one distribution against another.</div></details>
+    <details class="qa" open><summary>How does this connect to maximum likelihood estimation?</summary><div class="a">Once the data is fixed, we slide and stretch the distribution and watch the likelihood change. Moving the mean from 32 to 34 raised the likelihood from 0.12 to 0.21. Maximum likelihood estimation does this search properly. It picks the mean and standard deviation that make the observed data as likely as possible.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Probability is an area under a fixed curve, and you change the range of data.</li>
+      <li>With mean 32 and standard deviation 2.5, the area from 32 to 34 grams is 0.29.</li>
+      <li>Likelihood is a height on a curve, read above data you already measured.</li>
+      <li>A 34 gram mouse gives 0.12 under the curve with mean 32, and 0.21 once the mean moves to 34.</li>
+      <li>Write probability as \(p(\text{data} \mid \text{distribution})\) and likelihood as \(L(\text{distribution} \mid \text{data})\).</li>
+      <li>Higher likelihood means the distribution fits the data better, which is the whole basis of maximum likelihood estimation.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Probability vs likelihood</span><span class="board-tag">probability is an area, likelihood a height</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 290" role="img" aria-label="Top: a fixed normal curve of mouse weights with the area from 32 to 34 grams shaded, a probability of 0.29. Bottom: one mouse is fixed at 34 grams; the curve with mean 32 has height 0.12 above it, and sliding the mean to 34 raises the height to 0.21.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <path d="M125 120 L125 50 L131.3 51.4 L137.5 55.4 L143.8 61.5 L150 69.2 L150 120 Z" class="sv-acc"/>
+            <polyline points="25,119.6 37.5,118.6 50,116.1 62.5,110.5 75,100.5 81.3,93.7 87.5,85.9 93.8,77.5 100,69.2 106.3,61.5 112.5,55.4 118.8,51.4 125,50 131.3,51.4 137.5,55.4 143.8,61.5 150,69.2 156.3,77.5 162.5,85.9 168.8,93.7 175,100.5 187.5,110.5 200,116.1 212.5,118.6 225,119.6" class="sv-stroke-acc" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="18" y1="120" x2="240" y2="120" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <text x="137.5" y="140" text-anchor="middle" class="sv-ts">32–34 g</text>
+            <text x="256" y="62" class="sv-tb">probability</text>
+            <text x="256" y="88" class="sv-t">area = 0.29</text>
+            <text x="256" y="112" class="sv-ts">curve fixed</text>
+            <polyline points="25,249.6 37.5,248.6 50,246.1 62.5,240.5 75,230.5 81.3,223.7 87.5,215.9 93.8,207.5 100,199.2 106.3,191.5 112.5,185.4 118.8,181.4 125,180 131.3,181.4 137.5,185.4 143.8,191.5 150,199.2 156.3,207.5 162.5,215.9 168.8,223.7 175,230.5 187.5,240.5 200,246.1 212.5,248.6 225,249.6" class="sv-stroke-acc" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="50,249.6 62.5,248.6 75,246.1 87.5,240.5 100,230.5 106.3,223.7 112.5,215.9 118.8,207.5 125,199.2 131.3,191.5 137.5,185.4 143.8,181.4 150,180 156.3,181.4 162.5,185.4 168.8,191.5 175,199.2 181.3,207.5 187.5,215.9 193.8,223.7 200,230.5 212.5,240.5 225,246.1 237.5,248.6 250,249.6" class="sv-stroke-key" stroke-width="3" stroke-dasharray="7 5" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="18" y1="250" x2="252" y2="250" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="150" y1="250" x2="150" y2="186" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="114" y1="160" x2="156" y2="160" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="150" cy="199.2" r="6" class="sv-acc"/>
+              <circle cx="150" cy="180" r="7" class="sv-key"/>
+              <circle cx="262" cy="211" r="6" class="sv-key"/>
+              <circle cx="262" cy="235" r="6" class="sv-acc"/>
+            </g>
+            <text x="150" y="272" text-anchor="middle" class="sv-ts">mouse fixed at 34 g</text>
+            <text x="256" y="190" class="sv-tb">likelihood</text>
+            <text x="274" y="216" class="sv-ts">mean 34: 0.21</text>
+            <text x="274" y="240" class="sv-ts">mean 32: 0.12</text>
+          </svg>
+          <p>Probability is the area under a fixed curve over a range of weights: 0.29 from 32 to 34 grams. Likelihood is the height of a curve above a mouse already weighed: 0.12, or 0.21 once the mean slides to 34.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Probability</dt><dd>The area under a fixed curve over a range of data.</dd>
+            <dt>Likelihood</dt><dd>The height of a curve above data you already measured.</dd>
+            <dt>Distribution</dt><dd>The curve, set by its mean (centre) and standard deviation (width).</dd>
+            <dt>The bar \(\mid\)</dt><dd>Means "given": whatever sits after it is held fixed.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Fix the curve</b>mean 32, sd 2.5</li>
+            <li><b>Pick a range</b>32 to 34 grams</li>
+            <li><b>Read the area</b>0.29 is the probability</li>
+            <li><b>Weigh a mouse</b>34 grams, now fixed</li>
+            <li><b>Read the height</b>0.12 is the likelihood</li>
+            <li><b>Slide the curve</b>mean 34 gives 0.21</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$p(32\lt w\lt 34\mid\mu,\sigma)=0.29$$
+          $$L(\mu,\sigma\mid w=34)=0.12$$
+          $$p(\text{data}\mid D)\ \text{vs}\ L(D\mid\text{data})$$
+          <ul class="keys">
+            <li>\(w\): weight in grams; \(\mu=32\): mean; \(\sigma=2.5\): standard deviation.</li>
+            <li>\(D\): the distribution. Left of the bar is asked about; right of it is fixed.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>ask</th><th>fixed</th><th>value</th></tr>
+            <tr><td>p(32–34 g)</td><td>mean 32</td><td>area 0.29</td></tr>
+            <tr><td>p(over 34 g)</td><td>mean 32</td><td>another area</td></tr>
+            <tr><td>L(mean 32)</td><td>34 g mouse</td><td>height 0.12</td></tr>
+            <tr class="final"><td>L(mean 34)</td><td>34 g mouse</td><td>height 0.21 ✓</td></tr>
+          </table>
+          <p class="hand">Probability moves the range under one curve; likelihood moves the curve over one mouse.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">The likelihood 0.12 is a probability.</span><span class="yes">It is a height, not a chance. Areas add up to 1; heights need not.</span></li>
+            <li><span class="no">The two sides of the bar can swap.</span><span class="yes">What sits after the bar is the given. Swapping them is the most common slip.</span></li>
+            <li><span class="no">Exactly 34 g has its own probability.</span><span class="yes">A single point has no area, so likelihood reads the curve's height there.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="53-quantile-normalization.html"><small>Previous</small>Quantile Normalization</a> <a href="55-maximum-likelihood.html"><small>Next</small>Maximum Likelihood</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

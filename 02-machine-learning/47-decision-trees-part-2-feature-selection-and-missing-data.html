@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Decision Trees, Part 2 - Feature Selection and Missing Data — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>47</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 47 · 5.3 min</div>
+    <h1>Decision Trees, Part 2 - Feature Selection and Missing Data</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=wpNl-JwwplA" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">A decision tree can drop a useless column by itself. It can also work around holes in your table.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>A tree splits on a column only when the split lowers impurity, which measures how mixed the groups are. A column that never lowers impurity never enters the tree, and that is automatic feature selection. Demanding a large drop gives simpler trees that are less overfit. A missing value can be filled with the most common answer, the mean or median, or a guess from a matching column.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>In the first decision tree video, Josh built a tree for heart disease. It asked about good blood circulation, then blocked arteries, then chest pain. Down one path, 17 people with those answers had heart disease and 3 did not.</p>
+    <p>Down another path the tree stopped early. For patients with good circulation and no blocked arteries, Josh compared the impurity after splitting on chest pain with the impurity of no split. No split was lower, so that node became a leaf.</p>
+    <p>Now imagine chest pain never lowers impurity anywhere. Then it never enters the tree, even though the column sits in your data. That is automatic feature selection. You can also demand a large drop before any split. Weak splits are refused, so the tree stays small and is less overfit. Overfit means good on the training data, but bad on new data.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 350" role="img" aria-label="Comparison of splitting on chest pain versus making a leaf node, and the resulting tree without chest pain">
+        <text x="380" y="32" text-anchor="middle" class="sv-tb">At each node, the tree compares two impurity scores</text>
+
+        <rect x="40" y="46" width="300" height="152" rx="8" class="sv-paper2"/>
+        <text x="190" y="70" text-anchor="middle" class="sv-t">Option A: split on chest pain</text>
+        <rect x="150" y="84" width="80" height="28" rx="4" class="sv-acc-soft"/>
+        <rect x="150" y="84" width="80" height="28" rx="4" class="sv-stroke-acc" stroke-width="1.5"/>
+        <text x="190" y="103" text-anchor="middle" class="sv-ts">Chest pain</text>
+        <line x1="190" y1="112" x2="110" y2="140" class="sv-line" stroke-width="1.5"/>
+        <line x1="190" y1="112" x2="270" y2="140" class="sv-line" stroke-width="1.5"/>
+        <rect x="70" y="140" width="80" height="26" rx="4" class="sv-paper"/>
+        <rect x="70" y="140" width="80" height="26" rx="4" class="sv-line" stroke-width="1.5"/>
+        <text x="110" y="158" text-anchor="middle" class="sv-ts">Yes</text>
+        <rect x="230" y="140" width="80" height="26" rx="4" class="sv-paper"/>
+        <rect x="230" y="140" width="80" height="26" rx="4" class="sv-line" stroke-width="1.5"/>
+        <text x="270" y="158" text-anchor="middle" class="sv-ts">No</text>
+        <text x="190" y="186" text-anchor="middle" class="sv-ts">impurity after the split</text>
+
+        <rect x="420" y="46" width="300" height="152" rx="8" class="sv-paper2"/>
+        <text x="570" y="70" text-anchor="middle" class="sv-t">Option B: do not split</text>
+        <rect x="510" y="108" width="120" height="34" rx="4" class="sv-good-soft"/>
+        <rect x="510" y="108" width="120" height="34" rx="4" class="sv-stroke-good" stroke-width="1.5"/>
+        <text x="570" y="130" text-anchor="middle" class="sv-ts">Leaf node</text>
+        <text x="570" y="186" text-anchor="middle" class="sv-ts">impurity with no split</text>
+
+        <text x="380" y="224" text-anchor="middle" class="sv-t">Option B was lower here, so chest pain was not used</text>
+
+        <rect x="300" y="246" width="160" height="28" rx="4" class="sv-acc-soft"/>
+        <rect x="300" y="246" width="160" height="28" rx="4" class="sv-stroke-acc" stroke-width="1.5"/>
+        <text x="380" y="265" text-anchor="middle" class="sv-ts">Good circulation</text>
+        <line x1="380" y1="274" x2="250" y2="300" class="sv-line" stroke-width="1.5"/>
+        <line x1="380" y1="274" x2="510" y2="300" class="sv-line" stroke-width="1.5"/>
+        <rect x="190" y="300" width="120" height="28" rx="4" class="sv-acc-soft"/>
+        <rect x="190" y="300" width="120" height="28" rx="4" class="sv-stroke-acc" stroke-width="1.5"/>
+        <text x="250" y="319" text-anchor="middle" class="sv-ts">Blocked arteries</text>
+        <rect x="450" y="300" width="120" height="28" rx="4" class="sv-good-soft"/>
+        <rect x="450" y="300" width="120" height="28" rx="4" class="sv-stroke-good" stroke-width="1.5"/>
+        <text x="510" y="319" text-anchor="middle" class="sv-ts">Leaf</text>
+        <text x="600" y="265" class="sv-ts">chest pain: dropped</text>
+      </svg>
+      <figcaption>Notice that the column is dropped by the impurity comparison itself, not by a separate selection step.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>At a node, compute the impurity after splitting on a column such as chest pain.</li>
+      <li>Compute the impurity with no split, as a leaf.</li>
+      <li>Keep the split only if impurity drops enough to pass your threshold. A column that never wins never enters the tree.</li>
+      <li>For a missing category, take the most common answer, or copy it from the closest column.</li>
+      <li>For a missing number, take the mean or median, or a least squares prediction.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 290" role="img" aria-label="Table of four patients with chest pain and blocked arteries, where the missing fourth value is copied from chest pain">
+        <defs>
+          <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" class="sv-key"/>
+          </marker>
+        </defs>
+        <text x="380" y="32" text-anchor="middle" class="sv-tb">Guess a missing category from the column it matches best</text>
+
+        <rect x="180" y="48" width="180" height="34" class="sv-paper2"/>
+        <rect x="180" y="48" width="180" height="34" class="sv-line" stroke-width="1"/>
+        <text x="270" y="70" text-anchor="middle" class="sv-tm">Chest pain</text>
+        <rect x="360" y="48" width="200" height="34" class="sv-paper2"/>
+        <rect x="360" y="48" width="200" height="34" class="sv-line" stroke-width="1"/>
+        <text x="460" y="70" text-anchor="middle" class="sv-tm">Blocked arteries</text>
+
+        <rect x="180" y="82" width="180" height="34" class="sv-paper"/>
+        <rect x="180" y="82" width="180" height="34" class="sv-line" stroke-width="1"/>
+        <text x="270" y="104" text-anchor="middle" class="sv-t">No</text>
+        <rect x="360" y="82" width="200" height="34" class="sv-paper"/>
+        <rect x="360" y="82" width="200" height="34" class="sv-line" stroke-width="1"/>
+        <text x="460" y="104" text-anchor="middle" class="sv-t">No</text>
+        <text x="150" y="104" text-anchor="end" class="sv-ts">Patient 1</text>
+
+        <rect x="180" y="116" width="180" height="34" class="sv-paper"/>
+        <rect x="180" y="116" width="180" height="34" class="sv-line" stroke-width="1"/>
+        <text x="270" y="138" text-anchor="middle" class="sv-t">Yes</text>
+        <rect x="360" y="116" width="200" height="34" class="sv-paper"/>
+        <rect x="360" y="116" width="200" height="34" class="sv-line" stroke-width="1"/>
+        <text x="460" y="138" text-anchor="middle" class="sv-t">Yes</text>
+        <text x="150" y="138" text-anchor="end" class="sv-ts">Patient 2</text>
+
+        <rect x="180" y="150" width="180" height="34" class="sv-paper"/>
+        <rect x="180" y="150" width="180" height="34" class="sv-line" stroke-width="1"/>
+        <text x="270" y="172" text-anchor="middle" class="sv-t">No</text>
+        <rect x="360" y="150" width="200" height="34" class="sv-paper"/>
+        <rect x="360" y="150" width="200" height="34" class="sv-line" stroke-width="1"/>
+        <text x="460" y="172" text-anchor="middle" class="sv-t">No</text>
+        <text x="150" y="172" text-anchor="end" class="sv-ts">Patient 3</text>
+
+        <rect x="180" y="184" width="180" height="34" class="sv-paper"/>
+        <rect x="180" y="184" width="180" height="34" class="sv-line" stroke-width="1"/>
+        <text x="270" y="206" text-anchor="middle" class="sv-t">Yes</text>
+        <rect x="360" y="184" width="200" height="34" class="sv-key-soft"/>
+        <rect x="360" y="184" width="200" height="34" class="sv-stroke-key" stroke-width="1.5"/>
+        <text x="480" y="206" text-anchor="middle" class="sv-t">? becomes Yes</text>
+        <text x="150" y="206" text-anchor="end" class="sv-ts">Patient 4</text>
+
+        <line x1="330" y1="230" x2="430" y2="230" class="sv-stroke-key" stroke-width="2" marker-end="url(#ar2)"/>
+        <text x="380" y="256" text-anchor="middle" class="sv-ts">copy across</text>
+      </svg>
+      <figcaption>Notice that the two columns agree on every patient we can see, which is why the copy is a fair guess.</figcaption>
+    </figure>
+    <figure class="info">
+      <svg viewBox="0 0 760 310" role="img" aria-label="Scatter plot of height against weight with a least squares line used to predict one missing weight">
+        <defs>
+          <marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" class="sv-key"/>
+          </marker>
+        </defs>
+        <text x="380" y="32" text-anchor="middle" class="sv-tb">Guess a missing number from a least squares line</text>
+        <line x1="90" y1="260" x2="520" y2="260" class="sv-line" stroke-width="1.5"/>
+        <line x1="90" y1="60" x2="90" y2="260" class="sv-line" stroke-width="1.5"/>
+        <text x="305" y="284" text-anchor="middle" class="sv-ts">Height</text>
+        <text x="66" y="160" text-anchor="middle" class="sv-ts" transform="rotate(-90 66 160)">Weight</text>
+
+        <line x1="115" y1="238" x2="500" y2="80" class="sv-stroke-acc" stroke-width="2"/>
+        <g class="sv-ink2">
+          <circle cx="140" cy="228" r="5"/><circle cx="185" cy="222" r="5"/><circle cx="225" cy="196" r="5"/>
+          <circle cx="270" cy="188" r="5"/><circle cx="315" cy="160" r="5"/><circle cx="360" cy="152" r="5"/>
+          <circle cx="410" cy="126" r="5"/><circle cx="460" cy="104" r="5"/>
+        </g>
+        <line x1="385" y1="260" x2="385" y2="127" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="5 4"/>
+        <line x1="385" y1="127" x2="90" y2="127" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ar3)"/>
+        <circle cx="385" cy="127" r="6" class="sv-key"/>
+        <text x="385" y="278" text-anchor="middle" class="sv-ts">known height</text>
+        <text x="100" y="118" class="sv-ts">predicted weight</text>
+        <text x="470" y="70" text-anchor="end" class="sv-ts">least squares line</text>
+
+        <rect x="560" y="70" width="180" height="90" rx="8" class="sv-paper2"/>
+        <text x="576" y="98" class="sv-ts">Simpler option:</text>
+        <text x="576" y="120" class="sv-ts">use the mean or the</text>
+        <text x="576" y="142" class="sv-ts">median of the column.</text>
+      </svg>
+      <figcaption>Notice that the line uses a second column you do have, so the guess follows the pattern in the data.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">Impurity reduction, with a threshold</span><div class="math">$$ \Delta I = I(\text{node}) - \left( \frac{n_L}{n}\,I(\text{left}) + \frac{n_R}{n}\,I(\text{right}) \right), \qquad \text{split only if } \Delta I > \tau $$</div><p class="explain"><b>Symbols:</b> \(I(\text{node})\) is the impurity with no split. \(I(\text{left})\) and \(I(\text{right})\) are the impurities of the two groups after the split, with counts \(n_L\) and \(n_R\) out of \(n\). \(\Delta I\) is the drop in impurity, and \(\tau\) is the threshold you choose. <b>What it tells you:</b> a column enters the tree only when it beats \(\tau\), so a larger \(\tau\) gives a simpler tree.</p></div>
+    <div class="formula"><span class="lbl">Filling a missing number from a correlated column</span><div class="math">$$ \widehat{\text{weight}} = b_0 + b_1 \times \text{height} $$</div><p class="explain"><b>Symbols:</b> \(\widehat{\text{weight}}\) is the predicted weight for the patient with the gap, and \(\text{height}\) is that patient's known height. \(b_0\) is the intercept and \(b_1\) the slope, both from the least squares fit on patients who have both values. <b>What it tells you:</b> the column you have fills in for the column you lack.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>In the first video, one patient had no answer for blocked arteries, so Josh skipped that patient. Here he fills the gap. The simple fix is the most common answer in that column.</p>
+      <p>Another fix uses chest pain, the column that matches blocked arteries most closely. Patients 1 and 3 have no in both columns, and patient 2 has yes in both. Patient 4 has yes for chest pain, so blocked arteries becomes yes.</p>
+      <p>For a number such as weight, use the mean or the median. Or fit a least squares line on height, which tracks weight closely.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Having data for a column does not mean the tree uses it. Chest pain was in the table, but it left the tree because it never lowered impurity.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The threshold is a trade. A large threshold gives a simple tree, but it can refuse a split that would have helped.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Every fill is a guess. The mean and the median ignore the rest of the patient's row. A matching column, such as chest pain or height, uses more of the data.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>How does a decision tree do feature selection?</summary><div class="a">At every node the tree compares the impurity after a split with the impurity of no split, and keeps the split only when impurity drops. A column that never wins that comparison never appears in the tree. The selection happens while the tree is built.</div></details>
+    <details class="qa" open><summary>How would you stop a decision tree from overfitting?</summary><div class="a">Trees often overfit. One fix is to require a minimum drop in impurity before you allow a split. Weak splits are refused, so the tree stays small and leans less on quirks of the training data.</div></details>
+    <details class="qa" open><summary>What are your options when a column has missing values?</summary><div class="a">For a category, use the most common value, or copy the answer from the column that matches it best. For a number, use the mean or median, or predict it from a least squares line against the most correlated column. Correlation means two columns tend to move together, so one column can guide the guess for the other.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>A tree splits on a column only when the split lowers impurity.</li>
+      <li>A column that never lowers impurity never enters the tree, which is feature selection.</li>
+      <li>Requiring a large drop gives a simpler tree that is less overfit.</li>
+      <li>Fill a missing category with the most common answer, or copy it from the closest column.</li>
+      <li>Fill a missing number with the mean, the median, or a least squares prediction.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Feature Selection, Missing Data</span><span class="board-tag">useless columns drop out, gaps get guessed</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 260" role="img" aria-label="At one node, splitting on chest pain leaves more impurity than not splitting, so no split wins and the node becomes a leaf; a split is kept only if the drop in impurity beats the threshold tau.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <line x1="34" y1="186" x2="34" y2="46" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="34" y1="186" x2="372" y2="186" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2.5" stroke-linejoin="round">
+              <rect x="72" y="76" width="96" height="110" class="sv-key-soft"/>
+              <rect x="232" y="126" width="96" height="60" class="sv-good"/>
+            </g>
+            <text x="46" y="50" class="sv-ts">impurity</text>
+            <text x="388" y="40" text-anchor="end" class="sv-t">split only if drop &gt; τ</text>
+            <text x="280" y="112" text-anchor="middle" class="sv-tb">lower wins</text>
+            <text x="120" y="210" text-anchor="middle" class="sv-ts">split on chest pain</text>
+            <text x="280" y="210" text-anchor="middle" class="sv-ts">no split</text>
+            <text x="200" y="244" text-anchor="middle" class="sv-tb">node becomes a leaf</text>
+          </svg>
+          <p>Each node keeps a split only if impurity drops by more than τ; otherwise it becomes a leaf. A column that never wins never enters the tree: automatic feature selection.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Impurity</dt><dd>How mixed the groups are.</dd>
+            <dt>Feature selection</dt><dd>Columns that never lower impurity never enter the tree.</dd>
+            <dt>Threshold \(\tau\)</dt><dd>The minimum impurity drop a split must beat.</dd>
+            <dt>Overfit</dt><dd>Good on the training data, bad on new data.</dd>
+            <dt>Correlated</dt><dd>Two columns that tend to move together.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Score the split</b>impurity after splitting on chest pain</li>
+            <li><b>Score no split</b>impurity as a leaf</li>
+            <li><b>Keep or refuse</b>split only if drop beats τ</li>
+            <li><b>Missing category</b>most common, or copy closest column</li>
+            <li><b>Missing number</b>mean, median, or least squares guess</li>
+          </ol>
+          <p class="loop">↺ steps 1 to 3 run again at every node</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\Delta I=I(\text{node})-\Big(\frac{n_L}{n}I_L+\frac{n_R}{n}I_R\Big)$$
+          $$\text{split only if }\Delta I\gt\tau$$
+          $$\widehat{w}=b_0+b_1\,h$$
+          <ul class="keys">
+            <li>\(I(\text{node})\): impurity with no split; \(I_L\), \(I_R\): each group's, with \(n_L\), \(n_R\) of \(n\) patients.</li>
+            <li>\(\tau\): your threshold; a larger \(\tau\) gives a simpler tree.</li>
+            <li>\(\widehat{w}\): weight guessed from height \(h\); \(b_0\), \(b_1\): least squares fit.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>patient</th><th>chest pain</th><th>blocked arteries</th></tr>
+            <tr><td>1</td><td>no</td><td>no</td></tr>
+            <tr><td>2</td><td>yes</td><td>yes</td></tr>
+            <tr><td>3</td><td>no</td><td>no</td></tr>
+            <tr class="final"><td>4</td><td>yes</td><td>? → yes</td></tr>
+          </table>
+          <p class="hand">The columns agree on patients 1 to 3, so patient 4 copies chest pain. Simpler: take the most common answer.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Every column in the data gets used.</span><span class="yes">Chest pain was in the table but left the tree: it never lowered impurity.</span></li>
+            <li><span class="no">A bigger threshold is always better.</span><span class="yes">Simpler tree, but it may refuse a split that would have helped.</span></li>
+            <li><span class="no">The mean or median is the best fill.</span><span class="yes">They ignore the rest of the row; a matching column uses more data.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="46-decision-and-classification-trees.html"><small>Previous</small>Decision and Classification Trees</a> <a href="48-regression-trees.html"><small>Next</small>Regression Trees</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

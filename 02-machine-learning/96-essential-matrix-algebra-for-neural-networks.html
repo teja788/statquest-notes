@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Essential Matrix Algebra for Neural Networks — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>96</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 96 · 30.0 min</div>
+    <h1>Essential Matrix Algebra for Neural Networks</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=ZTt9gsGcdDo" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: Neural Networks / Deep Learning (video 27)</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video teaches the matrix algebra you need to read neural network documentation, error messages and papers. It all rests on one rule: multiply a row by a column, then add.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh rotates a concert seat with two simple equations, then rewrites them as a matrix multiplication. The row-by-column rule exists so that several transformations can combine into one matrix. The columns of the first matrix must match the rows of the second. Transposing turns rows into columns, which lets you flip the order. A small iris network is just inputs times weights plus biases, then ReLU, then weights and biases again. With that, PyTorch's <code>nn.Linear</code> formula, a shape error and the attention equation become readable.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Neural network tools and papers describe models with matrix equations. A matrix equation is a compact way to write many multiplications and additions at once. To read them, you need one skill: matrix multiplication.</p>
+    <p>Josh starts with StatSquatch's seat at a concert. With axes centred on the stage, the seat is at (2, 1). When the stage is turned 180 degrees, the new coordinates come from two equations: new x is \(-1 \cdot x + 0 \cdot y\), and new y is \(0 \cdot x - 1 \cdot y\). Plugging in (2, 1) gives (−2, −1).</p>
+    <p>These equations only multiply and add, so they form a <b>linear transformation</b>. A constant change in the input gives a constant change in the output. For new x, inputs 2, 3, 4 give −2, −3, −4, a steady drop of 1. In contrast, \(2^x\) gives 4, 8, 16, so the change keeps growing. That is a <b>nonlinear transformation</b>. Matrix algebra is especially useful for linear ones.</p>
+    <p>In matrix form, the old coordinates go into a <b>row matrix</b>: one row and two columns, so a 1 by 2 matrix. The coefficients go into a 2 by 2 <b>transformation matrix</b>. Each equation's coefficients fill one column. Then you multiply the row by each column and add the products.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 290" role="img" aria-label="Row matrix 2, 1 times a 2 by 2 rotation matrix gives the row matrix minus 2, minus 1, with shapes 1 by 2 times 2 by 2 equals 1 by 2">
+        <text x="20" y="40" class="sv-tb">Row × column: the 180° stage rotation</text>
+        <!-- row matrix a -->
+        <rect x="48" y="104" width="94" height="32" class="sv-acc-soft"/>
+        <path d="M48,100 H40 V140 H48" class="sv-stroke-ink" stroke-width="2"/>
+        <path d="M142,100 H150 V140 H142" class="sv-stroke-ink" stroke-width="2"/>
+        <text x="72" y="126" text-anchor="middle" class="sv-t">2</text>
+        <text x="118" y="126" text-anchor="middle" class="sv-t">1</text>
+        <text x="175" y="127" text-anchor="middle" class="sv-tb">×</text>
+        <!-- transformation matrix W -->
+        <rect x="208" y="84" width="50" height="72" class="sv-key-soft"/>
+        <path d="M208,80 H200 V160 H208" class="sv-stroke-ink" stroke-width="2"/>
+        <path d="M312,80 H320 V160 H312" class="sv-stroke-ink" stroke-width="2"/>
+        <text x="233" y="114" text-anchor="middle" class="sv-t">−1</text>
+        <text x="288" y="114" text-anchor="middle" class="sv-t">0</text>
+        <text x="233" y="146" text-anchor="middle" class="sv-t">0</text>
+        <text x="288" y="146" text-anchor="middle" class="sv-t">−1</text>
+        <text x="345" y="127" text-anchor="middle" class="sv-tb">=</text>
+        <!-- result b -->
+        <rect x="378" y="104" width="104" height="32" class="sv-good-soft"/>
+        <path d="M378,100 H370 V140 H378" class="sv-stroke-ink" stroke-width="2"/>
+        <path d="M482,100 H490 V140 H482" class="sv-stroke-ink" stroke-width="2"/>
+        <text x="404" y="126" text-anchor="middle" class="sv-t">−2</text>
+        <text x="458" y="126" text-anchor="middle" class="sv-t">−1</text>
+        <!-- calculation -->
+        <text x="520" y="100" class="sv-ts">New x = row · column 1</text>
+        <text x="520" y="120" class="sv-tm">2×(−1) + 1×0 = −2</text>
+        <text x="520" y="152" class="sv-ts">New y = row · column 2</text>
+        <text x="520" y="172" class="sv-tm">2×0 + 1×(−1) = −1</text>
+        <!-- shapes -->
+        <text x="95" y="205" text-anchor="middle" class="sv-tm">1 × 2</text>
+        <text x="260" y="205" text-anchor="middle" class="sv-tm">2 × 2</text>
+        <text x="430" y="205" text-anchor="middle" class="sv-tm">1 × 2</text>
+        <path d="M115,212 Q180,252 245,212" class="sv-stroke-key" stroke-width="2"/>
+        <text x="180" y="266" text-anchor="middle" class="sv-ts">inner sizes must match (2 = 2)</text>
+        <text x="430" y="232" text-anchor="middle" class="sv-ts">result keeps the outer sizes</text>
+      </svg>
+      <figcaption>Each output is one row times one column, summed; this works because both have length 2.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li><b>Apply a second transformation.</b> The stage then turns 90 degrees clockwise. Newest x is \(0 \cdot x + 1 \cdot y\) and newest y is \(-1 \cdot x + 0 \cdot y\). Multiplying (−2, −1) by this matrix gives (−1, 2).</li>
+      <li><b>See why the rule is row by column.</b> Multiply the first transformation matrix by the second, row by column. Each new row of the first matrix starts a new row in the output. The result is one 2 by 2 matrix that sends (2, 1) straight to (−1, 2). That is why the rule looks odd: it lets transformations combine.</li>
+      <li><b>Respect the order and the shapes.</b> Because the rule is row by column, you cannot just swap the two matrices. The columns of the first must equal the rows of the second.</li>
+      <li><b>Transpose to flip the order.</b> <b>Transposing</b>, written with a superscript T, turns each row into a column. A 1 by 2 row becomes a 2 by 1 column. After transposing every matrix, the product runs in reverse order and the answer is a column.</li>
+      <li><b>Name the matrices.</b> Single-row or single-column matrices get lowercase letters; bigger ones get uppercase. So the seat example becomes \(aW = b\), with W the combined matrix. One entry gets row and column indices, like \(w_{2,1}\).</li>
+      <li><b>Map it onto a neural network.</b> The iris network takes petal width and sepal width and predicts the species. Its first layer multiplies inputs by weights and adds them, just like the seat equations. So it is a row of inputs times a weight matrix, plus a row of biases. Each value then goes through ReLU, which outputs the input or zero, whichever is larger.</li>
+      <li><b>Finish the network.</b> The ReLU outputs are multiplied by a second weight matrix with three columns, giving a 1 by 3 row. Adding biases gives one score per species: Setosa, Versicolor and Virginica.</li>
+      <li><b>Read real equations.</b> Josh then decodes PyTorch's <code>nn.Linear</code> formula, a dimension error message, and the attention equation.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 380" role="img" aria-label="Iris neural network with inputs 0.5 and 0.4, weights, biases 1.6 and 0.7, ReLU outputs 0.6 and 0.1, written as inputs times W1 plus b1">
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-ink3"/></marker>
+        </defs>
+        <text x="20" y="40" class="sv-tb">The first layer is one matrix multiplication plus biases</text>
+        <!-- edges -->
+        <line x1="110" y1="110" x2="274" y2="110" class="sv-stroke-acc" stroke-width="2"/>
+        <line x1="110" y1="250" x2="274" y2="250" class="sv-stroke-acc" stroke-width="2"/>
+        <line x1="104" y1="128" x2="278" y2="236" class="sv-stroke-acc" stroke-width="2"/>
+        <line x1="104" y1="232" x2="278" y2="124" class="sv-stroke-acc" stroke-width="2"/>
+        <!-- weight labels -->
+        <rect x="132" y="100" width="40" height="20" class="sv-paper"/>
+        <text x="152" y="115" text-anchor="middle" class="sv-tm">−2.5</text>
+        <rect x="132" y="240" width="40" height="20" class="sv-paper"/>
+        <text x="152" y="255" text-anchor="middle" class="sv-tm">0.4</text>
+        <rect x="208" y="147" width="40" height="20" class="sv-paper"/>
+        <text x="228" y="162" text-anchor="middle" class="sv-tm">0.6</text>
+        <rect x="208" y="193" width="40" height="20" class="sv-paper"/>
+        <text x="228" y="208" text-anchor="middle" class="sv-tm">−1.5</text>
+        <!-- inputs -->
+        <circle cx="80" cy="110" r="30" class="sv-acc-soft"/>
+        <circle cx="80" cy="110" r="30" class="sv-stroke-acc" stroke-width="2"/>
+        <text x="80" y="106" text-anchor="middle" class="sv-ts">Petal</text>
+        <text x="80" y="123" text-anchor="middle" class="sv-tb">0.5</text>
+        <circle cx="80" cy="250" r="30" class="sv-acc-soft"/>
+        <circle cx="80" cy="250" r="30" class="sv-stroke-acc" stroke-width="2"/>
+        <text x="80" y="246" text-anchor="middle" class="sv-ts">Sepal</text>
+        <text x="80" y="263" text-anchor="middle" class="sv-tb">0.4</text>
+        <!-- weighted sums -->
+        <circle cx="300" cy="110" r="26" class="sv-paper2"/>
+        <circle cx="300" cy="110" r="26" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="300" y="115" text-anchor="middle" class="sv-t">−1.0</text>
+        <circle cx="300" cy="250" r="26" class="sv-paper2"/>
+        <circle cx="300" cy="250" r="26" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="300" y="255" text-anchor="middle" class="sv-t">−0.6</text>
+        <!-- bias arrows -->
+        <line x1="326" y1="110" x2="438" y2="110" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="326" y1="250" x2="438" y2="250" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#arr)"/>
+        <text x="382" y="100" text-anchor="middle" class="sv-tm">+1.6</text>
+        <text x="382" y="240" text-anchor="middle" class="sv-tm">+0.7</text>
+        <!-- ReLU boxes -->
+        <rect x="440" y="92" width="120" height="36" rx="5" class="sv-key-soft"/>
+        <text x="500" y="115" text-anchor="middle" class="sv-t">ReLU(0.6) = 0.6</text>
+        <rect x="440" y="232" width="120" height="36" rx="5" class="sv-key-soft"/>
+        <text x="500" y="255" text-anchor="middle" class="sv-t">ReLU(0.1) = 0.1</text>
+        <line x1="560" y1="110" x2="598" y2="150" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="560" y1="250" x2="598" y2="210" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#arr)"/>
+        <!-- output -->
+        <rect x="600" y="120" width="140" height="120" rx="6" class="sv-good-soft"/>
+        <text x="670" y="146" text-anchor="middle" class="sv-tm">× W2 + b2</text>
+        <text x="670" y="176" text-anchor="middle" class="sv-ts">Setosa</text>
+        <text x="670" y="198" text-anchor="middle" class="sv-tb">Versicolor</text>
+        <text x="670" y="220" text-anchor="middle" class="sv-ts">Virginica</text>
+        <!-- matrix form -->
+        <rect x="20" y="304" width="720" height="56" rx="6" class="sv-paper2"/>
+        <text x="380" y="328" text-anchor="middle" class="sv-tm">[0.5  0.4] × W1 = [−1.0  −0.6];   + [1.6  0.7] = [0.6  0.1]</text>
+        <text x="380" y="348" text-anchor="middle" class="sv-ts">W1 column 1 = (−2.5, 0.6) feeds the top node; column 2 = (−1.5, 0.4) feeds the bottom node</text>
+      </svg>
+      <figcaption>Each hidden node's weights form one column of W1, so the first layer is one matrix product plus a bias row.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">Row by column multiplication</span><div class="math">$$ (AB)_{i,j} = a_{i,1}b_{1,j} + a_{i,2}b_{2,j} + \dots + a_{i,n}b_{n,j} $$</div><p class="explain"><b>Symbols:</b> \(A\) and \(B\) are the two matrices. \((AB)_{i,j}\) is the result's entry in row \(i\), column \(j\). \(a_{i,k}\) is row \(i\), column \(k\) of \(A\), and \(b_{k,j}\) is row \(k\), column \(j\) of \(B\). \(n\) is the number of columns of \(A\), which must equal the rows of \(B\). <b>What it tells you:</b> each output number is one row of \(A\) times one column of \(B\), summed. Shapes follow \((r \times n)(n \times c) \rightarrow (r \times c)\).</p></div>
+    <div class="formula"><span class="lbl">Same equation, transposed</span><div class="math">$$ aW = b \quad\Longleftrightarrow\quad W^{T}a^{T} = b^{T} $$</div><p class="explain"><b>Symbols:</b> \(a\) is the 1 by 2 row of original coordinates. \(W\) is the 2 by 2 combined matrix. \(b\) is the 1 by 2 row of new coordinates. \(T\) means transpose, so \(a^{T}\) and \(b^{T}\) are 2 by 1 columns. <b>What it tells you:</b> to reverse the order of a product, transpose every matrix; the numbers stay the same.</p></div>
+    <div class="formula"><span class="lbl">Combining transformations</span><div class="math">$$ (aW_1)\,W_2 = a\,(W_1W_2) $$</div><p class="explain"><b>Symbols:</b> \(W_1\) is the 180° rotation and \(W_2\) is the 90° clockwise rotation. \(W_1W_2\) is their combined 2 by 2 matrix. <b>What it tells you:</b> applying two transformations one after another equals applying their product once.</p></div>
+    <div class="formula"><span class="lbl">The iris network in one line</span><div class="math">$$ \text{output} = \mathrm{ReLU}(aW_1 + b_1)\,W_2 + b_2 $$</div><p class="explain"><b>Symbols:</b> \(a\) is the 1 by 2 input row (petal width, sepal width). \(W_1\) is the 2 by 2 first-layer weight matrix, and \(b_1\) the 1 by 2 bias row. ReLU keeps the larger of zero and each value. \(W_2\) is the 2 by 3 second-layer weight matrix, and \(b_2\) the 1 by 3 bias row. <b>What it tells you:</b> each layer is multiply by weights, then add biases.</p></div>
+    <div class="formula"><span class="lbl">PyTorch nn.Linear</span><div class="math">$$ y = xA^{T} + b $$</div><p class="explain"><b>Symbols:</b> \(x\) is the row of inputs, \(A\) holds the weights, \(b\) is the row of biases, and \(y\) is the output. <b>What it tells you:</b> <code>nn.Linear</code> stores weights in rows, but the math needs them in columns, so it uses \(A^{T}\). The name "linear" comes from the linear transformation it performs.</p></div>
+    <div class="formula"><span class="lbl">Attention</span><div class="math">$$ \mathrm{Attention}(Q,K,V) = \mathrm{SoftMax}\!\left(\frac{QK^{T}}{\sqrt{d_k}}\right)V $$</div><p class="explain"><b>Symbols:</b> \(Q\), \(K\) and \(V\) are three matrices, and \(K^{T}\) is \(K\) transposed. \(d_k\) is a number, set to 2 in the video's example. SoftMax is a function applied to the scaled result. <b>What it tells you:</b> attention is matrix multiplications, one division and one SoftMax.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example 1 · Two stage rotations</span>
+      <p>The 180° and 90° clockwise matrices, one equation per column, are:</p>
+      $$ W_1 = \begin{bmatrix} -1 &amp; 0 \\ 0 &amp; -1 \end{bmatrix}, \qquad W_2 = \begin{bmatrix} 0 &amp; -1 \\ 1 &amp; 0 \end{bmatrix} $$
+      <p>First rotation: \([2\;\;1]\,W_1 = [2(-1)+1(0),\;\; 2(0)+1(-1)] = [-2\;\;-1]\).</p>
+      <p>Second rotation: \([-2\;\;-1]\,W_2 = [(-2)(0)+(-1)(1),\;\; (-2)(-1)+(-1)(0)] = [-1\;\;2]\).</p>
+      <p>Combined matrix, row by column:</p>
+      $$ W_1W_2 = \begin{bmatrix} (-1)(0)+(0)(1) &amp; (-1)(-1)+(0)(0) \\ (0)(0)+(-1)(1) &amp; (0)(-1)+(-1)(0) \end{bmatrix} = \begin{bmatrix} 0 &amp; 1 \\ -1 &amp; 0 \end{bmatrix} $$
+      <p>Check: \([2\;\;1]\,W_1W_2 = [2(0)+1(-1),\;\; 2(1)+1(0)] = [-1\;\;2]\). The seat goes straight from (2, 1) to (−1, 2). The bottom-left −1 of this combined matrix is \(w_{2,1}\).</p>
+    </div>
+    <div class="example"><span class="lbl">Example 2 · The iris network, first layer</span>
+      <p>Petal width is 0.5 and sepal width is 0.4.</p>
+      $$ [0.5\;\;0.4]\begin{bmatrix} -2.5 &amp; -1.5 \\ 0.6 &amp; 0.4 \end{bmatrix} = [0.5(-2.5)+0.4(0.6),\;\; 0.5(-1.5)+0.4(0.4)] = [-1.01\;\;-0.59] $$
+      <p>The video rounds this to \([-1.0\;\;-0.6]\). Adding the biases \([1.6\;\;0.7]\) gives \([0.6\;\;0.1]\). Both are above zero, so ReLU passes them through unchanged. Multiplying by \(W_2\) and adding \(b_2\) gives three scores. Versicolor's score is closest to one, so the network predicts Versicolor.</p>
+    </div>
+    <div class="example"><span class="lbl">Example 3 · Attention with tiny matrices</span>
+      <p>Josh uses row matrices for \(Q\), \(K\) and \(V\) to keep it small. \(QK^{T}\) is a 1 by 1 matrix, 11.7. With \(d_k = 2\), \(11.7 / \sqrt{2} \approx 8.3\). SoftMax of a single number gives 1.0. Multiplying that by \(V\) gives the two attention values.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out · Order matters</span> You cannot swap two matrices and expect the same result. In the seat example, \(Wa\) does not even work. Each row of \(W\) has two numbers, but each column of \(a\) has only one. You can multiply 0 by 2, but the 1 has nothing to pair with.</div>
+    <div class="pitfall"><span class="lbl">Watch out · Row versus column conventions</span> With a row of inputs, each node's weights sit in a column of the weight matrix. PyTorch's <code>nn.Linear</code> keeps weights in rows instead, which is why its formula has \(A^{T}\). Notation varies in the wild, so be flexible.</div>
+    <div class="pitfall"><span class="lbl">Watch out · 1D versus 2D inputs</span> A one-dimensional matrix is a single row or column. Josh shows an error from a function that expected at least two dimensions. The fix is to look hard at the shape of the data you pass in.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>Why is matrix multiplication done row by column?</summary><div class="a">Because that rule lets you combine transformations. Multiplying two transformation matrices row by column gives one matrix that does both steps at once. In the video, a 180° and a 90° rotation combine into one matrix that sends (2, 1) straight to (−1, 2).</div></details>
+    <details class="qa" open><summary>When can you multiply two matrices, and what shape is the result?</summary><div class="a">The columns of the first matrix must equal the rows of the second. The result has the rows of the first and the columns of the second. So a 1 by 2 row times a 2 by 3 matrix gives a 1 by 3 row.</div></details>
+    <details class="qa" open><summary>Write a one-hidden-layer network as a matrix equation.</summary><div class="a">The output is ReLU of \(aW_1 + b_1\), times \(W_2\), plus \(b_2\). Here \(a\) is a row of inputs, and each \(W\) has one column per node in the next layer. The \(b\)s are rows of biases. For the iris network, a 1 by 2 input ends as a 1 by 3 output.</div></details>
+    <details class="qa" open><summary>Why does nn.Linear compute \(xA^{T} + b\) instead of \(xA + b\)?</summary><div class="a">PyTorch stores the weights in rows. For a row of inputs to be multiplied row by column, the weights need to be in columns. Transposing \(A\) does exactly that swap. It is still inputs times weights plus biases, a linear transformation.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>A linear transformation only multiplies and adds, so equal steps in the input give equal steps in the output.</li>
+      <li>Multiply row by column and add; this rule lets transformations combine into one matrix.</li>
+      <li>The columns of the first matrix must match the rows of the second, so order matters.</li>
+      <li>Transposing turns rows into columns, and \(aW = b\) becomes \(W^{T}a^{T} = b^{T}\).</li>
+      <li>The iris network is \(\mathrm{ReLU}(aW_1 + b_1)W_2 + b_2\): weights and biases, ReLU, then weights and biases again.</li>
+      <li>PyTorch's <code>nn.Linear</code> uses \(xA^{T} + b\) because it stores weights in rows.</li>
+      <li>Attention is \(\mathrm{SoftMax}(QK^{T}/\sqrt{d_k})V\): multiplications, a division and a SoftMax.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Essential Matrix Algebra</span><span class="board-tag">multiply row by column, then add</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 246" role="img" aria-label="The seat row 2, 1 times W1 gives minus 2, minus 1, then times W2 gives minus 1, 2, and the single matrix W1W2 does both at once; each new number is a row times a column, so new x is 2 times minus 1 plus 1 times 0, which is minus 2.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <rect x="26" y="52" width="60" height="40" class="sv-paper"/>
+            <rect x="162" y="52" width="76" height="40" class="sv-key-soft"/>
+            <rect x="312" y="52" width="64" height="40" class="sv-good-soft"/>
+            <g class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M26 48 H18 V96 H26 M86 48 H94 V96 H86"/>
+              <path d="M162 48 H154 V96 H162 M238 48 H246 V96 H238"/>
+              <path d="M312 48 H304 V96 H312 M376 48 H384 V96 H376"/>
+              <line x1="100" y1="72" x2="148" y2="72" marker-end="url(#board-arr)"/>
+              <line x1="252" y1="72" x2="298" y2="72" marker-end="url(#board-arr)"/>
+            </g>
+            <path d="M56 104 Q200 176 344 104" class="sv-stroke-key" stroke-width="3" stroke-dasharray="7 6" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="56" y="79" text-anchor="middle" class="sv-tb">2&#160;&#160;1</text>
+            <text x="200" y="79" text-anchor="middle" class="sv-tb">−2&#160;&#160;−1</text>
+            <text x="344" y="79" text-anchor="middle" class="sv-tb">−1&#160;&#160;2</text>
+            <text x="124" y="42" text-anchor="middle" class="sv-t">× W1</text>
+            <text x="275" y="42" text-anchor="middle" class="sv-t">× W2</text>
+            <text x="200" y="166" text-anchor="middle" class="sv-tb">× W1W2: one matrix</text>
+            <text x="200" y="200" text-anchor="middle" class="sv-t">new x = row × column 1</text>
+            <text x="200" y="226" text-anchor="middle" class="sv-tm">2(−1) + 1(0) = −2</text>
+          </svg>
+          <p>Each new number is one row times one column, added up. With the seat (2, 1) as a row, \(W_1\) turns the stage 180° and \(W_2\) turns it 90° clockwise. Because the rule is row by column, the two combine into one matrix, \(W_1W_2\).</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Linear transformation</dt><dd>Only multiplies and adds, so equal input steps give equal output steps.</dd>
+            <dt>Row matrix</dt><dd>One row of numbers, like the 1 by 2 seat (2, 1).</dd>
+            <dt>Transformation matrix</dt><dd>The 2 by 2 coefficients, one equation per column.</dd>
+            <dt>Transpose</dt><dd>Written T; turns each row into a column.</dd>
+            <dt>ReLU</dt><dd>Outputs the input or zero, whichever is larger.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Turn twice</b>180°, then 90° clockwise</li>
+            <li><b>Combine</b>\(W_1W_2\) does both at once</li>
+            <li><b>Match shapes</b>columns of first = rows of second</li>
+            <li><b>Transpose</b>rows become columns, order flips</li>
+            <li><b>Iris network</b>weights, biases, ReLU, weights, biases</li>
+            <li><b>Read equations</b>nn.Linear, a dimension error, attention</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$(AB)_{i,j}=a_{i,1}b_{1,j}+\dots+a_{i,n}b_{n,j}$$
+          $$aW=b\;\Longleftrightarrow\;W^{T}a^{T}=b^{T}$$
+          $$\text{output}=\mathrm{ReLU}(aW_1+b_1)\,W_2+b_2$$
+          <ul class="keys">
+            <li>\(n\) = columns of \(A\) = rows of \(B\), so \((r\times n)(n\times c)\rightarrow(r\times c)\).</li>
+            <li>\(T\) = transpose; in \(aW=b\), \(b\) is the new row.</li>
+            <li>\(b_1, b_2\) are bias rows; \(W_1\) is 2 by 2, \(W_2\) is 2 by 3.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>step</th><th>row</th><th>shape</th></tr>
+            <tr><td>input</td><td>[0.5 0.4]</td><td>1×2</td></tr>
+            <tr><td>× W1</td><td>[−1.0 −0.6]</td><td>1×2</td></tr>
+            <tr><td>+ [1.6 0.7]</td><td>[0.6 0.1]</td><td>1×2</td></tr>
+            <tr><td>ReLU</td><td>[0.6 0.1]</td><td>1×2</td></tr>
+            <tr class="final"><td>× W2 + b2</td><td>Versicolor ✓</td><td>1×3</td></tr>
+          </table>
+          <p class="hand">[−1.01 −0.59] rounds to [−1.0 −0.6]. Both end above zero, so ReLU passes them; Versicolor scores closest to one.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Swapping two matrices gives the same answer.</span><span class="yes">Order matters. \(Wa\) fails: rows of \(W\) hold two numbers, columns of \(a\) only one.</span></li>
+            <li><span class="no">Weights always sit in columns.</span><span class="yes">nn.Linear keeps them in rows, so it computes \(xA^{T}+b\). Notation varies; be flexible.</span></li>
+            <li><span class="no">Any one-dimensional row works as input.</span><span class="yes">A function may expect at least two dimensions. Look hard at the shape you pass in.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="95-tensors-for-neural-networks.html"><small>Previous</small>Tensors for Neural Networks</a> <a href="97-the-matrix-math-behind-transformer-neural-networks-one-step.html"><small>Next</small>The matrix math behind transformer neural networks, one step at a time</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

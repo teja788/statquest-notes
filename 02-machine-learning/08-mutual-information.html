@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mutual Information — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>08</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 08 · 16.2 min</div>
+    <h1>Mutual Information</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=eJIp_mgVLwE" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Mutual information is one number that says how closely two variables are related. It works when the variables are yes/no, when they are numbers, or when you mix the two.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh wants to drop useless features from a data set. R squared cannot help here, because it needs continuous data on both sides. So he counts joint and marginal probabilities in a small table, and feeds them into the mutual information formula. The value is zero when one variable never changes, and it grows when changes in one variable track changes in the other. For a continuous variable like height, he first cuts the values into histogram bins, then treats each bin as a category.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>The data set has five people and several features: likes popcorn, height, and more. We want to predict one thing: does this person love the movie Troll 2? Collecting every feature costs time, so we want to keep only the features that help.</p>
+    <p>The usual tool is R squared, but R squared only works with continuous data. Loves Troll 2 is yes or no. Likes popcorn is also yes or no. We need a measure that does not care about the data type. Mutual information is that measure.</p>
+    <p>It is built from two kinds of probability. A <strong>joint probability</strong> is the chance that two things happen together. Three of the five people like popcorn and love Troll 2, so that joint probability is 3/5. A <strong>marginal probability</strong> is the chance of one thing alone. Two of the five people do not like popcorn, so that marginal probability is 2/5.</p>
+    <p>Josh puts all of them in one small table. The joint probabilities sit in the middle. The marginal probabilities sit along the edges, and that is where the name comes from. You can read a marginal probability straight from the data, or add up the joint probabilities in that row or column. Both routes give the same answer.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Five rows of raw data turn into a table of joint probabilities with marginal probabilities in the margins">
+        <defs>
+          <marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" class="sv-acc"/>
+          </marker>
+        </defs>
+        <rect x="0" y="0" width="760" height="300" class="sv-paper"/>
+
+        <text x="20" y="32" class="sv-tb">The 5 people</text>
+        <rect x="20" y="44" width="250" height="32" class="sv-paper2"/>
+        <rect x="20" y="44" width="250" height="212" class="sv-line" stroke-width="1"/>
+        <text x="82" y="65" class="sv-ts" text-anchor="middle">Likes popcorn</text>
+        <text x="207" y="65" class="sv-ts" text-anchor="middle">Loves Troll 2</text>
+        <line x1="145" y1="44" x2="145" y2="256" class="sv-line" stroke-width="1"/>
+        <line x1="20" y1="76" x2="270" y2="76" class="sv-line" stroke-width="1"/>
+        <line x1="20" y1="112" x2="270" y2="112" class="sv-line" stroke-width="1"/>
+        <line x1="20" y1="148" x2="270" y2="148" class="sv-line" stroke-width="1"/>
+        <line x1="20" y1="184" x2="270" y2="184" class="sv-line" stroke-width="1"/>
+        <line x1="20" y1="220" x2="270" y2="220" class="sv-line" stroke-width="1"/>
+        <text x="82" y="99" class="sv-tm" text-anchor="middle">Yes</text><text x="207" y="99" class="sv-tm" text-anchor="middle">Yes</text>
+        <text x="82" y="135" class="sv-tm" text-anchor="middle">Yes</text><text x="207" y="135" class="sv-tm" text-anchor="middle">Yes</text>
+        <text x="82" y="171" class="sv-tm" text-anchor="middle">Yes</text><text x="207" y="171" class="sv-tm" text-anchor="middle">Yes</text>
+        <text x="82" y="207" class="sv-tm" text-anchor="middle">No</text><text x="207" y="207" class="sv-tm" text-anchor="middle">Yes</text>
+        <text x="82" y="243" class="sv-tm" text-anchor="middle">No</text><text x="207" y="243" class="sv-tm" text-anchor="middle">No</text>
+
+        <line x1="285" y1="150" x2="338" y2="150" class="sv-stroke-acc" stroke-width="2" marker-end="url(#ar1)"/>
+        <text x="311" y="140" class="sv-ts" text-anchor="middle">count</text>
+
+        <text x="520" y="34" class="sv-tb" text-anchor="middle">Likes popcorn</text>
+        <rect x="610" y="60" width="90" height="178" class="sv-paper2"/>
+        <rect x="355" y="192" width="345" height="46" class="sv-paper2"/>
+        <rect x="355" y="60" width="345" height="40" class="sv-paper2"/>
+        <rect x="430" y="100" width="90" height="46" class="sv-acc-soft"/>
+        <rect x="355" y="60" width="345" height="178" class="sv-line" stroke-width="1"/>
+        <line x1="430" y1="60" x2="430" y2="238" class="sv-line" stroke-width="1"/>
+        <line x1="520" y1="60" x2="520" y2="238" class="sv-line" stroke-width="1"/>
+        <line x1="610" y1="60" x2="610" y2="238" class="sv-line" stroke-width="1"/>
+        <line x1="355" y1="100" x2="700" y2="100" class="sv-line" stroke-width="1"/>
+        <line x1="355" y1="146" x2="700" y2="146" class="sv-line" stroke-width="1"/>
+        <line x1="355" y1="192" x2="700" y2="192" class="sv-line" stroke-width="1"/>
+        <text x="392" y="85" class="sv-ts" text-anchor="middle">Troll 2</text>
+        <text x="475" y="85" class="sv-ts" text-anchor="middle">Yes</text>
+        <text x="565" y="85" class="sv-ts" text-anchor="middle">No</text>
+        <text x="655" y="85" class="sv-ts" text-anchor="middle">total</text>
+        <text x="392" y="128" class="sv-ts" text-anchor="middle">Yes</text>
+        <text x="392" y="174" class="sv-ts" text-anchor="middle">No</text>
+        <text x="392" y="220" class="sv-ts" text-anchor="middle">total</text>
+        <text x="475" y="128" class="sv-tm" text-anchor="middle">3/5</text>
+        <text x="565" y="128" class="sv-tm" text-anchor="middle">1/5</text>
+        <text x="655" y="128" class="sv-tm" text-anchor="middle">4/5</text>
+        <text x="475" y="174" class="sv-tm" text-anchor="middle">0/5</text>
+        <text x="565" y="174" class="sv-tm" text-anchor="middle">1/5</text>
+        <text x="655" y="174" class="sv-tm" text-anchor="middle">1/5</text>
+        <text x="475" y="220" class="sv-tm" text-anchor="middle">3/5</text>
+        <text x="565" y="220" class="sv-tm" text-anchor="middle">2/5</text>
+        <text x="655" y="220" class="sv-tm" text-anchor="middle">1</text>
+        <text x="20" y="280" class="sv-ts">Joint probabilities sit in the middle. Marginal probabilities sit in the margins.</text>
+      </svg>
+      <figcaption>Notice that each margin value is the sum of the joint values in its own row or column.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Pick the pair you care about: one feature, such as likes popcorn, and the thing you want to predict, loves Troll 2.</li>
+      <li>Count every combination and write the four joint probabilities into the middle of the table.</li>
+      <li>Fill the margins. Add each row of joint probabilities, and add each column, to get the marginal probabilities.</li>
+      <li>Expand the two summations. Each summation runs over the values of one variable, so a yes/no pair gives four terms.</li>
+      <li>Plug the numbers into each term, take the logarithm, and add the terms together. Josh uses the natural log, because that is the default in most machine learning tools.</li>
+      <li>Repeat for the other features. Compare the values, and keep the features with the higher mutual information.</li>
+    </ol>
+
+    <p>To show what the number means, Josh edits the data three times and recomputes. When likes popcorn is yes for everybody, the mutual information is zero. A column that never changes can tell you nothing about a column that does.</p>
+    <p>When both columns change in exactly the same way, the value rises to about 0.5. When both columns change in exactly opposite ways, the value is again about 0.5. Mutual information measures how much the changes are linked, not which direction they point.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 272" role="img" aria-label="Four versions of the data with their mutual information values: 0.22, 0, about 0.5 and about 0.5">
+        <rect x="0" y="0" width="760" height="272" class="sv-paper"/>
+        <text x="20" y="26" class="sv-tb">Same question, four versions of the popcorn column</text>
+
+        <rect x="20" y="40" width="165" height="212" class="sv-paper2"/>
+        <text x="102" y="62" class="sv-ts" text-anchor="middle">Original data</text>
+        <text x="74" y="90" class="sv-ts" text-anchor="middle">popcorn</text>
+        <text x="131" y="90" class="sv-ts" text-anchor="middle">Troll 2</text>
+        <rect x="50" y="98" width="48" height="16" class="sv-acc-soft"/><text x="74" y="111" class="sv-ts" text-anchor="middle">Yes</text>
+        <rect x="107" y="98" width="48" height="16" class="sv-acc-soft"/><text x="131" y="111" class="sv-ts" text-anchor="middle">Yes</text>
+        <rect x="50" y="118" width="48" height="16" class="sv-acc-soft"/><text x="74" y="131" class="sv-ts" text-anchor="middle">Yes</text>
+        <rect x="107" y="118" width="48" height="16" class="sv-acc-soft"/><text x="131" y="131" class="sv-ts" text-anchor="middle">Yes</text>
+        <rect x="50" y="138" width="48" height="16" class="sv-acc-soft"/><text x="74" y="151" class="sv-ts" text-anchor="middle">Yes</text>
+        <rect x="107" y="138" width="48" height="16" class="sv-acc-soft"/><text x="131" y="151" class="sv-ts" text-anchor="middle">Yes</text>
+        <rect x="50" y="158" width="48" height="16" class="sv-key-soft"/><text x="74" y="171" class="sv-ts" text-anchor="middle">No</text>
+        <rect x="107" y="158" width="48" height="16" class="sv-acc-soft"/><text x="131" y="171" class="sv-ts" text-anchor="middle">Yes</text>
+        <rect x="50" y="178" width="48" height="16" class="sv-key-soft"/><text x="74" y="191" class="sv-ts" text-anchor="middle">No</text>
+        <rect x="107" y="178" width="48" height="16" class="sv-key-soft"/><text x="131" y="191" class="sv-ts" text-anchor="middle">No</text>
+        <text x="102" y="230" class="sv-tb" text-anchor="middle">MI = 0.22</text>
+
+        <rect x="205" y="40" width="165" height="212" class="sv-paper2"/>
+        <text x="287" y="62" class="sv-ts" text-anchor="middle">Popcorn never changes</text>
+        <text x="259" y="90" class="sv-ts" text-anchor="middle">popcorn</text>
+        <text x="316" y="90" class="sv-ts" text-anchor="middle">Troll 2</text>
+        <rect x="235" y="98" width="48" height="16" class="sv-acc-soft"/><text x="259" y="111" class="sv-ts" text-anchor="middle">Yes</text>
+        <rect x="292" y="98" width="48" height="16" class="sv-acc-soft"/><text x="316" y="111" class="sv-ts" text-anchor="middle">Yes</text>
+        <rect x="235" y="118" width="48" height="16" class="sv-acc-soft"/><text x="259" y="131" class="sv-ts" text-anchor="middle">Yes</text>
+        <rect x="292" y="118" width="48" height="16" class="sv-acc-soft"/><text x="316" y="131" class="sv-ts" text-anchor="middle">Yes</text>
+        <rect x="235" y="138" width="48" height="16" class="sv-acc-soft"/><text x="259" y="151" class="sv-ts" text-anchor="middle">Yes</text>
+        <rect x="292" y="138" width="48" height="16" class="sv-acc-soft"/><text x="316" y="151" class="sv-ts" text-anchor="middle">Yes</text>
+        <rect x="235" y="158" width="48" height="16" class="sv-acc-soft"/><text x="259" y="171" class="sv-ts" text-anchor="middle">Yes</text>
+        <rect x="292" y="158" width="48" height="16" class="sv-acc-soft"/><text x="316" y="171" class="sv-ts" text-anchor="middle">Yes</text>
+        <rect x="235" y="178" width="48" height="16" class="sv-acc-soft"/><text x="259" y="191" class="sv-ts" text-anchor="middle">Yes</text>
+        <rect x="292" y="178" width="48" height="16" class="sv-key-soft"/><text x="316" y="191" class="sv-ts" text-anchor="middle">No</text>
+        <text x="287" y="230" class="sv-tb" text-anchor="middle">MI = 0</text>
+
+        <rect x="390" y="40" width="165" height="212" class="sv-paper2"/>
+        <text x="472" y="62" class="sv-ts" text-anchor="middle">Both change, same way</text>
+        <text x="444" y="90" class="sv-ts" text-anchor="middle">popcorn</text>
+        <text x="501" y="90" class="sv-ts" text-anchor="middle">Troll 2</text>
+        <rect x="420" y="98" width="48" height="16" class="sv-acc-soft"/><text x="444" y="111" class="sv-ts" text-anchor="middle">Yes</text>
+        <rect x="477" y="98" width="48" height="16" class="sv-acc-soft"/><text x="501" y="111" class="sv-ts" text-anchor="middle">Yes</text>
+        <rect x="420" y="118" width="48" height="16" class="sv-acc-soft"/><text x="444" y="131" class="sv-ts" text-anchor="middle">Yes</text>
+        <rect x="477" y="118" width="48" height="16" class="sv-acc-soft"/><text x="501" y="131" class="sv-ts" text-anchor="middle">Yes</text>
+        <rect x="420" y="138" width="48" height="16" class="sv-acc-soft"/><text x="444" y="151" class="sv-ts" text-anchor="middle">Yes</text>
+        <rect x="477" y="138" width="48" height="16" class="sv-acc-soft"/><text x="501" y="151" class="sv-ts" text-anchor="middle">Yes</text>
+        <rect x="420" y="158" width="48" height="16" class="sv-acc-soft"/><text x="444" y="171" class="sv-ts" text-anchor="middle">Yes</text>
+        <rect x="477" y="158" width="48" height="16" class="sv-acc-soft"/><text x="501" y="171" class="sv-ts" text-anchor="middle">Yes</text>
+        <rect x="420" y="178" width="48" height="16" class="sv-key-soft"/><text x="444" y="191" class="sv-ts" text-anchor="middle">No</text>
+        <rect x="477" y="178" width="48" height="16" class="sv-key-soft"/><text x="501" y="191" class="sv-ts" text-anchor="middle">No</text>
+        <text x="472" y="230" class="sv-tb" text-anchor="middle">MI ≈ 0.5</text>
+
+        <rect x="575" y="40" width="165" height="212" class="sv-paper2"/>
+        <text x="657" y="62" class="sv-ts" text-anchor="middle">Both change, opposite way</text>
+        <text x="629" y="90" class="sv-ts" text-anchor="middle">popcorn</text>
+        <text x="686" y="90" class="sv-ts" text-anchor="middle">Troll 2</text>
+        <rect x="605" y="98" width="48" height="16" class="sv-key-soft"/><text x="629" y="111" class="sv-ts" text-anchor="middle">No</text>
+        <rect x="662" y="98" width="48" height="16" class="sv-acc-soft"/><text x="686" y="111" class="sv-ts" text-anchor="middle">Yes</text>
+        <rect x="605" y="118" width="48" height="16" class="sv-key-soft"/><text x="629" y="131" class="sv-ts" text-anchor="middle">No</text>
+        <rect x="662" y="118" width="48" height="16" class="sv-acc-soft"/><text x="686" y="131" class="sv-ts" text-anchor="middle">Yes</text>
+        <rect x="605" y="138" width="48" height="16" class="sv-key-soft"/><text x="629" y="151" class="sv-ts" text-anchor="middle">No</text>
+        <rect x="662" y="138" width="48" height="16" class="sv-acc-soft"/><text x="686" y="151" class="sv-ts" text-anchor="middle">Yes</text>
+        <rect x="605" y="158" width="48" height="16" class="sv-key-soft"/><text x="629" y="171" class="sv-ts" text-anchor="middle">No</text>
+        <rect x="662" y="158" width="48" height="16" class="sv-acc-soft"/><text x="686" y="171" class="sv-ts" text-anchor="middle">Yes</text>
+        <rect x="605" y="178" width="48" height="16" class="sv-acc-soft"/><text x="629" y="191" class="sv-ts" text-anchor="middle">Yes</text>
+        <rect x="662" y="178" width="48" height="16" class="sv-key-soft"/><text x="686" y="191" class="sv-ts" text-anchor="middle">No</text>
+        <text x="657" y="230" class="sv-tb" text-anchor="middle">MI ≈ 0.5</text>
+      </svg>
+      <figcaption>The last two panels are mirror images of each other, yet they score the same. Mutual information has no direction.</figcaption>
+    </figure>
+
+    <p>Height is continuous, so it has no ready-made categories. Josh builds a histogram of the heights, then treats each bin as one category. With three bins and a yes/no target, the table has six cells, so the sum has six terms. The answer is again 0.22, so height and likes popcorn are equally useful here.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 260" role="img" aria-label="A histogram of height with three bins becomes three categories, giving a table with six joint probabilities">
+        <defs>
+          <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" class="sv-acc"/>
+          </marker>
+        </defs>
+        <rect x="0" y="0" width="760" height="260" class="sv-paper"/>
+        <text x="20" y="30" class="sv-tb">Histogram of height</text>
+        <rect x="50" y="140" width="70" height="50" class="sv-acc-soft"/>
+        <rect x="50" y="140" width="70" height="50" class="sv-stroke-acc" stroke-width="1.5"/>
+        <rect x="125" y="100" width="70" height="90" class="sv-acc-soft"/>
+        <rect x="125" y="100" width="70" height="90" class="sv-stroke-acc" stroke-width="1.5"/>
+        <rect x="200" y="150" width="70" height="40" class="sv-acc-soft"/>
+        <rect x="200" y="150" width="70" height="40" class="sv-stroke-acc" stroke-width="1.5"/>
+        <line x1="40" y1="190" x2="290" y2="190" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="85" y="208" class="sv-ts" text-anchor="middle">bin 1</text>
+        <text x="160" y="208" class="sv-ts" text-anchor="middle">bin 2</text>
+        <text x="235" y="208" class="sv-ts" text-anchor="middle">bin 3</text>
+        <text x="160" y="232" class="sv-ts" text-anchor="middle">height, cut into 3 bins</text>
+
+        <line x1="305" y1="130" x2="358" y2="130" class="sv-stroke-acc" stroke-width="2" marker-end="url(#ar2)"/>
+        <text x="331" y="120" class="sv-ts" text-anchor="middle">bins</text>
+        <text x="331" y="148" class="sv-ts" text-anchor="middle">become</text>
+        <text x="331" y="164" class="sv-ts" text-anchor="middle">categories</text>
+
+        <rect x="380" y="70" width="310" height="38" class="sv-paper2"/>
+        <rect x="380" y="70" width="310" height="126" class="sv-line" stroke-width="1"/>
+        <line x1="450" y1="70" x2="450" y2="196" class="sv-line" stroke-width="1"/>
+        <line x1="530" y1="70" x2="530" y2="196" class="sv-line" stroke-width="1"/>
+        <line x1="610" y1="70" x2="610" y2="196" class="sv-line" stroke-width="1"/>
+        <line x1="380" y1="108" x2="690" y2="108" class="sv-line" stroke-width="1"/>
+        <line x1="380" y1="152" x2="690" y2="152" class="sv-line" stroke-width="1"/>
+        <text x="415" y="94" class="sv-ts" text-anchor="middle">Troll 2</text>
+        <text x="490" y="94" class="sv-ts" text-anchor="middle">bin 1</text>
+        <text x="570" y="94" class="sv-ts" text-anchor="middle">bin 2</text>
+        <text x="650" y="94" class="sv-ts" text-anchor="middle">bin 3</text>
+        <text x="415" y="135" class="sv-ts" text-anchor="middle">Yes</text>
+        <text x="415" y="179" class="sv-ts" text-anchor="middle">No</text>
+        <text x="490" y="135" class="sv-tm" text-anchor="middle">p₁</text>
+        <text x="570" y="135" class="sv-tm" text-anchor="middle">p₂</text>
+        <text x="650" y="135" class="sv-tm" text-anchor="middle">p₃</text>
+        <text x="490" y="179" class="sv-tm" text-anchor="middle">p₄</text>
+        <text x="570" y="179" class="sv-tm" text-anchor="middle">p₅</text>
+        <text x="650" y="179" class="sv-tm" text-anchor="middle">p₆</text>
+        <text x="535" y="226" class="sv-ts" text-anchor="middle">3 bins × 2 outcomes = 6 joint probabilities = 6 terms in the sum</text>
+      </svg>
+      <figcaption>Binning is the only extra step for continuous data. After that the recipe is unchanged.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Mutual information</span>
+      <div class="math">$$ I(X;Y) \;=\; \sum_{x \in X} \sum_{y \in Y} P(x,y)\, \log\!\left( \frac{P(x,y)}{P(x)\,P(y)} \right) $$</div>
+      <p class="explain"><b>Symbols:</b> \(X\) is the first variable, such as likes popcorn. \(Y\) is the second variable, loves Troll 2. \(x\) and \(y\) are single values, for example "yes". \(P(x,y)\) is the joint probability that both values appear in the same row. \(P(x)\) and \(P(y)\) are the marginal probabilities. The two sums cover every combination, so a yes/no pair gives four terms. The log is the natural log by default. <b>What it tells you:</b> it compares the real joint probability with the one you would expect if the variables were unrelated.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">The empty cell</span>
+      <div class="math">$$ \lim_{x \to 0} \; x \log(x) \;=\; 0 $$</div>
+      <p class="explain"><b>Symbols:</b> \(x\) here stands for a joint probability that came out as zero. <b>What it tells you:</b> the log of zero is undefined, so a cell with no people looks like a problem. As \(x\) gets close to zero, \(x \log(x)\) goes to zero, so we simply set that term to zero and move on.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">The link to entropy</span>
+      <div class="math">$$ H(X) \;=\; -\sum_{x \in X} P(x) \log P(x) $$</div>
+      <p class="explain"><b>Symbols:</b> \(H(X)\) is the entropy of \(X\). \(P(x)\) is the probability of one value of \(X\). <b>What it tells you:</b> entropy measures the average surprise in one variable. Both formulas are sums of probabilities times logs, and mutual information can be derived from entropy. It says how much the surprise in one variable is related to the surprise in the other.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Take the table from the figure above. The joint probabilities are 3/5, 1/5, 0/5 and 1/5. The marginals are 3/5 and 2/5 for popcorn, and 4/5 and 1/5 for Troll 2. Expanding the double sum gives four terms.</p>
+      <div class="math">$$ I = \tfrac{3}{5}\log\!\frac{3/5}{\tfrac{3}{5}\cdot\tfrac{4}{5}} \;+\; \tfrac{0}{5}\log\!\frac{0/5}{\tfrac{3}{5}\cdot\tfrac{1}{5}} \;+\; \tfrac{1}{5}\log\!\frac{1/5}{\tfrac{2}{5}\cdot\tfrac{4}{5}} \;+\; \tfrac{1}{5}\log\!\frac{1/5}{\tfrac{2}{5}\cdot\tfrac{1}{5}} $$</div>
+      <p>Term by term, with the natural log: the first term is \(0.6 \times \log(1.25) = +0.134\). The second term has a zero joint probability, so it is 0. The third term is \(0.2 \times \log(0.625) = -0.094\). The fourth term is \(0.2 \times \log(2.5) = +0.183\).</p>
+      <div class="math">$$ I = 0.134 + 0 - 0.094 + 0.183 = 0.22 $$</div>
+      <p>So the mutual information between likes popcorn and loves Troll 2 is 0.22. Height also scores 0.22, so either feature is a fine choice. Note that one term is negative, but the total is not.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Mutual information is not correlation. Two columns that change in exactly opposite ways score the same as two columns that change in exactly the same way. The value never tells you the direction of the relationship, and it is never negative.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Zero cells are normal, not an error. If a joint probability is zero, that term is zero, even though the log of zero is undefined. Handle this case in your own code, or you will get a NaN instead of a number.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>The log base changes the size of the number. The natural log is the default in most machine learning libraries, but base 2 is also common. Only compare values that were computed with the same base.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>For continuous data, the bins are your categories. The histogram is a choice you make before the maths starts, so a different set of bins can give a different value. Use the same binning for every feature you plan to compare.</p>
+    </div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>What is mutual information, and when would you use it instead of R squared?</summary>
+      <div class="a">Mutual information is a single number that says how much one variable tells you about another. I reach for it during feature selection when the data types are mixed. R squared needs continuous data on both sides, so it cannot handle a yes/no target like "loves this movie". Mutual information works with discrete data, continuous data, or a mix of the two.</div></details>
+
+    <details class="qa" open><summary>What does a mutual information of zero mean?</summary>
+      <div class="a">It means the two variables are independent, so one tells you nothing about the other. The clearest case is a column that never changes. Something that never varies cannot explain something that does, so the value collapses to zero. In feature selection that is a strong signal to drop the feature.</div></details>
+
+    <details class="qa" open><summary>How do you compute it when a variable is continuous, like height?</summary>
+      <div class="a">I turn it into a discrete variable first. I build a histogram and treat each bin as a category, then count joint and marginal probabilities exactly as I would for a yes/no feature. With three bins and a yes/no target, the sum expands to six terms. The bin choice matters, so I keep it consistent across the features I compare.</div></details>
+
+    <details class="qa" open><summary>Is mutual information the same as correlation?</summary>
+      <div class="a">No. Correlation is signed and mostly captures linear links. Mutual information is always zero or positive and captures any kind of dependence. If I flip one column so it moves in the opposite direction, correlation flips sign but mutual information does not change at all.</div></details>
+
+    <details class="qa" open><summary>How does mutual information relate to entropy?</summary>
+      <div class="a">Mutual information can be derived from entropy, and the two formulas look alike. Entropy measures the average surprise in one variable. Mutual information measures how much the surprise in one variable relates to the surprise in the other. If one variable has no surprise, there is nothing to relate, so the value is zero.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Mutual information is one number that scores how closely two variables are related.</li>
+      <li>It works with discrete data, continuous data, or a mix, which is where R squared fails.</li>
+      <li>You build a small table of joint probabilities, with the marginal probabilities in the margins.</li>
+      <li>The formula sums, over every combination, the joint probability times the log of the joint probability divided by the product of the marginals.</li>
+      <li>Any term with a zero joint probability contributes zero, so empty cells are safe.</li>
+      <li>A value of zero means one variable never changes or simply carries no information about the other.</li>
+      <li>Same-way and opposite-way relationships give the same value, because the measure has no direction.</li>
+      <li>For a continuous feature, bin it into a histogram first, then run the same calculation.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Mutual information</span><span class="board-tag">how much one variable tells another</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 280" role="img" aria-label="The five people as dots in a table: 3 like popcorn and love Troll 2, 1 loves Troll 2 without popcorn, 1 likes neither, and the popcorn without Troll 2 cell is empty. The edges hold the marginal probabilities, 4/5 and 1/5 for Troll 2 and 3/5 and 2/5 for popcorn, and the whole table gives a mutual information of 0.22.">
+            <text x="165" y="36" text-anchor="middle" class="sv-ts">popcorn</text>
+            <text x="255" y="36" text-anchor="middle" class="sv-ts">no popcorn</text>
+            <g class="sv-stroke-ink" stroke-width="2.5" stroke-linejoin="round">
+              <rect x="120" y="48" width="90" height="60" class="sv-acc-soft"/>
+              <rect x="210" y="48" width="90" height="60" class="sv-acc-soft"/>
+              <rect x="120" y="108" width="90" height="60" class="sv-acc-soft"/>
+              <rect x="210" y="108" width="90" height="60" class="sv-acc-soft"/>
+              <rect x="306" y="48" width="60" height="60" class="sv-key-soft"/>
+              <rect x="306" y="108" width="60" height="60" class="sv-key-soft"/>
+              <rect x="120" y="174" width="90" height="40" class="sv-key-soft"/>
+              <rect x="210" y="174" width="90" height="40" class="sv-key-soft"/>
+            </g>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="141" cy="78" r="10" class="sv-acc"/>
+              <circle cx="165" cy="78" r="10" class="sv-acc"/>
+              <circle cx="189" cy="78" r="10" class="sv-acc"/>
+              <circle cx="255" cy="78" r="10" class="sv-acc"/>
+              <circle cx="255" cy="138" r="10" class="sv-acc"/>
+            </g>
+            <text x="110" y="84" text-anchor="end" class="sv-ts">Troll 2</text>
+            <text x="110" y="144" text-anchor="end" class="sv-ts">no Troll 2</text>
+            <text x="336" y="85" text-anchor="middle" class="sv-tb">4/5</text>
+            <text x="336" y="145" text-anchor="middle" class="sv-tb">1/5</text>
+            <text x="165" y="201" text-anchor="middle" class="sv-tb">3/5</text>
+            <text x="255" y="201" text-anchor="middle" class="sv-tb">2/5</text>
+            <path d="M120 222 Q120 232 132 232 H231 Q243 232 243 242 Q243 232 255 232 H354 Q366 232 366 222" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="243" y="266" text-anchor="middle" class="sv-tb">MI = 0.22</text>
+          </svg>
+          <p>Each dot is one of the five people. Joint probabilities fill the middle; their row and column sums, the marginals, sit on the edges. The formula compares each joint with what unrelated variables would give; the terms add to 0.22.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Mutual information</dt><dd>One number for how related two variables are, even yes/no ones; 0 if unrelated.</dd>
+            <dt>Joint probability</dt><dd>Two things together: 3/5 like popcorn and love Troll 2.</dd>
+            <dt>Marginal probability</dt><dd>One thing alone: 2/5 do not like popcorn.</dd>
+            <dt>Histogram bins</dt><dd>Categories cut from a continuous variable, like height, before counting.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Pick a pair</b>likes popcorn vs loves Troll 2</li>
+            <li><b>Count joints</b>four cells, out of 5 people</li>
+            <li><b>Fill margins</b>add each row and column</li>
+            <li><b>Expand sums</b>a yes/no pair gives four terms</li>
+            <li><b>Log and add</b>natural log by default</li>
+            <li><b>Compare</b>keep the higher scores</li>
+          </ol>
+          <p class="loop">↺ repeat for each feature; bin continuous ones, like height, first</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$I(X;Y)=\sum_{x}\sum_{y}P(x,y)\,\log\frac{P(x,y)}{P(x)\,P(y)}$$
+          $$\lim_{x\to 0}\,x\log(x)=0$$
+          <ul class="keys">
+            <li>\(P(x,y)\) is a joint probability; \(P(x)\) and \(P(y)\) are marginals.</li>
+            <li>So an empty cell adds 0.</li>
+            <li>Natural log by default.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>popcorn</th><th>Troll 2</th><th>joint</th><th>term</th></tr>
+            <tr><td>yes</td><td>yes</td><td>3/5</td><td>+0.134</td></tr>
+            <tr><td>yes</td><td>no</td><td>0/5</td><td>0</td></tr>
+            <tr><td>no</td><td>yes</td><td>1/5</td><td>−0.094</td></tr>
+            <tr><td>no</td><td>no</td><td>1/5</td><td>+0.183</td></tr>
+            <tr class="final"><td colspan="3">mutual information</td><td>0.22</td></tr>
+          </table>
+          <p class="hand">First term: 0.6 × log(1.25). One term is negative; the total is not. Height, in 3 bins, also scores 0.22.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">It works like correlation.</span><span class="yes">No direction: same-way and opposite-way columns both score about 0.5. Never negative.</span></li>
+            <li><span class="no">An empty cell breaks the formula.</span><span class="yes">Its term is 0. Handle that in code, or you get NaN.</span></li>
+            <li><span class="no">Any two values can be compared.</span><span class="yes">Compare only values with the same log base and bins.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="07-entropy-for-data-science.html"><small>Previous</small>Entropy (for data science)</a> <a href="16-logistic-regression.html"><small>Next</small>Logistic Regression</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

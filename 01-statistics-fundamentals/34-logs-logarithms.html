@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Logs (logarithms) — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>34</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 34 · 15.6 min</div>
+    <h1>Logs (logarithms)</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=VSi0Z04fWj0" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">A logarithm does one simple job. It rewrites a number as a power of some base, then hands you back the exponent.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh takes a number line from zero to eight and rewrites every value as a power of two. The log base two function then isolates the exponent. That turns a crowded number line into an evenly spaced log scale. On it, eight fold up sits the same distance from zero as eight fold down. He also shows that the mean of the logs resists outliers, and that logs turn multiplication into addition.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Start with a plain number line running from zero to eight. Eight, four, two and one are easy to rewrite as powers of two. They are two cubed, two squared, two to the first, and two to the zero.</p>
+    <p>The other numbers work too, just less neatly. Seven, six and five are all powers of two with messy exponents. Even pi can be written as a power of two. Any positive number can.</p>
+    <p>Now take the log base two of each value. The only real step is to rewrite the number as a power of two. After that, the log function simply isolates the exponent and gives it to you.</p>
+    <p>Do that for eight and you get three. Do it for one and you get zero, because one is two to the zero. Below one the exponents go negative. One half is two to the minus one, one quarter is two to the minus two, and one eighth is two to the minus three.</p>
+    <p>The picture below is the payoff. On the ordinary line, one eighth, one quarter and one half are jammed against zero, while eight sits far away. Both ends are the same eight fold change from one. On the log axis the two changes are mirror images. That is why fold changes belong on a log axis.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 330" role="img" aria-label="An ordinary number line where one eighth, one quarter and one half crowd near zero, mapped down onto a log base two axis where the same values spread out evenly from minus three to three">
+        <defs>
+          <marker id="ahd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-key"/></marker>
+        </defs>
+
+        <text x="30" y="26" class="sv-tb">Ordinary number line</text>
+
+        <text x="70" y="76" text-anchor="middle" class="sv-tm">1/8</text>
+        <text x="81" y="56" text-anchor="middle" class="sv-tm">1/4</text>
+        <text x="101" y="76" text-anchor="middle" class="sv-tm">1/2</text>
+        <text x="143" y="76" text-anchor="middle" class="sv-tm">1</text>
+        <text x="225" y="76" text-anchor="middle" class="sv-tm">2</text>
+        <text x="390" y="76" text-anchor="middle" class="sv-tm">4</text>
+        <text x="720" y="76" text-anchor="middle" class="sv-tm">8</text>
+
+        <line x1="40" y1="92" x2="740" y2="92" class="sv-line" stroke-width="2"/>
+        <line x1="70" y1="85" x2="70" y2="99" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="81" y1="85" x2="81" y2="99" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="101" y1="85" x2="101" y2="99" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="143" y1="85" x2="143" y2="99" class="sv-stroke-key" stroke-width="2.5"/>
+        <line x1="225" y1="85" x2="225" y2="99" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="390" y1="85" x2="390" y2="99" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="720" y1="85" x2="720" y2="99" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="200" y="120" class="sv-ts">everything below 1 is squeezed into this corner</text>
+
+        <line x1="70" y1="128" x2="60" y2="212" class="sv-line" stroke-width="1.2" stroke-dasharray="4 4"/>
+        <line x1="81" y1="128" x2="170" y2="212" class="sv-line" stroke-width="1.2" stroke-dasharray="4 4"/>
+        <line x1="101" y1="128" x2="280" y2="212" class="sv-line" stroke-width="1.2" stroke-dasharray="4 4"/>
+        <line x1="143" y1="128" x2="390" y2="212" class="sv-line" stroke-width="1.2" stroke-dasharray="4 4"/>
+        <line x1="225" y1="128" x2="500" y2="212" class="sv-line" stroke-width="1.2" stroke-dasharray="4 4"/>
+        <line x1="390" y1="128" x2="610" y2="212" class="sv-line" stroke-width="1.2" stroke-dasharray="4 4"/>
+        <line x1="720" y1="128" x2="720" y2="212" class="sv-line" stroke-width="1.2" stroke-dasharray="4 4"/>
+
+        <rect x="286" y="150" width="196" height="26" rx="4" class="sv-paper2"/>
+        <text x="384" y="168" text-anchor="middle" class="sv-t">take log base 2: isolate the exponent</text>
+
+        <text x="30" y="242" class="sv-tb">Log base 2 axis</text>
+        <line x1="40" y1="222" x2="740" y2="222" class="sv-stroke-acc" stroke-width="2"/>
+        <line x1="60" y1="215" x2="60" y2="229" class="sv-stroke-acc" stroke-width="1.5"/>
+        <line x1="170" y1="215" x2="170" y2="229" class="sv-stroke-acc" stroke-width="1.5"/>
+        <line x1="280" y1="215" x2="280" y2="229" class="sv-stroke-acc" stroke-width="1.5"/>
+        <line x1="390" y1="213" x2="390" y2="231" class="sv-stroke-key" stroke-width="2.5"/>
+        <line x1="500" y1="215" x2="500" y2="229" class="sv-stroke-acc" stroke-width="1.5"/>
+        <line x1="610" y1="215" x2="610" y2="229" class="sv-stroke-acc" stroke-width="1.5"/>
+        <line x1="720" y1="215" x2="720" y2="229" class="sv-stroke-acc" stroke-width="1.5"/>
+
+        <text x="60" y="264" text-anchor="middle" class="sv-tm">-3</text>
+        <text x="170" y="264" text-anchor="middle" class="sv-tm">-2</text>
+        <text x="280" y="264" text-anchor="middle" class="sv-tm">-1</text>
+        <text x="390" y="264" text-anchor="middle" class="sv-tm">0</text>
+        <text x="500" y="264" text-anchor="middle" class="sv-tm">1</text>
+        <text x="610" y="264" text-anchor="middle" class="sv-tm">2</text>
+        <text x="720" y="264" text-anchor="middle" class="sv-tm">3</text>
+
+        <line x1="386" y1="288" x2="64" y2="288" class="sv-line" stroke-width="2" marker-end="url(#ahd)"/>
+        <line x1="394" y1="288" x2="716" y2="288" class="sv-line" stroke-width="2" marker-end="url(#ahd)"/>
+        <text x="225" y="308" text-anchor="middle" class="sv-ts">8 fold down</text>
+        <text x="555" y="308" text-anchor="middle" class="sv-ts">8 fold up, same distance</text>
+      </svg>
+      <figcaption>Notice the bottom axis: the same eight fold change up and down now sits at an equal distance from zero.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Pick a base that matches your data. Josh uses base two because his example doubles at each step.</li>
+      <li>Rewrite the number as a power of that base. Eight becomes two cubed; one eighth becomes two to the minus three.</li>
+      <li>Apply the log. It isolates the exponent, so the log base two of two cubed is simply three.</li>
+      <li>Read off the sign. Values above one give positive logs, one gives zero, and values below one give negative logs.</li>
+      <li>Plot fold changes on this axis. Up and down moves of the same size now sit symmetrically around zero.</li>
+      <li>To multiply two numbers, write both as powers of the base and add the exponents. To divide, subtract them instead.</li>
+      <li>To return to normal numbers, raise the base to the log value. That undoes the whole thing.</li>
+    </ol>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 256" role="img" aria-label="Two columns showing that two times four becomes one plus two on a log base two scale, and two divided by four becomes one minus two">
+        <defs>
+          <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker>
+        </defs>
+        <text x="200" y="26" text-anchor="middle" class="sv-tb">Multiplication</text>
+        <text x="560" y="26" text-anchor="middle" class="sv-tb">Division</text>
+        <line x1="380" y1="14" x2="380" y2="238" class="sv-line" stroke-width="1.2"/>
+
+        <rect x="90" y="46" width="220" height="34" rx="5" class="sv-paper2"/>
+        <text x="200" y="69" text-anchor="middle" class="sv-tm" style="font-size:16px">2 × 4 = 8</text>
+        <rect x="450" y="46" width="220" height="34" rx="5" class="sv-paper2"/>
+        <text x="560" y="69" text-anchor="middle" class="sv-tm" style="font-size:16px">2 ÷ 4 = 1/2</text>
+
+        <line x1="200" y1="86" x2="200" y2="116" class="sv-line" stroke-width="2" marker-end="url(#ah2)"/>
+        <line x1="560" y1="86" x2="560" y2="116" class="sv-line" stroke-width="2" marker-end="url(#ah2)"/>
+        <text x="384" y="106" text-anchor="middle" class="sv-ts">rewrite as powers of 2</text>
+
+        <rect x="90" y="122" width="220" height="34" rx="5" class="sv-acc-soft"/>
+        <text x="200" y="145" text-anchor="middle" class="sv-tm" style="font-size:16px">2<tspan dy="-6" style="font-size:11px">1</tspan><tspan dy="6"> × 2</tspan><tspan dy="-6" style="font-size:11px">2</tspan><tspan dy="6"> = 2</tspan><tspan dy="-6" style="font-size:11px">3</tspan></text>
+        <rect x="450" y="122" width="220" height="34" rx="5" class="sv-acc-soft"/>
+        <text x="560" y="145" text-anchor="middle" class="sv-tm" style="font-size:16px">2<tspan dy="-6" style="font-size:11px">1</tspan><tspan dy="6"> ÷ 2</tspan><tspan dy="-6" style="font-size:11px">2</tspan><tspan dy="6"> = 2</tspan><tspan dy="-6" style="font-size:11px">-1</tspan></text>
+
+        <line x1="200" y1="162" x2="200" y2="192" class="sv-line" stroke-width="2" marker-end="url(#ah2)"/>
+        <line x1="560" y1="162" x2="560" y2="192" class="sv-line" stroke-width="2" marker-end="url(#ah2)"/>
+        <text x="384" y="182" text-anchor="middle" class="sv-ts">logs isolate the exponents</text>
+
+        <rect x="90" y="198" width="220" height="34" rx="5" class="sv-key-soft"/>
+        <text x="200" y="221" text-anchor="middle" class="sv-tm" style="font-size:16px">1 + 2 = 3</text>
+        <rect x="450" y="198" width="220" height="34" rx="5" class="sv-key-soft"/>
+        <text x="560" y="221" text-anchor="middle" class="sv-tm" style="font-size:16px">1 − 2 = −1</text>
+      </svg>
+      <figcaption>Notice the bottom row: once the exponents are isolated, the hard operations turn into plain addition and subtraction.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">What a log does</span><div class="math">$$ \log_b\!\left(b^{x}\right) = x $$</div><p class="explain"><b>Symbols:</b> \(b\) is the base, the number that gets raised to a power. \(x\) is the exponent. <b>What it tells you:</b> the log function isolates the exponent and returns nothing else. This one line is the whole video.</p></div>
+
+    <div class="formula"><span class="lbl">The video's example</span><div class="math">$$ \log_2(8) = \log_2\!\left(2^{3}\right) = 3 $$</div><p class="explain"><b>Symbols:</b> the base is 2 and 8 is the number you feed in. <b>What it tells you:</b> rewrite 8 as two cubed, then read the exponent. Three is the log base two equivalent of eight.</p></div>
+
+    <div class="formula"><span class="lbl">Negative side</span><div class="math">$$ \log_2\!\left(\tfrac{1}{8}\right) = \log_2\!\left(2^{-3}\right) = -3 $$</div><p class="explain"><b>Symbols:</b> the fraction one eighth is the same as two to the minus three. <b>What it tells you:</b> numbers below one give negative logs, and eight fold down lands at minus three, mirroring eight fold up at plus three.</p></div>
+
+    <div class="formula"><span class="lbl">Multiplication becomes addition</span><div class="math">$$ \log_b(m \times n) = \log_b(m) + \log_b(n) $$</div><p class="explain"><b>Symbols:</b> \(m\) and \(n\) are the two positive numbers you multiply, and \(b\) is the base. <b>What it tells you:</b> write both as powers of the base and the exponents just add. This holds even for messy numbers, such as three times five.</p></div>
+
+    <div class="formula"><span class="lbl">Division becomes subtraction</span><div class="math">$$ \log_b\!\left(\frac{m}{n}\right) = \log_b(m) - \log_b(n) $$</div><p class="explain"><b>Symbols:</b> \(m\) is the numerator, \(n\) is the denominator, \(b\) is the base. <b>What it tells you:</b> flipping a number to the bottom of a fraction flips the sign of its exponent, so dividing becomes subtracting. For example \(\log_2(2/4) = 1 - 2 = -1\).</p></div>
+
+    <div class="formula"><span class="lbl">Geometric mean</span><div class="math">$$ \text{geometric mean} = b^{\;\frac{1}{n}\sum_{i=1}^{n} \log_b(x_i)} $$</div><p class="explain"><b>Symbols:</b> \(x_i\) is the \(i\)-th measurement, \(n\) is how many you have, and \(b\) is the base. <b>What it tells you:</b> average the logs, then raise the base to that average. A single large value pulls this average around far less.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh uses qPCR, a lab process where the thing being measured doubles at every cycle. Because of the doubling, base two is the natural choice.</p>
+      <p>The first run sets the baseline at 1 transcript. The second run finds twice as many, so 2. The third run finds eight times as many, so 8.</p>
+      <p>On normal numbers the average is \(\frac{1 + 2 + 8}{3} = 3.7\). On the log base two scale the three runs are 0, 1 and 3 cycles, so the average is \(\frac{0 + 1 + 3}{3} = 1.3\).</p>
+      <p>Convert that back with \(2^{1.3} = 2.5\). The geometric mean of 2.5 is well below the ordinary mean of 3.7, because the third run behaves like an outlier and the log scale refuses to let it dominate.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+
+    <div class="pitfall"><span class="lbl">Watch out</span> There is no log of zero. No exponent \(x\) makes \(2^x\) equal zero. Set \(x\) to minus one thousand and the result is tiny but still above zero. R reports the log base two of zero as negative infinity, which is a convention rather than a real value.</div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span> Fold changes on a linear axis mislead the eye. Eight fold up looks enormous and eight fold down looks like nothing, although both are the same magnitude of change. Only the log axis makes them symmetric.</div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span> The word "log" on its own means different bases in different tools. In R, plain <code>log()</code> gives the natural log, base \(e\), where \(e\) is roughly 2.7. Say the base out loud when you report a result.</div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span> Averaging logs is not the same as logging the average. The mean of the logs, converted back, gives the geometric mean, which is smaller here. Decide which one you want before you compute it.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>What does a logarithm actually do?</summary><div class="a">It isolates an exponent. You rewrite a number as the base raised to some power, and the log hands you that power back. The log base two of eight is three, because eight is two cubed. Everything else about logs follows from that single fact.</div></details>
+
+    <details class="qa" open><summary>Why do we plot fold change on a log scale?</summary><div class="a">Because a linear axis treats up and down changes unfairly. A value eight times larger than one sits seven units away, while a value eight times smaller sits less than one unit away. On a log base two axis they land at plus three and minus three, so the picture matches the biology or the business reality.</div></details>
+
+    <details class="qa" open><summary>What is the geometric mean and when would you use it?</summary><div class="a">It is the mean of the logs, converted back to normal numbers. I would use it whenever the data grows by multiplication rather than addition, such as qPCR cycles, growth rates or returns. It is much less sensitive to a single very large value than the ordinary mean.</div></details>
+
+    <details class="qa" open><summary>What happens if your data contains zeros before you take logs?</summary><div class="a">The log is undefined, because no exponent gives you zero. Software usually returns negative infinity, which then spoils any average downstream. So I check for zeros first and decide how to handle them.</div></details>
+
+    <details class="qa" open><summary>Does the choice of base matter?</summary><div class="a">The rules are identical for every base, so it is a readability choice. Base two suits data that doubles. Base ten suits things that move by powers of ten, like decibels or earthquakes. Base \(e\) is the software default.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap">
+      <ul>
+        <li>A log rewrites a number as a power of a base and returns the exponent.</li>
+        <li>The log base two of eight is three, because eight is two cubed.</li>
+        <li>Values below one give negative logs, and one always gives zero.</li>
+        <li>Log scales are the right home for fold change, since eight fold up and eight fold down sit an equal distance from zero.</li>
+        <li>The mean of the logs, the geometric mean, is more robust to outliers than the ordinary mean.</li>
+        <li>Logs turn multiplication into addition of exponents.</li>
+        <li>Logs turn division into subtraction of exponents.</li>
+        <li>All of this works for any base, so pick the base that matches how your data grows.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Logarithms</span><span class="board-tag">rewrite as a power, keep the exponent</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 264" role="img" aria-label="The powers of 2 from 1/8 to 8 drawn at their plain heights above their log base 2: the values below 1 crowd near zero, but their logs spread evenly from −3 to 3, so 8 fold down and 8 fold up sit the same distance from 0.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <polyline points="40,197.8 53.8,197.3 67.5,196.8 81.3,196.2 95,195.5 108.8,194.7 122.5,193.6 136.3,192.4 150,191 163.8,189.3 177.5,187.3 191.3,184.9 205,182 218.8,178.6 232.5,174.5 246.3,169.7 260,164 273.8,157.2 287.5,149.1 301.3,139.5 315,128 328.8,114.4 342.5,98.2 356.3,78.9 370,56" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="370" y1="64" x2="370" y2="222" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="4 4"/>
+            <line x1="205" y1="190" x2="205" y2="222" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="4 4"/>
+            <line x1="40" y1="206" x2="40" y2="222" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="4 4"/>
+            <line x1="205" y1="222" x2="44" y2="222" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="205" y1="222" x2="366" y2="222" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <circle cx="95" cy="195.5" r="4.5" class="sv-ink2"/>
+            <circle cx="150" cy="191" r="4.5" class="sv-ink2"/>
+            <circle cx="260" cy="164" r="4.5" class="sv-ink2"/>
+            <circle cx="315" cy="128" r="4.5" class="sv-ink2"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="40" cy="197.8" r="7" class="sv-key"/>
+              <circle cx="205" cy="182" r="7" class="sv-key"/>
+              <circle cx="370" cy="56" r="7" class="sv-key"/>
+            </g>
+            <text x="354" y="62" text-anchor="end" class="sv-tb">8 = 2³</text>
+            <text x="196" y="168" text-anchor="end" class="sv-t">1 = 2⁰</text>
+            <text x="32" y="180" class="sv-t">1/8 = 2⁻³</text>
+            <text x="40" y="250" text-anchor="middle" class="sv-ts">−3</text>
+            <text x="122" y="250" text-anchor="middle" class="sv-ts">8 fold down</text>
+            <text x="205" y="250" text-anchor="middle" class="sv-ts">0</text>
+            <text x="288" y="250" text-anchor="middle" class="sv-ts">8 fold up</text>
+            <text x="370" y="250" text-anchor="middle" class="sv-ts">3</text>
+          </svg>
+          <p>A log rewrites a number as a power of the base and hands back the exponent: 8 = 2³ gives 3. As plain heights, the values below 1 crowd near zero; on the log axis, 8 fold up and 8 fold down sit the same distance from 0.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Logarithm</dt><dd>Rewrites a number as a power of a base and returns the exponent.</dd>
+            <dt>Base</dt><dd>The number raised to a power; base 2 suits data that doubles.</dd>
+            <dt>Exponent</dt><dd>The power: 8 is 2 cubed, so its exponent is 3.</dd>
+            <dt>Fold change</dt><dd>8 times larger (8 fold up) or 8 times smaller (8 fold down).</dd>
+            <dt>Geometric mean</dt><dd>The mean of the logs, converted back to normal numbers.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Pick a base</b>2, since the data doubles</li>
+            <li><b>Rewrite as powers</b>8 = 2³, 1/8 = 2⁻³</li>
+            <li><b>Take the log</b>8 → 3, 1 → 0, 1/8 → −3</li>
+            <li><b>Plot fold changes</b>up and down sit symmetrically</li>
+            <li><b>Multiply, divide</b>add or subtract the exponents</li>
+            <li><b>Go back</b>raise the base to the log</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\log_b(b^x)=x$$
+          $$\log_b(mn)=\log_b m+\log_b n$$
+          $$\log_b\tfrac{m}{n}=\log_b m-\log_b n$$
+          <ul class="keys">
+            <li>\(b\) is the base and \(x\) the exponent; \(m\) and \(n\) are positive numbers.</li>
+            <li>\(\log_2 8=\log_2 2^3=3\), and \(\log_2(2/4)=1-2=-1\).</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>qPCR run</th><th>normal</th><th>log₂</th></tr>
+            <tr><td>1st</td><td>1</td><td>0</td></tr>
+            <tr><td>2nd</td><td>2</td><td>1</td></tr>
+            <tr><td>3rd</td><td>8</td><td>3</td></tr>
+            <tr><td>average</td><td>3.7</td><td>1.3</td></tr>
+            <tr class="final"><td>geometric mean</td><td>2.5</td><td>2<sup>1.3</sup></td></tr>
+          </table>
+          <p class="hand">The 8 acts like an outlier: the ordinary mean is 3.7, the geometric mean only 2.5.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">You can take the log of zero.</span><span class="yes">No exponent turns 2 into zero. R's negative infinity is a convention, not a value.</span></li>
+            <li><span class="no">Fold changes read fine on a linear axis.</span><span class="yes">8 fold up looks huge, 8 fold down like nothing. Only a log axis makes them symmetric.</span></li>
+            <li><span class="no">"log" always means the same base.</span><span class="yes">In R, plain log() is base e, about 2.7. Say the base when you report.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="33-boxplots-are-awesome.html"><small>Previous</small>Boxplots are Awesome</a> <a href="35-confidence-intervals.html"><small>Next</small>Confidence Intervals</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

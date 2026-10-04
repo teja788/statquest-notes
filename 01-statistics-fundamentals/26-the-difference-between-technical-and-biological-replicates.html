@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Difference Between Technical and Biological Replicates — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>26</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 26 · 5.5 min</div>
+    <h1>The Difference Between Technical and Biological Replicates</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=Exk0OoRG0PQ" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Repeating a measurement is easy. Knowing what your repeats actually prove is the hard part.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>A replicate is one repeat of a measurement. Technical replicates repeat the experiment on the same individual. They describe that individual and show how reliable your method is. Biological replicates measure different individuals, so they let you talk about a group. The story you want to tell decides which kind you need.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh starts with some dude. He takes a blood sample and measures gene expression, which means how active a gene is. Then he measures the same sample again, and again. Those three numbers are technical replicates, because every measurement came from the exact same sample.</p>
+    <p>Technical replicates do two jobs. They give an accurate value for this dude, and they show how accurately the method measures. If the three numbers came out far apart, no single measurement could be trusted.</p>
+    <p>Next Josh takes three separate samples from the same dude. These are still technical replicates, because they still describe one individual. Finally he samples three different dudes. Those are biological replicates, because each measurement comes from a different biological source.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 380" role="img" aria-label="Three experiment layouts: one sample measured three times, three samples from one dude, and one sample from each of three dudes">
+        <defs>
+          <marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-ink3"></path></marker>
+        </defs>
+
+        <text x="175" y="30" text-anchor="middle" class="sv-ts">Source</text>
+        <text x="241" y="30" text-anchor="middle" class="sv-ts">Sample(s)</text>
+        <text x="343" y="30" text-anchor="middle" class="sv-ts">Measurements</text>
+        <text x="420" y="30" class="sv-ts">What it tells you</text>
+
+        <!-- Row A: one sample, three runs -->
+        <text x="20" y="72" class="sv-tb">Technical</text>
+        <text x="20" y="90" class="sv-tb">replicates</text>
+        <text x="20" y="108" class="sv-ts">one sample</text>
+        <circle cx="175" cy="90" r="16" class="sv-acc"></circle>
+        <line x1="193" y1="90" x2="209" y2="90" class="sv-stroke-ink" stroke-width="1.2" marker-end="url(#ah1)"></line>
+        <rect x="214" y="48" width="54" height="84" rx="5" class="sv-acc-soft"></rect>
+        <rect x="214" y="48" width="54" height="84" rx="5" class="sv-stroke-acc" stroke-width="1.5"></rect>
+        <line x1="270" y1="60" x2="286" y2="60" class="sv-stroke-ink" stroke-width="1.2" marker-end="url(#ah1)"></line>
+        <line x1="270" y1="90" x2="286" y2="90" class="sv-stroke-ink" stroke-width="1.2" marker-end="url(#ah1)"></line>
+        <line x1="270" y1="120" x2="286" y2="120" class="sv-stroke-ink" stroke-width="1.2" marker-end="url(#ah1)"></line>
+        <rect x="291" y="48" width="104" height="24" rx="4" class="sv-paper2"></rect>
+        <rect x="291" y="48" width="104" height="24" rx="4" class="sv-line" stroke-width="1"></rect>
+        <text x="343" y="64" text-anchor="middle" class="sv-tm">1</text>
+        <rect x="291" y="78" width="104" height="24" rx="4" class="sv-paper2"></rect>
+        <rect x="291" y="78" width="104" height="24" rx="4" class="sv-line" stroke-width="1"></rect>
+        <text x="343" y="94" text-anchor="middle" class="sv-tm">2</text>
+        <rect x="291" y="108" width="104" height="24" rx="4" class="sv-paper2"></rect>
+        <rect x="291" y="108" width="104" height="24" rx="4" class="sv-line" stroke-width="1"></rect>
+        <text x="343" y="124" text-anchor="middle" class="sv-tm">3</text>
+        <text x="420" y="84" class="sv-t">This dude's gene expression,</text>
+        <text x="420" y="102" class="sv-t">and how good the method is.</text>
+
+        <line x1="20" y1="150" x2="740" y2="150" class="sv-line" stroke-width="1"></line>
+
+        <!-- Row B: three samples, one dude -->
+        <text x="20" y="182" class="sv-tb">Technical</text>
+        <text x="20" y="200" class="sv-tb">replicates</text>
+        <text x="20" y="218" class="sv-ts">three samples</text>
+        <circle cx="175" cy="200" r="16" class="sv-acc"></circle>
+        <line x1="191" y1="196" x2="209" y2="172" class="sv-stroke-ink" stroke-width="1.2" marker-end="url(#ah1)"></line>
+        <line x1="193" y1="200" x2="209" y2="200" class="sv-stroke-ink" stroke-width="1.2" marker-end="url(#ah1)"></line>
+        <line x1="191" y1="204" x2="209" y2="228" class="sv-stroke-ink" stroke-width="1.2" marker-end="url(#ah1)"></line>
+        <rect x="214" y="158" width="54" height="24" rx="4" class="sv-acc-soft"></rect>
+        <rect x="214" y="158" width="54" height="24" rx="4" class="sv-stroke-acc" stroke-width="1.5"></rect>
+        <rect x="214" y="188" width="54" height="24" rx="4" class="sv-acc-soft"></rect>
+        <rect x="214" y="188" width="54" height="24" rx="4" class="sv-stroke-acc" stroke-width="1.5"></rect>
+        <rect x="214" y="218" width="54" height="24" rx="4" class="sv-acc-soft"></rect>
+        <rect x="214" y="218" width="54" height="24" rx="4" class="sv-stroke-acc" stroke-width="1.5"></rect>
+        <line x1="270" y1="170" x2="286" y2="170" class="sv-stroke-ink" stroke-width="1.2" marker-end="url(#ah1)"></line>
+        <line x1="270" y1="200" x2="286" y2="200" class="sv-stroke-ink" stroke-width="1.2" marker-end="url(#ah1)"></line>
+        <line x1="270" y1="230" x2="286" y2="230" class="sv-stroke-ink" stroke-width="1.2" marker-end="url(#ah1)"></line>
+        <rect x="291" y="158" width="104" height="24" rx="4" class="sv-paper2"></rect>
+        <rect x="291" y="158" width="104" height="24" rx="4" class="sv-line" stroke-width="1"></rect>
+        <text x="343" y="174" text-anchor="middle" class="sv-tm">1</text>
+        <rect x="291" y="188" width="104" height="24" rx="4" class="sv-paper2"></rect>
+        <rect x="291" y="188" width="104" height="24" rx="4" class="sv-line" stroke-width="1"></rect>
+        <text x="343" y="204" text-anchor="middle" class="sv-tm">2</text>
+        <rect x="291" y="218" width="104" height="24" rx="4" class="sv-paper2"></rect>
+        <rect x="291" y="218" width="104" height="24" rx="4" class="sv-line" stroke-width="1"></rect>
+        <text x="343" y="234" text-anchor="middle" class="sv-tm">3</text>
+        <text x="420" y="194" class="sv-t">Still only this dude, but now</text>
+        <text x="420" y="212" class="sv-t">sample-to-sample variation too.</text>
+
+        <line x1="20" y1="255" x2="740" y2="255" class="sv-line" stroke-width="1"></line>
+
+        <!-- Row C: three dudes -->
+        <text x="20" y="292" class="sv-tb">Biological</text>
+        <text x="20" y="310" class="sv-tb">replicates</text>
+        <text x="20" y="328" class="sv-ts">three dudes</text>
+        <circle cx="175" cy="280" r="13" class="sv-key"></circle>
+        <circle cx="175" cy="310" r="13" class="sv-key"></circle>
+        <circle cx="175" cy="340" r="13" class="sv-key"></circle>
+        <line x1="190" y1="280" x2="209" y2="280" class="sv-stroke-ink" stroke-width="1.2" marker-end="url(#ah1)"></line>
+        <line x1="190" y1="310" x2="209" y2="310" class="sv-stroke-ink" stroke-width="1.2" marker-end="url(#ah1)"></line>
+        <line x1="190" y1="340" x2="209" y2="340" class="sv-stroke-ink" stroke-width="1.2" marker-end="url(#ah1)"></line>
+        <rect x="214" y="268" width="54" height="24" rx="4" class="sv-key-soft"></rect>
+        <rect x="214" y="268" width="54" height="24" rx="4" class="sv-stroke-key" stroke-width="1.5"></rect>
+        <rect x="214" y="298" width="54" height="24" rx="4" class="sv-key-soft"></rect>
+        <rect x="214" y="298" width="54" height="24" rx="4" class="sv-stroke-key" stroke-width="1.5"></rect>
+        <rect x="214" y="328" width="54" height="24" rx="4" class="sv-key-soft"></rect>
+        <rect x="214" y="328" width="54" height="24" rx="4" class="sv-stroke-key" stroke-width="1.5"></rect>
+        <line x1="270" y1="280" x2="286" y2="280" class="sv-stroke-ink" stroke-width="1.2" marker-end="url(#ah1)"></line>
+        <line x1="270" y1="310" x2="286" y2="310" class="sv-stroke-ink" stroke-width="1.2" marker-end="url(#ah1)"></line>
+        <line x1="270" y1="340" x2="286" y2="340" class="sv-stroke-ink" stroke-width="1.2" marker-end="url(#ah1)"></line>
+        <rect x="291" y="268" width="104" height="24" rx="4" class="sv-paper2"></rect>
+        <rect x="291" y="268" width="104" height="24" rx="4" class="sv-line" stroke-width="1"></rect>
+        <text x="343" y="284" text-anchor="middle" class="sv-tm">1</text>
+        <rect x="291" y="298" width="104" height="24" rx="4" class="sv-paper2"></rect>
+        <rect x="291" y="298" width="104" height="24" rx="4" class="sv-line" stroke-width="1"></rect>
+        <text x="343" y="314" text-anchor="middle" class="sv-tm">2</text>
+        <rect x="291" y="328" width="104" height="24" rx="4" class="sv-paper2"></rect>
+        <rect x="291" y="328" width="104" height="24" rx="4" class="sv-line" stroke-width="1"></rect>
+        <text x="343" y="344" text-anchor="middle" class="sv-tm">3</text>
+        <text x="420" y="304" class="sv-t">Dudes as a group, so you can</text>
+        <text x="420" y="322" class="sv-t">generalise beyond one person.</text>
+      </svg>
+      <figcaption>The first two rows both start from one person. Only the third row has three sources, and only that row supports a claim about a group.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Decide the story first. Is it about your method, one individual, or a group?</li>
+      <li>For the method, measure one sample several times. The spread is measurement error.</li>
+      <li>For one individual, take several samples from that person. This adds sample handling variation, but it is still one person.</li>
+      <li>For a group, sample different individuals. Only biological replicates carry information about the population.</li>
+      <li>Check who is inside your group. Three dudes support claims about dudes, not about ladies.</li>
+      <li>Choose the mix by budget. For RNA-Seq, Josh says extra biological replicates buy more.</li>
+    </ol>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 280" role="img" aria-label="Nested boxes showing that a sample of blue dudes supports conclusions only about blue dudes, not all dudes or all people">
+        <rect x="25" y="45" width="710" height="210" rx="10" class="sv-paper2"></rect>
+        <rect x="25" y="45" width="710" height="210" rx="10" class="sv-line" stroke-width="1.5"></rect>
+        <text x="42" y="70" class="sv-tb">All people</text>
+        <rect x="55" y="88" width="470" height="152" rx="8" class="sv-acc-soft"></rect>
+        <rect x="55" y="88" width="470" height="152" rx="8" class="sv-stroke-acc" stroke-width="1.5"></rect>
+        <text x="72" y="112" class="sv-tb">Dudes</text>
+        <rect x="85" y="128" width="280" height="94" rx="6" class="sv-key-soft"></rect>
+        <rect x="85" y="128" width="280" height="94" rx="6" class="sv-stroke-key" stroke-width="1.5"></rect>
+        <text x="102" y="164" class="sv-tb">Blue dudes</text>
+        <text x="102" y="186" class="sv-ts">the only dudes you sampled</text>
+        <text x="392" y="176" class="sv-ts">Orange and green</text>
+        <text x="392" y="194" class="sv-ts">dudes: not measured</text>
+        <text x="552" y="176" class="sv-ts">Ladies:</text>
+        <text x="552" y="194" class="sv-ts">not measured</text>
+        <text x="25" y="32" class="sv-t">Your conclusions stop at the edge of the box you sampled from.</text>
+      </svg>
+      <figcaption>Your biological replicates define the population you may talk about. Anyone outside the inner box stays outside your conclusions.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>The video has no formula, because it is a lesson about study design. The rule of thumb below shows why the two kinds of replicate are not interchangeable.</p>
+    <div class="formula"><span class="lbl">Variance of a group average</span>
+      <div class="math">$$ \operatorname{Var}(\bar{y}) \;=\; \frac{\sigma^2_{\text{bio}}}{n} \;+\; \frac{\sigma^2_{\text{tech}}}{n\,k} $$</div>
+      <p class="explain"><b>Symbols:</b> \( \bar{y} \) is the study average. \( n \) is the number of dudes, the biological replicates. \( k \) is the technical replicates per dude. \( \sigma^2_{\text{bio}} \) is the spread from one dude to the next, and \( \sigma^2_{\text{tech}} \) is the spread the measurement adds. <b>What it tells you:</b> raising \( k \) shrinks only the second term. Only a larger \( n \) shrinks both.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh runs the same gene-expression experiment three ways. First, one sample from one dude, measured three times. The spread shows how trustworthy the method is, so this design suits a paper about a new method.</p>
+      <p>Second, three samples from that same dude. These are still technical replicates. The extra spread now includes sample differences the method did not cause, so it says more about the dude than the method.</p>
+      <p>Third, one sample from each of three dudes. These are biological replicates. Only here can you speak about dudes as a group.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> More tubes from the same person are not biological replicates. What counts is the number of different sources, so three tubes from one dude still give you one dude.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Counting technical replicates as independent data points inflates your sample size. Your statistics then look far more confident than the evidence deserves.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Conclusions cannot travel further than your samples. Sampling only blue dudes supports claims about blue dudes, not orange or green ones, and not ladies.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Mixing both kinds is allowed, but the right mix depends on the experiment. For RNA-Seq, Josh says spend the budget on biological replicates.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is the difference between a technical and a biological replicate?</summary><div class="a">A technical replicate repeats the measurement on the same individual, either on one sample or on several samples from that person. A biological replicate measures a different individual or cell line. Technical replicates describe one subject and your method. Biological replicates let you talk about a population.</div></details>
+    <details class="qa" open><summary>Why can technical replicates make results look better than they are?</summary><div class="a">Because people count them as independent observations. If I measure one person ten times, I have ten numbers but still one person. The standard error shrinks as if I had ten subjects, so p-values look strong while the evidence has not changed.</div></details>
+    <details class="qa" open><summary>How do you decide which population your result applies to?</summary><div class="a">I look at who my biological replicates came from. The result generalises only to that kind of subject. If every subject was male, I say nothing about women. The same holds for ethnicity or cell line.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Technical replicates repeat the experiment on the same person, from one sample or from several samples.</li>
+      <li>They give an accurate value for that individual and show how reliable the method is.</li>
+      <li>Biological replicates come from different sources, such as different people, plants, or cell lines.</li>
+      <li>Only biological replicates support a claim about a group.</li>
+      <li>Counting technical replicates as independent subjects makes results look stronger than they are.</li>
+      <li>Your conclusion reaches only as far as the subjects you sampled.</li>
+      <li>Pick the design by asking which story you want to tell: an individual and a method, or a group.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Technical vs biological replicates</span><span class="board-tag">count the sources, not the tubes</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 250" role="img" aria-label="Left: one dude sampled three times gives three tubes but one source, which tells you about this dude and the method. Right: three dudes with one tube each give three sources, which tell you about dudes as a group.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <line x1="200" y1="14" x2="200" y2="236" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="3 7" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <circle cx="100" cy="58" r="11" class="sv-acc"/><path d="M84 92 Q84 72 100 72 Q116 72 116 92 Z" class="sv-acc"/>
+              <circle cx="250" cy="58" r="11" class="sv-acc"/><path d="M234 92 Q234 72 250 72 Q266 72 266 92 Z" class="sv-acc"/>
+              <circle cx="300" cy="58" r="11" class="sv-acc"/><path d="M284 92 Q284 72 300 72 Q316 72 316 92 Z" class="sv-acc"/>
+              <circle cx="350" cy="58" r="11" class="sv-acc"/><path d="M334 92 Q334 72 350 72 Q366 72 366 92 Z" class="sv-acc"/>
+              <rect x="52" y="140" width="16" height="34" rx="8" class="sv-key-soft"/>
+              <rect x="92" y="140" width="16" height="34" rx="8" class="sv-key-soft"/>
+              <rect x="132" y="140" width="16" height="34" rx="8" class="sv-key-soft"/>
+              <rect x="242" y="140" width="16" height="34" rx="8" class="sv-key-soft"/>
+              <rect x="292" y="140" width="16" height="34" rx="8" class="sv-key-soft"/>
+              <rect x="342" y="140" width="16" height="34" rx="8" class="sv-key-soft"/>
+            </g>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linecap="round">
+              <path d="M94 98 L60 134" marker-end="url(#board-arr)"/>
+              <path d="M100 98 L100 134" marker-end="url(#board-arr)"/>
+              <path d="M106 98 L140 134" marker-end="url(#board-arr)"/>
+              <path d="M250 98 L250 134" marker-end="url(#board-arr)"/>
+              <path d="M300 98 L300 134" marker-end="url(#board-arr)"/>
+              <path d="M350 98 L350 134" marker-end="url(#board-arr)"/>
+            </g>
+            <path d="M48 182 L48 188 L152 188 L152 182" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M238 182 L238 188 L362 188 L362 182" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="100" y="28" text-anchor="middle" class="sv-tb">technical</text>
+            <text x="300" y="28" text-anchor="middle" class="sv-tb">biological</text>
+            <text x="100" y="210" text-anchor="middle" class="sv-t">1 source</text>
+            <text x="300" y="210" text-anchor="middle" class="sv-t">3 sources</text>
+            <text x="100" y="232" text-anchor="middle" class="sv-ts">this dude + method</text>
+            <text x="300" y="232" text-anchor="middle" class="sv-ts">dudes as a group</text>
+          </svg>
+          <p>Repeats on the same dude are technical replicates: they pin down this dude's value and show how reliable the method is. Measurements from different dudes are biological replicates, and only they let you talk about a group.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Replicate</dt><dd>One repeat of a measurement.</dd>
+            <dt>Technical replicate</dt><dd>A repeat on the same individual, from one sample or several.</dd>
+            <dt>Biological replicate</dt><dd>A measurement from a different source, such as another dude, plant or cell line.</dd>
+            <dt>Gene expression</dt><dd>How active a gene is; what Josh measures.</dd>
+            <dt>Measurement error</dt><dd>The spread when one sample is measured several times.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Pick the story</b>method, one dude, or a group?</li>
+            <li><b>Method</b>one sample, measured several times</li>
+            <li><b>One dude</b>several samples from that person</li>
+            <li><b>A group</b>sample different individuals</li>
+            <li><b>Check the group</b>dudes say nothing about ladies</li>
+            <li><b>Mix by budget</b>RNA-Seq: favour biological replicates</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\operatorname{Var}(\bar{y})=\frac{\sigma^2_{\text{bio}}}{n}+\frac{\sigma^2_{\text{tech}}}{n\,k}$$
+          <ul class="keys">
+            <li>\(n\) is the number of dudes; \(k\) is technical replicates per dude.</li>
+            <li>\(\sigma^2_{\text{bio}}\) is dude-to-dude spread; \(\sigma^2_{\text{tech}}\) is what the measurement adds.</li>
+            <li>Raising \(k\) shrinks only the second term. A larger \(n\) shrinks both.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>design</th><th>kind</th><th>about</th></tr>
+            <tr><td>1 tube, 3 times</td><td>technical</td><td>method</td></tr>
+            <tr><td>3 tubes, 1 dude</td><td>technical</td><td>this dude</td></tr>
+            <tr class="final"><td>3 dudes, 1 each</td><td>biological</td><td>group ✓</td></tr>
+          </table>
+          <p class="hand">Design 1 suits a paper about a new method; only design 3 lets you speak about dudes as a group.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">More tubes from one person are biological replicates.</span><span class="yes">Count different sources: three tubes from one dude still give you one dude.</span></li>
+            <li><span class="no">Technical replicates are independent data points.</span><span class="yes">Counting them that way inflates the sample size, so results look far too confident.</span></li>
+            <li><span class="no">Blue dudes tell you about everyone.</span><span class="yes">Conclusions stop at who you sampled: not orange or green dudes, and not ladies.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="25-the-central-limit-theorem.html"><small>Previous</small>The Central Limit Theorem</a> <a href="27-sample-size-and-effective-sample-size.html"><small>Next</small>Sample Size and Effective Sample Size</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

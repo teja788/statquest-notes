@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Regression Trees — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>48</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 48 · 22.6 min</div>
+    <h1>Regression Trees</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=g9c66TUylZ4" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">A regression tree predicts a number, not a category. It cuts the data into groups and predicts the average value inside each group.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh uses drug dosage to predict how effective a drug is. The pattern is not a straight line, so a straight line gives bad predictions. A regression tree splits the dosage range into pieces and predicts the average effectiveness in each piece. It picks every split by trying many thresholds and keeping the one with the smallest sum of squared residuals. It stops splitting a group once that group holds fewer than some minimum number of observations, which keeps the tree from overfitting.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Imagine a new drug for the common cold. We do not know the best dose, so we run a trial with many doses and measure the effect. Low doses do nothing. Moderate doses work very well. Somewhat higher doses work at about half strength. High doses do nothing again.</p>
+    <p>A straight line cannot follow that shape. Josh shows a patient on a 20 mg dose. The straight line predicts about 45% effectiveness, but the observed data says 100%. So we need something that can bend with the data.</p>
+    <p>A regression tree is a decision tree whose leaves hold numbers. A classification tree holds categories in its leaves, such as true or false. Here each leaf holds an average drug effectiveness. Josh's finished tree asks three questions and has four leaves. They predict 4.2% below 14.5 mg, 100% from 14.5 to 23.5, 52.8% from 23.5 to 29, and 2.5% at 29 and above.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 350" role="img" aria-label="Scatter plot of drug dosage against drug effectiveness, with the regression tree prediction drawn as four flat steps and a straight line shown for comparison">
+        <line x1="52" y1="292" x2="720" y2="292" class="sv-line" stroke-width="1.5"/>
+        <line x1="52" y1="30" x2="52" y2="292" class="sv-line" stroke-width="1.5"/>
+        <text x="48" y="45" text-anchor="end" class="sv-ts">100%</text>
+        <text x="48" y="289" text-anchor="end" class="sv-ts">0%</text>
+        <text x="318" y="308" text-anchor="middle" class="sv-ts">14.5</text>
+        <text x="478" y="308" text-anchor="middle" class="sv-ts">23.5</text>
+        <text x="576" y="308" text-anchor="middle" class="sv-ts">29</text>
+        <text x="390" y="326" text-anchor="middle" class="sv-ts">Dosage (mg)</text>
+        <text x="32" y="160" text-anchor="middle" class="sv-ts" transform="rotate(-90 32 160)">Drug effectiveness</text>
+
+        <line x1="60" y1="168" x2="715" y2="186" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="7 5" opacity="0.35"/>
+        <line x1="416" y1="40" x2="416" y2="178" class="sv-line" stroke-width="1.5" stroke-dasharray="3 4"/>
+
+        <polyline points="60,275 318,275 318,40 478,40 478,156 576,156 576,279 715,279" class="sv-stroke-key" stroke-width="3"/>
+
+        <g class="sv-ink">
+          <circle cx="96" cy="285" r="5"/><circle cx="131" cy="285" r="5"/><circle cx="167" cy="285" r="5"/>
+          <circle cx="202" cy="285" r="5"/><circle cx="238" cy="273" r="5"/><circle cx="291" cy="236" r="5"/>
+          <circle cx="344" cy="40" r="5"/><circle cx="380" cy="40" r="5"/><circle cx="416" cy="40" r="5"/>
+          <circle cx="451" cy="40" r="5"/><circle cx="487" cy="163" r="5"/><circle cx="504" cy="150" r="5"/>
+          <circle cx="522" cy="167" r="5"/><circle cx="540" cy="143" r="5"/><circle cx="558" cy="155" r="5"/>
+          <circle cx="593" cy="285" r="5"/><circle cx="611" cy="285" r="5"/><circle cx="647" cy="273" r="5"/>
+          <circle cx="682" cy="273" r="5"/>
+        </g>
+
+        <rect x="120" y="246" width="54" height="20" rx="4" class="sv-paper"/>
+        <text x="147" y="261" text-anchor="middle" class="sv-tm">4.2%</text>
+        <rect x="364" y="54" width="58" height="20" rx="4" class="sv-paper"/>
+        <text x="393" y="69" text-anchor="middle" class="sv-tm">100%</text>
+        <rect x="496" y="118" width="60" height="20" rx="4" class="sv-paper"/>
+        <text x="526" y="133" text-anchor="middle" class="sv-tm">52.8%</text>
+        <rect x="618" y="238" width="54" height="20" rx="4" class="sv-paper"/>
+        <text x="645" y="253" text-anchor="middle" class="sv-tm">2.5%</text>
+        <rect x="424" y="96" width="176" height="20" rx="4" class="sv-key-soft"/>
+        <text x="432" y="111" class="sv-ts">at 20 mg: line 45%, data 100%</text>
+      </svg>
+      <figcaption>The solid steps are the tree's four leaves. The faint dashed line is a straight-line fit, and it misses the moderate doses badly.</figcaption>
+    </figure>
+    <p>You could read a prediction straight off this graph, because there is only one predictor. That stops working with three predictors, such as dosage, age and sex. A tree handles them easily. Josh follows one patient down the tree: she is not over 50, her dosage is below 29, and she is female, so the tree predicts 100%. Her true effectiveness was 98%.</p>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <p>Trees are built from the top down. The question is how Josh knew to put "dosage &lt; 14.5" at the root. He found it by testing candidate thresholds one at a time.</p>
+    <ol class="steps">
+      <li>Start with all the observations in one node at the top of the tree.</li>
+      <li>Take the two smallest dosages and average them. That average is 3, so the first candidate threshold is "dosage &lt; 3".</li>
+      <li>Split on it, and predict the average effectiveness of each side. The left side holds one point, so it predicts 0. The right side holds the rest, so it predicts 38.8.</li>
+      <li>For every point, take the gap between its observed value and its prediction. That gap is a residual. Square each residual and add them all up.</li>
+      <li>Slide the threshold to the average of the next two dosages, which is 5, and repeat. Then 7, and so on until you run out of pairs.</li>
+      <li>Compare all the totals. "Dosage &lt; 14.5" gives the smallest sum, so it becomes the root of the tree.</li>
+      <li>Repeat the whole search inside each child node, using only the observations that land there.</li>
+      <li>Stop splitting a node when it holds fewer than some minimum number of observations. Its output is the average of the observations inside it.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 320" role="img" aria-label="Left panel shows one candidate threshold with residual lines drawn from each point to its prediction; right panel plots the sum of squared residuals for every threshold, with the smallest value at 14.5">
+        <text x="48" y="34" class="sv-tb">One candidate threshold</text>
+        <line x1="50" y1="258" x2="345" y2="258" class="sv-line" stroke-width="1.5"/>
+        <line x1="50" y1="52" x2="50" y2="258" class="sv-line" stroke-width="1.5"/>
+
+        <g class="sv-line" stroke-width="1" stroke-dasharray="3 3">
+          <line x1="87" y1="250" x2="87" y2="178"/><line x1="102" y1="250" x2="102" y2="178"/>
+          <line x1="118" y1="250" x2="118" y2="178"/><line x1="134" y1="241" x2="134" y2="178"/>
+          <line x1="158" y1="213" x2="158" y2="178"/><line x1="181" y1="65" x2="181" y2="178"/>
+          <line x1="197" y1="65" x2="197" y2="178"/><line x1="213" y1="65" x2="213" y2="178"/>
+          <line x1="229" y1="65" x2="229" y2="178"/><line x1="245" y1="158" x2="245" y2="178"/>
+          <line x1="253" y1="148" x2="253" y2="178"/><line x1="260" y1="161" x2="260" y2="178"/>
+          <line x1="268" y1="143" x2="268" y2="178"/><line x1="276" y1="152" x2="276" y2="178"/>
+          <line x1="292" y1="250" x2="292" y2="178"/><line x1="300" y1="250" x2="300" y2="178"/>
+          <line x1="316" y1="241" x2="316" y2="178"/><line x1="332" y1="241" x2="332" y2="178"/>
+        </g>
+
+        <line x1="55" y1="250" x2="79" y2="250" class="sv-stroke-key" stroke-width="3"/>
+        <line x1="79" y1="178" x2="339" y2="178" class="sv-stroke-key" stroke-width="3"/>
+        <line x1="79" y1="52" x2="79" y2="258" class="sv-stroke-acc" stroke-width="1.5" stroke-dasharray="5 4"/>
+
+        <g class="sv-ink">
+          <circle cx="71" cy="250" r="4"/><circle cx="87" cy="250" r="4"/><circle cx="102" cy="250" r="4"/>
+          <circle cx="118" cy="250" r="4"/><circle cx="134" cy="241" r="4"/><circle cx="158" cy="213" r="4"/>
+          <circle cx="181" cy="65" r="4"/><circle cx="197" cy="65" r="4"/><circle cx="213" cy="65" r="4"/>
+          <circle cx="229" cy="65" r="4"/><circle cx="245" cy="158" r="4"/><circle cx="253" cy="148" r="4"/>
+          <circle cx="260" cy="161" r="4"/><circle cx="268" cy="143" r="4"/><circle cx="276" cy="152" r="4"/>
+          <circle cx="292" cy="250" r="4"/><circle cx="300" cy="250" r="4"/><circle cx="316" cy="241" r="4"/>
+          <circle cx="332" cy="241" r="4"/>
+        </g>
+
+        <rect x="84" y="42" width="120" height="20" rx="4" class="sv-acc-soft"/>
+        <text x="90" y="57" class="sv-ts">dosage &lt; 3</text>
+        <rect x="54" y="214" width="66" height="18" rx="4" class="sv-paper"/>
+        <text x="58" y="228" class="sv-tm">predict 0</text>
+        <rect x="196" y="186" width="92" height="18" rx="4" class="sv-paper"/>
+        <text x="200" y="200" class="sv-tm">predict 38.8</text>
+        <rect x="48" y="266" width="214" height="26" rx="5" class="sv-key-soft"/>
+        <text x="58" y="284" class="sv-tm">SSR = 27,468.5</text>
+
+        <line x1="372" y1="24" x2="372" y2="292" class="sv-line" stroke-width="1"/>
+
+        <text x="418" y="34" class="sv-tb">Every threshold, scored</text>
+        <line x1="418" y1="250" x2="730" y2="250" class="sv-line" stroke-width="1.5"/>
+        <line x1="418" y1="55" x2="418" y2="250" class="sv-line" stroke-width="1.5"/>
+        <text x="412" y="64" text-anchor="end" class="sv-ts">30k</text>
+        <text x="412" y="191" text-anchor="end" class="sv-ts">20k</text>
+        <text x="412" y="254" text-anchor="end" class="sv-ts">15k</text>
+        <polyline points="437,92 455,114 473,161 491,163 514,186 541,194 563,126 581,89 599,76 622,84 649,107 671,152 689,126 716,98" class="sv-stroke-acc" stroke-width="2"/>
+        <g class="sv-ink2">
+          <circle cx="437" cy="92" r="3.5"/><circle cx="455" cy="114" r="3.5"/><circle cx="473" cy="161" r="3.5"/>
+          <circle cx="491" cy="163" r="3.5"/><circle cx="514" cy="186" r="3.5"/><circle cx="563" cy="126" r="3.5"/>
+          <circle cx="581" cy="89" r="3.5"/><circle cx="599" cy="76" r="3.5"/><circle cx="622" cy="84" r="3.5"/>
+          <circle cx="649" cy="107" r="3.5"/><circle cx="671" cy="152" r="3.5"/><circle cx="689" cy="126" r="3.5"/>
+          <circle cx="716" cy="98" r="3.5"/>
+        </g>
+        <circle cx="541" cy="194" r="6" class="sv-key"/>
+        <text x="437" y="266" text-anchor="middle" class="sv-ts">3</text>
+        <text x="541" y="266" text-anchor="middle" class="sv-ts">14.5</text>
+        <text x="671" y="266" text-anchor="middle" class="sv-ts">29</text>
+        <text x="600" y="288" text-anchor="middle" class="sv-ts">Dosage threshold</text>
+        <rect x="470" y="206" width="168" height="22" rx="4" class="sv-key-soft"/>
+        <text x="478" y="221" class="sv-ts">smallest total wins</text>
+      </svg>
+      <figcaption>Each dotted line on the left is one residual. The right panel plots the squared-residual total for every threshold, and 14.5 sits lowest.</figcaption>
+    </figure>
+    <p>The stopping rule matters as much as the search. The usual minimum is 20 observations, but this dataset is small, so Josh sets it to 7. The six observations below 14.5 mg therefore stay together as one leaf, and its output is their average, 4.2%.</p>
+    <p>With several predictors the search grows one level. Find the best threshold for dosage, the best for age, and the only threshold for sex. Each best threshold is a candidate for the root. Compare their sums of squared residuals and keep the smallest. In Josh's example "age &gt; 50" wins, so age becomes the root instead of dosage.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 340" role="img" aria-label="The finished regression tree with three question nodes and four numeric leaves, plus a note about the minimum number of observations needed to split">
+        <text x="30" y="36" class="sv-ts">Left branch = the condition is true</text>
+        <g class="sv-stroke-ink" stroke-width="1.5">
+          <line x1="380" y1="67" x2="230" y2="109"/>
+          <line x1="380" y1="67" x2="500" y2="111"/>
+          <line x1="500" y1="147" x2="410" y2="189"/>
+          <line x1="500" y1="147" x2="600" y2="191"/>
+          <line x1="600" y1="227" x2="530" y2="269"/>
+          <line x1="600" y1="227" x2="665" y2="269"/>
+        </g>
+
+        <rect x="310" y="31" width="140" height="36" rx="6" class="sv-acc-soft"/>
+        <rect x="310" y="31" width="140" height="36" rx="6" class="sv-stroke-acc" stroke-width="1.5"/>
+        <text x="380" y="54" text-anchor="middle" class="sv-t">Dosage &lt; 14.5</text>
+        <text x="292" y="94" text-anchor="middle" class="sv-ts">Yes</text>
+        <text x="466" y="96" text-anchor="middle" class="sv-ts">No</text>
+
+        <rect x="168" y="109" width="124" height="40" rx="6" class="sv-good-soft"/>
+        <rect x="168" y="109" width="124" height="40" rx="6" class="sv-stroke-good" stroke-width="1.5"/>
+        <text x="230" y="128" text-anchor="middle" class="sv-tb">4.2%</text>
+        <text x="230" y="143" text-anchor="middle" class="sv-ts">6 obs · dose &lt; 14.5</text>
+
+        <rect x="430" y="111" width="140" height="36" rx="6" class="sv-acc-soft"/>
+        <rect x="430" y="111" width="140" height="36" rx="6" class="sv-stroke-acc" stroke-width="1.5"/>
+        <text x="500" y="134" text-anchor="middle" class="sv-t">Dosage &#8805; 29</text>
+
+        <rect x="348" y="189" width="124" height="40" rx="6" class="sv-good-soft"/>
+        <rect x="348" y="189" width="124" height="40" rx="6" class="sv-stroke-good" stroke-width="1.5"/>
+        <text x="410" y="208" text-anchor="middle" class="sv-tb">2.5%</text>
+        <text x="410" y="223" text-anchor="middle" class="sv-ts">4 obs · dose &#8805; 29</text>
+
+        <rect x="530" y="191" width="140" height="36" rx="6" class="sv-acc-soft"/>
+        <rect x="530" y="191" width="140" height="36" rx="6" class="sv-stroke-acc" stroke-width="1.5"/>
+        <text x="600" y="214" text-anchor="middle" class="sv-t">Dosage &#8805; 23.5</text>
+
+        <rect x="468" y="269" width="124" height="40" rx="6" class="sv-good-soft"/>
+        <rect x="468" y="269" width="124" height="40" rx="6" class="sv-stroke-good" stroke-width="1.5"/>
+        <text x="530" y="288" text-anchor="middle" class="sv-tb">52.8%</text>
+        <text x="530" y="303" text-anchor="middle" class="sv-ts">5 obs · 23.5 to 29</text>
+
+        <rect x="603" y="269" width="124" height="40" rx="6" class="sv-good-soft"/>
+        <rect x="603" y="269" width="124" height="40" rx="6" class="sv-stroke-good" stroke-width="1.5"/>
+        <text x="665" y="288" text-anchor="middle" class="sv-tb">100%</text>
+        <text x="665" y="303" text-anchor="middle" class="sv-ts">4 obs · 14.5 to 23.5</text>
+
+        <rect x="30" y="242" width="272" height="64" rx="6" class="sv-key-soft"/>
+        <text x="44" y="266" class="sv-t">Stopping rule</text>
+        <text x="44" y="286" class="sv-ts">Do not split a node with fewer than</text>
+        <text x="44" y="301" class="sv-ts">7 observations. The usual value is 20.</text>
+      </svg>
+      <figcaption>Every leaf holds the average effectiveness of its own cluster, and the counts show why each node stopped splitting.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">What a leaf predicts</span><div class="math">$$ \hat{y} = \frac{1}{n}\sum_{i=1}^{n} y_i $$</div><p class="explain"><b>Symbols:</b> \(\hat{y}\) is the number the leaf outputs. \(n\) is how many training observations fell into that leaf. \(y_i\) is the observed drug effectiveness of observation \(i\) in that leaf. <b>What it tells you:</b> a leaf always predicts the plain average of the observations inside it, so 6 observations averaging 4.2% give a leaf output of 4.2%.</p></div>
+    <div class="formula"><span class="lbl">Score for one threshold</span><div class="math">$$ \mathrm{SSR}(t) = \sum_{i \,:\, x_i < t} \left( y_i - \bar{y}_L \right)^2 + \sum_{i \,:\, x_i \ge t} \left( y_i - \bar{y}_R \right)^2 $$</div><p class="explain"><b>Symbols:</b> \(t\) is the threshold being tested, such as 3 or 14.5. \(x_i\) is the dosage of observation \(i\) and \(y_i\) is its effectiveness. \(\bar{y}_L\) is the average effectiveness of the observations on the left of \(t\), and \(\bar{y}_R\) the average on the right. Each bracket is a residual, the gap between observed and predicted. <b>What it tells you:</b> squaring makes every gap positive, so a small total means the two averages sit close to their points.</p></div>
+    <div class="formula"><span class="lbl">Choosing the split</span><div class="math">$$ t^{\star} = \arg\min_{t} \; \mathrm{SSR}(t) $$</div><p class="explain"><b>Symbols:</b> \(t^{\star}\) is the threshold that finally goes into the node. \(\arg\min\) means "the value of \(t\) that makes the thing after it as small as possible". <b>What it tells you:</b> you do not solve this with algebra. You compute \(\mathrm{SSR}(t)\) at each candidate midpoint and keep the winner, which here is 14.5.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh scores the very first candidate, "dosage &lt; 3". Only one observation has a dosage below 3, and its effectiveness is 0, so the left leaf predicts 0. All the other observations sit on the right, and their average effectiveness is 38.8, so the right leaf predicts 38.8.</p>
+      <p>Now score the predictions. The single left point is predicted perfectly, so its squared residual is \((0 - 0)^2 = 0\). A point on the right with 100% effectiveness is predicted badly, and its squared residual is \((100 - 38.8)^2 = 3745.4\). Add the squared residual of every point and the total is 27,468.5.</p>
+      <p>Move the threshold to 5, the average of the next two dosages, and the total drops. That means "dosage &lt; 5" makes better predictions overall. Keep sliding to 7, then 9, and so on. Once every candidate has a score, "dosage &lt; 14.5" has the smallest total, so it becomes the root.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> A perfect fit on the training data is bad news. Left unchecked, the six low-dosage observations split into three tiny leaves, and every prediction is exact. In bias-variance terms the model has no bias but a large variance, so it will do poorly on new patients.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The minimum number of observations per split is the guard against that. The common default is 20. Josh uses 7 only because this dataset has 19 observations, not because 7 is a recommended value.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Candidate thresholds are midpoints between neighbouring observed values, not arbitrary numbers. That is why 3, 5, 7 and 14.5 appear.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> With several predictors, each predictor first competes against itself, then against the others. Do not assume the predictor you care about wins the root. In Josh's example, "age &gt; 50" gave the smallest total and took the root.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is a regression tree, and how is it different from a classification tree?</summary><div class="a">Both are decision trees, so both are chains of yes-or-no questions. The difference is what sits in the leaves. A classification tree stores a category, such as true or false. A regression tree stores a number: the average of the training observations that reached that leaf.</div></details>
+    <details class="qa" open><summary>How does a regression tree decide where to split?</summary><div class="a">It tries candidate thresholds at the midpoints between neighbouring values. For each one, it splits the data in two and predicts the average of each side. Then it adds up the squared residuals across all the points. The threshold with the smallest total becomes the question in the node, and the search repeats inside each child.</div></details>
+    <details class="qa" open><summary>How does it handle more than one predictor?</summary><div class="a">It runs the same search separately for each predictor. Each predictor puts forward its own best threshold and the sum of squared residuals that goes with it. Then the tree compares those candidates and picks the predictor with the smallest total for that node. That is why the root can be age even when the obvious signal is dosage.</div></details>
+    <details class="qa" open><summary>How do you stop a regression tree from overfitting?</summary><div class="a">Left alone, the tree splits until it reproduces the training values exactly. That is zero bias and high variance. The simplest guard is a minimum number of observations before a node may split, commonly 20. Below that, the node becomes a leaf and outputs its average.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>A regression tree is a decision tree whose leaves hold numbers instead of categories.</li>
+      <li>Each leaf predicts the average of the training observations that reached it.</li>
+      <li>A straight line failed on Josh's drug data, predicting 45% at 20 mg where the data showed 100%.</li>
+      <li>To place a split, the tree tries thresholds and adds up the squared residuals at each one.</li>
+      <li>The first candidate, "dosage &lt; 3", scored 27,468.5, and "dosage &lt; 14.5" scored the lowest of all.</li>
+      <li>With several predictors, each predictor offers its best threshold and the lowest total wins the node.</li>
+      <li>A node stops splitting when it holds fewer than a minimum count, usually 20 but 7 in this example.</li>
+      <li>That minimum is what keeps the tree from fitting the training data perfectly and failing on new data.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Regression Trees</span><span class="board-tag">cut the range, predict each piece's average</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 260" role="img" aria-label="Drug effectiveness against dosage: the tree predicts four flat steps, 4.2% below 14.5 mg, 100% from 14.5 to 23.5, 52.8% from 23.5 to 29 and 2.5% from 29 up, each the average of the dots in its piece.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <line x1="30" y1="220" x2="30" y2="34" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="30" y1="220" x2="382" y2="220" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linecap="round">
+              <line x1="160" y1="220" x2="160" y2="227"/>
+              <line x1="240" y1="220" x2="240" y2="227"/>
+              <line x1="310" y1="220" x2="310" y2="227"/>
+            </g>
+            <polyline points="40,199 160,199 160,50 240,50 240,124 310,124 310,202 374,202" class="sv-stroke-key" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <g class="sv-ink">
+              <circle cx="54" cy="206" r="5"/><circle cx="72" cy="206" r="5"/><circle cx="90" cy="206" r="5"/>
+              <circle cx="108" cy="206" r="5"/><circle cx="126" cy="198" r="5"/><circle cx="144" cy="175" r="5"/>
+              <circle cx="173" cy="50" r="5"/><circle cx="191" cy="50" r="5"/><circle cx="209" cy="50" r="5"/><circle cx="227" cy="50" r="5"/>
+              <circle cx="251" cy="136" r="4.5"/><circle cx="263" cy="112" r="4.5"/><circle cx="275" cy="128" r="4.5"/>
+              <circle cx="287" cy="116" r="4.5"/><circle cx="299" cy="126" r="4.5"/>
+              <circle cx="322" cy="206" r="5"/><circle cx="337" cy="198" r="5"/><circle cx="352" cy="206" r="5"/><circle cx="367" cy="198" r="5"/>
+            </g>
+            <text x="90" y="170" text-anchor="middle" class="sv-tb">4.2%</text>
+            <text x="200" y="36" text-anchor="middle" class="sv-tb">100%</text>
+            <text x="275" y="98" text-anchor="middle" class="sv-tb">52.8%</text>
+            <text x="344" y="182" text-anchor="middle" class="sv-tb">2.5%</text>
+            <text x="36" y="244" class="sv-ts">dosage (mg)</text>
+            <text x="160" y="244" text-anchor="middle" class="sv-ts">14.5</text>
+            <text x="240" y="244" text-anchor="middle" class="sv-ts">23.5</text>
+            <text x="310" y="244" text-anchor="middle" class="sv-ts">29</text>
+          </svg>
+          <p>A straight line predicts 45% at 20 mg where the data shows 100%. The tree cuts dosage at 14.5, 23.5 and 29 mg, and each leaf predicts the average of its own points.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Regression tree</dt><dd>A decision tree whose leaves hold a number: the average of their observations.</dd>
+            <dt>Candidate threshold</dt><dd>The midpoint between two neighbouring dosages.</dd>
+            <dt>Residual</dt><dd>The gap between an observed value and its prediction.</dd>
+            <dt>SSR</dt><dd>Sum of squared residuals; the lowest total picks the split.</dd>
+            <dt>Minimum size</dt><dd>Fewer observations than this and a node stops splitting.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Start at the top</b>all observations in one node</li>
+            <li><b>Try a threshold</b>midpoint of two dosages, first 3</li>
+            <li><b>Predict averages</b>each side: left 0, right 38.8</li>
+            <li><b>Add up SSR</b>square each residual and sum</li>
+            <li><b>Slide and compare</b>5, 7, …; 14.5 wins the root</li>
+            <li><b>Stop small nodes</b>fewer than 7: leaf = average</li>
+          </ol>
+          <p class="loop">↺ repeat the search inside each child node, using only its own observations</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\hat{y}=\frac{1}{n}\sum_{i=1}^{n}y_i$$
+          $$\text{SSR}(t)=\sum_{x_i\lt t}(y_i-\bar{y}_L)^2+\sum_{x_i\ge t}(y_i-\bar{y}_R)^2$$
+          $$t^{\star}=\arg\min_{t}\,\text{SSR}(t)$$
+          <ul class="keys">
+            <li>\(\hat{y}\): a leaf's output; \(n\): observations in that leaf.</li>
+            <li>\(x_i\), \(y_i\): dosage and effectiveness; \(\bar{y}_L\), \(\bar{y}_R\): the side averages.</li>
+            <li>\(t^{\star}\): the threshold with the lowest SSR, here 14.5.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>dosage &lt;</th><th>left</th><th>right</th><th>SSR</th></tr>
+            <tr><td>3</td><td>0</td><td>38.8</td><td>27,468.5</td></tr>
+            <tr><td>5</td><td>…</td><td>…</td><td>lower</td></tr>
+            <tr><td>7, 9, …</td><td>…</td><td>…</td><td>…</td></tr>
+            <tr class="final"><td>14.5 ✓</td><td>4.2</td><td>…</td><td>lowest</td></tr>
+          </table>
+          <p class="hand">One right point at 100% alone adds (100 − 38.8)² = 3745.4. The lowest total, at 14.5, becomes the root.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">A perfect training fit is good.</span><span class="yes">Tiny exact leaves mean no bias but large variance, so it does poorly on new patients.</span></li>
+            <li><span class="no">7 is the recommended minimum.</span><span class="yes">The usual default is 20; Josh used 7 only because the data has 19 observations.</span></li>
+            <li><span class="no">The predictor you care about wins the root.</span><span class="yes">Each predictor offers its best threshold; here "age &gt; 50" won.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="47-decision-trees-part-2-feature-selection-and-missing-data.html"><small>Previous</small>Decision Trees, Part 2 - Feature Selection and Missing Data</a> <a href="49-how-to-prune-regression-trees.html"><small>Next</small>How to Prune Regression Trees</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

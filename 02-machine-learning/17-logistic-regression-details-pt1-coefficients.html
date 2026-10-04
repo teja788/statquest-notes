@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Logistic Regression Details Pt1: Coefficients — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>17</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 17 · 19.0 min</div>
+    <h1>Logistic Regression Details Pt1: Coefficients</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=vN5cNN2-HWE" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Logistic regression hands you coefficients, just like linear regression does. This video explains what those numbers mean, and why they live on a log-odds scale.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>A probability is trapped between 0 and 1, which makes a line hard to fit. So logistic regression changes the y-axis from probability to the log of the odds. On that new axis the squiggle becomes a straight line with an intercept and a slope. Those two numbers are the coefficients, and both are in log odds. For a discrete predictor the second coefficient is a log odds ratio. Each coefficient is tested with a z value and a p-value.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh starts with the familiar picture. The y-axis is the probability that a mouse is obese, and the x-axis is weight. A squiggly line is fit through the data. A heavy mouse lands near 1, a middleweight mouse near 0.5, and a light mouse near 0.</p>
+    <p>Logistic regression is a generalized linear model, often shortened to GLM. That means it extends the ordinary linear model you already know.</p>
+    <p>Recall what linear regression does. It fits a straight line with an intercept and a slope. Plug in a weight of 1.5 and it predicts a size of 1.91. It will even predict a size at weight 0, or at a negative weight. The line has no limits, and that freedom is what makes it easy to fit.</p>
+    <p>Probability does not have that freedom. It cannot go below 0 or above 1. To get the freedom back, logistic regression transforms the y-axis from the probability of obesity to the log of the odds of obesity. The tool for this is the logit function. After the transform the y-axis runs from negative infinity to positive infinity, and the squiggle straightens into a line.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 330" role="img" aria-label="On the left, a squiggly logistic curve on a probability axis from 0 to 1. An arrow labelled logit leads to the right, where the same fit is a straight line on a log-odds axis running from minus three to plus three.">
+        <defs>
+          <marker id="arw1" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="sv-ink2"/></marker>
+        </defs>
+        <rect x="0" y="0" width="760" height="330" class="sv-paper"/>
+
+        <!-- left panel: probability -->
+        <text x="215" y="42" class="sv-t" text-anchor="middle">y = probability of obesity</text>
+        <line x1="80" y1="60" x2="80" y2="270" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="80" y1="270" x2="350" y2="270" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="74" y1="70" x2="80" y2="70" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="74" y1="170" x2="80" y2="170" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="74" y1="270" x2="80" y2="270" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="68" y="74" class="sv-tm" text-anchor="end">1</text>
+        <text x="68" y="174" class="sv-tm" text-anchor="end">0.5</text>
+        <text x="68" y="274" class="sv-tm" text-anchor="end">0</text>
+        <path d="M85,268 C140,266 165,255 195,170 C225,85 250,74 345,72" class="sv-stroke-key" stroke-width="2.5"/>
+        <circle cx="100" cy="268" r="4" class="sv-acc"/>
+        <circle cx="122" cy="268" r="4" class="sv-acc"/>
+        <circle cx="144" cy="268" r="4" class="sv-acc"/>
+        <circle cx="166" cy="268" r="4" class="sv-acc"/>
+        <circle cx="268" cy="72" r="4" class="sv-acc"/>
+        <circle cx="292" cy="72" r="4" class="sv-acc"/>
+        <circle cx="316" cy="72" r="4" class="sv-acc"/>
+        <circle cx="340" cy="72" r="4" class="sv-acc"/>
+        <text x="215" y="292" class="sv-ts" text-anchor="middle">weight</text>
+
+        <!-- transform arrow -->
+        <line x1="368" y1="170" x2="418" y2="170" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#arw1)"/>
+        <text x="393" y="158" class="sv-ts" text-anchor="middle">logit</text>
+
+        <!-- right panel: log odds -->
+        <text x="595" y="42" class="sv-t" text-anchor="middle">y = log(odds of obesity)</text>
+        <line x1="460" y1="60" x2="460" y2="270" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="460" y1="270" x2="735" y2="270" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="460" y1="165" x2="735" y2="165" class="sv-line" stroke-width="1.5" stroke-dasharray="5 5"/>
+        <line x1="454" y1="75" x2="460" y2="75" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="454" y1="165" x2="460" y2="165" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="454" y1="255" x2="460" y2="255" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="448" y="79" class="sv-tm" text-anchor="end">+3</text>
+        <text x="448" y="169" class="sv-tm" text-anchor="end">0</text>
+        <text x="448" y="259" class="sv-tm" text-anchor="end">−3</text>
+        <line x1="470" y1="262" x2="725" y2="70" class="sv-stroke-key" stroke-width="2.5"/>
+        <text x="595" y="292" class="sv-ts" text-anchor="middle">weight</text>
+        <text x="595" y="310" class="sv-ts" text-anchor="middle">obese mice sit at +∞, not-obese mice at −∞</text>
+      </svg>
+      <figcaption>Notice that only the y-axis changes. The squiggle on the probability scale is a straight line on the log-odds scale, and that line gives the coefficients.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Start with the usual picture: probability of obesity on the y-axis, weight on the x-axis, and a squiggle fit to the data.</li>
+      <li>Apply the logit function to the y-axis. The midpoint 0.5 becomes 0. Probability 0.731 becomes 1, 0.88 becomes 2, and 0.95 becomes 3.</li>
+      <li>The obese mice sat at probability 1, so they move to positive infinity. The non-obese mice sat at 0, so they move to negative infinity.</li>
+      <li>Fit the best straight line on this new scale. How that fitting works is the subject of the next video, on maximum likelihood.</li>
+      <li>Read off the intercept and the slope of that line. These are the coefficients logistic regression reports, and they are in log odds.</li>
+      <li>Judge each coefficient with its standard error. The z value is the estimate divided by the standard error. That is the Wald test.</li>
+      <li>For a discrete predictor, fit one horizontal line per group instead. The intercept is the log odds of the first group, and the second coefficient is the gap between the two lines.</li>
+    </ol>
+
+    <p>That last step is the trick a t-test uses inside a linear model. There the first coefficient is the mean of the normal-gene mice. The second is the difference between the two group means. A design matrix of zeros and ones switches the second coefficient on only for mutant mice. Logistic regression copies this, but the two lines are log odds, not means.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 320" role="img" aria-label="Two horizontal lines on a log-odds axis, one for normal-gene mice at minus 1.5 and one for mutated-gene mice at plus 0.85, with the gap of 2.35 marked between them.">
+        <defs>
+          <marker id="arw2a" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="sv-good"/></marker>
+          <marker id="arw2b" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M8,0 L0,4 L8,8 z" class="sv-good"/></marker>
+        </defs>
+        <rect x="0" y="0" width="760" height="320" class="sv-paper"/>
+        <text x="120" y="36" class="sv-t" text-anchor="start">y = log(odds of obesity)</text>
+        <line x1="120" y1="50" x2="120" y2="262" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="120" y1="262" x2="700" y2="262" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="120" y1="180" x2="700" y2="180" class="sv-line" stroke-width="1.5" stroke-dasharray="5 5"/>
+        <line x1="114" y1="180" x2="120" y2="180" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="108" y="184" class="sv-tm" text-anchor="end">0</text>
+
+        <line x1="160" y1="248" x2="360" y2="248" class="sv-stroke-acc" stroke-width="3"/>
+        <text x="260" y="238" class="sv-tm" text-anchor="middle">log(2/9) = −1.50</text>
+        <line x1="450" y1="142" x2="670" y2="142" class="sv-stroke-key" stroke-width="3"/>
+        <text x="560" y="132" class="sv-tm" text-anchor="middle">log(7/3) = +0.85</text>
+
+        <line x1="405" y1="248" x2="405" y2="142" class="sv-stroke-good" stroke-width="1.5" marker-start="url(#arw2b)" marker-end="url(#arw2a)"/>
+        <rect x="300" y="182" width="210" height="24" rx="4" class="sv-paper"/>
+        <text x="405" y="199" class="sv-tm" text-anchor="middle">gap = 2.35 = log odds ratio</text>
+
+        <text x="260" y="282" class="sv-ts" text-anchor="middle">2 obese, 9 not obese</text>
+        <text x="560" y="282" class="sv-ts" text-anchor="middle">7 obese, 3 not obese</text>
+        <text x="260" y="300" class="sv-t" text-anchor="middle">normal gene</text>
+        <text x="560" y="300" class="sv-t" text-anchor="middle">mutated gene</text>
+      </svg>
+      <figcaption>Notice that the intercept is the height of the first line. The second coefficient is the vertical gap, which is a log odds ratio.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">The logit function</span><div class="math">$$ \log(\text{odds}) = \log\!\left(\frac{p}{1-p}\right) $$</div><p class="explain"><b>Symbols:</b> \( p \) is the probability that a mouse is obese, a number between 0 and 1. \( 1-p \) is the probability it is not obese. Their ratio is the odds, and \( \log \) is the natural logarithm. <b>What it tells you:</b> it stretches the squeezed 0-to-1 probability scale into an unlimited scale from \( -\infty \) to \( +\infty \), so a straight line can be fit.</p></div>
+
+    <div class="formula"><span class="lbl">The fitted line, continuous predictor</span><div class="math">$$ \log\!\left(\frac{p}{1-p}\right) = -3.476 + 1.825 \times \text{weight} $$</div><p class="explain"><b>Symbols:</b> \( -3.476 \) is the y-axis intercept, the log odds of obesity when weight is 0. \( 1.825 \) is the slope. <b>What it tells you:</b> for every one unit of weight gained, the log of the odds of obesity goes up by 1.825. Both numbers are the coefficients that logistic regression reports.</p></div>
+
+    <div class="formula"><span class="lbl">Wald test for one coefficient</span><div class="math">$$ z = \frac{\text{estimate}}{\text{standard error}} $$</div><p class="explain"><b>Symbols:</b> the estimate is the coefficient itself. The standard error says how much it would wobble across repeated samples. <b>What it tells you:</b> \( z \) is how many standard deviations the estimate sits from 0 on a standard normal curve. Beyond about two, the result is significant. The p-value is the area further out than \( z \).</p></div>
+
+    <div class="formula"><span class="lbl">The fitted line, discrete predictor</span><div class="math">$$ \log(\text{odds}) = b_1 + b_2 \times \text{mutated} $$</div><p class="explain"><b>Symbols:</b> \( b_1 \) is the log odds of obesity for normal-gene mice. \( b_2 \) is the log odds for mutated mice minus the log odds for normal mice. "mutated" is 0 for a normal mouse and 1 for a mutant mouse. <b>What it tells you:</b> subtracting one log from another is the same as dividing, so \( b_2 \) is a log odds ratio.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh counts the mice in each group. Among the normal-gene mice, 2 are obese and 9 are not, so the odds are 2/9. Among the mutated-gene mice, 7 are obese and 3 are not, so the odds are 7/3.</p>
+      <p>The height of the first line is the log odds for the normal gene:</p>
+      <div class="math">$$ b_1 = \log\!\left(\tfrac{2}{9}\right) = -1.50 $$</div>
+      <p>The height of the second line is the log odds for the mutated gene:</p>
+      <div class="math">$$ \log\!\left(\tfrac{7}{3}\right) = +0.85 $$</div>
+      <p>The second coefficient is the gap between the two lines, which is also a log odds ratio:</p>
+      <div class="math">$$ b_2 = 0.85 - (-1.50) = 2.35 = \log\!\left(\frac{7/3}{2/9}\right) $$</div>
+      <p>Software prints these as the intercept and the gene-mutant term. The intercept has \( z = -1.9 \), which is inside two standard deviations, so its p-value is above 0.05. The gene-mutant term has a z value beyond 2 and a p-value below 0.05. So the mutated gene really does raise the odds of obesity.</p>
+      <p>The weight example goes the other way. The intercept \( -3.476 \) has \( z = -1.47 \), and the slope \( 1.825 \) is also inside two standard deviations. Neither is significant, which is no surprise with such a small sample.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> The squiggly graph is what people picture for logistic regression, but the coefficients are never on that graph. They describe the straight line on the log-odds graph. Always ask which of the two pictures a number belongs to.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A slope of 1.825 is not a change in probability. It is a change in log odds per unit of weight. To get a probability you must undo the logit.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> "Not statistically significant" is not the same as "no effect". Both weight coefficients failed the test mainly because the sample was tiny.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> For a discrete predictor, the second coefficient is a log odds ratio, not a difference in probability and not the odds ratio itself. Exponentiate it first if you want to quote an odds ratio.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>Why does logistic regression work on the log-odds scale?</summary><div class="a">A probability is stuck between 0 and 1, and you cannot fit an unbounded line inside that box. The logit transform turns the probability into the log of the odds, which has no limits. On that scale the relationship is a straight line, exactly like linear regression. That is why the coefficients are reported in log odds.</div></details>
+
+    <details class="qa" open><summary>How do you interpret the slope coefficient?</summary><div class="a">The slope is the change in the log odds of the outcome for a one-unit increase in the predictor. In the mouse example, one more unit of weight adds 1.825 to the log odds of obesity. Exponentiate it and you get the odds ratio, which is easier to talk about. It is not a change in probability.</div></details>
+
+    <details class="qa" open><summary>What does the intercept mean, and why can it look meaningless?</summary><div class="a">The intercept is the log odds of the outcome when every predictor is zero. Here that is a mouse with zero weight, so minus 3.476 is not interpretable on its own. It still matters, because it sets the height of the line. When the predictor is a category, the intercept is the log odds of the reference group, and then it is genuinely useful.</div></details>
+
+    <details class="qa" open><summary>What does a categorical predictor's coefficient measure?</summary><div class="a">It is the difference between the log odds of the two groups. One log minus another log is the log of a ratio, so that difference is a log odds ratio. In the gene example it was 2.35, the log of 7/3 divided by 2/9. Exponentiate it and you get an odds ratio of about 10.5.</div></details>
+
+    <details class="qa" open><summary>How do you test whether a coefficient matters?</summary><div class="a">Each coefficient comes with a standard error. The z value is the estimate divided by that standard error, which is the Wald test. It counts how many standard deviations the estimate lies from zero. Past about two, the p-value drops below 0.05 and the coefficient is significant. In the gene example the mutant term passed and the intercept did not.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Logistic regression is a generalized linear model, so most linear-model ideas carry over.</li>
+      <li>Probability cannot leave the range 0 to 1, so the y-axis is changed to the log of the odds using the logit function.</li>
+      <li>On the log-odds axis the squiggle becomes a straight line with an intercept and a slope.</li>
+      <li>Those two numbers are the coefficients, and both are expressed in log odds.</li>
+      <li>With a continuous predictor, the slope is the change in log odds per unit change in the predictor.</li>
+      <li>With a discrete predictor, one line is fit per group, and the second coefficient is a log odds ratio.</li>
+      <li>Every coefficient is judged by a z value, the estimate divided by its standard error, plus a p-value.</li>
+      <li>In short, the coefficients behave like linear-model coefficients, only the scale is log odds.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Logistic regression coefficients</span><span class="board-tag">straighten the squiggle with log odds</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 272" role="img" aria-label="A small squiggle on a probability scale from 0 to 1 goes through the logit to a log-odds axis, where the fit is a straight line against weight. The line meets weight 0 at the intercept, −3.476, and climbs 1.825 log odds for each extra unit of weight.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <g class="sv-stroke-ink" stroke-width="2"><rect x="14" y="46" width="80" height="60" rx="6" class="sv-paper2"/></g>
+            <path d="M18 101 C52 101 56 51 90 51" class="sv-stroke-key" stroke-width="3" stroke-linecap="round"/>
+            <text x="14" y="34" class="sv-ts">probability</text>
+            <line x1="100" y1="82" x2="140" y2="82" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="121" y="64" text-anchor="middle" class="sv-ts">logit</text>
+            <line x1="150" y1="32" x2="150" y2="236" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="150" y1="236" x2="388" y2="236" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <text x="158" y="26" class="sv-ts">log(odds)</text>
+            <line x1="150" y1="214.3" x2="348" y2="33.6" class="sv-stroke-key" stroke-width="4" stroke-linecap="round"/>
+            <path d="M210 159.5 H270 V104.8" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <g class="sv-stroke-ink" stroke-width="2"><circle cx="150" cy="214.3" r="6" class="sv-good"/></g>
+            <text x="136" y="200" text-anchor="end" class="sv-ts">intercept</text>
+            <text x="136" y="226" text-anchor="end" class="sv-tb">−3.476</text>
+            <text x="250" y="182" text-anchor="middle" class="sv-ts">+1 weight</text>
+            <text x="278" y="138" class="sv-tb">+1.825</text>
+            <text x="385" y="258" text-anchor="end" class="sv-ts">weight</text>
+          </svg>
+          <p>Probability is stuck between 0 and 1, so the logit turns the y-axis into log odds and the squiggle becomes a straight line. Its intercept, −3.476, and slope, 1.825, are the coefficients, both in log odds.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Logit</dt><dd>The log of the odds; stretches 0 to 1 out to ±∞.</dd>
+            <dt>Coefficients</dt><dd>The intercept and slope of the straight log-odds line.</dd>
+            <dt>Log odds ratio</dt><dd>The gap between two groups' log odds; a discrete predictor's coefficient.</dd>
+            <dt>Wald test</dt><dd>z = estimate ÷ standard error; beyond about 2 is significant.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Squiggle</b>probability of obesity vs weight</li>
+            <li><b>Apply logit</b>0.5 → 0; mice go to ±∞</li>
+            <li><b>Fit a line</b>by maximum likelihood, next video</li>
+            <li><b>Read coefficients</b>intercept and slope, in log odds</li>
+            <li><b>Wald test</b>z = estimate ÷ standard error</li>
+            <li><b>Discrete predictor</b>one line per group</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\log(\text{odds})=\log\left(\frac{p}{1-p}\right)$$
+          $$\log(\text{odds})=-3.476+1.825\,w$$
+          $$z=\frac{\text{estimate}}{\text{SE}}$$
+          <ul class="keys">
+            <li>\(p\): 0.5, 0.731, 0.88, 0.95 become 0, 1, 2, 3.</li>
+            <li>\(w\) is weight: each unit adds 1.825 to the log odds.</li>
+            <li>SE is the standard error; \(z\) beyond about 2 is significant.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>gene</th><th>obese : not</th><th>odds</th><th>log odds</th></tr>
+            <tr><td>normal</td><td>2 : 9</td><td>2/9</td><td>−1.50</td></tr>
+            <tr><td>mutated</td><td>7 : 3</td><td>7/3</td><td>+0.85</td></tr>
+            <tr class="final"><td colspan="2">gap, b₂</td><td>(7/3)/(2/9)</td><td>2.35</td></tr>
+          </table>
+          <p class="hand">The intercept, −1.50, has z = −1.9: not significant. The gap, 2.35, has z beyond 2: significant.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">The slope 1.825 is a change in probability.</span><span class="yes">It is a change in log odds per unit of weight. Undo the logit for probability.</span></li>
+            <li><span class="no">Not significant means no effect.</span><span class="yes">Both weight coefficients failed mainly because the sample was tiny.</span></li>
+            <li><span class="no">The gene coefficient, 2.35, is the odds ratio.</span><span class="yes">It is a log odds ratio. Exponentiate it first to quote an odds ratio.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="16-logistic-regression.html"><small>Previous</small>Logistic Regression</a> <a href="18-logistic-regression-details-pt-2-maximum-likelihood.html"><small>Next</small>Logistic Regression Details Pt 2: Maximum Likelihood</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

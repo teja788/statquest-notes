@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gradient Boost Part 3 (of 4): Classification — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>61</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 61 · 17.1 min</div>
+    <h1>Gradient Boost Part 3 (of 4): Classification</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=jxuNLH5dXCs" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video shows how Gradient Boost predicts a yes/no answer instead of a number. The method keeps its shape, but every prediction now lives on the log odds scale.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Gradient Boost for classification starts with one leaf that holds the log of the odds for the whole dataset. The logistic function turns that log odds into a probability. The errors between labels and probabilities are called pseudo residuals. A small tree is fit to them, and each leaf gets an output value from a special formula. The scaled tree is added to the running log odds, and the loop repeats.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh uses a tiny training set of six people. For each person he records whether they like popcorn, their age, and their favourite colour. The thing to predict is whether the person loves the movie Troll 2. Four people love it and two do not.</p>
+    <p>In Part 1 the first prediction was the average of the target. Here the first prediction is the log of the odds. Josh calls it the logistic regression version of the average. The odds are 4 yes divided by 2 no, and the log of that is 0.7.</p>
+    <p>To use a log odds for classification, you convert it to a probability with the logistic function. That gives a probability of 0.7 for every person. Since 0.7 is above the usual 0.5 threshold, the model labels all six people as fans. That is wrong for two of them.</p>
+    <p>The error for one person is called a pseudo residual. It is the observed value minus the predicted probability. A fan has an observed value of 1, so the residual is 0.3. A non fan has an observed value of 0, so the residual is −0.7.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 320" role="img" aria-label="Six people plotted at probability 0 or 1, with the predicted probability 0.7 drawn as a dashed line and arrows showing the residuals">
+        <defs>
+          <marker id="ar-acc" markerWidth="9" markerHeight="9" refX="4" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" class="sv-acc"/></marker>
+          <marker id="ar-key" markerWidth="9" markerHeight="9" refX="4" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" class="sv-key"/></marker>
+        </defs>
+
+        <line x1="100" y1="40" x2="100" y2="262" class="sv-line" stroke-width="1.5"/>
+        <line x1="100" y1="262" x2="520" y2="262" class="sv-line" stroke-width="1.5"/>
+        <text x="90" y="55" class="sv-ts" text-anchor="end">1.0</text>
+        <text x="90" y="155" class="sv-ts" text-anchor="end">0.5</text>
+        <text x="90" y="255" class="sv-ts" text-anchor="end">0.0</text>
+        <text x="34" y="150" class="sv-ts" text-anchor="middle" transform="rotate(-90 34 150)">probability of loving Troll 2</text>
+
+        <line x1="100" y1="110" x2="520" y2="110" class="sv-stroke-acc" stroke-width="2" stroke-dasharray="6 5"/>
+        <rect x="418" y="76" width="100" height="24" rx="4" class="sv-paper"/>
+        <text x="428" y="93" class="sv-tm">predicted 0.7</text>
+
+        <circle cx="130" cy="50" r="7" class="sv-acc"/>
+        <circle cx="190" cy="50" r="7" class="sv-acc"/>
+        <circle cx="250" cy="50" r="7" class="sv-acc"/>
+        <circle cx="310" cy="50" r="7" class="sv-acc"/>
+        <circle cx="370" cy="250" r="7" class="sv-key"/>
+        <circle cx="430" cy="250" r="7" class="sv-key"/>
+
+        <line x1="130" y1="110" x2="130" y2="62" class="sv-stroke-acc" stroke-width="2" marker-end="url(#ar-acc)"/>
+        <text x="140" y="88" class="sv-tm">+0.3</text>
+        <line x1="370" y1="110" x2="370" y2="238" class="sv-stroke-key" stroke-width="2" marker-end="url(#ar-key)"/>
+        <text x="380" y="182" class="sv-tm">−0.7</text>
+
+        <rect x="558" y="72" width="182" height="116" rx="6" class="sv-paper2"/>
+        <rect x="558" y="72" width="182" height="116" rx="6" class="sv-line" stroke-width="1"/>
+        <text x="572" y="96" class="sv-tb">pseudo residual</text>
+        <text x="572" y="120" class="sv-tm">observed − predicted</text>
+        <text x="572" y="150" class="sv-tm">loves: 1 − 0.7 = 0.3</text>
+        <text x="572" y="174" class="sv-tm">not: 0 − 0.7 = −0.7</text>
+
+        <circle cx="110" cy="292" r="7" class="sv-acc"/>
+        <text x="124" y="297" class="sv-ts">loves Troll 2, observed = 1</text>
+        <circle cx="340" cy="292" r="7" class="sv-key"/>
+        <text x="354" y="297" class="sv-ts">does not love it, observed = 0</text>
+      </svg>
+      <figcaption>Notice that the dashed line is the one prediction shared by everyone, and each arrow is the error the next tree must learn.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Count the yes and no answers, and take the log of their ratio. This log odds is the first leaf and the first prediction for everyone.</li>
+      <li>Push that log odds through the logistic function to get a probability. Compare it to a threshold, usually 0.5, to get a label.</li>
+      <li>Compute a pseudo residual for each person: the observed value minus the predicted probability.</li>
+      <li>Grow a small tree that uses the features to predict those residuals. Josh limits it to three leaves. In practice people often allow 8 to 32 leaves.</li>
+      <li>Give every leaf an output value with the transformation formula. A plain average does not work, because the residuals come from probabilities but the prediction is a log odds.</li>
+      <li>Add the learning rate times the leaf output to each person's log odds. Josh uses 0.8 to make the change visible, though 0.1 is more common.</li>
+      <li>Convert the new log odds to probabilities, compute new residuals, and grow the next tree. Repeat until you reach the maximum number of trees or the residuals get very small.</li>
+    </ol>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 270" role="img" aria-label="Chain showing the initial leaf plus two scaled trees summing to a log odds of 2.3, which the logistic function turns into a probability of 0.9">
+        <defs>
+          <marker id="ar-ink" markerWidth="9" markerHeight="9" refX="4" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" class="sv-ink2"/></marker>
+        </defs>
+        <text x="20" y="34" class="sv-ts">Every tree is scaled by the learning rate before it is added.</text>
+
+        <rect x="20" y="80" width="130" height="80" rx="8" class="sv-acc-soft"/>
+        <rect x="20" y="80" width="130" height="80" rx="8" class="sv-stroke-acc" stroke-width="1.5"/>
+        <text x="85" y="112" class="sv-tb" text-anchor="middle">Initial leaf</text>
+        <text x="85" y="136" class="sv-tm" text-anchor="middle">log(odds) 0.7</text>
+
+        <text x="166" y="128" class="sv-tb">+</text>
+
+        <rect x="185" y="80" width="130" height="80" rx="8" class="sv-paper2"/>
+        <rect x="185" y="80" width="130" height="80" rx="8" class="sv-line" stroke-width="1.5"/>
+        <text x="250" y="112" class="sv-tb" text-anchor="middle">Tree 1</text>
+        <text x="250" y="136" class="sv-tm" text-anchor="middle">0.8 × output</text>
+
+        <text x="331" y="128" class="sv-tb">+</text>
+
+        <rect x="350" y="80" width="130" height="80" rx="8" class="sv-paper2"/>
+        <rect x="350" y="80" width="130" height="80" rx="8" class="sv-line" stroke-width="1.5"/>
+        <text x="415" y="112" class="sv-tb" text-anchor="middle">Tree 2</text>
+        <text x="415" y="136" class="sv-tm" text-anchor="middle">0.8 × output</text>
+
+        <text x="494" y="128" class="sv-tb">=</text>
+
+        <rect x="515" y="80" width="110" height="80" rx="8" class="sv-paper2"/>
+        <rect x="515" y="80" width="110" height="80" rx="8" class="sv-line" stroke-width="1.5"/>
+        <text x="570" y="112" class="sv-tb" text-anchor="middle">log(odds)</text>
+        <text x="570" y="136" class="sv-tm" text-anchor="middle">2.3</text>
+
+        <line x1="627" y1="120" x2="650" y2="120" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar-ink)"/>
+
+        <rect x="655" y="80" width="85" height="80" rx="8" class="sv-good-soft"/>
+        <rect x="655" y="80" width="85" height="80" rx="8" class="sv-stroke-good" stroke-width="1.5"/>
+        <text x="697" y="112" class="sv-tb" text-anchor="middle">p = 0.9</text>
+        <text x="697" y="136" class="sv-tm" text-anchor="middle">loves it</text>
+
+        <path d="M250,160 L250,215 L415,215 L415,168" class="sv-line" stroke-width="1.5" marker-end="url(#ar-ink)"/>
+        <text x="332" y="245" class="sv-ts" text-anchor="middle">new residuals decide what Tree 2 must fix</text>
+      </svg>
+      <figcaption>Notice that the trees add up on the log odds scale, and the logistic function is applied only at the very end.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Initial leaf</span><div class="math">$$ \log(\text{odds}) = \log\!\left(\frac{\#\,\text{yes}}{\#\,\text{no}}\right) = \log\!\left(\frac{4}{2}\right) = 0.7 $$</div>
+    <p class="explain"><b>Symbols:</b> \(\#\,\text{yes}\) is the number of fans, 4. \(\#\,\text{no}\) is the number of non fans, 2. Their ratio is the odds, and \(\log\) is the natural logarithm. <b>What it tells you:</b> it gives one starting prediction for everyone.</p></div>
+
+    <div class="formula"><span class="lbl">Logistic function</span><div class="math">$$ p = \frac{e^{\log(\text{odds})}}{1 + e^{\log(\text{odds})}} $$</div>
+    <p class="explain"><b>Symbols:</b> \(p\) is the predicted probability of loving Troll 2. \(e\) is Euler's number, about 2.718. \(\log(\text{odds})\) is the current prediction. <b>What it tells you:</b> it turns any log odds into a probability between 0 and 1.</p></div>
+
+    <div class="formula"><span class="lbl">Pseudo residual</span><div class="math">$$ r_i = y_i - p_i $$</div>
+    <p class="explain"><b>Symbols:</b> \(r_i\) is the residual for person \(i\). \(y_i\) is the observed value, 1 for loves and 0 for does not love. \(p_i\) is that person's current predicted probability. <b>What it tells you:</b> it is the error that the next tree tries to predict.</p></div>
+
+    <div class="formula"><span class="lbl">Leaf output value</span><div class="math">$$ \gamma = \frac{\sum_i r_i}{\sum_i p_i\,(1 - p_i)} $$</div>
+    <p class="explain"><b>Symbols:</b> \(\gamma\) is the output value of one leaf. The sums run over every person who lands in that leaf. \(r_i\) is that person's residual, and \(p_i\) is their probability from <em>before</em> this tree. <b>What it tells you:</b> it turns residuals on the probability scale into a step on the log odds scale. Josh derives it in Part 4.</p></div>
+
+    <div class="formula"><span class="lbl">Update rule</span><div class="math">$$ \log(\text{odds})_{\text{new}} = \log(\text{odds})_{\text{old}} + \nu \times \gamma $$</div>
+    <p class="explain"><b>Symbols:</b> \(\log(\text{odds})_{\text{old}}\) is the prediction before this tree. \(\nu\) is the learning rate, 0.8 in this video. \(\gamma\) is the output value of the leaf the person falls into. <b>What it tells you:</b> each tree moves the prediction only part of the way.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>The first leaf holds \(\log(4/2) = 0.7\), and the logistic function turns that into a probability of 0.7. So the residual is \(1 - 0.7 = 0.3\) for each of the four fans, and \(0 - 0.7 = -0.7\) for each of the other two.</p>
+      <p>The first tree has three leaves. One leaf holds a single residual of −0.7, so its output is \(-0.7 \div (0.7 \times 0.3) = -0.7 \div 0.21 = -3.3\). Another leaf holds two residuals, 0.3 and −0.7, so its output is \((0.3 - 0.7) \div (0.21 + 0.21) = -0.4 \div 0.42 = -1\). The last leaf holds three residuals of 0.3, so its output is \(0.9 \div 0.63 = 1.4\).</p>
+      <p>Now update the predictions with a learning rate of 0.8. The first person lands in the 1.4 leaf. The new log odds is \(0.7 + 0.8 \times 1.4 = 1.8\), and the probability rises to 0.9. This is a step in the right direction, because this person loves Troll 2.</p>
+      <p>The second person, also a fan, lands in the −1 leaf. The new log odds is \(0.7 + 0.8 \times (-1) = -0.1\), and the probability falls to 0.5. This prediction got worse, which is one reason to build many trees, not one.</p>
+      <p>New residuals use these new probabilities, which now differ per person. The second tree's three leaves get outputs of 2, −2, and 0.6.</p>
+      <p>To classify a new person, start at the initial leaf and add both trees' scaled outputs. Josh's new person gets a log odds of 2.3, which is a probability of 0.9. That is above 0.5, so the model says this person loves Troll 2.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not average the residuals in a leaf, as you would for regression. A leaf with the single residual −0.7 outputs −3.3, not −0.7. The denominator \(\sum p(1-p)\) converts the probability errors into log odds.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The probability in the denominator is the one from <em>before</em> the current tree. For the first tree it is 0.7 for everybody. From the second tree on, each person has their own probability.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The log odds and the probability both show as 0.7 only because Josh rounds. The true values are 0.6931 and 0.6667. The 0.5 threshold is also a common choice, not a rule.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>How does Gradient Boost for classification differ from Gradient Boost for regression?</summary><div class="a">The structure is the same: an initial guess, then trees fit to residuals, each scaled by a learning rate. The difference is the scale. Classification keeps the prediction as a log odds and starts from the log of the odds of the data. It uses the logistic function to get a probability, and leaf outputs use a transformation formula instead of an average.</div></details>
+
+    <details class="qa" open><summary>Why is the leaf output value not just the average residual?</summary><div class="a">The residuals sit on the probability scale, but the tree is added to a log odds prediction. So you divide the sum of the residuals by the sum of \(p(1-p)\) in that leaf. That converts the step into log odds units. Josh derives the formula in Part 4.</div></details>
+
+    <details class="qa" open><summary>What does the learning rate do, and what value would you use?</summary><div class="a">It scales each tree's contribution, so the model takes many small steps. The video uses 0.8 so the change is easy to see. In practice I would start near 0.1, which Josh calls more common.</div></details>
+
+    <details class="qa" open><summary>How do you make a prediction for a new person?</summary><div class="a">Start with the initial log odds. Run the person down every tree, and add each leaf output times the learning rate. Then turn the total into a probability and compare it to the threshold. In the video the total is 2.3, a probability of 0.9, so the person is a fan.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>The first prediction is one leaf with the log of the odds, here \(\log(4/2) = 0.7\).</li>
+      <li>The logistic function turns any log odds into a probability, and 0.5 is a common threshold.</li>
+      <li>A pseudo residual is the observed value minus the predicted probability.</li>
+      <li>Each tree is fit to the residuals, usually with 8 to 32 leaves.</li>
+      <li>A leaf's output is the sum of its residuals divided by the sum of \(p(1-p)\), using earlier probabilities.</li>
+      <li>The learning rate times the output is added to the log odds, and the loop repeats.</li>
+      <li>To predict, add up the scaled outputs, convert to a probability, and apply the threshold.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Gradient Boost classification</span><span class="board-tag">start at log odds, add scaled trees</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 260" role="img" aria-label="The logistic S-curve turns log odds into a probability. The start, log(4/2) = 0.7, sits at probability 0.7, a residual of 0.3 below the observed value 1. The first tree adds 0.8 × 1.4, moving the log odds to 1.8 and the probability to 0.9.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <line x1="30" y1="220" x2="385" y2="220" class="sv-stroke-ink" stroke-width="2"/>
+            <line x1="30" y1="46" x2="30" y2="220" class="sv-stroke-ink" stroke-width="2"/>
+            <line x1="30" y1="50" x2="385" y2="50" class="sv-stroke-good" stroke-width="2" stroke-dasharray="6 5"/>
+            <polyline points="40,191.1 60,183.6 81,174.3 102,163.6 123,151.8 144,139.3 165,126.5 186,114.2 200,106.4 207,102.7 228,92.4 249,83.6 277,74.1 291,70.3 312,65.5 333,61.7 354,58.9 385,55.8" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="200" y1="96" x2="200" y2="58" class="sv-stroke-key" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <path d="M209 106.4 L277 106.4 L277 87" class="sv-stroke-ink" stroke-width="2.5" stroke-dasharray="6 5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="200" cy="106.4" r="7" class="sv-key"/>
+              <circle cx="277" cy="74.1" r="8" class="sv-good"/>
+            </g>
+            <text x="385" y="36" text-anchor="end" class="sv-ts">observed 1: loves it</text>
+            <text x="182" y="76" text-anchor="end" class="sv-t">residual 0.3</text>
+            <text x="182" y="102" text-anchor="end" class="sv-t">log(4/2) = 0.7</text>
+            <text x="294" y="100" class="sv-tb">p = 0.9</text>
+            <text x="216" y="132" class="sv-t">+0.8 × 1.4 → 1.8</text>
+            <text x="385" y="244" text-anchor="end" class="sv-ts">log odds →</text>
+          </svg>
+          <p>Every prediction is a log odds, and the logistic function turns it into a probability. Each tree is fit to the residuals, and 0.8 times its leaf output is added to the log odds. Above 0.5, the label is yes.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Log odds</dt><dd>Log of yes over no. The first leaf is log(4/2) = 0.7.</dd>
+            <dt>Logistic function</dt><dd>Turns any log odds into a probability between 0 and 1.</dd>
+            <dt>Pseudo residual</dt><dd>Observed value (1 or 0) minus predicted probability.</dd>
+            <dt>Learning rate</dt><dd>Scales each tree: 0.8 here, 0.1 is more common.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Initial leaf</b>log(4/2) = 0.7 for all</li>
+            <li><b>To probability</b>logistic function, 0.5 threshold</li>
+            <li><b>Residuals</b>observed minus probability</li>
+            <li><b>Fit a tree</b>to the residuals, 3 leaves here</li>
+            <li><b>Leaf outputs</b>special formula, not an average</li>
+            <li><b>Update</b>log odds + 0.8 × output</li>
+          </ol>
+          <p class="loop">↺ repeat steps 2 to 6 until the tree limit, or until the residuals get very small</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$p=\frac{e^{\log(\text{odds})}}{1+e^{\log(\text{odds})}}$$
+          $$\gamma=\frac{\sum_i r_i}{\sum_i p_i\,(1-p_i)}$$
+          $$\text{new}=\text{old}+\nu\times\gamma$$
+          <ul class="keys">
+            <li>\(r_i\) is observed minus predicted probability.</li>
+            <li>\(p_i\) is the probability from before this tree.</li>
+            <li>New and old are log odds; \(\nu\) is the learning rate, 0.8 here.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>step</th><th>calc</th><th>value</th></tr>
+            <tr><td>start</td><td>log(4/2)</td><td>0.7</td></tr>
+            <tr><td>residual</td><td>1 − 0.7</td><td>0.3</td></tr>
+            <tr><td>leaf</td><td>0.9 ÷ 0.63</td><td>1.4</td></tr>
+            <tr><td>update</td><td>0.7+0.8×1.4</td><td>1.8, p 0.9</td></tr>
+            <tr class="final"><td>new person</td><td>0.7 + 2 trees</td><td>2.3, p 0.9 ✓</td></tr>
+          </table>
+          <p class="hand">Rows follow person 1. Other leaves give −3.3 and −1, not averages. Person 2 falls to p 0.5.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">A leaf outputs the average of its residuals.</span><span class="yes">Divide Σr by Σp(1 − p): a lone −0.7 residual outputs −3.3, not −0.7.</span></li>
+            <li><span class="no">The denominator uses the updated probabilities.</span><span class="yes">It uses p from before this tree: 0.7 for all at first, then each person's own.</span></li>
+            <li><span class="no">Log odds and probability are both 0.7.</span><span class="yes">Josh rounds 0.6931 and 0.6667. And 0.5 is a common threshold, not a rule.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="60-gradient-boost-part-2-regression-details.html"><small>Previous</small>Gradient Boost Part 2 (of 4): Regression Details</a> <a href="62-gradient-boost-part-4-classification-details.html"><small>Next</small>Gradient Boost Part 4 (of 4): Classification Details</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

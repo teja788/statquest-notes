@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Logistic Regression — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>16</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 16 · 8.8 min</div>
+    <h1>Logistic Regression</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=yIYKR4sgzI8" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Logistic regression predicts whether something is true or false. This video shows how it differs from linear regression, and why it is fit in a completely different way.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Linear regression fits a straight line and predicts a continuous value, like the size of a mouse. Logistic regression fits an S-shaped curve that runs from 0 to 1. Its output is the probability that a mouse is obese. That probability is usually turned into a label: above 50% you call the mouse obese. It accepts continuous predictors like weight and discrete ones like genotype. It has no residuals, so it cannot use least squares or report an ordinary R-squared. It is fit with maximum likelihood instead.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh starts by reviewing linear regression. We had weight and size for some mice, and we fit a line through the points. That line let us do three things. We could calculate R-squared to see whether weight and size are correlated, calculate a p-value to see whether that R-squared is statistically significant, and use the line to predict the size of a new mouse from its weight.</p>
+    <p>Using data to predict something is machine learning. So plain linear regression is already a form of machine learning. Multiple regression is a slightly fancier version, where size is predicted from weight and blood volume together. It gives the same things: an R-squared, a p-value, and predictions. It can also use discrete measurements such as genotype, which simply means different types of mice. And you can compare a simple model to a complicated one, to see whether the extra measurement was worth taking.</p>
+    <p>Logistic regression is similar, with one change. It predicts whether something is true or false, not a continuous value. Here some mice are obese and some are not. Instead of a straight line, it fits an S-shaped logistic function. That curve goes from 0 to 1, so its height at any weight is the probability that a mouse of that weight is obese.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 350" role="img" aria-label="An S-shaped logistic curve on axes of weight and probability of obesity. Non-obese mice sit along the bottom at probability zero and obese mice along the top at probability one. Three marks on the curve show a light mouse with low probability, an intermediate mouse at fifty percent, and a heavy mouse with high probability.">
+        <rect x="0" y="0" width="760" height="350" class="sv-paper"/>
+        <text x="60" y="38" class="sv-tb">probability that the mouse is obese</text>
+
+        <line x1="90" y1="55" x2="90" y2="298" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="90" y1="298" x2="720" y2="298" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="84" y1="71" x2="90" y2="71" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="84" y1="175" x2="90" y2="175" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="84" y1="279" x2="90" y2="279" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="78" y="76" class="sv-tm" text-anchor="end">1</text>
+        <text x="78" y="180" class="sv-tm" text-anchor="end">0.5</text>
+        <text x="78" y="284" class="sv-tm" text-anchor="end">0</text>
+
+        <line x1="90" y1="175" x2="720" y2="175" class="sv-line" stroke-width="1.5" stroke-dasharray="5 5"/>
+        <rect x="470" y="140" width="240" height="22" rx="4" class="sv-paper"/>
+        <text x="590" y="156" class="sv-ts" text-anchor="middle">above this line, classify as obese</text>
+
+        <path d="M100,279 C250,277 330,266 400,175 C470,84 545,73 700,71" class="sv-stroke-key" stroke-width="3"/>
+
+        <circle cx="118" cy="279" r="5" class="sv-acc"/>
+        <circle cx="146" cy="279" r="5" class="sv-acc"/>
+        <circle cx="176" cy="279" r="5" class="sv-acc"/>
+        <circle cx="208" cy="279" r="5" class="sv-acc"/>
+        <circle cx="242" cy="279" r="5" class="sv-acc"/>
+        <circle cx="530" cy="71" r="5" class="sv-good"/>
+        <circle cx="566" cy="71" r="5" class="sv-good"/>
+        <circle cx="604" cy="71" r="5" class="sv-good"/>
+        <circle cx="644" cy="71" r="5" class="sv-good"/>
+        <circle cx="686" cy="71" r="5" class="sv-good"/>
+
+        <line x1="300" y1="298" x2="300" y2="272" class="sv-line" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <circle cx="300" cy="272" r="6" class="sv-key"/>
+        <text x="300" y="262" class="sv-ts" text-anchor="middle">light: small chance</text>
+
+        <line x1="400" y1="298" x2="400" y2="175" class="sv-line" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <circle cx="400" cy="175" r="6" class="sv-key"/>
+        <text x="400" y="110" class="sv-ts" text-anchor="middle">intermediate: 50%</text>
+
+        <line x1="620" y1="298" x2="620" y2="71" class="sv-line" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <circle cx="620" cy="71" r="6" class="sv-key"/>
+        <text x="620" y="106" class="sv-ts" text-anchor="middle">heavy: high chance</text>
+
+        <text x="100" y="318" class="sv-ts">not obese</text>
+        <text x="690" y="60" class="sv-ts" text-anchor="end">obese</text>
+        <text x="405" y="330" class="sv-t" text-anchor="middle">weight</text>
+      </svg>
+      <figcaption>The curve never leaves the range 0 to 1, so its height can always be read as a probability.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Collect the data. For each mouse you record the weight and whether the mouse is obese, true or false.</li>
+      <li>Fit the S-shaped logistic curve to those points, so that its height gives the probability of obesity at each weight.</li>
+      <li>Read a probability for any new mouse by finding its weight on the curve.</li>
+      <li>Classify the mouse. If the probability of obesity is greater than 50%, call it obese; otherwise call it not obese.</li>
+      <li>Add more predictors if you want. Obesity can be predicted by weight, or by weight and genotype, or by weight, genotype and age, or even by weight, genotype, age and astrological sign.</li>
+      <li>Test each variable separately. Check whether its effect on the prediction is significantly different from zero, using Wald's test. If the effect is not different from zero, that variable is not helping.</li>
+      <li>Drop the useless variables. In the video the astrological sign does not help, so leaving it out saves time and space in the study.</li>
+    </ol>
+    <p>The last big difference is how the curve is fit. Linear regression uses least squares: it finds the line that makes the sum of the squared residuals as small as possible. A residual is the vertical gap between a data point and the line. Those same residuals give R-squared and let you compare a simple model with a complicated one.</p>
+    <p>Logistic regression has no matching idea of a residual. So it cannot use least squares, and it cannot calculate R-squared. It uses maximum likelihood instead. You take a candidate curve, and for each mouse you read off the likelihood of seeing that mouse given the curve. Then you multiply all those likelihoods together to get the likelihood of the whole dataset. Then you shift the curve and do it again, and again. The curve with the largest likelihood wins.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 260" role="img" aria-label="Three small panels show the same mice with three different candidate curves. The left and right curves are shifted and give a smaller likelihood. The middle curve fits best and gives the largest likelihood, so it is the one that is selected.">
+        <rect x="0" y="0" width="760" height="260" class="sv-paper"/>
+        <text x="380" y="28" class="sv-t" text-anchor="middle">Shift the curve, multiply every mouse's likelihood, keep the largest product</text>
+
+        <g transform="translate(30,46)">
+          <text x="110" y="0" class="sv-ts" text-anchor="middle">curve shifted left</text>
+          <line x1="20" y1="12" x2="20" y2="130" class="sv-stroke-ink" stroke-width="1.2"/>
+          <line x1="20" y1="130" x2="200" y2="130" class="sv-stroke-ink" stroke-width="1.2"/>
+          <path d="M25,127 C48,124 60,110 78,70 C96,30 118,20 198,18" class="sv-stroke-ink" stroke-width="2"/>
+          <circle cx="38" cy="127" r="3.5" class="sv-acc"/><circle cx="54" cy="127" r="3.5" class="sv-acc"/>
+          <circle cx="72" cy="127" r="3.5" class="sv-acc"/><circle cx="90" cy="127" r="3.5" class="sv-acc"/>
+          <circle cx="140" cy="18" r="3.5" class="sv-good"/><circle cx="158" cy="18" r="3.5" class="sv-good"/>
+          <circle cx="176" cy="18" r="3.5" class="sv-good"/><circle cx="193" cy="18" r="3.5" class="sv-good"/>
+          <text x="110" y="158" class="sv-ts" text-anchor="middle">likelihood: smaller</text>
+        </g>
+
+        <g transform="translate(275,46)">
+          <text x="110" y="0" class="sv-tb" text-anchor="middle">best curve</text>
+          <line x1="20" y1="12" x2="20" y2="130" class="sv-stroke-ink" stroke-width="1.2"/>
+          <line x1="20" y1="130" x2="200" y2="130" class="sv-stroke-ink" stroke-width="1.2"/>
+          <path d="M25,127 C60,125 78,116 105,70 C132,24 150,20 198,18" class="sv-stroke-key" stroke-width="2.6"/>
+          <line x1="90" y1="130" x2="90" y2="88" class="sv-line" stroke-width="1.2" stroke-dasharray="4 4"/>
+          <circle cx="90" cy="88" r="4.5" class="sv-key"/>
+          <circle cx="38" cy="127" r="3.5" class="sv-acc"/><circle cx="54" cy="127" r="3.5" class="sv-acc"/>
+          <circle cx="72" cy="127" r="3.5" class="sv-acc"/><circle cx="90" cy="127" r="3.5" class="sv-acc"/>
+          <circle cx="140" cy="18" r="3.5" class="sv-good"/><circle cx="158" cy="18" r="3.5" class="sv-good"/>
+          <circle cx="176" cy="18" r="3.5" class="sv-good"/><circle cx="193" cy="18" r="3.5" class="sv-good"/>
+          <text x="110" y="158" class="sv-ts" text-anchor="middle">likelihood: largest — selected</text>
+        </g>
+
+        <g transform="translate(520,46)">
+          <text x="110" y="0" class="sv-ts" text-anchor="middle">curve shifted right</text>
+          <line x1="20" y1="12" x2="20" y2="130" class="sv-stroke-ink" stroke-width="1.2"/>
+          <line x1="20" y1="130" x2="200" y2="130" class="sv-stroke-ink" stroke-width="1.2"/>
+          <path d="M25,127 C90,126 118,118 145,72 C165,32 178,20 198,18" class="sv-stroke-ink" stroke-width="2"/>
+          <circle cx="38" cy="127" r="3.5" class="sv-acc"/><circle cx="54" cy="127" r="3.5" class="sv-acc"/>
+          <circle cx="72" cy="127" r="3.5" class="sv-acc"/><circle cx="90" cy="127" r="3.5" class="sv-acc"/>
+          <circle cx="140" cy="18" r="3.5" class="sv-good"/><circle cx="158" cy="18" r="3.5" class="sv-good"/>
+          <circle cx="176" cy="18" r="3.5" class="sv-good"/><circle cx="193" cy="18" r="3.5" class="sv-good"/>
+          <text x="110" y="158" class="sv-ts" text-anchor="middle">likelihood: smaller</text>
+        </g>
+      </svg>
+      <figcaption>Notice that fitting is a search over curves, not a one-shot formula like least squares.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">The logistic curve</span>
+      <div class="math">$$ p(\text{obese} \mid x) = \frac{1}{1 + e^{-(\beta_0 + \beta_1 x)}} $$</div>
+      <p class="explain"><b>Symbols:</b> \(x\) is the weight of the mouse. \(\beta_0\) is the intercept and \(\beta_1\) is the slope; together they set where the S sits and how steep it is. \(e\) is the number 2.718…, the base of natural logarithms. \(p\) is the output. <b>What it tells you:</b> this is the standard form of the S-shaped curve Josh draws. Whatever numbers go in, the output always stays between 0 and 1, so it can be read as a probability.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Classification rule</span>
+      <div class="math">$$ \hat{y} = \begin{cases} \text{obese} & \text{if } p > 0.5 \\ \text{not obese} & \text{otherwise} \end{cases} $$</div>
+      <p class="explain"><b>Symbols:</b> \(p\) is the probability from the curve. \(\hat{y}\) is the label you assign. <b>What it tells you:</b> logistic regression itself only gives a probability. The 0.5 cut is the extra step that turns it into a classification.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Least squares, for contrast</span>
+      <div class="math">$$ \min \sum_{i=1}^{n} (y_i - \hat{y}_i)^2 $$</div>
+      <p class="explain"><b>Symbols:</b> \(y_i\) is the observed size of mouse \(i\). \(\hat{y}_i\) is the size the line predicts. Their difference is the residual. \(n\) is the number of mice. <b>What it tells you:</b> this is what linear regression minimises. Logistic regression has no such residual, so it cannot use this rule and cannot report R-squared.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Likelihood of the data</span>
+      <div class="math">$$ L = \prod_{i=1}^{n} p_i^{\,y_i}\,(1-p_i)^{\,1-y_i} $$</div>
+      <p class="explain"><b>Symbols:</b> \(p_i\) is the probability the curve gives for mouse \(i\). \(y_i\) is 1 if that mouse is obese and 0 if it is not. The \(\prod\) sign means multiply all the terms together. <b>What it tells you:</b> for an obese mouse the term is \(p_i\), and for a non-obese mouse it is \(1-p_i\). Multiply them for every mouse and you get the likelihood of the whole dataset. Maximum likelihood picks the curve that makes \(L\) as large as possible.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh keeps the mouse study running through the whole video. Some mice are obese and some are not, and we want to predict obesity from weight. The fitted curve is the S-shape above.</p>
+      <p>Take three new mice. A very heavy mouse lands high on the curve, so \(p > 0.5\) and it is classified as obese. An intermediate mouse lands in the middle, where the probability is exactly 50%. A light mouse lands low on the curve, so its probability is small and it is classified as not obese.</p>
+      <p>Then Josh builds bigger models. Obesity by weight. Obesity by weight and genotype. Obesity by weight, genotype and age. Obesity by weight, genotype, age and astrological sign. Weight and age are continuous; genotype and astrological sign are discrete. Logistic regression handles both kinds.</p>
+      <p>Each variable is then tested on its own, to see whether its effect differs significantly from zero. Weight, genotype and age pass. The astrological sign does not, so it is not helping the prediction and can be left out of the study.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Logistic regression has no residuals, so it has no least squares fit and no ordinary R-squared. Do not report one out of habit because linear regression gave you one.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> You cannot easily compare a complicated logistic model with a simple one the way you compare two linear models. Instead test each variable's effect against zero, using Wald's test.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The direct output is a probability, not a label. The 50% threshold is a separate decision you make afterwards, and it can be moved.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Fitting is a search, not a one-shot formula. The software shifts the curve many times and keeps the one with the highest likelihood.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>How does logistic regression differ from linear regression?</summary><div class="a">Linear regression predicts a continuous value and fits a straight line. Logistic regression predicts whether something is true or false, and fits an S-shaped curve that runs from 0 to 1. Because the curve stays inside that range, its height is a probability. Both accept continuous and discrete predictors, so the modelling feels familiar.</div></details>
+
+    <details class="qa" open><summary>Why can't logistic regression use least squares?</summary><div class="a">Least squares needs residuals, the vertical gaps between the points and the line. In logistic regression the outcome is only true or false, so there is no matching residual to square and add up. That is also why there is no ordinary R-squared. The fit uses maximum likelihood instead.</div></details>
+
+    <details class="qa" open><summary>What does maximum likelihood actually do here?</summary><div class="a">You start with a candidate curve. For each observation you read the likelihood of seeing that observation given the curve, then multiply all of them to get the likelihood of the whole dataset. You shift the curve and recompute, over and over. The curve with the largest likelihood is the fitted model.</div></details>
+
+    <details class="qa" open><summary>Is logistic regression classification or regression?</summary><div class="a">Strictly it estimates a probability, so it is a regression on the probability scale. In practice it is used for classification. You apply a threshold, usually 50%, and label anything above it as the positive class. That threshold is your choice, not part of the fit.</div></details>
+
+    <details class="qa" open><summary>How do you decide whether a predictor is worth keeping?</summary><div class="a">You test whether that variable's effect on the prediction is significantly different from zero, typically with Wald's test. If it is not, the variable is not helping and you can drop it. In the video the astrological sign fails this test, so removing it saves time and effort in the study.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap">
+      <ul>
+        <li>Logistic regression predicts whether something is true or false, not a continuous value.</li>
+        <li>It fits an S-shaped logistic curve that runs from 0 to 1, so its height is a probability.</li>
+        <li>You classify by putting a threshold on that probability, usually 50%.</li>
+        <li>It works with continuous predictors like weight and age, and discrete ones like genotype.</li>
+        <li>It has no residuals, so no least squares and no ordinary R-squared.</li>
+        <li>It is fit by maximum likelihood: try curves, multiply the likelihoods, keep the best.</li>
+        <li>You cannot easily compare complicated and simple models, so you test each variable's effect against zero with Wald's test.</li>
+        <li>Useless variables, like the astrological sign, can then be dropped from the study.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Logistic regression</span><span class="board-tag">S-curve probabilities, fit by maximum likelihood</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 250" role="img" aria-label="An S-shaped curve of the probability of obesity against weight, running from 0 to 1. Non-obese mice sit at 0 on the left and obese mice at 1 on the right, and a dashed line at 0.5 is the 50% cut. A new mouse's weight is read up to the curve and across: its probability is above 0.5, so it is classified as obese.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <line x1="50" y1="40" x2="50" y2="212" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="50" y1="212" x2="388" y2="212" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linecap="round">
+              <line x1="44" y1="50" x2="50" y2="50"/>
+              <line x1="44" y1="125" x2="50" y2="125"/>
+              <line x1="44" y1="200" x2="50" y2="200"/>
+            </g>
+            <line x1="50" y1="125" x2="385" y2="125" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="4 6" stroke-linecap="round"/>
+            <polyline points="55,199.5 75,199 95,198 115,195.9 135,191.9 155,184.2 175,171 195,150.7 215,125 235,99.3 255,79 275,65.8 295,58.1 315,54.1 335,52 355,51 380,50.5" class="sv-stroke-key" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="68" cy="200" r="6" class="sv-acc"/>
+              <circle cx="90" cy="200" r="6" class="sv-acc"/>
+              <circle cx="112" cy="200" r="6" class="sv-acc"/>
+              <circle cx="134" cy="200" r="6" class="sv-acc"/>
+              <circle cx="300" cy="50" r="6" class="sv-good"/>
+              <circle cx="322" cy="50" r="6" class="sv-good"/>
+              <circle cx="344" cy="50" r="6" class="sv-good"/>
+              <circle cx="366" cy="50" r="6" class="sv-good"/>
+            </g>
+            <line x1="250" y1="210" x2="250" y2="98" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="240" y1="83.4" x2="58" y2="83.4" class="sv-stroke-ink" stroke-width="2.5" stroke-dasharray="5 5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2"><circle cx="250" cy="83.4" r="6" class="sv-key"/></g>
+            <text x="50" y="26" class="sv-ts">p(obese)</text>
+            <text x="40" y="56" text-anchor="end" class="sv-ts">1</text>
+            <text x="40" y="131" text-anchor="end" class="sv-ts">0.5</text>
+            <text x="40" y="206" text-anchor="end" class="sv-ts">0</text>
+            <text x="385" y="114" text-anchor="end" class="sv-ts">classify at 50%</text>
+            <text x="140" y="72" text-anchor="middle" class="sv-t">p &gt; 0.5 → obese</text>
+            <text x="250" y="234" text-anchor="middle" class="sv-ts">new mouse</text>
+            <text x="385" y="234" text-anchor="end" class="sv-ts">weight</text>
+          </svg>
+          <p>The S-curve runs from 0 to 1, so its height at any weight is the probability a mouse is obese; above 50%, call it obese. With no residuals, the curve is fit by maximum likelihood, not least squares.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Logistic curve</dt><dd>An S-shape from 0 to 1; its height is a probability.</dd>
+            <dt>Threshold</dt><dd>The cut, usually 50%, that turns a probability into a label.</dd>
+            <dt>Maximum likelihood</dt><dd>Multiply every mouse's likelihood for a curve; keep the curve whose product is largest.</dd>
+            <dt>Wald's test</dt><dd>Checks whether one variable's effect differs significantly from zero.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Collect data</b>weight, and obese or not</li>
+            <li><b>Fit the curve</b>by maximum likelihood</li>
+            <li><b>Read a probability</b>find the new mouse's weight</li>
+            <li><b>Classify</b>obese if p &gt; 50%</li>
+            <li><b>Add predictors</b>weight, genotype, age, sign</li>
+            <li><b>Test and drop</b>Wald's test; sign does not help</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$p=\frac{1}{1+e^{-(\beta_0+\beta_1 x)}}$$
+          $$L=\prod_{i=1}^{n}p_i^{\,y_i}\,(1-p_i)^{\,1-y_i}$$
+          <ul class="keys">
+            <li>\(x\) is weight; \(\beta_0\) and \(\beta_1\) set where the S sits and how steep it is.</li>
+            <li>\(y_i\) is 1 if obese, else 0; the largest \(L\) wins.</li>
+            <li>Classify as obese if \(p \gt 0.5\).</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>variable</th><th>kind</th><th>Wald's test</th></tr>
+            <tr><td>weight</td><td>continuous</td><td>passes</td></tr>
+            <tr><td>genotype</td><td>discrete</td><td>passes</td></tr>
+            <tr><td>age</td><td>continuous</td><td>passes</td></tr>
+            <tr class="final"><td>astrological sign</td><td>discrete</td><td>fails: drop</td></tr>
+          </table>
+          <p class="hand">New mice: heavy lands above 0.5, obese; intermediate sits at exactly 50%; light lands low, not obese.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Report R-squared, like linear regression.</span><span class="yes">No residuals: no least squares, no ordinary R-squared. Fit by maximum likelihood.</span></li>
+            <li><span class="no">Compare simple and complicated models directly.</span><span class="yes">Not easily. Test each variable's effect against zero with Wald's test.</span></li>
+            <li><span class="no">Its output is a label.</span><span class="yes">It is a probability; the 50% cut is a separate, movable choice.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="08-mutual-information.html"><small>Previous</small>Mutual Information</a> <a href="17-logistic-regression-details-pt1-coefficients.html"><small>Next</small>Logistic Regression Details Pt1: Coefficients</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

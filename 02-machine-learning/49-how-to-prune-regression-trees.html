@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>How to Prune Regression Trees — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>49</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 49 · 16.2 min</div>
+    <h1>How to Prune Regression Trees</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=D0efHEJsfHo" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">A full-sized regression tree fits the training data almost perfectly, and that is the problem. This video shows how cost complexity pruning cuts the tree back so it works better on new data.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>A regression tree grown to full size gives each small cluster of points its own leaf. That tree matches the training data closely, but it misses new observations. Pruning removes leaves and replaces a split with one leaf that averages more observations. Cost complexity pruning compares candidate subtrees with a tree score, which adds a penalty for each leaf. Cross-validation picks the penalty strength alpha, and alpha picks the final tree.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh reuses the drug data from the regression trees video. Drug dosage is on the x-axis and drug effectiveness is on the y-axis. Low and high dosages do not work. Medium dosages work very well, and moderately high dosages work moderately well. The fitted tree gives each cluster its own leaf, and each leaf predicts the average effectiveness of that cluster.</p>
+    <p>That tree looks excellent on the training data, because every leaf sits close to its own points. Now imagine a set of testing data. A residual is the gap between an observed value and the predicted value. For some testing points the residuals stay small. Near the top of the curve they become much larger. The four training observations with 100% effectiveness now look a little like outliers. The tree was overfit to the training data.</p>
+    <p>The fix is simple. Remove a pair of leaves and replace that split with a single leaf. The new leaf predicts the average of a larger group. Here every observation between dosage 14.5 and 29 goes to the same leaf. This subtree fits the training data worse, as expected. But it does a much better job on the testing data.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 330" role="img" aria-label="Two plots of drug dosage against effectiveness. The full tree follows the training points closely but misses the test points. The pruned tree uses one wider leaf and sits closer to the test points.">
+        <defs>
+          <marker id="ah" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="sv-ink2"></path></marker>
+        </defs>
+
+        <text x="205" y="40" text-anchor="middle" class="sv-tb">Full tree, 4 leaves</text>
+        <text x="565" y="40" text-anchor="middle" class="sv-tb">Pruned, 3 leaves</text>
+
+        <line x1="55" y1="250" x2="355" y2="250" class="sv-line" stroke-width="1.5"></line>
+        <line x1="55" y1="60" x2="55" y2="250" class="sv-line" stroke-width="1.5"></line>
+        <line x1="415" y1="250" x2="715" y2="250" class="sv-line" stroke-width="1.5"></line>
+        <line x1="415" y1="60" x2="415" y2="250" class="sv-line" stroke-width="1.5"></line>
+
+        <text x="205" y="272" text-anchor="middle" class="sv-ts">Drug dosage</text>
+        <text x="565" y="272" text-anchor="middle" class="sv-ts">Drug dosage</text>
+        <text x="36" y="155" text-anchor="middle" class="sv-ts" transform="rotate(-90 36 155)">Effectiveness</text>
+
+        <path d="M55,243 H179 M179,77 H256 M256,159 H304 M304,246 H355" class="sv-stroke-acc" stroke-width="3"></path>
+        <path d="M415,243 H539 M539,121 H664 M664,246 H715" class="sv-stroke-acc" stroke-width="3"></path>
+
+        <circle cx="70" cy="246" r="3" class="sv-ink"></circle>
+        <circle cx="92" cy="241" r="3" class="sv-ink"></circle>
+        <circle cx="115" cy="245" r="3" class="sv-ink"></circle>
+        <circle cx="140" cy="240" r="3" class="sv-ink"></circle>
+        <circle cx="165" cy="244" r="3" class="sv-ink"></circle>
+        <circle cx="188" cy="77" r="3" class="sv-ink"></circle>
+        <circle cx="208" cy="77" r="3" class="sv-ink"></circle>
+        <circle cx="228" cy="77" r="3" class="sv-ink"></circle>
+        <circle cx="248" cy="77" r="3" class="sv-ink"></circle>
+        <circle cx="266" cy="152" r="3" class="sv-ink"></circle>
+        <circle cx="282" cy="166" r="3" class="sv-ink"></circle>
+        <circle cx="297" cy="159" r="3" class="sv-ink"></circle>
+        <circle cx="316" cy="248" r="3" class="sv-ink"></circle>
+        <circle cx="338" cy="244" r="3" class="sv-ink"></circle>
+
+        <circle cx="430" cy="246" r="3" class="sv-ink"></circle>
+        <circle cx="452" cy="241" r="3" class="sv-ink"></circle>
+        <circle cx="475" cy="245" r="3" class="sv-ink"></circle>
+        <circle cx="500" cy="240" r="3" class="sv-ink"></circle>
+        <circle cx="525" cy="244" r="3" class="sv-ink"></circle>
+        <circle cx="548" cy="77" r="3" class="sv-ink"></circle>
+        <circle cx="568" cy="77" r="3" class="sv-ink"></circle>
+        <circle cx="588" cy="77" r="3" class="sv-ink"></circle>
+        <circle cx="608" cy="77" r="3" class="sv-ink"></circle>
+        <circle cx="626" cy="152" r="3" class="sv-ink"></circle>
+        <circle cx="642" cy="166" r="3" class="sv-ink"></circle>
+        <circle cx="657" cy="159" r="3" class="sv-ink"></circle>
+        <circle cx="676" cy="248" r="3" class="sv-ink"></circle>
+        <circle cx="698" cy="244" r="3" class="sv-ink"></circle>
+
+        <path d="M196,77 V124 M222,77 V108 M242,77 V133" class="sv-stroke-key" stroke-width="1.4" stroke-dasharray="3 3"></path>
+        <circle cx="196" cy="124" r="4" class="sv-key"></circle>
+        <circle cx="222" cy="108" r="4" class="sv-key"></circle>
+        <circle cx="242" cy="133" r="4" class="sv-key"></circle>
+        <circle cx="104" cy="247" r="4" class="sv-key"></circle>
+        <circle cx="290" cy="164" r="4" class="sv-key"></circle>
+        <circle cx="326" cy="243" r="4" class="sv-key"></circle>
+
+        <path d="M556,124 V121 M582,121 V108 M602,133 V121" class="sv-stroke-good" stroke-width="1.4" stroke-dasharray="3 3"></path>
+        <circle cx="556" cy="124" r="4" class="sv-key"></circle>
+        <circle cx="582" cy="108" r="4" class="sv-key"></circle>
+        <circle cx="602" cy="133" r="4" class="sv-key"></circle>
+        <circle cx="464" cy="247" r="4" class="sv-key"></circle>
+        <circle cx="650" cy="164" r="4" class="sv-key"></circle>
+        <circle cx="686" cy="243" r="4" class="sv-key"></circle>
+
+        <rect x="150" y="180" width="150" height="20" rx="4" class="sv-paper"></rect>
+        <text x="225" y="194" text-anchor="middle" class="sv-ts">large test residuals</text>
+        <rect x="510" y="180" width="150" height="20" rx="4" class="sv-paper"></rect>
+        <text x="585" y="194" text-anchor="middle" class="sv-ts">test residuals shrink</text>
+        <line x1="360" y1="150" x2="408" y2="150" class="sv-line" stroke-width="1.5" marker-end="url(#ah)"></line>
+
+        <circle cx="60" cy="300" r="3" class="sv-ink"></circle>
+        <text x="70" y="304" class="sv-ts">training data</text>
+        <circle cx="180" cy="300" r="4" class="sv-key"></circle>
+        <text x="190" y="304" class="sv-ts">testing data</text>
+        <rect x="300" y="292" width="26" height="4" class="sv-acc"></rect>
+        <text x="333" y="304" class="sv-ts">tree prediction</text>
+      </svg>
+      <figcaption>Notice the dashed lines: the wide leaf raises the training error but pulls the predictions closer to the test points.</figcaption>
+    </figure>
+
+    <p>Pruning can continue. Remove two more leaves and you get a tree with two leaves. Remove two more and you get a single leaf that predicts the average of every observation. So the real question is which tree to keep. Cost complexity pruning, also called weakest link pruning, answers that question with a number.</p>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <p>Josh splits the method in two. First he compares subtrees at a fixed penalty. Then he finds the penalty itself.</p>
+    <ol class="steps">
+      <li>Take the full-sized tree and compute the sum of squared residuals for every leaf. Add the leaf values to get the sum of squared residuals for the whole tree.</li>
+      <li>Prune one split away, recompute the residuals for the new wider leaf, and get the sum of squared residuals for that subtree. Repeat until only one leaf is left.</li>
+      <li>Notice that the sum of squared residuals grows every time you remove a leaf. That is expected, so this number alone cannot choose a tree.</li>
+      <li>Give each tree a tree score. The score adds a complexity penalty of alpha for every leaf, so bigger trees pay more.</li>
+      <li>With alpha fixed, keep the tree with the lowest tree score. That single number balances fit against size.</li>
+      <li>To find alpha, first build a full tree on <b>all</b> the data. Raise alpha slowly and record each value where pruning gives a lower score. This gives a sequence of trees from full-sized down to one leaf.</li>
+      <li>Now split the data into training and testing sets. Using only the training data, build the best tree for each alpha in that sequence. Score each tree on the testing data.</li>
+      <li>Repeat with new splits until you have done 10-fold cross-validation. The alpha with the lowest average testing error wins.</li>
+      <li>Go back to the trees built on the full data. Pick the one that matches the winning alpha.</li>
+    </ol>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 310" role="img" aria-label="Four candidate subtrees with four, three, two and one leaf, each showing its sum of squared residuals and its tree score when alpha is ten thousand. The three-leaf subtree has the lowest score.">
+        <rect x="200" y="24" width="180" height="246" rx="8" class="sv-good-soft"></rect>
+
+        <path d="M110,48 L80,78 M110,48 L140,78 M140,78 L122,108 M140,78 L158,108 M158,108 L142,138 M158,108 L174,138" class="sv-stroke-ink" stroke-width="1.4"></path>
+        <circle cx="110" cy="48" r="7" class="sv-ink3"></circle>
+        <circle cx="80" cy="78" r="7" class="sv-acc"></circle>
+        <circle cx="140" cy="78" r="7" class="sv-ink3"></circle>
+        <circle cx="122" cy="108" r="7" class="sv-acc"></circle>
+        <circle cx="158" cy="108" r="7" class="sv-ink3"></circle>
+        <circle cx="142" cy="138" r="7" class="sv-acc"></circle>
+        <circle cx="174" cy="138" r="7" class="sv-acc"></circle>
+
+        <path d="M290,55 L262,90 M290,55 L318,90 M318,90 L300,124 M318,90 L336,124" class="sv-stroke-ink" stroke-width="1.4"></path>
+        <circle cx="290" cy="55" r="7" class="sv-ink3"></circle>
+        <circle cx="318" cy="90" r="7" class="sv-ink3"></circle>
+        <circle cx="262" cy="90" r="7" class="sv-acc"></circle>
+        <circle cx="300" cy="124" r="7" class="sv-acc"></circle>
+        <circle cx="336" cy="124" r="7" class="sv-acc"></circle>
+
+        <path d="M470,55 L445,90 M470,55 L495,90" class="sv-stroke-ink" stroke-width="1.4"></path>
+        <circle cx="470" cy="55" r="7" class="sv-ink3"></circle>
+        <circle cx="445" cy="90" r="7" class="sv-acc"></circle>
+        <circle cx="495" cy="90" r="7" class="sv-acc"></circle>
+
+        <circle cx="650" cy="55" r="7" class="sv-acc"></circle>
+
+        <text x="110" y="170" text-anchor="middle" class="sv-t">4 leaves · SSR 543.8</text>
+        <text x="290" y="170" text-anchor="middle" class="sv-t">3 leaves · SSR 5,494.8</text>
+        <text x="470" y="170" text-anchor="middle" class="sv-t">2 leaves · SSR 19,243.7</text>
+        <text x="650" y="170" text-anchor="middle" class="sv-t">1 leaf · SSR 28,897.2</text>
+
+        <text x="110" y="205" text-anchor="middle" class="sv-tm">score 40,543.8</text>
+        <text x="290" y="205" text-anchor="middle" class="sv-tm">score 35,494.8</text>
+        <text x="470" y="205" text-anchor="middle" class="sv-tm">score 39,243.7</text>
+        <text x="650" y="205" text-anchor="middle" class="sv-tm">score 38,897.2</text>
+
+        <text x="290" y="246" text-anchor="middle" class="sv-tb">lowest score</text>
+        <text x="380" y="285" text-anchor="middle" class="sv-ts">Scores use alpha = 10,000, so each leaf costs 10,000.</text>
+      </svg>
+      <figcaption>The sum of squared residuals always favours the big tree, but the leaf penalty pushes the winner to the three-leaf subtree.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Sum of squared residuals</span>
+      <div class="math">$$ \mathrm{SSR}(T) \;=\; \sum_{\ell \in T} \; \sum_{i \in \ell} \left( y_i - \bar{y}_{\ell} \right)^2 $$</div>
+      <p class="explain"><b>Symbols:</b> \( T \) is the tree or subtree. \( \ell \) is one leaf of that tree. \( i \) runs over the observations that land in that leaf. \( y_i \) is the observed value, here drug effectiveness. \( \bar{y}_{\ell} \) is the average of the observations in that leaf, which is what the leaf predicts. <b>What it tells you:</b> it measures how far the tree's predictions sit from the data, and it can only grow when you merge leaves.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Tree score</span>
+      <div class="math">$$ \text{Tree Score} \;=\; \mathrm{SSR}(T) \;+\; \alpha \, |T| $$</div>
+      <p class="explain"><b>Symbols:</b> \( \mathrm{SSR}(T) \) is the sum of squared residuals above. \( |T| \) is the number of leaves, also called terminal nodes; the video writes it as \( T \). \( \alpha \) is the tuning parameter that sets the price of one leaf. <b>What it tells you:</b> the term \( \alpha|T| \) is a tree complexity penalty that compensates for the difference in the number of leaves, so trees of different sizes become comparable.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">The choice rule</span>
+      <div class="math">$$ \hat{T}_{\alpha} \;=\; \arg\min_{T \subseteq T_{\max}} \Big[ \mathrm{SSR}(T) + \alpha\,|T| \Big] $$</div>
+      <p class="explain"><b>Symbols:</b> \( T_{\max} \) is the full-sized tree. \( T \subseteq T_{\max} \) means any subtree you get by pruning it. \( \hat{T}_{\alpha} \) is the subtree with the lowest score for that alpha. <b>What it tells you:</b> at \( \alpha = 0 \) the penalty disappears and the full tree always wins. As alpha rises, smaller trees take over one by one.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Start with the full-sized tree on the drug data. Each leaf keeps its own sum of squared residuals: 320 for dosages below 14.5, 0 from 14.5 up to 23.5, 148.8 from 23.5 up to 29, and 75 for 29 and above. The tree total is 320 + 75 + 148.8 + 0 = 543.8.</p>
+      <p>Now merge the two middle leaves. The outer leaves keep 320 and 75, but the new wide leaf scores 5,099.8. The total becomes 5,494.8. Pruning again gives 19,243.7 for two leaves, and 28,897.2 for the single leaf.</p>
+      <p>Set \( \alpha = 10{,}000 \) and add the penalty:</p>
+      <p>$$ 543.8 + 10{,}000 \times 4 = 40{,}543.8 $$</p>
+      <p>$$ 5{,}494.8 + 10{,}000 \times 3 = 35{,}494.8 $$</p>
+      <p>$$ 19{,}243.7 + 10{,}000 \times 2 = 39{,}243.7 $$</p>
+      <p>$$ 28{,}897.2 + 10{,}000 \times 1 = 38{,}897.2 $$</p>
+      <p>The three-leaf subtree wins with 35,494.8. Set alpha to 22,000 and the single leaf wins instead. So alpha decides the shape of the final tree.</p>
+      <p>Raising alpha from zero on the full data gives Josh's sequence: 0 keeps the full tree, 10,000 prunes to three leaves, 15,000 to two leaves, and 22,000 to one leaf. Ten-fold cross-validation scores these four alphas on held-out data. Alpha 10,000 gives the lowest average testing error, so it is the final choice.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Do not compare trees by their sum of squared residuals alone. That number gets larger with every leaf you remove, so it always votes for the biggest tree. Only the tree score, with the penalty added, makes the comparison fair.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>The candidate alpha values come from a tree built on all the data, not from a training split. Cross-validation only reuses those alpha values to score them. The final tree is not one of the trees built inside cross-validation. You return to the trees built on the full data and take the matching subtree.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>A pruned tree fits the training data worse on purpose. Larger training residuals are not a failure here. The test is whether the residuals on new data get smaller.</p>
+    </div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>What is cost complexity pruning?</summary>
+      <div class="a">It is a way to cut a regression tree back so it generalises better. You give every candidate subtree a score equal to its sum of squared residuals plus alpha times its number of leaves. For a fixed alpha you keep the subtree with the lowest score. It is also called weakest link pruning.</div>
+    </details>
+
+    <details class="qa" open><summary>What does alpha control?</summary>
+      <div class="a">Alpha is the price you pay for each leaf. At alpha zero the penalty vanishes and the full tree always wins, because it has the smallest sum of squared residuals. As you raise alpha, the penalty outweighs the extra fit and the tree gets pruned back, until only a single leaf is left.</div>
+    </details>
+
+    <details class="qa" open><summary>How do you choose alpha?</summary>
+      <div class="a">With cross-validation. You first raise alpha on the full data to get the sequence of alpha values where the best subtree changes. Then, for each fold, you build those subtrees on the training part and measure the sum of squared residuals on the held-out part. The alpha with the lowest average testing error is the one you keep.</div>
+    </details>
+
+    <details class="qa" open><summary>Why does the pruned tree have larger residuals but still get used?</summary>
+      <div class="a">The large training residuals come from points the full tree was overfitting. In the video, four training points at 100% effectiveness got their own leaf, and the test points near them sat far below it. The wider leaf averages more observations, so it sits closer to the new data.</div>
+    </details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap">
+      <ul>
+        <li>A full-sized regression tree usually overfits, because each leaf is tuned to a small cluster of training points.</li>
+        <li>Pruning replaces a split with one leaf that predicts the average of a larger group.</li>
+        <li>The sum of squared residuals always rises when you prune, so it cannot pick a tree on its own.</li>
+        <li>The tree score adds alpha times the number of leaves, which makes trees of different sizes comparable.</li>
+        <li>For a fixed alpha, you keep the subtree with the lowest tree score.</li>
+        <li>Raising alpha on the full data produces a sequence of subtrees, from full-sized down to one leaf.</li>
+        <li>Ten-fold cross-validation scores those alpha values on held-out data and picks the best one.</li>
+        <li>The final model is the subtree built on the full data that matches the chosen alpha.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Pruning Regression Trees</span><span class="board-tag">each leaf costs α; lowest score wins</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 260" role="img" aria-label="Stacked bars of tree score at alpha 10,000 for trees with 4, 3, 2 and 1 leaves: the SSR part grows as leaves are pruned while the leaf penalty shrinks, and the three-leaf tree has the lowest total, 35,494.8.">
+            <g class="sv-stroke-ink" stroke-width="2">
+              <rect x="20" y="21" width="16" height="16" class="sv-key"/>
+              <rect x="100" y="21" width="16" height="16" class="sv-key-soft"/>
+            </g>
+            <line x1="30" y1="220" x2="372" y2="220" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <rect x="54" y="88" width="52" height="130" class="sv-key-soft"/>
+              <rect x="54" y="218" width="52" height="2" class="sv-key"/>
+              <rect x="214" y="92.5" width="52" height="65" class="sv-key-soft"/>
+              <rect x="214" y="157.5" width="52" height="62.5" class="sv-key"/>
+              <rect x="294" y="93.5" width="52" height="32.5" class="sv-key-soft"/>
+              <rect x="294" y="126" width="52" height="94" class="sv-key"/>
+            </g>
+            <g class="sv-stroke-good" stroke-width="3.5" stroke-linejoin="round">
+              <rect x="134" y="104.5" width="52" height="97.5" class="sv-key-soft"/>
+              <rect x="134" y="202" width="52" height="18" class="sv-key"/>
+            </g>
+            <text x="44" y="35" class="sv-t">SSR</text>
+            <text x="124" y="35" class="sv-t">α × leaves (α = 10,000)</text>
+            <text x="160" y="60" text-anchor="middle" class="sv-ts">lowest tree score</text>
+            <text x="160" y="88" text-anchor="middle" class="sv-tb">35,494.8</text>
+            <text x="80" y="244" text-anchor="middle" class="sv-ts">4 leaves</text>
+            <text x="160" y="244" text-anchor="middle" class="sv-ts">3</text>
+            <text x="240" y="244" text-anchor="middle" class="sv-ts">2</text>
+            <text x="320" y="244" text-anchor="middle" class="sv-ts">1</text>
+          </svg>
+          <p>SSR always favours the full tree, so every leaf also pays a penalty α. At α = 10,000 the three-leaf subtree has the lowest tree score, 35,494.8. Ten-fold cross-validation picks α itself.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Overfit</dt><dd>Fits the training points closely but misses new observations.</dd>
+            <dt>Pruning</dt><dd>Replace a split with one leaf that averages a larger group.</dd>
+            <dt>Tree score</dt><dd>SSR plus alpha times the number of leaves.</dd>
+            <dt>Alpha \(\alpha\)</dt><dd>The price of one leaf; as it rises, smaller trees win.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Full tree SSR</b>sum of each leaf's SSR</li>
+            <li><b>Prune and rescore</b>SSR grows with every cut</li>
+            <li><b>Add a penalty</b>SSR + α per leaf</li>
+            <li><b>Lowest score wins</b>for a fixed α</li>
+            <li><b>List the alphas</b>raise α on all the data</li>
+            <li><b>Cross-validate</b>lowest average testing error wins</li>
+          </ol>
+          <p class="loop">↺ repeat build-and-test for 10 folds, then take the full-data tree that matches the winning α</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{SSR}(T)=\sum_{\ell\in T}\sum_{i\in\ell}(y_i-\bar{y}_{\ell})^2$$
+          $$\text{Tree Score}=\text{SSR}(T)+\alpha\,|T|$$
+          $$\hat{T}_{\alpha}=\arg\min_{T\subseteq T_{\max}}\big[\text{SSR}(T)+\alpha|T|\big]$$
+          <ul class="keys">
+            <li>\(\bar{y}_{\ell}\): the average in leaf \(\ell\), which is its prediction.</li>
+            <li>\(|T|\): number of leaves; \(\alpha\): the price of one leaf.</li>
+            <li>\(T_{\max}\): the full tree; at \(\alpha=0\) it always wins.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>leaves</th><th>SSR</th><th>penalty</th><th>score</th></tr>
+            <tr><td>4</td><td>543.8</td><td>40,000</td><td>40,543.8</td></tr>
+            <tr class="final"><td>3 ✓</td><td>5,494.8</td><td>30,000</td><td>35,494.8</td></tr>
+            <tr><td>2</td><td>19,243.7</td><td>20,000</td><td>39,243.7</td></tr>
+            <tr><td>1</td><td>28,897.2</td><td>10,000</td><td>38,897.2</td></tr>
+          </table>
+          <p class="hand">At α = 10,000 three leaves win; at 22,000 one leaf would. Ten-fold cross-validation picks 10,000.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Pick the tree with the lowest SSR.</span><span class="yes">SSR rises with every leaf removed, so it always favours the biggest tree.</span></li>
+            <li><span class="no">Candidate alphas come from a training split.</span><span class="yes">They come from a tree on all the data; the final tree is its matching subtree.</span></li>
+            <li><span class="no">Bigger training residuals mean pruning failed.</span><span class="yes">Worse training fit is on purpose; the test is smaller residuals on new data.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="48-regression-trees.html"><small>Previous</small>Regression Trees</a> <a href="50-one-hot-label-target-and-k-fold-target-encoding.html"><small>Next</small>One-Hot, Label, Target and K-Fold Target Encoding</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

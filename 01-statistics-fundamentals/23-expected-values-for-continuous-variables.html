@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Expected Values for Continuous Variables — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>23</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 23 · 19.7 min</div>
+    <h1>Expected Values for Continuous Variables</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=OSPr6G6Ka-U" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video shows how to compute an expected value when the outcome is measured, not counted. The answer replaces the sum with an integral, and the probability with the likelihood.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>For a discrete variable, the expected value is the sum of each outcome times its probability. For a continuous variable, such as waiting time, there are no separate outcomes to add up. Josh models the waiting times with an exponential distribution, then chops the curve into rectangles and treats them as discrete outcomes. As the rectangles get thinner, the sum turns into an integral, and the probability turns into the likelihood on the y-axis. Applying that integral to the exponential distribution gives an expected wait of <em>1/λ</em>, which is 20 seconds when λ = 0.05.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>In part one, StatSquatch made a bet with two outcomes: lose one dollar or gain one dollar. That is a <strong>discrete variable</strong>, because the outcomes are separate and countable. Multiplying each outcome by its probability and adding gave an expected value of 0.66 dollars per bet.</p>
+    <p>Now StatSquatch asks a different question. Walking around StatLand, how long do we wait, on average, between meeting people? Waiting time is a <strong>continuous variable</strong>, because it comes from measuring and can take any value. The first people show up after 10 seconds, 30 seconds, immediately, and 10 seconds, so we mark dots on a number line.</p>
+    <p>Collecting data this way has two problems. There are gaps, so some waiting times were never observed. And the answer changes if we bin the times into 10-second, 5-second, or 2.5-second intervals. Instead of collecting data forever, we model the waiting times with an <strong>exponential distribution</strong>, a smooth curve that skims the top of the data.</p>
+    <p>The curve has one parameter, λ, called the <strong>rate</strong>. Here it means people met per second, because seconds are the units on the x-axis. Setting λ = 0.05 gives a curve that fits the data. A larger λ of 0.1 drops more steeply near zero, and a smaller λ of 0.01 barely bends but sits higher on the right. With the curve in hand, the probability of any time range is the <strong>area under the curve</strong> over that range.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 330" role="img" aria-label="Exponential distribution fitted to waiting times, with two shaded areas showing probabilities">
+        <defs>
+          <marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink"/></marker>
+        </defs>
+        <path d="M70,250 L70,60 L106,102 L142,135 L142,250 Z" class="sv-acc-soft"/>
+        <path d="M253,250 L253,196 L287,208 L287,250 Z" class="sv-key-soft"/>
+        <polyline points="70,60 106,102 142,135 178,160 214,180 251,196 287,208 323,217 359,224 395,230 431,234 467,238 503,241 539,243 576,244 612,246 648,247 684,247 720,248" class="sv-stroke-acc" stroke-width="2.5"/>
+        <line x1="70" y1="250" x2="735" y2="250" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="70" y1="250" x2="70" y2="50" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="70" y1="250" x2="70" y2="256" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="142" y1="250" x2="142" y2="256" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="287" y1="250" x2="287" y2="256" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="431" y1="250" x2="431" y2="256" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="720" y1="250" x2="720" y2="256" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="70" y="268" class="sv-ts" text-anchor="middle">0</text>
+        <text x="142" y="268" class="sv-ts" text-anchor="middle">10</text>
+        <text x="287" y="268" class="sv-ts" text-anchor="middle">30</text>
+        <text x="431" y="268" class="sv-ts" text-anchor="middle">50</text>
+        <text x="720" y="268" class="sv-ts" text-anchor="middle">90</text>
+        <text x="62" y="64" class="sv-ts" text-anchor="end">0.05</text>
+        <text x="62" y="254" class="sv-ts" text-anchor="end">0</text>
+        <text x="30" y="150" class="sv-ts" text-anchor="middle" transform="rotate(-90 30 150)">likelihood</text>
+        <circle cx="70" cy="284" r="4.5" class="sv-key"/>
+        <circle cx="142" cy="284" r="4.5" class="sv-key"/>
+        <circle cx="142" cy="296" r="4.5" class="sv-key"/>
+        <circle cx="287" cy="284" r="4.5" class="sv-key"/>
+        <text x="305" y="290" class="sv-ts">each dot is one measured waiting time</text>
+        <rect x="152" y="70" width="232" height="42" rx="4" class="sv-paper"/>
+        <rect x="152" y="70" width="232" height="42" rx="4" class="sv-line" stroke-width="1"/>
+        <text x="162" y="87" class="sv-tm">area from 0 to 10 = 0.39</text>
+        <text x="162" y="104" class="sv-ts">so P(wait 10 s or less) = 0.39</text>
+        <line x1="150" y1="98" x2="118" y2="130" class="sv-stroke-ink" stroke-width="1.4" marker-end="url(#ah1)"/>
+        <rect x="336" y="140" width="222" height="26" rx="4" class="sv-paper"/>
+        <rect x="336" y="140" width="222" height="26" rx="4" class="sv-line" stroke-width="1"/>
+        <text x="346" y="158" class="sv-tm">area 25.3 to 30.1 = 0.06</text>
+        <line x1="338" y1="166" x2="296" y2="212" class="sv-stroke-ink" stroke-width="1.4" marker-end="url(#ah1)"/>
+        <text x="400" y="308" class="sv-t" text-anchor="middle">seconds until we meet the next person</text>
+      </svg>
+      <figcaption>The smooth curve has no gaps and needs no bin size. Notice that a probability is an area under it, never a height.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Pretend, for a few minutes, that the smooth curve is a discrete distribution. Split the x-axis into 10-second intervals and treat each interval as one outcome.</li>
+      <li>Draw a rectangle over each interval so that the curve passes through the midpoint of its top edge. For the first interval, that midpoint sits at 5 seconds.</li>
+      <li>Get the height of a rectangle by plugging its midpoint into the exponential equation. At x = 5 the equation returns 0.04, so the first rectangle is 0.04 tall.</li>
+      <li>Approximate the probability of that outcome with the area of the rectangle: width times height, or 10 × 0.04 = 0.4. The exact integral is 0.39, so the approximation is close.</li>
+      <li>Repeat for every rectangle, then plug the outcomes and their approximate probabilities into the discrete formula. That gives about 22 seconds.</li>
+      <li>Halve the interval width to 5 seconds and repeat. The estimate improves to 21.8 seconds.</li>
+      <li>Keep shrinking the width toward zero while the number of rectangles goes to infinity. The width becomes <em>dx</em>, the sum becomes an integral, and the approximation becomes exact.</li>
+    </ol>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 330" role="img" aria-label="Exponential curve covered by ten-second rectangles used to approximate probabilities">
+        <defs>
+          <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink"/></marker>
+        </defs>
+        <rect x="70" y="102" width="72" height="148" class="sv-acc-soft"/>
+        <rect x="142" y="160" width="72" height="90" class="sv-acc-soft"/>
+        <rect x="214" y="196" width="73" height="54" class="sv-acc-soft"/>
+        <rect x="287" y="217" width="72" height="33" class="sv-acc-soft"/>
+        <rect x="359" y="230" width="72" height="20" class="sv-acc-soft"/>
+        <rect x="431" y="238" width="72" height="12" class="sv-acc-soft"/>
+        <rect x="503" y="243" width="73" height="7" class="sv-acc-soft"/>
+        <rect x="576" y="245" width="72" height="5" class="sv-acc-soft"/>
+        <rect x="648" y="247" width="72" height="3" class="sv-acc-soft"/>
+        <rect x="70" y="102" width="72" height="148" class="sv-stroke-acc" stroke-width="1.2"/>
+        <rect x="142" y="160" width="72" height="90" class="sv-stroke-acc" stroke-width="1.2"/>
+        <rect x="214" y="196" width="73" height="54" class="sv-stroke-acc" stroke-width="1.2"/>
+        <rect x="287" y="217" width="72" height="33" class="sv-stroke-acc" stroke-width="1.2"/>
+        <rect x="359" y="230" width="72" height="20" class="sv-stroke-acc" stroke-width="1.2"/>
+        <rect x="431" y="238" width="72" height="12" class="sv-stroke-acc" stroke-width="1.2"/>
+        <rect x="503" y="243" width="73" height="7" class="sv-stroke-acc" stroke-width="1.2"/>
+        <rect x="576" y="245" width="72" height="5" class="sv-stroke-acc" stroke-width="1.2"/>
+        <rect x="648" y="247" width="72" height="3" class="sv-stroke-acc" stroke-width="1.2"/>
+        <polyline points="70,60 106,102 142,135 178,160 214,180 251,196 287,208 323,217 359,224 395,230 431,234 467,238 503,241 539,243 576,244 612,246 648,247 684,247 720,248" class="sv-stroke-key" stroke-width="2.5"/>
+        <line x1="106" y1="250" x2="106" y2="102" class="sv-line" stroke-width="1.4" stroke-dasharray="4 3"/>
+        <circle cx="106" cy="102" r="4.5" class="sv-key"/>
+        <line x1="70" y1="250" x2="735" y2="250" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="70" y1="250" x2="70" y2="50" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="106" y="182" class="sv-tb" text-anchor="middle">0.4</text>
+        <text x="178" y="210" class="sv-tb" text-anchor="middle">0.2</text>
+        <text x="260" y="232" class="sv-ts" text-anchor="middle">and so on</text>
+        <rect x="156" y="66" width="250" height="26" rx="4" class="sv-paper"/>
+        <rect x="156" y="66" width="250" height="26" rx="4" class="sv-line" stroke-width="1"/>
+        <text x="166" y="84" class="sv-tm">height at midpoint x = 5 is 0.04</text>
+        <line x1="154" y1="86" x2="114" y2="100" class="sv-stroke-ink" stroke-width="1.4" marker-end="url(#ah2)"/>
+        <line x1="70" y1="278" x2="142" y2="278" class="sv-stroke-ink" stroke-width="1.4" marker-start="url(#ah2)" marker-end="url(#ah2)"/>
+        <text x="106" y="296" class="sv-ts" text-anchor="middle">width = 10 s</text>
+        <text x="30" y="150" class="sv-ts" text-anchor="middle" transform="rotate(-90 30 150)">likelihood</text>
+        <text x="700" y="268" class="sv-ts" text-anchor="middle">90 seconds</text>
+        <text x="430" y="308" class="sv-t" text-anchor="middle">shrink the width toward zero and the sum becomes an integral</text>
+      </svg>
+      <figcaption>Each rectangle stands in for one discrete outcome, and its area stands in for that outcome's probability.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Expected value, discrete</span><div class="math">$$ E[X] \;=\; \sum_{i} x_i \, p(x_i) $$</div><p class="explain"><b>Symbols:</b> \(X\) is the variable, \(x_i\) is one possible outcome, and \(p(x_i)\) is the probability of that outcome. The sum runs over every outcome. <b>What it tells you:</b> the long run average value if you repeat the situation many times.</p></div>
+
+    <div class="formula"><span class="lbl">Exponential distribution</span><div class="math">$$ f(x) \;=\; \lambda e^{-\lambda x}, \qquad x \ge 0 $$</div><p class="explain"><b>Symbols:</b> \(x\) is the waiting time in seconds, \(\lambda\) is the rate, meaning people met per second, and \(e\) is Euler's number, about 2.718. <b>What it tells you:</b> the likelihood, the y-axis height of the curve, at any waiting time. The curve is scaled so the total area under it equals 1.</p></div>
+
+    <div class="formula"><span class="lbl">Rectangle probability</span><div class="math">$$ p(x) \;\approx\; f(x)\,\Delta x $$</div><p class="explain"><b>Symbols:</b> \(f(x)\) is the height of the rectangle, and \(\Delta x\) is its width. <b>What it tells you:</b> probability comes from height times width, so as the width shrinks the probability of any single exact value goes to zero.</p></div>
+
+    <div class="formula"><span class="lbl">Expected value, continuous</span><div class="math">$$ E[X] \;=\; \int_{-\infty}^{\infty} x \, f(x)\, dx $$</div><p class="explain"><b>Symbols:</b> \(x\) is the outcome, \(f(x)\) is the likelihood at that outcome, and \(dx\) is the infinitely small width. <b>What it tells you:</b> the same idea as the discrete formula, with two swaps. The sum becomes an integral, and the probability becomes the likelihood.</p></div>
+
+    <div class="formula"><span class="lbl">Mean of the exponential</span>
+      <div class="math">$$ E[X] \;=\; \int_{0}^{\infty} x \, \lambda e^{-\lambda x} \, dx $$</div>
+      <p class="explain">The exponential is only defined for values at or above zero, so we integrate from 0 to infinity.</p>
+      <div class="math">$$ \int_0^\infty f(x)g'(x)\,dx \;=\; \Big[f(x)g(x)\Big]_0^\infty - \int_0^\infty f'(x)g(x)\,dx $$</div>
+      <p class="explain">This is integration by parts. Set \(f(x)=x\), so \(f'(x)=1\), and set \(g'(x)=\lambda e^{-\lambda x}\), so \(g(x)=-e^{-\lambda x}\).</p>
+      <div class="math">$$ E[X] \;=\; \Big[-x e^{-\lambda x}\Big]_0^\infty + \int_0^\infty e^{-\lambda x}\,dx $$</div>
+      <p class="explain">The first bracket is zero. At infinity it becomes \(x / e^{\lambda x}\), which L'Hopital's rule sends to zero, and at zero the whole term is zero.</p>
+      <div class="math">$$ E[X] \;=\; 0 + \Big[-\tfrac{1}{\lambda}e^{-\lambda x}\Big]_0^\infty \;=\; 0 + \frac{1}{\lambda} \;=\; \frac{1}{\lambda} $$</div>
+      <p class="explain"><b>Symbols:</b> \(\lambda\) is the rate. <b>What it tells you:</b> the average waiting time is one divided by the rate. If you meet more people per second, you wait less.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>StatSquatch wants to know the average wait between meeting people in StatLand. The measured waits are modelled by an exponential distribution with λ = 0.05 people per second.</p>
+      <p>First the approximation. The first rectangle has midpoint 5 seconds, so its height is \(0.05 e^{-0.05 \times 5} = 0.04\) and its area is \(10 \times 0.04 = 0.4\). The second rectangle has probability 0.2. Adding every outcome times its probability gives \(10(0.4) + 20(0.2) + \dots = 22\) seconds.</p>
+      <p>Halving the intervals to 5 seconds gives 21.8 seconds, a better estimate.</p>
+      <p>Now the exact answer, using the integral:</p>
+      <div class="math">$$ E[X] = \frac{1}{\lambda} = \frac{1}{0.05} = 20 \text{ seconds} $$</div>
+      <p>So we expect to wait 20 seconds, on average, between meeting people.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> The y-axis value is a likelihood, not a probability. The curve is scaled so the total area under it is 1. A probability only appears when you multiply a height by a width, which is why every probability here is an area.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The result \(1/\lambda\) belongs to the exponential distribution alone. The general rule is the integral of \(x f(x)\). Use that integral, with the correct \(f(x)\), for any other continuous distribution.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A bigger rate does not mean a longer wait. λ = 0.1 means we meet more people per second, so the curve drops faster and the average wait falls to 10 seconds. Rate and mean move in opposite directions.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Match the limits of integration to where the distribution is defined. The exponential exists only for \(x \ge 0\), so the limits are 0 and infinity, not minus infinity and infinity.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>How does the expected value change when you move from a discrete to a continuous variable?</summary><div class="a">Only two things change. The sum over outcomes becomes an integral over the range of the variable, and the probability of each outcome becomes the likelihood, which is the height of the density curve. The structure stays the same: outcome times weight, added up across everything.</div></details>
+    <details class="qa" open><summary>Why can't you just use the height of a density curve as a probability?</summary><div class="a">Because a continuous variable has infinitely many possible values, so any single exact value has probability zero. The height only becomes a probability once you multiply it by a width. That is the rectangle idea, and in the limit it is the integral of the curve over an interval.</div></details>
+    <details class="qa" open><summary>Derive the mean of an exponential distribution.</summary><div class="a">You integrate \(x \lambda e^{-\lambda x}\) from zero to infinity and use integration by parts. Take \(f(x) = x\) and \(g'(x) = \lambda e^{-\lambda x}\), so \(g(x) = -e^{-\lambda x}\). The boundary term vanishes, by L'Hopital's rule at infinity and trivially at zero, and the remaining integral gives one over lambda. So the mean is \(1/\lambda\).</div></details>
+    <details class="qa" open><summary>Why model the raw waiting times with a distribution at all?</summary><div class="a">Raw data have gaps, so some values are never observed, and the answer depends on the bin width you pick. A fitted distribution is smooth and continuous, so there are no gaps, and you can ask about any interval you like. In this case, the exponential also gives a clean closed form for the mean.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Discrete variables have separate outcomes, so their expected value is a sum of outcomes times probabilities.</li>
+      <li>Continuous variables come from measuring, so they have no separate outcomes to add up.</li>
+      <li>Model the measurements with a distribution, such as the exponential \(f(x) = \lambda e^{-\lambda x}\), so there are no gaps and no bin size to choose.</li>
+      <li>Probability for a continuous variable is the area under the curve, not the height of the curve.</li>
+      <li>Approximate that area with rectangles, use each rectangle's area as a probability, and apply the discrete formula.</li>
+      <li>As the rectangle width goes to zero, the sum becomes the integral \(E[X] = \int x f(x)\,dx\).</li>
+      <li>For the exponential distribution this integral works out to \(1/\lambda\), which is 20 seconds when λ = 0.05.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Continuous expected values</span><span class="board-tag">sum becomes integral, probability becomes likelihood</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 260" role="img" aria-label="An exponential curve with rate 0.05 sits on 10-second rectangles; the first is 0.04 tall and 10 wide, so its area 0.4 stands in for a probability, and thinner rectangles move the estimate from 22 to 21.8 to exactly 20 seconds, the mean 1/λ.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <rect x="40" y="92.1" width="55" height="112.9" class="sv-key-soft"/>
+              <rect x="95" y="136.5" width="55" height="68.5" class="sv-paper"/>
+              <rect x="150" y="163.5" width="55" height="41.5" class="sv-paper"/>
+              <rect x="205" y="179.8" width="55" height="25.2" class="sv-paper"/>
+              <rect x="260" y="189.7" width="55" height="15.3" class="sv-paper"/>
+              <rect x="315" y="195.7" width="55" height="9.3" class="sv-paper"/>
+            </g>
+            <polyline points="40,60 53.8,77 67.5,92.1 81.3,105.4 95,117 108.8,127.4 122.5,136.5 136.3,144.6 150,151.7 177.5,163.5 205,172.6 232.5,179.8 260,185.4 287.5,189.7 315,193.1 342.5,195.7 370,197.8" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="40" y1="205" x2="385" y2="205" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="40" y1="44" x2="40" y2="205" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <path d="M106 58 L88 96" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2"><circle cx="150" cy="205" r="7" class="sv-good"/></g>
+            <text x="48" y="30" class="sv-ts">likelihood, λ = 0.05</text>
+            <text x="112" y="62" class="sv-t">0.04 tall × 10 s wide</text>
+            <text x="112" y="84" class="sv-ts">area 0.4 ≈ probability</text>
+            <text x="385" y="112" text-anchor="end" class="sv-t">width 10 s → 22 s</text>
+            <text x="385" y="136" text-anchor="end" class="sv-t">width 5 s → 21.8 s</text>
+            <text x="385" y="160" text-anchor="end" class="sv-tb">width dx → 20 s</text>
+            <text x="150" y="236" text-anchor="middle" class="sv-tb">mean = 1/λ = 20 s</text>
+            <text x="385" y="236" text-anchor="end" class="sv-ts">seconds →</text>
+          </svg>
+          <p>Waiting time is measured, so there are no separate outcomes to add. Chop the curve into rectangles and use each area as a probability. As the width shrinks to dx, the sum becomes an integral: 1/λ for the exponential.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Continuous variable</dt><dd>Comes from measuring, so it can take any value.</dd>
+            <dt>Exponential distribution</dt><dd>The curve \(\lambda e^{-\lambda x}\); λ is the rate, people met per second.</dd>
+            <dt>Likelihood</dt><dd>The curve's height. Not a probability.</dd>
+            <dt>Area under the curve</dt><dd>The probability of a range of values.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Pretend discrete</b>10 s intervals as outcomes</li>
+            <li><b>Draw rectangles</b>curve through each top midpoint</li>
+            <li><b>Plug in midpoint</b>x = 5 gives height 0.04</li>
+            <li><b>Area ≈ probability</b>10 × 0.04 = 0.4</li>
+            <li><b>Discrete formula</b>gives about 22 s</li>
+            <li><b>Shrink to dx</b>sum becomes an integral</li>
+          </ol>
+          <p class="loop">↺ keep halving the width; at dx the sum is exact</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$E[X]=\sum_i x_i\,p(x_i)$$
+          $$E[X]=\int_{-\infty}^{\infty} x\,f(x)\,dx$$
+          $$E[X]=\int_0^{\infty} x\,\lambda e^{-\lambda x}\,dx=\frac{1}{\lambda}$$
+          <ul class="keys">
+            <li>\(p(x_i)\) is a probability; \(f(x)\) is the likelihood, the curve's height.</li>
+            <li>\(dx\) is the infinitely small width.</li>
+            <li>\(\lambda\) is the rate; integrate from 0, where the exponential starts.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>with λ = 0.05</th><th>gives</th></tr>
+            <tr><td>height at 5 s</td><td>0.04</td></tr>
+            <tr><td>area 10 × 0.04</td><td>0.4 (exact 0.39)</td></tr>
+            <tr><td>10 s rectangles</td><td>≈ 22 s</td></tr>
+            <tr><td>5 s rectangles</td><td>21.8 s</td></tr>
+            <tr class="final"><td>integral: 1/0.05</td><td>20 s ✓</td></tr>
+          </table>
+          <p class="hand">Thinner rectangles close in on the exact answer: an average wait of 20 seconds.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">The curve's height is a probability.</span><span class="yes">It is a likelihood. Probability is an area: height times width.</span></li>
+            <li><span class="no">A bigger rate means a longer wait.</span><span class="yes">λ = 0.1 means more people per second: the mean wait falls to 10 seconds.</span></li>
+            <li><span class="no">The mean is always 1/λ.</span><span class="yes">Only for the exponential. Otherwise integrate x f(x) where f(x) is defined.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="22-expected-values-main-ideas.html"><small>Previous</small>Expected Values, Main Ideas</a> <a href="24-the-binomial-distribution-and-test.html"><small>Next</small>The Binomial Distribution and Test</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

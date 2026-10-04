@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Using Linear Models for t-tests and ANOVA — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>44</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 44 · 11.6 min</div>
+    <h1>Using Linear Models for t-tests and ANOVA</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=NF5_btOaCig" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: Machine Learning (video 12)</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Part two of the series on general linear models. It shows that a t-test and an ANOVA are the same calculation as linear regression, only with a different fitted line.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>In linear regression we sum the squared residuals around the mean, then around the fitted line, then turn those two numbers into F and a p-value. A t-test does exactly the same thing. The only change is the line we fit: instead of one sloped line, we fit one horizontal line per group. We write those group lines as a single equation using 0s and 1s that switch each mean on or off, and those 0s and 1s form a design matrix. ANOVA is the same again, with more groups and more columns.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>In the last video we measured mouse weight and mouse size. R squared told us how useful weight was for predicting size, and the p-value told us whether the relationship could be due to chance. Josh now asks the same machinery to answer a different question.</p>
+    <p>The new question is a t-test. We compare gene expression in control mice and mutant mice. A mutant mouse is a normal mouse with one gene knocked out, so that gene no longer works. A t-test compares the two means and asks if they differ more than chance would allow.</p>
+    <p>Here is why this matters. If one method gives a p-value for regression and for a t-test, it gives p-values for much harder situations too. We never invent a new procedure.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 310" role="img" aria-label="Two panels of gene expression data. The left panel shows residuals to one overall mean. The right panel shows shorter residuals to a control mean at 2.2 and a mutant mean at 3.6.">
+        <text class="sv-tb" x="20" y="26">SS(mean): residuals to the overall mean</text>
+        <text class="sv-tb" x="410" y="26">SS(fit): residuals to the two group means</text>
+
+        <line class="sv-line" x1="50" y1="55" x2="50" y2="265" stroke-width="1.5"></line>
+        <line class="sv-line" x1="50" y1="265" x2="345" y2="265" stroke-width="1.5"></line>
+        <line class="sv-line" x1="440" y1="55" x2="440" y2="265" stroke-width="1.5"></line>
+        <line class="sv-line" x1="440" y1="265" x2="735" y2="265" stroke-width="1.5"></line>
+
+        <line class="sv-stroke-key" x1="70" y1="232" x2="70" y2="166" stroke-width="1"></line>
+        <line class="sv-stroke-key" x1="100" y1="214" x2="100" y2="166" stroke-width="1"></line>
+        <line class="sv-stroke-key" x1="130" y1="202" x2="130" y2="166" stroke-width="1"></line>
+        <line class="sv-stroke-key" x1="160" y1="184" x2="160" y2="166" stroke-width="1"></line>
+        <line class="sv-stroke-key" x1="230" y1="148" x2="230" y2="166" stroke-width="1"></line>
+        <line class="sv-stroke-key" x1="260" y1="130" x2="260" y2="166" stroke-width="1"></line>
+        <line class="sv-stroke-key" x1="290" y1="118" x2="290" y2="166" stroke-width="1"></line>
+        <line class="sv-stroke-key" x1="320" y1="100" x2="320" y2="166" stroke-width="1"></line>
+        <line class="sv-stroke-ink" x1="58" y1="166" x2="338" y2="166" stroke-width="2" stroke-dasharray="6 4"></line>
+
+        <circle class="sv-acc" cx="70" cy="232" r="4"></circle>
+        <circle class="sv-acc" cx="100" cy="214" r="4"></circle>
+        <circle class="sv-acc" cx="130" cy="202" r="4"></circle>
+        <circle class="sv-acc" cx="160" cy="184" r="4"></circle>
+        <circle class="sv-key" cx="230" cy="148" r="4"></circle>
+        <circle class="sv-key" cx="260" cy="130" r="4"></circle>
+        <circle class="sv-key" cx="290" cy="118" r="4"></circle>
+        <circle class="sv-key" cx="320" cy="100" r="4"></circle>
+
+        <rect class="sv-paper" x="216" y="172" width="120" height="18" rx="3"></rect>
+        <text class="sv-ts" x="220" y="185">overall mean</text>
+
+        <line class="sv-stroke-key" x1="460" y1="232" x2="460" y2="208" stroke-width="1"></line>
+        <line class="sv-stroke-key" x1="490" y1="214" x2="490" y2="208" stroke-width="1"></line>
+        <line class="sv-stroke-key" x1="520" y1="202" x2="520" y2="208" stroke-width="1"></line>
+        <line class="sv-stroke-key" x1="550" y1="184" x2="550" y2="208" stroke-width="1"></line>
+        <line class="sv-stroke-key" x1="620" y1="148" x2="620" y2="124" stroke-width="1"></line>
+        <line class="sv-stroke-key" x1="650" y1="130" x2="650" y2="124" stroke-width="1"></line>
+        <line class="sv-stroke-key" x1="680" y1="118" x2="680" y2="124" stroke-width="1"></line>
+        <line class="sv-stroke-key" x1="710" y1="100" x2="710" y2="124" stroke-width="1"></line>
+        <line class="sv-stroke-acc" x1="448" y1="208" x2="578" y2="208" stroke-width="2.5"></line>
+        <line class="sv-stroke-acc" x1="608" y1="124" x2="728" y2="124" stroke-width="2.5"></line>
+
+        <circle class="sv-acc" cx="460" cy="232" r="4"></circle>
+        <circle class="sv-acc" cx="490" cy="214" r="4"></circle>
+        <circle class="sv-acc" cx="520" cy="202" r="4"></circle>
+        <circle class="sv-acc" cx="550" cy="184" r="4"></circle>
+        <circle class="sv-key" cx="620" cy="148" r="4"></circle>
+        <circle class="sv-key" cx="650" cy="130" r="4"></circle>
+        <circle class="sv-key" cx="680" cy="118" r="4"></circle>
+        <circle class="sv-key" cx="710" cy="100" r="4"></circle>
+
+        <rect class="sv-paper" x="448" y="214" width="120" height="18" rx="3"></rect>
+        <text class="sv-ts" x="452" y="227">control mean = 2.2</text>
+        <rect class="sv-paper" x="608" y="86" width="120" height="18" rx="3"></rect>
+        <text class="sv-ts" x="612" y="99">mutant mean = 3.6</text>
+
+        <text class="sv-ts" x="90" y="284">control</text>
+        <text class="sv-ts" x="252" y="284">mutant</text>
+        <text class="sv-ts" x="480" y="284">control</text>
+        <text class="sv-ts" x="642" y="284">mutant</text>
+      </svg>
+      <figcaption>The residuals get much shorter when we move from one overall mean to one mean per group. That shrinkage is what F measures.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <p>Josh runs the regression and the t-test side by side, so every step matches.</p>
+    <ol class="steps">
+      <li>Ignore the x-axis and find the overall mean. For the t-test that is the mean of all the values, control and mutant together.</li>
+      <li>Sum the squared residuals around that mean to get SS(mean). A residual is the distance from a data point to the line, and here the line is the overall mean.</li>
+      <li>Fit a line to the data. Now the x-axis matters again. Regression gives one sloped least squares line. For a group, the least squares fit is simply its mean. So we get a horizontal line at 2.2 for the control data and one at 3.6 for the mutant data.</li>
+      <li>Combine the two lines into one equation. Each point is one times its own group mean, plus zero times the other group mean, plus a residual. Those 1s and 0s are on and off switches, and stacked together they form the design matrix.</li>
+      <li>Sum the squared residuals around the fitted lines to get SS(fit). The residuals now run to the group means, not to the overall mean.</li>
+      <li>Plug SS(mean), SS(fit) and the parameter counts into the F equation, then turn F into a p-value. This last step is identical for all three tests.</li>
+    </ol>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 360" role="img" aria-label="Two written equations with ones and zeros switching group means on and off, and the same ones and zeros stacked into a two column design matrix beside the short abstract equation.">
+        <rect class="sv-paper2" x="20" y="18" width="720" height="76" rx="6"></rect>
+        <text class="sv-tm" x="38" y="47">control mouse:   y = 1 &#215; 2.2  +  0 &#215; 3.6  +  residual</text>
+        <text class="sv-tm" x="38" y="77">mutant mouse:    y = 0 &#215; 2.2  +  1 &#215; 3.6  +  residual</text>
+        <text class="sv-ts" x="38" y="116">A 1 turns that mean on. A 0 turns it off.</text>
+
+        <text class="sv-ts" x="58" y="142">design matrix</text>
+        <text class="sv-ts" x="88" y="164">control</text>
+        <text class="sv-ts" x="168" y="164">mutant</text>
+        <rect class="sv-acc-soft" x="76" y="172" width="140" height="76" rx="4"></rect>
+        <rect class="sv-key-soft" x="76" y="252" width="140" height="76" rx="4"></rect>
+        <path class="sv-stroke-ink" d="M 66 172 L 58 172 L 58 328 L 66 328" stroke-width="1.5"></path>
+        <path class="sv-stroke-ink" d="M 226 172 L 234 172 L 234 328 L 226 328" stroke-width="1.5"></path>
+        <text class="sv-tm" x="98" y="190">1</text><text class="sv-tm" x="178" y="190">0</text>
+        <text class="sv-tm" x="98" y="208">1</text><text class="sv-tm" x="178" y="208">0</text>
+        <text class="sv-tm" x="98" y="226">1</text><text class="sv-tm" x="178" y="226">0</text>
+        <text class="sv-tm" x="98" y="244">1</text><text class="sv-tm" x="178" y="244">0</text>
+        <text class="sv-tm" x="98" y="270">0</text><text class="sv-tm" x="178" y="270">1</text>
+        <text class="sv-tm" x="98" y="288">0</text><text class="sv-tm" x="178" y="288">1</text>
+        <text class="sv-tm" x="98" y="306">0</text><text class="sv-tm" x="178" y="306">1</text>
+        <text class="sv-tm" x="98" y="324">0</text><text class="sv-tm" x="178" y="324">1</text>
+
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path class="sv-ink" d="M 0 0 L 10 5 L 0 10 z"></path>
+          </marker>
+        </defs>
+        <line class="sv-stroke-ink" x1="252" y1="250" x2="332" y2="250" stroke-width="1.5" marker-end="url(#ah)"></line>
+
+        <rect class="sv-paper2" x="350" y="210" width="390" height="88" rx="6"></rect>
+        <text class="sv-t" x="368" y="242">y = mean(control) + mean(mutant)</text>
+        <text class="sv-ts" x="368" y="266">The design matrix says which mean is switched</text>
+        <text class="sv-ts" x="368" y="284">on for each mouse, so the equation stays short.</text>
+      </svg>
+      <figcaption>Notice that the design matrix carries all the group information, so one short equation can describe both fitted lines.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Combined equation for one point</span>
+      <div class="math">$$ y = 1 \times 2.2 \;+\; 0 \times 3.6 \;+\; \text{residual} $$</div>
+      <p class="explain"><b>Symbols:</b> \(y\) is the gene expression of one mouse. \(2.2\) is the control mean and \(3.6\) is the mutant mean. The \(1\) and the \(0\) are switches that pick this mouse's group. The residual is the distance from the point to its group mean. <b>What it tells you:</b> multiplied out this is just \(y = 2.2 + \text{residual}\). The odd looking form describes the same line, but a computer can reuse it for any number of groups.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Abstract form with the design matrix</span>
+      <div class="math">$$ y = \text{mean(control)} + \text{mean(mutant)} $$</div>
+      <p class="explain"><b>Symbols:</b> mean(control) and mean(mutant) are the two parameters we estimate. <b>What it tells you:</b> in practice the role of each design matrix column is assumed, so the model is written this short and the matrix supplies the on and off pattern.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">F, the same for regression, t-test and ANOVA</span>
+      <div class="math">$$ F = \frac{\big(SS(\text{mean}) - SS(\text{fit})\big) \big/ (p_{\text{fit}} - p_{\text{mean}})}{SS(\text{fit}) \big/ (n - p_{\text{fit}})} $$</div>
+      <p class="explain"><b>Symbols:</b> \(SS(\text{mean})\) is the sum of squared residuals around the overall mean. \(SS(\text{fit})\) is the same sum around the fitted lines. \(p_{\text{mean}}\) is the number of parameters in the overall mean equation, always 1. \(p_{\text{fit}}\) is the number of parameters in the fitted model. \(n\) is the number of measurements. <b>What it tells you:</b> F compares the variation the fit explains against the variation it leaves behind, and F leads to the p-value.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Parameter counts</span>
+      <div class="math">$$ p_{\text{mean}} = 1 \qquad p_{\text{fit}}^{\,\text{regression}} = 2 \qquad p_{\text{fit}}^{\,t\text{-test}} = 2 \qquad p_{\text{fit}}^{\,\text{ANOVA}} = 5 $$</div>
+      <p class="explain"><b>Symbols:</b> for regression the parameters are the intercept and the slope. For the t-test they are the two group means. For the ANOVA here they are the five category means. <b>What it tells you:</b> only the counts change between the three tests, which is why one piece of software runs all of them.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>We measure gene expression in control mice and mutant mice. The least squares fit for the control group is its mean, which crosses the y-axis at 2.2, so the control line is \(y = 2.2\). The mutant mean is 3.6, so that line is \(y = 3.6\).</p>
+      <p>A control mouse is written as \(y = 1 \times 2.2 + 0 \times 3.6 + \text{residual}\). A mutant mouse is written as \(y = 0 \times 2.2 + 1 \times 3.6 + \text{residual}\). Inside a group, only the residual changes from point to point.</p>
+      <p>We then take SS(mean) from step two and SS(fit) from step five. Here \(p_{\text{mean}} = 1\) and \(p_{\text{fit}} = 2\), because we estimated two group means. Those numbers go into the F equation, and F gives the p-value.</p>
+      <p>The ANOVA repeats this with five categories: control mice, mutant mice, control and mutant mice on a funky diet, and heterozygote mice. It tests whether all five are the same. SS(mean) is found the same way, so \(p_{\text{mean}}\) is still 1. The fitted model now has one mean per category, so \(p_{\text{fit}} = 5\) and the design matrix has five columns.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span>The design matrices in this video are not the standard ones. Josh says software normally uses a different arrangement. Both versions give the same answer, but you will meet the common form more often. The next video covers it.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span>Do not confuse parameters with data points. \(p_{\text{fit}}\) counts the values we estimate, not the number of mice. The number of mice enters F through \(n\).</div>
+    <div class="pitfall"><span class="lbl">Watch out</span>The line fitted to one group is horizontal, so there is no slope to interpret. It still counts as fitting a line, which is why the regression steps carry over unchanged.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span>ANOVA only tests whether all the categories are the same. A small p-value says at least one differs, but not which one.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>Why is a t-test a special case of a linear model?</summary><div class="a">Both fit a line by least squares and compare it to the overall mean. In regression the line has an intercept and a slope. In a t-test the fit is one horizontal line per group, sitting at that group's mean. The sums of squared residuals then go into the same F equation and give the same kind of p-value.</div></details>
+    <details class="qa" open><summary>What is a design matrix and why do we need one?</summary><div class="a">A design matrix is a table of 1s and 0s that says which parameters apply to each observation. One column switches the control mean on or off, the other does the same for the mutant mean. It lets us write two fitted lines as one equation, so a computer solves every least squares problem with the same code.</div></details>
+    <details class="qa" open><summary>What changes when you move from a t-test to an ANOVA?</summary><div class="a">Only the number of parameters and the width of the design matrix. The t-test has two group means, so p for the fit is 2. The ANOVA here has five categories, so p for the fit is 5 and the matrix has five columns. Everything else stays the same.</div></details>
+    <details class="qa" open><summary>What do SS(mean) and SS(fit) each measure?</summary><div class="a">SS(mean) is the squared distance from the data to a single overall mean, so it is the variation when we ignore the groups. SS(fit) is the squared distance to the group means, so it is the variation left after the model does its work. F is built from the drop between them, adjusted for the parameters we spent.</div></details>
+    <details class="qa" open><summary>Why does it matter that one method covers all these tests?</summary><div class="a">The same steps then handle harder designs too, such as many categories at once, or categories mixed with continuous predictors. That is the point of a general linear model. You change the design matrix, not the procedure.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>A t-test and an ANOVA use the same steps as linear regression.</li>
+      <li>First find the overall mean and sum the squared residuals around it to get SS(mean).</li>
+      <li>Then fit the data, which for groups means one horizontal line per group at that group's mean, here 2.2 and 3.6.</li>
+      <li>Write those lines as one equation, using 1s and 0s that switch each mean on or off.</li>
+      <li>Stacked together, those 1s and 0s are the design matrix, with one column per group.</li>
+      <li>Sum the squared residuals around the fitted lines to get SS(fit).</li>
+      <li>Plug SS(mean), SS(fit) and the two parameter counts into the F equation, then read the p-value.</li>
+      <li>ANOVA is the same with more columns, and the standard design matrices come in the next video.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">t-tests and ANOVA</span><span class="board-tag">regression steps, one line per group</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 270" role="img" aria-label="Control points hug a horizontal line at 2.2 and mutant points hug one at 3.6, far from the dashed overall mean, so the residuals for SS(fit) are much shorter than those for SS(mean), and the two sums go into F and then a p-value.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <path d="M24 20 L24 170 L386 170" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M64 150 L64 97 M104 120 L104 97 M144 132 L144 97 M234 72 L234 93 M274 42 L274 93 M314 54 L314 93" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="4 4"/>
+            <line x1="30" y1="95" x2="386" y2="95" class="sv-stroke-ink" stroke-width="2.5" stroke-dasharray="8 6"/>
+            <line x1="46" y1="140" x2="162" y2="140" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round"/>
+            <line x1="216" y1="50" x2="332" y2="50" class="sv-stroke-key" stroke-width="4" stroke-linecap="round"/>
+            <path d="M64 150 L64 142 M104 132 L104 138" class="sv-stroke-acc" stroke-width="3" stroke-linecap="round"/>
+            <path d="M234 60 L234 52 M274 42 L274 48" class="sv-stroke-key" stroke-width="3" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="1.5"><circle cx="64" cy="156" r="6" class="sv-acc"/><circle cx="104" cy="126" r="6" class="sv-acc"/><circle cx="144" cy="138" r="6" class="sv-acc"/><circle cx="234" cy="66" r="6" class="sv-key"/><circle cx="274" cy="36" r="6" class="sv-key"/><circle cx="314" cy="48" r="6" class="sv-key"/></g>
+            <text x="172" y="146" class="sv-tb">2.2</text>
+            <text x="342" y="56" class="sv-tb">3.6</text>
+            <text x="386" y="117" text-anchor="end" class="sv-ts">overall mean</text>
+            <text x="104" y="192" text-anchor="middle" class="sv-ts">control</text>
+            <text x="274" y="192" text-anchor="middle" class="sv-ts">mutant</text>
+            <line x1="40" y1="218" x2="84" y2="218" class="sv-stroke-ink" stroke-width="2.5" stroke-dasharray="8 6"/>
+            <text x="94" y="224" class="sv-tm">SS(mean)</text>
+            <line x1="40" y1="248" x2="62" y2="248" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round"/>
+            <line x1="62" y1="248" x2="84" y2="248" class="sv-stroke-key" stroke-width="4" stroke-linecap="round"/>
+            <text x="94" y="254" class="sv-tm">SS(fit)</text>
+            <path d="M178 206 Q190 206 190 218 L190 226 Q190 233 200 233 Q190 233 190 240 L190 248 Q190 260 178 260" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="206" y1="233" x2="226" y2="233" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2"><rect x="236" y="214" width="150" height="38" rx="10" class="sv-good-soft"/></g>
+            <text x="311" y="240" text-anchor="middle" class="sv-tb">F → p-value</text>
+          </svg>
+          <p>A t-test runs the regression steps with a new fitted line: one horizontal line per group, at its mean. Residuals to the overall mean give SS(mean), to the group means SS(fit); F turns both into a p-value.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Residual</dt><dd>Distance from a data point to the line.</dd>
+            <dt>SS(mean)</dt><dd>Sum of squared residuals around the overall mean.</dd>
+            <dt>SS(fit)</dt><dd>The same sum around the fitted lines.</dd>
+            <dt>Design matrix</dt><dd>Stacked 1s and 0s saying which mean each mouse switches on.</dd>
+            <dt>\(p_{\text{fit}}\)</dt><dd>Parameters the fit estimates: 2 for the t-test, 5 for this ANOVA.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Overall mean</b>ignore the x-axis</li>
+            <li><b>SS(mean)</b>squared residuals to that mean</li>
+            <li><b>Fit lines</b>one per group: 2.2 and 3.6</li>
+            <li><b>One equation</b>1s and 0s switch means</li>
+            <li><b>SS(fit)</b>squared residuals to group means</li>
+            <li><b>F, then p</b>same for all three tests</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$y=1\times2.2+0\times3.6+\text{residual}$$
+          $$F=\frac{(SS_m-SS_f)/(p_f-p_m)}{SS_f/(n-p_f)}$$
+          <ul class="keys">
+            <li>2.2 and 3.6 are the control and mutant means; the 1 and 0 switch them.</li>
+            <li>\(SS_m\) is SS(mean), \(SS_f\) is SS(fit), \(n\) the number of measurements.</li>
+            <li>\(p_m=1\) always; \(p_f\) counts the fitted model's parameters.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>piece</th><th>t-test</th><th>ANOVA</th></tr>
+            <tr><td>fitted lines</td><td>2.2, 3.6</td><td>5 means</td></tr>
+            <tr><td>columns</td><td>2</td><td>5</td></tr>
+            <tr><td>\(p_{\text{mean}}\)</td><td>1</td><td>1</td></tr>
+            <tr><td>\(p_{\text{fit}}\)</td><td>2</td><td>5</td></tr>
+            <tr class="final"><td>then</td><td>F → p-value</td><td>F → p-value</td></tr>
+          </table>
+          <p class="hand">Only the counts change. The t-test fits two group means, the ANOVA five, and both go through the same F.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">These design matrices are the standard ones.</span><span class="yes">Software normally uses a different arrangement. Same answer; the next video covers it.</span></li>
+            <li><span class="no">\(p_{\text{fit}}\) counts the mice.</span><span class="yes">It counts the values we estimate. The number of mice enters F through \(n\).</span></li>
+            <li><span class="no">A small ANOVA p-value says which group differs.</span><span class="yes">It only says at least one category differs, not which one.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="43-multiple-regression-in-r-step-by-step.html"><small>Previous</small>Multiple Regression in R, Step-by-Step</a> <a href="45-design-matrices-for-linear-models.html"><small>Next</small>Design Matrices For Linear Models</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

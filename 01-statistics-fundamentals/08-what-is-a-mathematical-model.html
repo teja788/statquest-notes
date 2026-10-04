@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>What is a (mathematical) model? — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>08</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 08 · 3.8 min</div>
+    <h1>What is a (mathematical) model?</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=yQhTtdq_y9M" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">A model describes the relationship between two or more things. This video shows why a fitted line, and its equation, is exactly that.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh uses mouse weight and mouse size. He plots the data, fits a line, and calls that line the model. The equation of the line is the mathematical model, and it predicts the size of a mouse he never measured. The model is only an approximation, so gaps remain to the real points. Most of statistics exists to say how good it is.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>The word "model" means many things. As a child it was a toy Josh glued together. In statistics it means a <strong>relationship</strong> between measured things.</p>
+    <p>His example is mouse weight and mouse size. He models size with weight, describing how the two move together. The relationship is obvious: heavier mice are bigger.</p>
+    <p>A model can also be an equation. Josh fits a straight line through the mice, then writes its equation. That equation <em>is</em> the mathematical model. Picture and equation are the same thing written two ways.</p>
+    <p>The equation is useful because it talks about mice you never measured. Put in a weight of four and it returns 3.3.</p>
+    <p>The model is an <strong>approximation</strong>, not a copy. Josh draws dotted lines to each real point. Those gaps are what it misses.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 380" role="img" aria-label="Scatter plot of mouse weight against mouse size, with a fitted straight line, dotted gaps from the line to each data point, and a prediction of size 3.3 at weight 4">
+        <defs>
+          <marker id="f1ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-key"/></marker>
+        </defs>
+        <line x1="90" y1="40" x2="90" y2="320" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="90" y1="320" x2="545" y2="320" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="317" y="354" text-anchor="middle" class="sv-t">Mouse weight</text>
+        <text x="34" y="180" text-anchor="middle" class="sv-t" transform="rotate(-90 34 180)">Mouse size</text>
+
+        <line x1="118" y1="264" x2="512" y2="68" class="sv-stroke-acc" stroke-width="3"/>
+
+        <line x1="146" y1="236" x2="146" y2="250" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <line x1="203" y1="241" x2="203" y2="222" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <line x1="259" y1="180" x2="259" y2="194" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <line x1="349" y1="175" x2="349" y2="149" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <line x1="394" y1="115" x2="394" y2="127" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <line x1="444" y1="119" x2="444" y2="102" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <line x1="484" y1="63" x2="484" y2="82" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="3 3"/>
+
+        <circle cx="146" cy="236" r="5" class="sv-ink"/>
+        <circle cx="203" cy="241" r="5" class="sv-ink"/>
+        <circle cx="259" cy="180" r="5" class="sv-ink"/>
+        <circle cx="349" cy="175" r="5" class="sv-ink"/>
+        <circle cx="394" cy="115" r="5" class="sv-ink"/>
+        <circle cx="444" cy="119" r="5" class="sv-ink"/>
+        <circle cx="484" cy="63" r="5" class="sv-ink"/>
+
+        <line x1="315" y1="320" x2="315" y2="176" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#f1ar)"/>
+        <line x1="309" y1="166" x2="100" y2="166" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#f1ar)"/>
+        <circle cx="315" cy="166" r="6" class="sv-key"/>
+        <text x="315" y="340" text-anchor="middle" class="sv-tm">4</text>
+        <text x="82" y="170" text-anchor="end" class="sv-tm">3.3</text>
+
+        <rect x="566" y="52" width="174" height="146" rx="6" class="sv-paper2"/>
+        <line x1="578" y1="74" x2="604" y2="74" class="sv-stroke-acc" stroke-width="3"/>
+        <text x="610" y="78" class="sv-ts">The model</text>
+        <text x="610" y="94" class="sv-ts">a straight line fit</text>
+        <line x1="578" y1="116" x2="604" y2="116" class="sv-stroke-key" stroke-width="2" stroke-dasharray="3 3"/>
+        <text x="610" y="120" class="sv-ts">Gap to the data</text>
+        <text x="610" y="136" class="sv-ts">what the line misses</text>
+        <circle cx="591" cy="158" r="6" class="sv-key"/>
+        <text x="610" y="162" class="sv-ts">Prediction</text>
+        <text x="610" y="178" class="sv-ts">weight 4 → size 3.3</text>
+      </svg>
+      <figcaption>The solid line is the model, the dotted marks are the gaps to the real mice, and the prediction reads off the line at weight 4.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Choose the relationship you care about. Josh models mouse size using mouse weight.</li>
+      <li>Plot the measurements. Each dot is one mouse, and heavier mice sit higher.</li>
+      <li>Fit a line through the dots, then write it as an equation. That equation is the model.</li>
+      <li>Use the equation to predict. Weight four gives size 3.3.</li>
+      <li>Look at the gaps between the model and each real point.</li>
+      <li>Judge it with statistics. That is what linear regression, t-tests, ANOVA and F-tests are for.</li>
+      <li>Change the model's shape when the data asks for it.</li>
+    </ol>
+    <p>Josh ends with two other shapes. Drug dosage against hair growth rises, then flattens: past a point, more drug grows no hair. He also uses genes X and Z together to model mouse size.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 280" role="img" aria-label="Three panels showing model shapes: a straight line for weight against size, a flattening curve for drug dosage against hair growth, and two gene inputs feeding one model that outputs mouse size">
+        <defs>
+          <marker id="f2ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker>
+        </defs>
+
+        <text x="135" y="32" text-anchor="middle" class="sv-tb">Sometimes a line</text>
+        <line x1="55" y1="60" x2="55" y2="210" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="55" y1="210" x2="235" y2="210" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="68" y1="196" x2="224" y2="78" class="sv-stroke-acc" stroke-width="3"/>
+        <circle cx="82" cy="178" r="4" class="sv-ink"/>
+        <circle cx="108" cy="168" r="4" class="sv-ink"/>
+        <circle cx="135" cy="142" r="4" class="sv-ink"/>
+        <circle cx="162" cy="132" r="4" class="sv-ink"/>
+        <circle cx="190" cy="100" r="4" class="sv-ink"/>
+        <circle cx="215" cy="84" r="4" class="sv-ink"/>
+        <text x="135" y="245" text-anchor="middle" class="sv-ts">weight against size</text>
+
+        <text x="385" y="32" text-anchor="middle" class="sv-tb">Sometimes a curve</text>
+        <line x1="300" y1="60" x2="300" y2="210" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="300" y1="210" x2="480" y2="210" class="sv-stroke-ink" stroke-width="1.5"/>
+        <path d="M310,202 C338,200 360,130 398,110 C428,95 445,92 472,90" class="sv-stroke-acc" stroke-width="3"/>
+        <line x1="398" y1="90" x2="478" y2="90" class="sv-stroke-key" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <text x="440" y="80" text-anchor="middle" class="sv-ts">no more hair</text>
+        <text x="385" y="245" text-anchor="middle" class="sv-ts">dose against hair growth</text>
+
+        <text x="625" y="32" text-anchor="middle" class="sv-tb">Sometimes many inputs</text>
+        <rect x="516" y="68" width="78" height="32" rx="5" class="sv-acc-soft"/>
+        <text x="555" y="89" text-anchor="middle" class="sv-t">Gene X</text>
+        <rect x="516" y="112" width="78" height="32" rx="5" class="sv-acc-soft"/>
+        <text x="555" y="133" text-anchor="middle" class="sv-t">Gene Z</text>
+        <line x1="598" y1="84" x2="630" y2="100" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#f2ar)"/>
+        <line x1="598" y1="128" x2="630" y2="118" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#f2ar)"/>
+        <rect x="636" y="88" width="88" height="40" rx="5" class="sv-key-soft"/>
+        <text x="680" y="113" text-anchor="middle" class="sv-t">Model</text>
+        <line x1="680" y1="130" x2="680" y2="156" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#f2ar)"/>
+        <text x="680" y="178" text-anchor="middle" class="sv-t">Mouse size</text>
+        <text x="625" y="245" text-anchor="middle" class="sv-ts">two genes to size</text>
+      </svg>
+      <figcaption>The idea does not change across the panels. Only the shape does.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>The video shows an equation but never reads its numbers. These are the general forms.</p>
+
+    <div class="formula"><span class="lbl">The straight-line model, and Josh's prediction</span>
+      <div class="math">$$ \widehat{\text{size}} = \beta_0 + \beta_1 \times \text{weight}, \qquad \text{weight} = 4 \;\longrightarrow\; \widehat{\text{size}} = 3.3 $$</div>
+      <p class="explain"><b>Symbols:</b> the hat means predicted, not measured. \(\beta_0\) is the intercept, the predicted size at zero weight. \(\beta_1\) is the slope, the size change per extra unit of weight. <b>What it tells you:</b> this equation is the model, and it turns any weight into a predicted size.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">The gap between model and data</span>
+      <div class="math">$$ e_i = y_i - \hat{y}_i $$</div>
+      <p class="explain"><b>Symbols:</b> \(y_i\) is the size measured for mouse \(i\) and \(\hat{y}_i\) the size predicted. \(e_i\) is the difference, the length of one dotted line, known as the <strong>residual</strong>. <b>What it tells you:</b> each residual says how much the model missed.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">A model with two inputs</span>
+      <div class="math">$$ \widehat{\text{size}} = \beta_0 + \beta_1 \times \text{gene X} + \beta_2 \times \text{gene Z} $$</div>
+      <p class="explain"><b>Symbols:</b> \(\beta_1\) and \(\beta_2\) are the slopes of Josh's two gene measurements. <b>What it tells you:</b> a model is not limited to one input. Adding inputs is what makes it complex.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh has a graph of mice, weight across and size up. He fits one straight line, and its equation is the model.</p>
+      <p>Someone asks how big a mouse would be at four units of weight. Josh puts four in and gets 3.3.</p>
+      <div class="math">$$ \widehat{\text{size}} = \beta_0 + \beta_1 \times 4 = 3.3 $$</div>
+      <p>That is a prediction, not a fact; no such mouse was measured. If the dots sit close to the line, the model approximates the data well.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> A predicted value is not a measurement. The 3.3 comes from the line, not from a mouse.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A straight line is a choice, not a rule. Hair growth rises then flattens, so a line would keep promising more hair from more drug.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Building a model and judging it are different jobs. Josh says a lot of statistics exists just to check the approximation.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is a statistical model?</summary><div class="a">A description of the relationship between variables, usually an equation. You model mouse size using mouse weight, and the fitted line is the model. It summarises the pattern and predicts unmeasured cases.</div></details>
+    <details class="qa" open><summary>Why is a model only an approximation?</summary><div class="a">Because the real points almost never sit exactly on it. The gaps between observations and predictions are called residuals. Small, patternless residuals mean a good approximation.</div></details>
+    <details class="qa" open><summary>How do you decide whether a model is any good?</summary><div class="a">Look at how far the data sit from the model, then judge it formally. That is the point of linear regression, general linear models, t-tests, ANOVA and F-tests.</div></details>
+    <details class="qa" open><summary>When would a straight line be the wrong model?</summary><div class="a">Whenever the relationship changes shape across the input range. Drug dosage against hair growth rises then levels off, so a line would keep predicting growth forever.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>In statistics, a model is a relationship between measured things.</li>
+      <li>Josh models mouse size using mouse weight: heavier mice are bigger.</li>
+      <li>The fitted line and its equation are the same model.</li>
+      <li>It answers questions about unmeasured cases. At weight 4 it predicts size 3.3.</li>
+      <li>The model is an approximation, and the dotted gaps show what it misses.</li>
+      <li>Statistics judges whether those gaps are small enough.</li>
+      <li>Models are not always straight lines, and not limited to one input.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Mathematical models</span><span class="board-tag">a relationship that predicts, roughly</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 256" role="img" aria-label="Mouse weight across and size up. A fitted straight line runs through five mice, with a dotted gap to each one. Weight 4 reads up to the line and across to a predicted size of 3.3.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <line x1="56" y1="30" x2="56" y2="214" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="56" y1="214" x2="380" y2="214" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="76" y1="200" x2="372" y2="56" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round"/>
+            <g class="sv-stroke-key" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="2 5">
+              <line x1="104" y1="170" x2="104" y2="183"/>
+              <line x1="160" y1="163" x2="160" y2="175"/>
+              <line x1="206" y1="140" x2="206" y2="152"/>
+              <line x1="300" y1="75" x2="300" y2="88"/>
+              <line x1="346" y1="72" x2="346" y2="87"/>
+            </g>
+            <circle cx="104" cy="162" r="6" class="sv-ink"/>
+            <circle cx="160" cy="182" r="6" class="sv-ink"/>
+            <circle cx="206" cy="160" r="6" class="sv-ink"/>
+            <circle cx="300" cy="67" r="6" class="sv-ink"/>
+            <circle cx="346" cy="95" r="6" class="sv-ink"/>
+            <line x1="240" y1="211" x2="240" y2="132" class="sv-stroke-key" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="6 5" marker-end="url(#board-arr)"/>
+            <line x1="230" y1="120" x2="64" y2="120" class="sv-stroke-key" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="6 5" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2"><circle cx="240" cy="120" r="8" class="sv-key"/></g>
+            <text x="380" y="32" text-anchor="end" class="sv-tb">line = equation = model</text>
+            <text x="64" y="40" class="sv-ts">size</text>
+            <text x="230" y="102" text-anchor="end" class="sv-ts">prediction</text>
+            <text x="48" y="126" text-anchor="end" class="sv-t">3.3</text>
+            <text x="380" y="136" text-anchor="end" class="sv-ts">dotted gaps:</text>
+            <text x="380" y="156" text-anchor="end" class="sv-ts">what it misses</text>
+            <text x="240" y="238" text-anchor="middle" class="sv-t">4</text>
+            <text x="380" y="238" text-anchor="end" class="sv-ts">weight</text>
+          </svg>
+          <p>A model is a relationship between measured things: heavier mice are bigger. The fitted line and its equation are the same model, and it predicts mice you never measured. It is only an approximation, and the gaps show what it misses.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Model</dt><dd>A relationship between measured things, like mouse weight and size.</dd>
+            <dt>Mathematical model</dt><dd>The same model written as an equation, such as a line's.</dd>
+            <dt>Prediction</dt><dd>What the model returns for a mouse you never measured.</dd>
+            <dt>Approximation</dt><dd>Close to the data but not a copy; gaps remain.</dd>
+            <dt>Residual</dt><dd>One gap: the measured value minus the predicted value.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Pick a relationship</b>size using weight</li>
+            <li><b>Plot the data</b>one dot per mouse</li>
+            <li><b>Fit a line</b>its equation is the model</li>
+            <li><b>Predict</b>weight 4 gives size 3.3</li>
+            <li><b>Check the gaps</b>then judge them with statistics</li>
+            <li><b>Change the shape</b>when the data asks for it</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\widehat{\text{size}}=\beta_0+\beta_1\times\text{weight}$$
+          $$e_i=y_i-\hat{y}_i$$
+          $$\widehat{\text{size}}=\beta_0+\beta_1X+\beta_2Z$$
+          <ul class="keys">
+            <li>The hat means predicted. \(\beta_0\) is the intercept, \(\beta_1\) the slope.</li>
+            <li>\(e_i\) is the residual: measured \(y_i\) minus predicted \(\hat{y}_i\).</li>
+            <li>\(X\) and \(Z\) are genes X and Z: two inputs, one model.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>step</th><th>value</th></tr>
+            <tr><td>model</td><td>one straight line</td></tr>
+            <tr><td>weight in</td><td>4</td></tr>
+            <tr><td>equation</td><td>\(\beta_0+\beta_1\times 4\)</td></tr>
+            <tr class="final"><td>size out</td><td>3.3 ✓</td></tr>
+          </table>
+          <p class="hand">A prediction, not a fact: no mouse of weight 4 was measured. Close dots mean a good approximation.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">The 3.3 is a measured size.</span><span class="yes">It is a prediction. It comes from the line, not from a mouse.</span></li>
+            <li><span class="no">A model must be a straight line.</span><span class="yes">A line is a choice. Hair growth rises then flattens, so a line would keep promising more.</span></li>
+            <li><span class="no">Fitting the model is the whole job.</span><span class="yes">Judging it is a separate job. Much of statistics exists to check the approximation.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="07-calculating-the-mean-variance-and-standard-deviation.html"><small>Previous</small>Calculating the Mean, Variance and Standard Deviation</a> <a href="09-hypothesis-testing-and-the-null-hypothesis.html"><small>Next</small>Hypothesis Testing and The Null Hypothesis</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Histograms — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>01</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 01 · 3.7 min</div>
+    <h1>Histograms</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=qBigTkBLU6g" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: —</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">A histogram turns overlapping measurements into a shape you can read. Josh shows why bins fix the overlap, and why bin width matters.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Plot many measurements as dots on a line and they overlap, so some are hidden. Stacking only the exact matches does not help, because exact ties are rare. So you split the range of values into bins, and stack the measurements in each bin. Tall stacks mark common values, and the shape hints where future measurements will land. The setting you must tune is the bin width.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Imagine you measure how tall someone is. You draw a dot on a line at that height. Then you measure a whole crowd. Soon so many dots overlap that some sit hidden behind others.</p>
+    <p>The obvious fix is to stack dots with the exact same value. Josh shows why this fails. Measurements are continuous, so exactly equal values are rare. Most hidden dots stay hidden.</p>
+    <p>The fix that works is to stop asking for exact matches. Divide the range of values into bins. A bin is a small interval, such as 170 to 180 centimetres. Now stack every measurement in the same bin. That picture is a histogram.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Three panels: overlapping raw dots, dots stacked only when exactly equal, and dots grouped into bins to form a histogram">
+        <!-- Panel 1 -->
+        <text class="sv-tb" x="20" y="36">1. Raw measurements</text>
+        <text class="sv-ts" x="20" y="54">Dots overlap and hide each other.</text>
+        <line class="sv-stroke-ink" stroke-width="1.5" x1="20" y1="258" x2="240" y2="258"></line>
+        <circle class="sv-acc" fill-opacity="0.55" cx="45" cy="245" r="7"></circle>
+        <circle class="sv-acc" fill-opacity="0.55" cx="72" cy="245" r="7"></circle>
+        <circle class="sv-acc" fill-opacity="0.55" cx="86" cy="245" r="7"></circle>
+        <circle class="sv-acc" fill-opacity="0.55" cx="88" cy="245" r="7"></circle>
+        <circle class="sv-acc" fill-opacity="0.55" cx="114" cy="245" r="7"></circle>
+        <circle class="sv-acc" fill-opacity="0.55" cx="120" cy="245" r="7"></circle>
+        <circle class="sv-acc" fill-opacity="0.55" cx="122" cy="245" r="7"></circle>
+        <circle class="sv-acc" fill-opacity="0.55" cx="130" cy="245" r="7"></circle>
+        <circle class="sv-acc" fill-opacity="0.55" cx="138" cy="245" r="7"></circle>
+        <circle class="sv-acc" fill-opacity="0.55" cx="140" cy="245" r="7"></circle>
+        <circle class="sv-acc" fill-opacity="0.55" cx="158" cy="245" r="7"></circle>
+        <circle class="sv-acc" fill-opacity="0.55" cx="166" cy="245" r="7"></circle>
+        <circle class="sv-acc" fill-opacity="0.55" cx="168" cy="245" r="7"></circle>
+        <circle class="sv-acc" fill-opacity="0.55" cx="180" cy="245" r="7"></circle>
+        <circle class="sv-acc" fill-opacity="0.55" cx="205" cy="245" r="7"></circle>
+        <circle class="sv-acc" fill-opacity="0.55" cx="228" cy="245" r="7"></circle>
+        <text class="sv-ts" x="20" y="278">height &#8594;</text>
+
+        <!-- Panel 2 -->
+        <text class="sv-tb" x="270" y="36">2. Stack exact matches</text>
+        <text class="sv-ts" x="270" y="54">Exact ties are rare, so little changes.</text>
+        <line class="sv-stroke-ink" stroke-width="1.5" x1="270" y1="258" x2="490" y2="258"></line>
+        <circle class="sv-acc" fill-opacity="0.55" cx="295" cy="245" r="7"></circle>
+        <circle class="sv-acc" fill-opacity="0.55" cx="322" cy="245" r="7"></circle>
+        <circle class="sv-acc" fill-opacity="0.55" cx="337" cy="245" r="7"></circle>
+        <circle class="sv-acc" fill-opacity="0.55" cx="337" cy="230" r="7"></circle>
+        <circle class="sv-acc" fill-opacity="0.55" cx="364" cy="245" r="7"></circle>
+        <circle class="sv-acc" fill-opacity="0.55" cx="371" cy="245" r="7"></circle>
+        <circle class="sv-acc" fill-opacity="0.55" cx="371" cy="230" r="7"></circle>
+        <circle class="sv-acc" fill-opacity="0.55" cx="380" cy="245" r="7"></circle>
+        <circle class="sv-acc" fill-opacity="0.55" cx="388" cy="245" r="7"></circle>
+        <circle class="sv-acc" fill-opacity="0.55" cx="390" cy="245" r="7"></circle>
+        <circle class="sv-acc" fill-opacity="0.55" cx="408" cy="245" r="7"></circle>
+        <circle class="sv-acc" fill-opacity="0.55" cx="416" cy="245" r="7"></circle>
+        <circle class="sv-acc" fill-opacity="0.55" cx="418" cy="245" r="7"></circle>
+        <circle class="sv-acc" fill-opacity="0.55" cx="430" cy="245" r="7"></circle>
+        <circle class="sv-acc" fill-opacity="0.55" cx="455" cy="245" r="7"></circle>
+        <circle class="sv-acc" fill-opacity="0.55" cx="478" cy="245" r="7"></circle>
+        <text class="sv-ts" x="270" y="278">height &#8594;</text>
+
+        <!-- Panel 3 -->
+        <text class="sv-tb" x="520" y="36">3. Bin, then stack</text>
+        <text class="sv-ts" x="520" y="54">Nothing is hidden: a histogram.</text>
+        <text class="sv-ts" x="630" y="112" text-anchor="middle">tallest stack</text>
+        <line class="sv-line" stroke-width="1" x1="564" y1="126" x2="564" y2="258"></line>
+        <line class="sv-line" stroke-width="1" x1="608" y1="126" x2="608" y2="258"></line>
+        <line class="sv-line" stroke-width="1" x1="652" y1="126" x2="652" y2="258"></line>
+        <line class="sv-line" stroke-width="1" x1="696" y1="126" x2="696" y2="258"></line>
+        <rect class="sv-acc" x="525" y="240" width="34" height="16" rx="2"></rect>
+        <rect class="sv-acc" x="569" y="240" width="34" height="16" rx="2"></rect>
+        <rect class="sv-acc" x="569" y="222" width="34" height="16" rx="2"></rect>
+        <rect class="sv-acc" x="569" y="204" width="34" height="16" rx="2"></rect>
+        <rect class="sv-key" x="613" y="240" width="34" height="16" rx="2"></rect>
+        <rect class="sv-key" x="613" y="222" width="34" height="16" rx="2"></rect>
+        <rect class="sv-key" x="613" y="204" width="34" height="16" rx="2"></rect>
+        <rect class="sv-key" x="613" y="186" width="34" height="16" rx="2"></rect>
+        <rect class="sv-key" x="613" y="168" width="34" height="16" rx="2"></rect>
+        <rect class="sv-key" x="613" y="150" width="34" height="16" rx="2"></rect>
+        <rect class="sv-acc" x="657" y="240" width="34" height="16" rx="2"></rect>
+        <rect class="sv-acc" x="657" y="222" width="34" height="16" rx="2"></rect>
+        <rect class="sv-acc" x="657" y="204" width="34" height="16" rx="2"></rect>
+        <rect class="sv-acc" x="657" y="186" width="34" height="16" rx="2"></rect>
+        <rect class="sv-acc" x="701" y="240" width="34" height="16" rx="2"></rect>
+        <rect class="sv-acc" x="701" y="222" width="34" height="16" rx="2"></rect>
+        <line class="sv-stroke-ink" stroke-width="1.5" x1="520" y1="258" x2="740" y2="258"></line>
+        <text class="sv-ts" x="520" y="278">height &#8594;</text>
+      </svg>
+      <figcaption>Nothing is hidden in panel 3. The same sixteen measurements become a readable shape.</figcaption>
+    </figure>
+
+    <p>The taller a stack, the more measurements fell in that bin. Josh uses the shape to predict. The next measurement will probably land in the tall middle range. The shape also justifies a distribution, a smooth curve that stands in for your data. A symmetric hump suggests a normal distribution. A fast drop suggests an exponential one.</p>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Plot each measurement as a dot on a number line. With enough data they overlap.</li>
+      <li>Cut the whole range, smallest to largest, into bins of equal width.</li>
+      <li>Put each measurement in its bin and stack them. That is your histogram.</li>
+      <li>Read the heights. Use the shape to judge future measurements and pick a distribution.</li>
+      <li>Redraw with several bin widths. Keep the one that shows the shape most clearly.</li>
+    </ol>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 280" role="img" aria-label="Three histograms of the same data: bins too narrow give a flat rug, bins too wide give two blocks, a middle width shows the hump">
+        <defs>
+          <marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+            <path class="sv-ink" d="M0,0 L7,3 L0,6 z"></path>
+          </marker>
+        </defs>
+
+        <!-- Too narrow -->
+        <text class="sv-tb" x="20" y="36">Bins too narrow</text>
+        <text class="sv-ts" x="20" y="54">Almost one bin per measurement.</text>
+        <rect class="sv-ink3" x="30" y="216" width="8" height="14"></rect>
+        <rect class="sv-ink3" x="50" y="216" width="8" height="14"></rect>
+        <rect class="sv-ink3" x="60" y="216" width="8" height="14"></rect>
+        <rect class="sv-ink3" x="80" y="216" width="8" height="14"></rect>
+        <rect class="sv-ink3" x="90" y="216" width="8" height="14"></rect>
+        <rect class="sv-ink3" x="100" y="216" width="8" height="14"></rect>
+        <rect class="sv-ink3" x="110" y="216" width="8" height="14"></rect>
+        <rect class="sv-ink3" x="120" y="216" width="8" height="14"></rect>
+        <rect class="sv-ink3" x="130" y="216" width="8" height="14"></rect>
+        <rect class="sv-ink3" x="140" y="216" width="8" height="14"></rect>
+        <rect class="sv-ink3" x="150" y="216" width="8" height="14"></rect>
+        <rect class="sv-ink3" x="160" y="216" width="8" height="14"></rect>
+        <rect class="sv-ink3" x="180" y="216" width="8" height="14"></rect>
+        <rect class="sv-ink3" x="190" y="216" width="8" height="14"></rect>
+        <rect class="sv-ink3" x="210" y="216" width="8" height="14"></rect>
+        <rect class="sv-ink3" x="230" y="216" width="8" height="14"></rect>
+        <line class="sv-stroke-ink" stroke-width="1.5" x1="20" y1="230" x2="240" y2="230"></line>
+        <text class="sv-ts" x="20" y="252">No shape. Same as the raw dots.</text>
+
+        <!-- Too wide -->
+        <text class="sv-tb" x="270" y="36">Bins too wide</text>
+        <text class="sv-ts" x="270" y="54">Only two bins, split near 50/50.</text>
+        <rect class="sv-ink3" x="275" y="118" width="100" height="112"></rect>
+        <rect class="sv-ink3" x="385" y="118" width="100" height="112"></rect>
+        <line class="sv-stroke-ink" stroke-width="1.5" x1="270" y1="230" x2="490" y2="230"></line>
+        <text class="sv-ts" x="270" y="252">Only above or below the average.</text>
+
+        <!-- Just right -->
+        <text class="sv-tb" x="520" y="36">A width that works</text>
+        <text class="sv-ts" x="520" y="54">The hump and the tails both show.</text>
+        <rect class="sv-acc" x="522" y="216" width="40" height="14"></rect>
+        <rect class="sv-acc" x="566" y="188" width="40" height="42"></rect>
+        <rect class="sv-key" x="610" y="146" width="40" height="84"></rect>
+        <rect class="sv-acc" x="654" y="174" width="40" height="56"></rect>
+        <rect class="sv-acc" x="698" y="202" width="40" height="28"></rect>
+        <line class="sv-stroke-ink" stroke-width="1.5" x1="520" y1="230" x2="740" y2="230"></line>
+        <text class="sv-ts" x="520" y="252">A shape you can actually use.</text>
+
+        <line class="sv-stroke-ink" stroke-width="1.5" x1="246" y1="150" x2="262" y2="150" marker-end="url(#ah)"></line>
+        <line class="sv-stroke-ink" stroke-width="1.5" x1="496" y1="150" x2="512" y2="150" marker-end="url(#ah)"></line>
+      </svg>
+      <figcaption>All three panels hold the same sixteen measurements. Only the bin width changes.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>The video gives no formula. Josh says to try a few bin widths and look. These two rules make the first try less blind.</p>
+
+    <div class="formula"><span class="lbl">Bin count, then bin width</span>
+      <div class="math">$$ k = \left\lceil \sqrt{n} \right\rceil, \qquad w = \frac{x_{\max} - x_{\min}}{k} $$</div>
+      <p class="explain"><b>Symbols:</b> \(n\) is how many measurements you have. \(k\) is the number of equal bins, and the brackets mean round up. \(x_{\max}\) and \(x_{\min}\) are the largest and smallest values. \(w\) is one bin's width. <b>What it tells you:</b> the square root of the sample size is a fair first guess for the bin count, and the second part turns it into a width.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Probability estimate from a bar</span>
+      <div class="math">$$ \hat{P}(x \in \text{bin } j) = \frac{c_j}{n} $$</div>
+      <p class="explain"><b>Symbols:</b> the hat means estimated from data. \(c_j\) is the count in bin \(j\), that bar's height. \(n\) is the total count. <b>What it tells you:</b> the share of past measurements in a bin estimates the chance the next one lands there.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>The video shows no numbers, so here are counts matching the figures above. Suppose you measure \(n = 16\) people, from 152 cm to 197 cm.</p>
+      <p>The square root rule gives \(k = 4\) bins. The range is 45 cm, so \(w = 11.25\) cm. That is awkward, so round to 10 cm bins covering 150 cm to 200 cm.</p>
+      <p>Sorting the heights gives counts of 1, 3, 6, 4 and 2, which add to 16. The tallest bin is 170 to 180 cm, so \(\hat{P} = 6/16 = 0.375\).</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not accept your tool's default bin width. Josh is explicit about this. Draw the histogram at several widths first.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Narrow bins are not more accurate. When every measurement gets its own bin, you are back to raw dots.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Wide bins hide the shape. In the video, two wide bins split the data 50/50, which only says how many sit above the average.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>What problem does a histogram actually solve?</summary><div class="a">Plotted as points on a line, many measurements overlap and some become invisible. A histogram cuts the range into bins and stacks everything in the same bin. The bar heights then show how common each range of values is.</div></details>
+
+    <details class="qa" open><summary>Why not stack measurements with the same value?</summary><div class="a">With continuous measurements, exactly equal values are rare. Binning groups values that are near each other, not identical, and that is what makes the stacks informative.</div></details>
+
+    <details class="qa" open><summary>How do you choose the bin width?</summary><div class="a">I start from a rule of thumb, usually the square root of the sample size, then get the width from the range. Then I redraw at two or three other widths and compare. I never trust the library default.</div></details>
+
+    <details class="qa" open><summary>How does a histogram help you pick a distribution?</summary><div class="a">The histogram is the observed shape of the data, so it is evidence for the distribution you propose. A symmetric hump supports a normal distribution. A fast decay supports an exponential one.</div></details>
+  </section>
+
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap">
+      <ul>
+        <li>Many measurements plotted as dots on a line overlap, and some hide completely.</li>
+        <li>Stacking only exact duplicates fails, because exact ties are rare.</li>
+        <li>A histogram cuts the range into bins and stacks the measurements in each bin.</li>
+        <li>The taller a bin's stack, the more measurements landed in that range.</li>
+        <li>The shape predicts future measurements and justifies a normal or exponential distribution.</li>
+        <li>Bins that are too narrow show nothing new; bins that are too wide split the data 50/50.</li>
+        <li>Try several widths, and never trust the default.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Histograms</span><span class="board-tag">cut into bins, stack, read the shape</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 290" role="img" aria-label="Sixteen heights drawn as dots on a line overlap and hide each other. Binned and stacked, they form a histogram from 150 to 200 cm with stacks of 1, 3, 6, 4 and 2. The tallest bin, 170 to 180 cm, holds 6 of 16, or 0.375.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <text x="40" y="30" class="sv-t">dots overlap, some hide</text>
+            <line x1="40" y1="62" x2="360" y2="62" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="62" cy="54" r="7" class="sv-acc"/>
+              <circle cx="122" cy="54" r="7" class="sv-acc"/>
+              <circle cx="146" cy="54" r="7" class="sv-acc"/>
+              <circle cx="156" cy="54" r="7" class="sv-acc"/>
+              <circle cx="178" cy="54" r="7" class="sv-key"/>
+              <circle cx="186" cy="54" r="7" class="sv-key"/>
+              <circle cx="194" cy="54" r="7" class="sv-key"/>
+              <circle cx="202" cy="54" r="7" class="sv-key"/>
+              <circle cx="211" cy="54" r="7" class="sv-key"/>
+              <circle cx="221" cy="54" r="7" class="sv-key"/>
+              <circle cx="238" cy="54" r="7" class="sv-acc"/>
+              <circle cx="250" cy="54" r="7" class="sv-acc"/>
+              <circle cx="261" cy="54" r="7" class="sv-acc"/>
+              <circle cx="279" cy="54" r="7" class="sv-acc"/>
+              <circle cx="304" cy="54" r="7" class="sv-acc"/>
+              <circle cx="332" cy="54" r="7" class="sv-acc"/>
+            </g>
+            <line x1="200" y1="74" x2="200" y2="104" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="214" y="96" class="sv-t">bin, then stack</text>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <rect x="55" y="226" width="50" height="18" rx="3" class="sv-acc"/>
+              <rect x="115" y="226" width="50" height="18" rx="3" class="sv-acc"/>
+              <rect x="115" y="204" width="50" height="18" rx="3" class="sv-acc"/>
+              <rect x="115" y="182" width="50" height="18" rx="3" class="sv-acc"/>
+              <rect x="175" y="226" width="50" height="18" rx="3" class="sv-key"/>
+              <rect x="175" y="204" width="50" height="18" rx="3" class="sv-key"/>
+              <rect x="175" y="182" width="50" height="18" rx="3" class="sv-key"/>
+              <rect x="175" y="160" width="50" height="18" rx="3" class="sv-key"/>
+              <rect x="175" y="138" width="50" height="18" rx="3" class="sv-key"/>
+              <rect x="175" y="116" width="50" height="18" rx="3" class="sv-key"/>
+              <rect x="235" y="226" width="50" height="18" rx="3" class="sv-acc"/>
+              <rect x="235" y="204" width="50" height="18" rx="3" class="sv-acc"/>
+              <rect x="235" y="182" width="50" height="18" rx="3" class="sv-acc"/>
+              <rect x="235" y="160" width="50" height="18" rx="3" class="sv-acc"/>
+              <rect x="295" y="226" width="50" height="18" rx="3" class="sv-acc"/>
+              <rect x="295" y="204" width="50" height="18" rx="3" class="sv-acc"/>
+            </g>
+            <text x="164" y="122" text-anchor="end" class="sv-ts">tallest bin</text>
+            <text x="164" y="146" text-anchor="end" class="sv-tb">6/16 = 0.375</text>
+            <path d="M40 250 H360 M50 250 V257 M110 250 V257 M170 250 V257 M230 250 V257 M290 250 V257 M350 250 V257" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="50" y="276" text-anchor="middle" class="sv-ts">150</text>
+            <text x="200" y="276" text-anchor="middle" class="sv-ts">170–180 cm</text>
+            <text x="350" y="276" text-anchor="middle" class="sv-ts">200</text>
+          </svg>
+          <p>Dots for many measurements overlap, and exact ties are rare, so stacking equal values barely helps. Cut the range into bins and stack each measurement in its bin. Tall stacks mark common values and hint where the next one will land.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Bin</dt><dd>A small interval of values, such as 170 to 180 cm.</dd>
+            <dt>Histogram</dt><dd>Measurements stacked in their bins. Taller stack, more common range.</dd>
+            <dt>Bin width</dt><dd>How wide each bin is. The setting you must tune.</dd>
+            <dt>Distribution</dt><dd>A smooth curve that stands in for your data.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Plot dots</b>one per measurement; they overlap</li>
+            <li><b>Cut into bins</b>equal widths, smallest to largest</li>
+            <li><b>Stack</b>each measurement in its bin</li>
+            <li><b>Read the shape</b>predict, then pick a distribution</li>
+            <li><b>Try widths</b>keep the clearest shape</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$k=\left\lceil\sqrt{n}\,\right\rceil,\qquad w=\frac{x_{\max}-x_{\min}}{k}$$
+          $$\hat{P}(x\in\text{bin } j)=\frac{c_j}{n}$$
+          <ul class="keys">
+            <li>\(n\) measurements, \(k\) bins (round up), \(w\) one bin's width.</li>
+            <li>\(c_j\) is the count in bin \(j\), its bar's height. The hat means estimated.</li>
+            <li>\(\sqrt{n}\) is only a first guess. Still try a few widths.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>step</th><th>value</th></tr>
+            <tr><td>n</td><td>16, from 152 to 197 cm</td></tr>
+            <tr><td>k = √16</td><td>4 bins</td></tr>
+            <tr><td>w = 45 ÷ 4</td><td>11.25, round to 10 cm</td></tr>
+            <tr><td>bins 150 to 200</td><td>1, 3, 6, 4, 2</td></tr>
+            <tr class="final"><td>170–180 cm</td><td>6/16 = 0.375</td></tr>
+          </table>
+          <p class="hand">Counts add to 16. The tallest bin holds 6, so 0.375 estimates the chance the next height lands there.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">The default bin width is fine.</span><span class="yes">Never trust it. Draw the histogram at several widths first.</span></li>
+            <li><span class="no">Narrower bins are more accurate.</span><span class="yes">One bin per measurement puts you back at raw dots.</span></li>
+            <li><span class="no">Wider bins give a cleaner picture.</span><span class="yes">They hide the shape. Two bins split 50/50 and only show how many sit above the average.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="index.html"><small>Previous</small>Back to Statistics Fundamentals</a> <a href="02-the-main-ideas-behind-probability-distributions.html"><small>Next</small>The Main Ideas behind Probability Distributions</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

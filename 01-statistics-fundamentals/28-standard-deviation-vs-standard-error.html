@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Standard Deviation vs Standard Error — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>28</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 28 · 2.9 min</div>
+    <h1>Standard Deviation vs Standard Error</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=A82brFpdr9g" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">The standard deviation describes your measurements. The standard error describes your averages. Swapping them makes weak results look tidy.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh weighs five mice and gets one mean and one standard deviation. The standard deviation says how spread out those five weights are. Then he repeats the experiment five times with new mice, so he gets five means. Those five means have their own spread. That spread is the standard error.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Imagine you weigh five mice. The mean is their average, and it sits in the middle of the data. The standard deviation is a distance on both sides of the mean. It quantifies how much the five weights are spread out.</p>
+    <p>Now run the exact same experiment five separate times, with different mice each time. Every set gives you its own mean and its own standard deviation. Each standard deviation describes the spread inside one set only.</p>
+    <p>Finally, plot only the five means on a single number line. Those means have a mean of their own, called the mean of the means. They also have a standard deviation of their own. That standard deviation of the means is the standard error.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 250" role="img" aria-label="A number line with five mouse weights, their mean, and the standard deviation marked on both sides of the mean">
+        <defs>
+          <marker id="f1r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-key"></path></marker>
+          <marker id="f1l" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M10,0 L0,5 L10,10 z" class="sv-key"></path></marker>
+        </defs>
+
+        <text x="20" y="30" class="sv-tb">One set of measurements: five mice</text>
+
+        <text x="380" y="96" text-anchor="middle" class="sv-t">one standard deviation each side ≈ 2.2 g</text>
+        <line x1="237" y1="120" x2="523" y2="120" class="sv-stroke-key" stroke-width="1.6" marker-start="url(#f1l)" marker-end="url(#f1r)"></line>
+        <line x1="237" y1="122" x2="237" y2="180" class="sv-line" stroke-width="1" stroke-dasharray="4 4"></line>
+        <line x1="523" y1="122" x2="523" y2="180" class="sv-line" stroke-width="1" stroke-dasharray="4 4"></line>
+
+        <text x="380" y="145" text-anchor="middle" class="sv-t">mean = 21 g</text>
+        <line x1="380" y1="152" x2="380" y2="192" class="sv-stroke-key" stroke-width="2"></line>
+
+        <line x1="60" y1="180" x2="710" y2="180" class="sv-line" stroke-width="1.5"></line>
+        <line x1="236" y1="180" x2="236" y2="187" class="sv-line" stroke-width="1.5"></line>
+        <line x1="352" y1="180" x2="352" y2="187" class="sv-line" stroke-width="1.5"></line>
+        <line x1="468" y1="180" x2="468" y2="187" class="sv-line" stroke-width="1.5"></line>
+        <line x1="584" y1="180" x2="584" y2="187" class="sv-line" stroke-width="1.5"></line>
+        <text x="236" y="204" text-anchor="middle" class="sv-ts">18</text>
+        <text x="352" y="204" text-anchor="middle" class="sv-ts">20</text>
+        <text x="468" y="204" text-anchor="middle" class="sv-ts">22</text>
+        <text x="584" y="204" text-anchor="middle" class="sv-ts">24</text>
+        <text x="385" y="228" text-anchor="middle" class="sv-ts">weight (grams)</text>
+
+        <circle cx="236" cy="180" r="6" class="sv-acc"></circle>
+        <circle cx="352" cy="180" r="6" class="sv-acc"></circle>
+        <circle cx="410" cy="180" r="6" class="sv-acc"></circle>
+        <circle cx="468" cy="180" r="6" class="sv-acc"></circle>
+        <circle cx="584" cy="180" r="6" class="sv-acc"></circle>
+      </svg>
+      <figcaption>Notice that the standard deviation is a distance either side of the mean, and it reaches out to cover most of the raw data points.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Weigh five mice and write down the five weights. This is one set of measurements.</li>
+      <li>Calculate the mean of that set. It marks the middle of those five points.</li>
+      <li>Calculate the standard deviation of that set. It quantifies the variation inside this one set.</li>
+      <li>Repeat the experiment four more times with different mice. You now hold five means and five standard deviations.</li>
+      <li>Plot the five means on one number line. Treat them as a small data set. Their standard deviation is the standard error.</li>
+    </ol>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 400" role="img" aria-label="Five repeated experiments each with five mice and a set mean, then the five means plotted on one number line with the standard error marked">
+        <defs>
+          <marker id="f2r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-good"></path></marker>
+          <marker id="f2l" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M10,0 L0,5 L10,10 z" class="sv-good"></path></marker>
+        </defs>
+
+        <text x="20" y="26" class="sv-tb">Repeat the whole experiment five times</text>
+        <circle cx="470" cy="22" r="4.5" class="sv-ink3"></circle>
+        <text x="480" y="26" class="sv-ts">one mouse</text>
+        <line x1="580" y1="14" x2="580" y2="30" class="sv-stroke-key" stroke-width="2.5"></line>
+        <text x="590" y="26" class="sv-ts">set mean</text>
+
+        <text x="20" y="66" class="sv-ts">Set 1</text>
+        <line x1="120" y1="62" x2="700" y2="62" class="sv-line" stroke-width="1"></line>
+        <circle cx="236" cy="62" r="4.5" class="sv-ink3"></circle>
+        <circle cx="352" cy="62" r="4.5" class="sv-ink3"></circle>
+        <circle cx="410" cy="62" r="4.5" class="sv-ink3"></circle>
+        <circle cx="468" cy="62" r="4.5" class="sv-ink3"></circle>
+        <circle cx="584" cy="62" r="4.5" class="sv-ink3"></circle>
+        <line x1="410" y1="51" x2="410" y2="73" class="sv-stroke-key" stroke-width="2.5"></line>
+
+        <text x="20" y="100" class="sv-ts">Set 2</text>
+        <line x1="120" y1="96" x2="700" y2="96" class="sv-line" stroke-width="1"></line>
+        <circle cx="178" cy="96" r="4.5" class="sv-ink3"></circle>
+        <circle cx="294" cy="96" r="4.5" class="sv-ink3"></circle>
+        <circle cx="352" cy="96" r="4.5" class="sv-ink3"></circle>
+        <circle cx="468" cy="96" r="4.5" class="sv-ink3"></circle>
+        <circle cx="526" cy="96" r="4.5" class="sv-ink3"></circle>
+        <line x1="364" y1="85" x2="364" y2="107" class="sv-stroke-key" stroke-width="2.5"></line>
+
+        <text x="20" y="134" class="sv-ts">Set 3</text>
+        <line x1="120" y1="130" x2="700" y2="130" class="sv-line" stroke-width="1"></line>
+        <circle cx="294" cy="130" r="4.5" class="sv-ink3"></circle>
+        <circle cx="410" cy="130" r="4.5" class="sv-ink3"></circle>
+        <circle cx="468" cy="130" r="4.5" class="sv-ink3"></circle>
+        <circle cx="584" cy="130" r="4.5" class="sv-ink3"></circle>
+        <circle cx="642" cy="130" r="4.5" class="sv-ink3"></circle>
+        <line x1="480" y1="119" x2="480" y2="141" class="sv-stroke-key" stroke-width="2.5"></line>
+
+        <text x="20" y="168" class="sv-ts">Set 4</text>
+        <line x1="120" y1="164" x2="700" y2="164" class="sv-line" stroke-width="1"></line>
+        <circle cx="178" cy="164" r="4.5" class="sv-ink3"></circle>
+        <circle cx="236" cy="164" r="4.5" class="sv-ink3"></circle>
+        <circle cx="352" cy="164" r="4.5" class="sv-ink3"></circle>
+        <circle cx="410" cy="164" r="4.5" class="sv-ink3"></circle>
+        <circle cx="526" cy="164" r="4.5" class="sv-ink3"></circle>
+        <line x1="340" y1="153" x2="340" y2="175" class="sv-stroke-key" stroke-width="2.5"></line>
+
+        <text x="20" y="202" class="sv-ts">Set 5</text>
+        <line x1="120" y1="198" x2="700" y2="198" class="sv-line" stroke-width="1"></line>
+        <circle cx="294" cy="198" r="4.5" class="sv-ink3"></circle>
+        <circle cx="352" cy="198" r="4.5" class="sv-ink3"></circle>
+        <circle cx="468" cy="198" r="4.5" class="sv-ink3"></circle>
+        <circle cx="526" cy="198" r="4.5" class="sv-ink3"></circle>
+        <circle cx="584" cy="198" r="4.5" class="sv-ink3"></circle>
+        <line x1="445" y1="187" x2="445" y2="209" class="sv-stroke-key" stroke-width="2.5"></line>
+
+        <line x1="20" y1="232" x2="740" y2="232" class="sv-line" stroke-width="1"></line>
+        <text x="20" y="258" class="sv-tb">Now plot only the five means</text>
+
+        <text x="408" y="290" text-anchor="middle" class="sv-ts">mean of the means ≈ 21.0 g</text>
+        <line x1="408" y1="298" x2="408" y2="352" class="sv-stroke-good" stroke-width="2"></line>
+        <line x1="351" y1="322" x2="465" y2="322" class="sv-stroke-good" stroke-width="1.6" marker-start="url(#f2l)" marker-end="url(#f2r)"></line>
+        <text x="478" y="326" class="sv-t">standard error ≈ 0.98 g</text>
+
+        <line x1="120" y1="350" x2="700" y2="350" class="sv-line" stroke-width="1.5"></line>
+        <line x1="236" y1="350" x2="236" y2="357" class="sv-line" stroke-width="1.5"></line>
+        <line x1="352" y1="350" x2="352" y2="357" class="sv-line" stroke-width="1.5"></line>
+        <line x1="468" y1="350" x2="468" y2="357" class="sv-line" stroke-width="1.5"></line>
+        <line x1="584" y1="350" x2="584" y2="357" class="sv-line" stroke-width="1.5"></line>
+        <text x="236" y="374" text-anchor="middle" class="sv-ts">18</text>
+        <text x="352" y="374" text-anchor="middle" class="sv-ts">20</text>
+        <text x="468" y="374" text-anchor="middle" class="sv-ts">22</text>
+        <text x="584" y="374" text-anchor="middle" class="sv-ts">24</text>
+
+        <circle cx="410" cy="350" r="5.5" class="sv-key"></circle>
+        <circle cx="364" cy="350" r="5.5" class="sv-key"></circle>
+        <circle cx="480" cy="350" r="5.5" class="sv-key"></circle>
+        <circle cx="340" cy="350" r="5.5" class="sv-key"></circle>
+        <circle cx="445" cy="350" r="5.5" class="sv-key"></circle>
+      </svg>
+      <figcaption>Both halves use the same scale. Notice that the five means sit far closer together than the raw mice do.</figcaption>
+    </figure>
+
+    <p>Josh names the confusing part directly. The standard error can be estimated from a single set of measurements, even though it describes the means from many sets. That is why software offers you the standard error when you measured only once.</p>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>The video shows no formulas. These two are the standard ones behind the pictures.</p>
+
+    <div class="formula"><span class="lbl">Standard deviation of one set</span>
+      <div class="math">$$ s=\sqrt{\frac{1}{n-1}\sum_{i=1}^{n}\left(x_i-\bar{x}\right)^{2}} $$</div>
+      <p class="explain"><b>Symbols:</b> \(x_i\) is one measurement, such as the weight of one mouse. \(\bar{x}\) is the mean of that set. \(n\) is how many measurements the set contains. \(s\) is the standard deviation. <b>What it tells you:</b> the typical distance from a single measurement to the mean of its own set.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Standard error of the mean</span>
+      <div class="math">$$ SE=\frac{s}{\sqrt{n}} $$</div>
+      <p class="explain"><b>Symbols:</b> \(s\) is the standard deviation of your one set. \(n\) is the number of measurements in it. \(SE\) is the estimated standard deviation of the means. <b>What it tells you:</b> how far the mean would move if you repeated the experiment. A larger set gives a smaller standard error.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh shows no numbers on screen. These weights follow his setup of five mice, weighed five times over.</p>
+      <p><b>Set 1:</b> 18, 20, 21, 22, 24 grams. The mean is \(105/5 = 21\) g. The deviations are −3, −1, 0, 1 and 3, and their squares add to 20. Divide by \(n-1 = 4\), then take the square root: \(s = 2.24\) g. So \(SE = 2.24/\sqrt{5} = 1.00\) g.</p>
+      <p><b>All five sets:</b> the means are 21.0, 20.2, 22.2, 19.8 and 21.6 grams. Their own standard deviation is 0.98 g. That is the standard error measured the long way. It nearly matches the 1.00 g estimated from set 1 alone.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> The standard error is smaller than the standard deviation whenever \(n\) is above one. Smaller bars look like cleaner data, but the data did not change.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The standard error describes means from many sets, yet you can estimate it from one set. That mismatch is exactly what makes the two terms so easy to confuse.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Josh's default is clear: in almost all cases plot the standard deviation, because a graph is usually meant to describe the data you actually measured.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is the difference between standard deviation and standard error?</summary><div class="a">The standard deviation quantifies the variation within one set of measurements. The standard error quantifies the variation in the means from multiple sets. Put simply, the standard error is the standard deviation of the means, so it describes the estimate rather than the data.</div></details>
+    <details class="qa" open><summary>Why is the standard error smaller than the standard deviation?</summary><div class="a">Averaging cancels some of the noise, so means sit closer together than individual measurements. The formula shows it: we divide by the square root of the sample size. Four times more data halves the standard error.</div></details>
+    <details class="qa" open><summary>Which one should you plot on a chart?</summary><div class="a">In almost all cases the standard deviation, because the chart describes the data you measured. I would use the standard error only when the point is the precision of the estimate. Either way I label the bars.</div></details>
+    <details class="qa" open><summary>How can you get a standard error when you ran the experiment only once?</summary><div class="a">You estimate it rather than observe it. You take the standard deviation of your single set and divide by the square root of the sample size. It still describes how the mean would move across repeats you never ran.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>The standard deviation quantifies the variation within one set of measurements.</li>
+      <li>The standard error quantifies the variation in the means from multiple sets.</li>
+      <li>So the standard error is nothing more than the standard deviation of the means.</li>
+      <li>Five sets of five mice give five means, and the spread of those means is the standard error.</li>
+      <li>You can estimate the standard error from one set by dividing \(s\) by \(\sqrt{n}\).</li>
+      <li>Plot the standard deviation by default, because graphs are meant to describe your data.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Deviation vs error</span><span class="board-tag">spread of mice vs spread of means</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 260" role="img" aria-label="Five mice in one set spread widely, with a standard deviation of 2.24 g. Repeating the experiment five times and plotting only the five means gives a much narrower spread, the standard error of 0.98 g, on the same scale from 18 to 24 g.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <text x="14" y="28" class="sv-t">5 mice, one set</text>
+            <text x="386" y="28" text-anchor="end" class="sv-tb">s = 2.24 g</text>
+            <line x1="88" y1="48" x2="312" y2="48" class="sv-stroke-acc" stroke-width="3" stroke-linecap="round" marker-start="url(#board-arr)" marker-end="url(#board-arr)"/>
+            <line x1="36" y1="76" x2="364" y2="76" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="50" cy="76" r="7" class="sv-acc"/>
+              <circle cx="150" cy="76" r="7" class="sv-acc"/>
+              <circle cx="200" cy="76" r="7" class="sv-acc"/>
+              <circle cx="250" cy="76" r="7" class="sv-acc"/>
+              <circle cx="350" cy="76" r="7" class="sv-acc"/>
+            </g>
+            <line x1="200" y1="98" x2="200" y2="130" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="214" y="121" class="sv-ts">repeat with new mice</text>
+            <text x="14" y="160" class="sv-t">the 5 set means</text>
+            <text x="386" y="160" text-anchor="end" class="sv-tb">SE = 0.98 g</text>
+            <line x1="151" y1="180" x2="249" y2="180" class="sv-stroke-key" stroke-width="3" stroke-linecap="round" marker-start="url(#board-arr)" marker-end="url(#board-arr)"/>
+            <line x1="36" y1="208" x2="364" y2="208" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="50" y1="208" x2="50" y2="216" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="350" y1="208" x2="350" y2="216" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="140" cy="208" r="7" class="sv-key"/>
+              <circle cx="160" cy="208" r="7" class="sv-key"/>
+              <circle cx="200" cy="208" r="7" class="sv-key"/>
+              <circle cx="230" cy="208" r="7" class="sv-key"/>
+              <circle cx="260" cy="208" r="7" class="sv-key"/>
+            </g>
+            <text x="50" y="238" text-anchor="middle" class="sv-ts">18 g</text>
+            <text x="350" y="238" text-anchor="middle" class="sv-ts">24 g</text>
+          </svg>
+          <p>The standard deviation, \(s\), is the spread of the measurements inside one set. Repeat the experiment and plot only the means: their spread is the standard error, the standard deviation of the means.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Set</dt><dd>One run of the experiment, here five mice.</dd>
+            <dt>Mean</dt><dd>The average; it sits in the middle of the data.</dd>
+            <dt>Standard deviation \(s\)</dt><dd>How spread out the measurements inside one set are.</dd>
+            <dt>Standard error \(SE\)</dt><dd>The standard deviation of the means from many sets.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Weigh 5 mice</b>one set of measurements</li>
+            <li><b>Take the mean</b>the middle of those five</li>
+            <li><b>Standard deviation</b>spread inside this one set</li>
+            <li><b>Repeat</b>four more times, different mice</li>
+            <li><b>Plot the means</b>their spread is the standard error</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$s=\sqrt{\frac{1}{n-1}\sum_{i=1}^{n}(x_i-\bar{x})^2}$$
+          $$SE=\frac{s}{\sqrt{n}}$$
+          <ul class="keys">
+            <li>\(x_i\) is one mouse's weight, \(\bar{x}\) the set mean, \(n\) the set size.</li>
+            <li>Dividing by \(\sqrt{n}\) means a larger set gives a smaller standard error.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>step</th><th>working</th><th>result</th></tr>
+            <tr><td>set 1</td><td>18, 20, 21, 22, 24</td><td>mean 21 g</td></tr>
+            <tr><td>\(s\)</td><td>√(20 ÷ 4)</td><td>2.24 g</td></tr>
+            <tr><td>SE, set 1</td><td>2.24 ÷ √5</td><td>1.00 g</td></tr>
+            <tr class="final"><td>SE, 5 sets</td><td>\(s\) of the 5 means</td><td>0.98 g</td></tr>
+          </table>
+          <p class="hand">The means 21.0, 20.2, 22.2, 19.8 and 21.6 sit far closer than the mice. One set's estimate nearly matches.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Smaller error bars mean cleaner data.</span><span class="yes">The standard error is smaller whenever \(n\) is above one. The data did not change.</span></li>
+            <li><span class="no">A standard error needs many sets.</span><span class="yes">It describes means from many sets, yet you can estimate it from one set.</span></li>
+            <li><span class="no">Plot the standard error by default.</span><span class="yes">Plot the standard deviation in almost all cases: a graph describes the data you measured.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="27-sample-size-and-effective-sample-size.html"><small>Previous</small>Sample Size and Effective Sample Size</a> <a href="29-the-standard-error.html"><small>Next</small>The standard error</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

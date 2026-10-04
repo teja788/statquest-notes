@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>K-nearest neighbors — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>43</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 43 · 5.5 min</div>
+    <h1>K-nearest neighbors</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=HVXime0nQeI" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">K-nearest neighbors is a very simple way to classify a new data point. You look at the points nearest to it, and you let them vote.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Start with data whose categories you already know, and plot it. Add the new point whose category you do not know. Look at its K closest neighbors. Give the new point the category that most of them have. K is your choice, so you test a few values.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh uses cells from an intestinal tumor. Each cell was measured, and the measurements were reduced to a plot with PCA. Cells of the same type sit close together, so the plot shows clear clusters of green, red and orange cells.</p>
+    <p>Now a new cell arrives from another tumor. Nobody sorted those cells, so its type is unknown. The idea is simple: find the cells it sits nearest to, and copy their label.</p>
+    <p>The letter K is the number of neighbors you look at. If K equals 1, only the closest cell decides. If K equals 11, the 11 closest cells vote, and the most common category wins.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 346" role="img" aria-label="PCA plot with green, red and orange cell clusters, an unknown cell, a circle holding its 11 nearest neighbors, and a vote tally of 7 red, 3 orange and 1 green">
+        <line x1="40" y1="300" x2="430" y2="300" class="sv-line" stroke-width="1.5"/>
+        <line x1="40" y1="40" x2="40" y2="300" class="sv-line" stroke-width="1.5"/>
+        <text x="235" y="322" text-anchor="middle" class="sv-ts">PC1</text>
+        <text x="24" y="170" text-anchor="middle" class="sv-ts" transform="rotate(-90 24 170)">PC2</text>
+
+        <g class="sv-good">
+          <circle cx="100" cy="90" r="5"/><circle cx="125" cy="70" r="5"/><circle cx="90" cy="120" r="5"/>
+          <circle cx="140" cy="105" r="5"/><circle cx="115" cy="130" r="5"/><circle cx="155" cy="85" r="5"/>
+          <circle cx="170" cy="120" r="5"/><circle cx="135" cy="145" r="5"/><circle cx="180" cy="145" r="5"/>
+          <circle cx="210" cy="150" r="5"/>
+        </g>
+        <g class="sv-warn">
+          <circle cx="330" cy="110" r="5"/><circle cx="355" cy="130" r="5"/><circle cx="310" cy="95" r="5"/>
+          <circle cx="345" cy="90" r="5"/><circle cx="370" cy="115" r="5"/><circle cx="320" cy="130" r="5"/>
+          <circle cx="280" cy="150" r="5"/><circle cx="295" cy="170" r="5"/><circle cx="265" cy="140" r="5"/>
+        </g>
+        <g class="sv-key">
+          <circle cx="300" cy="250" r="5"/><circle cx="330" cy="230" r="5"/><circle cx="350" cy="262" r="5"/>
+          <circle cx="320" cy="278" r="5"/><circle cx="280" cy="265" r="5"/><circle cx="355" cy="225" r="5"/>
+          <circle cx="245" cy="215" r="5"/><circle cx="270" cy="205" r="5"/><circle cx="225" cy="220" r="5"/>
+          <circle cx="285" cy="190" r="5"/><circle cx="260" cy="230" r="5"/><circle cx="295" cy="205" r="5"/>
+          <circle cx="240" cy="195" r="5"/>
+        </g>
+
+        <circle cx="250" cy="180" r="60" class="sv-stroke-ink" stroke-width="1.5" stroke-dasharray="5 4"/>
+        <circle cx="250" cy="180" r="7.5" class="sv-paper"/>
+        <circle cx="250" cy="180" r="7.5" class="sv-stroke-ink" stroke-width="2"/>
+
+        <rect x="60" y="52" width="96" height="20" rx="4" class="sv-paper"/>
+        <text x="64" y="67" class="sv-ts">Green cells</text>
+        <rect x="300" y="60" width="98" height="20" rx="4" class="sv-paper"/>
+        <text x="304" y="75" class="sv-ts">Orange cells</text>
+        <rect x="150" y="266" width="86" height="20" rx="4" class="sv-paper"/>
+        <text x="154" y="281" class="sv-ts">Red cells</text>
+        <rect x="150" y="98" width="120" height="20" rx="4" class="sv-paper"/>
+        <text x="154" y="113" class="sv-ts">New cell, unknown</text>
+        <line x1="228" y1="118" x2="244" y2="170" class="sv-stroke-ink" stroke-width="1"/>
+        <text x="250" y="256" text-anchor="middle" class="sv-tm">K = 11</text>
+
+        <line x1="452" y1="40" x2="452" y2="300" class="sv-line" stroke-width="1"/>
+        <text x="480" y="62" class="sv-tb">Votes inside the circle</text>
+        <rect x="540" y="86" width="140" height="22" class="sv-key"/>
+        <text x="532" y="102" text-anchor="end" class="sv-t">Red</text>
+        <text x="690" y="102" class="sv-tm">7</text>
+        <rect x="540" y="120" width="60" height="22" class="sv-warn"/>
+        <text x="532" y="136" text-anchor="end" class="sv-t">Orange</text>
+        <text x="610" y="136" class="sv-tm">3</text>
+        <rect x="540" y="154" width="20" height="22" class="sv-good"/>
+        <text x="532" y="170" text-anchor="end" class="sv-t">Green</text>
+        <text x="570" y="170" class="sv-tm">1</text>
+        <rect x="480" y="200" width="240" height="34" rx="5" class="sv-key-soft"/>
+        <text x="496" y="222" class="sv-t">Most votes wins, so: red</text>
+      </svg>
+      <figcaption>The dashed circle holds the 11 nearest cells. Red has seven of them, so the new cell is called red.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Start with data whose categories you already know. Here it is cells from an intestinal tumor, clustered with PCA.</li>
+      <li>Add the new point with the unknown category to the same plot.</li>
+      <li>Find its K nearest neighbors, that is, the K known points closest to it.</li>
+      <li>Count the categories of those neighbors and give the new point the category with the most votes.</li>
+      <li>Repeat for every unknown point. Nothing is fitted in advance, so each new point is handled on its own.</li>
+    </ol>
+    <p>The same steps work on a heat map clustered with hierarchical clustering. A new cell inside the light blue block is called light blue, whether K is 1 or 5. Near the edge with K equal to 11, seven neighbors are light blue and four light green, so light blue wins.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 230" role="img" aria-label="A scale of K values from one to very large, showing noisy behaviour at small K, steady behaviour in the middle, and over-smoothing at large K">
+        <text x="30" y="34" class="sv-tb">Choosing K</text>
+        <rect x="30" y="56" width="220" height="26" rx="4" class="sv-key-soft"/>
+        <rect x="250" y="56" width="250" height="26" class="sv-good-soft"/>
+        <rect x="500" y="56" width="230" height="26" rx="4" class="sv-paper2"/>
+        <text x="140" y="74" text-anchor="middle" class="sv-tm">K = 1 or 2</text>
+        <text x="375" y="74" text-anchor="middle" class="sv-tm">K = 5 to 11</text>
+        <text x="615" y="74" text-anchor="middle" class="sv-tm">K very large</text>
+        <line x1="30" y1="96" x2="730" y2="96" class="sv-line" stroke-width="1"/>
+        <text x="30" y="126" class="sv-t">Noisy. One outlier</text>
+        <text x="30" y="146" class="sv-t">can decide the label.</text>
+        <text x="270" y="126" class="sv-t">Steady. Votes cancel</text>
+        <text x="270" y="146" class="sv-t">out stray points.</text>
+        <text x="520" y="126" class="sv-t">Too smooth. Small</text>
+        <text x="520" y="146" class="sv-t">groups always lose.</text>
+        <rect x="30" y="176" width="700" height="34" rx="5" class="sv-acc-soft"/>
+        <text x="46" y="198" class="sv-t">No rule sets K. Try a few values, and prefer an odd K so ties are rare.</text>
+      </svg>
+      <figcaption>K controls how much the vote smooths the data, and both ends of the scale cause trouble.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>The video shows no equation. It uses two simple rules that are worth writing down.</p>
+    <div class="formula"><span class="lbl">Distance to a neighbor</span><div class="math">$$ d(x, x_i) = \sqrt{\sum_{j=1}^{p} \left( x_j - x_{ij} \right)^2} $$</div><p class="explain"><b>Symbols:</b> \(x\) is the new point with the unknown category. \(x_i\) is training point \(i\), whose category you know. \(p\) is the number of coordinates; on Josh's PCA plot \(p = 2\). <b>What it tells you:</b> the K smallest distances give you the K nearest neighbors.</p></div>
+    <div class="formula"><span class="lbl">The vote</span><div class="math">$$ \hat{y} = \arg\max_{c} \sum_{i \in N_K(x)} \mathbf{1}(y_i = c) $$</div><p class="explain"><b>Symbols:</b> \(\hat{y}\) is the category you assign. \(c\) is one possible category, such as red. \(N_K(x)\) is the set of K nearest neighbors. \(\mathbf{1}(y_i = c)\) is 1 when neighbor \(i\) is category \(c\), so the sum counts votes. <b>What it tells you:</b> pick the category with the largest count.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>The new cell first lands deep inside the green cluster. With K equal to 1, the closest cell is green, so the answer is green. With K equal to 11, all 11 closest cells are green, so it is still green.</p>
+      <p>Josh then moves the new cell to a harder spot, about halfway between the green and the red cells. With K equal to 11, the neighbors are mixed: 7 are red, 3 are orange and 1 is green. Red has the most votes, so the cell is called red.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> There is no physical or biological rule that gives the best K. Hide part of the training data, classify it as if it were unknown, and check the answers against the labels you have.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Both ends of the scale hurt. With K equal to 1 or 2, one outlier can decide the answer. With a very large K, a category with few samples is always outvoted.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Ties happen when a point sits right between two categories. An odd K avoids most ties. If a tie still happens, flip a coin or leave the point unassigned.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>How does K-nearest neighbors work?</summary><div class="a">You keep the labelled data as it is. For a new point, you measure the distance to every labelled point and take the K closest. Those neighbors vote, and the top category becomes the label. Nothing is fitted beforehand.</div></details>
+    <details class="qa" open><summary>How do you choose K?</summary><div class="a">There is no formula for it, so I tune it. I hold out part of the training data, pretend its labels are unknown, classify it, and compare with the true labels. I repeat for a few values of K and keep the best. I also prefer an odd K, because it avoids most ties.</div></details>
+    <details class="qa" open><summary>What goes wrong if K is too small or too large?</summary><div class="a">A very small K is sensitive to noise, so one unusual point nearby can flip the answer. A very large K smooths everything out. Then a rare category with few samples is outvoted every time.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>K-nearest neighbors classifies a new point by looking at the labelled points nearest to it.</li>
+      <li>The labelled data used for the clustering is called the training data.</li>
+      <li>K is the number of neighbors you let vote, and when K is 1 the closest point decides.</li>
+      <li>When the neighbors disagree, the category with the most votes wins.</li>
+      <li>In Josh's example, 7 red, 3 orange and 1 green neighbor give the answer red.</li>
+      <li>No rule gives the best K, so you test values on held-out training data.</li>
+      <li>Small K is noisy, large K hides small categories, and an odd K avoids most ties.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">K-nearest neighbors</span><span class="board-tag">the closest points vote on the label</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 270" role="img" aria-label="A new cell, marked with a question mark, sits inside a dashed circle holding its 11 nearest neighbors: 7 red, 3 orange and 1 green. Cells outside the circle do not vote. Red has the most votes, so red wins.">
+            <circle cx="112" cy="150" r="92" class="sv-stroke-ink" stroke-width="2.5" stroke-dasharray="7 6" stroke-linecap="round"/>
+            <g class="sv-good"><circle cx="46" cy="52" r="6"/><circle cx="22" cy="82" r="6"/></g>
+            <g class="sv-warn"><circle cx="200" cy="58" r="6"/><circle cx="214" cy="92" r="6"/></g>
+            <g class="sv-key"><circle cx="32" cy="238" r="6"/><circle cx="192" cy="246" r="6"/></g>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="65" cy="108" r="8" class="sv-good"/>
+              <circle cx="118" cy="84" r="8" class="sv-warn"/>
+              <circle cx="150" cy="100" r="8" class="sv-warn"/>
+              <circle cx="175" cy="132" r="8" class="sv-warn"/>
+              <circle cx="58" cy="170" r="8" class="sv-key"/>
+              <circle cx="92" cy="182" r="8" class="sv-key"/>
+              <circle cx="78" cy="208" r="8" class="sv-key"/>
+              <circle cx="115" cy="222" r="8" class="sv-key"/>
+              <circle cx="136" cy="184" r="8" class="sv-key"/>
+              <circle cx="152" cy="208" r="8" class="sv-key"/>
+              <circle cx="170" cy="172" r="8" class="sv-key"/>
+            </g>
+            <g class="sv-stroke-ink" stroke-width="2.5"><circle cx="112" cy="150" r="14" class="sv-paper"/></g>
+            <text x="112" y="157" text-anchor="middle" class="sv-tb">?</text>
+            <text x="112" y="34" text-anchor="middle" class="sv-tb">K = 11 nearest</text>
+            <text x="244" y="88" class="sv-tb">votes</text>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <rect x="244" y="104" width="84" height="24" rx="3" class="sv-key"/>
+              <rect x="244" y="142" width="36" height="24" rx="3" class="sv-warn"/>
+              <rect x="244" y="180" width="12" height="24" rx="3" class="sv-good"/>
+            </g>
+            <text x="336" y="122" class="sv-t">7 red</text>
+            <text x="288" y="160" class="sv-t">3 orange</text>
+            <text x="264" y="198" class="sv-t">1 green</text>
+            <g class="sv-stroke-ink" stroke-width="2"><rect x="240" y="220" width="140" height="36" rx="8" class="sv-key-soft"/></g>
+            <text x="310" y="244" text-anchor="middle" class="sv-tb">red wins</text>
+          </svg>
+          <p>Nothing is fitted in advance. A new cell finds its K nearest labelled neighbors, and their most common category becomes its label. With K = 1, the closest cell alone decides.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Training data</dt><dd>The labelled points whose categories you already know.</dd>
+            <dt>K</dt><dd>How many nearest neighbors get a vote. You pick it.</dd>
+            <dt>Nearest neighbors</dt><dd>The K known points with the smallest distance to the new one.</dd>
+            <dt>Vote</dt><dd>Each neighbor counts for its category; the most common wins.</dd>
+            <dt>Tie</dt><dd>Two categories with equal votes. An odd K avoids most.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Known data</b>tumor cells, clustered with PCA</li>
+            <li><b>Add new point</b>its category is unknown</li>
+            <li><b>Find K nearest</b>the K closest known points</li>
+            <li><b>Vote</b>most common category wins</li>
+          </ol>
+          <p class="loop">↺ repeat steps 2 to 4 for every unknown point</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$d(x,x_i)=\sqrt{\sum_{j=1}^{p}(x_j-x_{ij})^2}$$
+          $$\hat{y}=\arg\max_{c}\sum_{i\in N_K(x)}\mathbf{1}(y_i=c)$$
+          <ul class="keys">
+            <li>\(x\) is the new point, \(x_i\) a known one; \(p=2\) on the PCA plot.</li>
+            <li>\(N_K(x)\) is the K nearest; \(\mathbf{1}(y_i=c)\) is 1 if neighbor \(i\) is \(c\), so the sum counts votes.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>new cell</th><th>K</th><th>votes</th><th>call</th></tr>
+            <tr><td>in green</td><td>1</td><td>1 green</td><td>green</td></tr>
+            <tr><td>in green</td><td>11</td><td>11 green</td><td>green</td></tr>
+            <tr class="final"><td>halfway</td><td>11</td><td>7 red, 3 orange, 1 green</td><td>red ✓</td></tr>
+          </table>
+          <p class="hand">Deep in the green cluster, K = 1 and K = 11 agree. Halfway between green and red, red takes 7 of 11 votes.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">A rule tells you the best K.</span><span class="yes">No rule does. Hide some training data, classify it, and check against the known labels.</span></li>
+            <li><span class="no">Any K will do.</span><span class="yes">K = 1 or 2 lets one outlier decide; a very large K always outvotes rare categories.</span></li>
+            <li><span class="no">Every vote has a clear winner.</span><span class="yes">An odd K avoids most ties; otherwise flip a coin or leave the point unassigned.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="42-clustering-with-dbscan.html"><small>Previous</small>Clustering with DBSCAN</a> <a href="44-naive-bayes.html"><small>Next</small>Naive Bayes</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

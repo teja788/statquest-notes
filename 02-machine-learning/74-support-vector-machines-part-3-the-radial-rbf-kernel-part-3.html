@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Support Vector Machines Part 3: The Radial (RBF) Kernel (Part 3 of 3) — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>74</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 74 · 15.9 min</div>
+    <h1>Support Vector Machines Part 3: The Radial (RBF) Kernel (Part 3 of 3)</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=Qc5IyLW_hns" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: —</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video explains the radial kernel, also called the radial basis function (RBF) kernel. It shows how the kernel measures influence between points, and why it works in infinite dimensions.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>The radial kernel helps a support vector machine separate overlapping data. For a new observation, it acts like a weighted nearest neighbor model: close points have a lot of influence and far points have very little. The influence depends on the squared distance between two points, scaled by a parameter called gamma. A Taylor series shows that the radial kernel is a sum of polynomial kernels with every degree up to infinity. So the kernel value is the relationship between two points in infinite dimensions.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh goes back to the drug dosage data from the first support vector machine video. Patients with a dosage that is too small or too large are not cured. Only patients with a dosage that is just right are cured. The two groups overlap a lot, so a plain support vector classifier (a single threshold on the dosage line) does a poor job.</p>
+    <p>A support vector machine with a radial kernel handles this. It finds support vector classifiers in infinite dimensions, so we cannot draw what it does. But we can describe how it behaves on a new observation. It behaves like a weighted nearest neighbor model. The nearest neighbors (the closest training points) have a lot of influence on the classification. Points that are further away have relatively little influence.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 340" role="img" aria-label="Radial kernel influence curves for gamma 1 and gamma 2, with a close point and a far point">
+        <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker></defs>
+        <line x1="40" y1="260" x2="730" y2="260" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="40" y1="260" x2="40" y2="40" class="sv-line" stroke-width="1.5"/>
+        <text x="48" y="36" class="sv-ts">influence (kernel value)</text>
+        <text x="26" y="64" class="sv-ts">1</text>
+        <text x="26" y="264" class="sv-ts">0</text>
+        <text x="690" y="284" class="sv-ts">dosage</text>
+        <polyline points="60,260 140,256.3 160,250.6 180,238.9 200,218.1 220,186.4 240,146 260,104.2 280,72.1 290,63.1 300,60 310,63.1 320,72.1 340,104.2 360,146 380,186.4 400,218.1 420,238.9 440,250.6 460,256.3 540,260 730,260" class="sv-stroke-acc" stroke-width="2.5"/>
+        <polyline points="60,260 180,257.8 200,251.2 220,232.9 240,195.1 260,138.7 270,109 280,83.5 290,66.2 300,60 310,66.2 320,83.5 330,109 340,138.7 360,195.1 380,232.9 400,251.2 420,257.8 440,259.6 540,260 730,260" class="sv-stroke-key" stroke-width="2.5" stroke-dasharray="6 4"/>
+        <circle cx="300" cy="260" r="8" class="sv-key"/>
+        <text x="300" y="290" text-anchor="middle" class="sv-t">new observation</text>
+        <circle cx="419" cy="260" r="7" class="sv-ink2"/>
+        <text x="419" y="312" text-anchor="middle" class="sv-t">close observation</text>
+        <line x1="419" y1="298" x2="419" y2="270" class="sv-line" stroke-width="1"/>
+        <circle cx="620" cy="260" r="7" class="sv-ink2"/>
+        <text x="620" y="290" text-anchor="middle" class="sv-t">far observation</text>
+        <circle cx="419" cy="238" r="4" class="sv-acc"/>
+        <line x1="500" y1="150" x2="424" y2="234" class="sv-line" stroke-width="1.5" marker-end="url(#ah)"/>
+        <rect x="498" y="134" width="164" height="22" rx="4" class="sv-paper2"/>
+        <text x="506" y="150" class="sv-tm">γ = 1 → 0.11</text>
+        <line x1="500" y1="196" x2="425" y2="255" class="sv-line" stroke-width="1.5" marker-end="url(#ah)"/>
+        <rect x="498" y="180" width="164" height="22" rx="4" class="sv-paper2"/>
+        <text x="506" y="196" class="sv-tm">γ = 2 → 0.01</text>
+        <text x="620" y="244" text-anchor="middle" class="sv-tm">≈ 0</text>
+        <line x1="560" y1="56" x2="590" y2="56" class="sv-stroke-acc" stroke-width="2.5"/>
+        <text x="598" y="60" class="sv-ts">γ = 1</text>
+        <line x1="560" y1="80" x2="590" y2="80" class="sv-stroke-key" stroke-width="2.5" stroke-dasharray="6 4"/>
+        <text x="598" y="84" class="sv-ts">γ = 2 (drops faster)</text>
+      </svg>
+      <figcaption>Notice that the close observation keeps some influence (0.11 with γ = 1), a larger γ cuts it to 0.01, and the far observation has almost none.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li><b>Measure the squared distance.</b> Take two dosages, \(a\) and \(b\). Subtract them and square the result. The influence of one point on another is a function of this squared distance.</li>
+      <li><b>Scale it with gamma.</b> Gamma multiplies the squared distance, so it also scales the influence. Gamma is chosen by cross validation, which tests each value on held-back data.</li>
+      <li><b>Read the kernel value as a relationship.</b> Just like the polynomial kernel, the number you get is the high-dimensional relationship between the two points. Close points give a value like 0.11. Far points give a value very close to zero.</li>
+      <li><b>Look at polynomial kernels with r = 0.</b> With \(r = 0\), the polynomial kernel \((a \times b + r)^d\) has only one coordinate. It just moves the data along the original axis. For \(d = 2\), dosages 2.5 and 4 move to 6.25 and 16. For \(d = 1\), the data stays where it is.</li>
+      <li><b>Add them up.</b> Adding the \(d = 1\) and \(d = 2\) kernels gives a dot product with two coordinates: dosage and dosage squared. Adding \(d = 3\) gives three coordinates. We never do the transformation; we only compute the dot product.</li>
+      <li><b>Keep going to infinity.</b> If we keep adding kernels with \(r = 0\) until \(d\) is infinity, we get a dot product with infinitely many coordinates. That is exactly what the radial kernel does.</li>
+      <li><b>Prove it with a Taylor series.</b> Multiply out the square and set \(\gamma = 1/2\). Then expand the \(e^{ab}\) part as a Taylor series, a way to write a function as an infinite sum. Each term holds one polynomial kernel with \(r = 0\), and the whole sum becomes one dot product.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 240" role="img" aria-label="Adding polynomial kernels with r equal to zero adds one dimension each time, up to infinity">
+        <defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker></defs>
+        <text x="380" y="36" text-anchor="middle" class="sv-tb">Add polynomial kernels with r = 0, one degree at a time</text>
+        <rect x="20" y="70" width="150" height="120" rx="8" class="sv-paper2"/>
+        <text x="95" y="100" text-anchor="middle" class="sv-tb">d = 1</text>
+        <text x="95" y="132" text-anchor="middle" class="sv-tm">(a)</text>
+        <text x="95" y="168" text-anchor="middle" class="sv-ts">1 dimension</text>
+        <line x1="172" y1="130" x2="204" y2="130" class="sv-line" stroke-width="2" marker-end="url(#ah2)"/>
+        <rect x="206" y="70" width="150" height="120" rx="8" class="sv-paper2"/>
+        <text x="281" y="100" text-anchor="middle" class="sv-tb">+ d = 2</text>
+        <text x="281" y="132" text-anchor="middle" class="sv-tm">(a, a²)</text>
+        <text x="281" y="168" text-anchor="middle" class="sv-ts">2 dimensions</text>
+        <line x1="358" y1="130" x2="390" y2="130" class="sv-line" stroke-width="2" marker-end="url(#ah2)"/>
+        <rect x="392" y="70" width="150" height="120" rx="8" class="sv-paper2"/>
+        <text x="467" y="100" text-anchor="middle" class="sv-tb">+ d = 3</text>
+        <text x="467" y="132" text-anchor="middle" class="sv-tm">(a, a², a³)</text>
+        <text x="467" y="168" text-anchor="middle" class="sv-ts">3 dimensions</text>
+        <line x1="544" y1="130" x2="576" y2="130" class="sv-stroke-acc" stroke-width="2.5" stroke-dasharray="5 4" marker-end="url(#ah2)"/>
+        <rect x="578" y="70" width="162" height="120" rx="8" class="sv-acc-soft"/>
+        <text x="659" y="100" text-anchor="middle" class="sv-tb">d → ∞</text>
+        <text x="659" y="132" text-anchor="middle" class="sv-tm">(1, a, a², a³, …)</text>
+        <text x="659" y="168" text-anchor="middle" class="sv-ts">radial kernel</text>
+      </svg>
+      <figcaption>Each added polynomial kernel adds one coordinate to the dot product; with no end, you get the radial kernel's infinite dimensions.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">Radial kernel</span><div class="math">$$ K(a,b) = e^{-\gamma (a-b)^2} $$</div><p class="explain"><b>Symbols:</b> \(a\) and \(b\) are two dosage measurements. \((a-b)^2\) is their squared distance. \(\gamma\) (gamma) is a number, chosen by cross validation, that scales the squared distance. \(e\) is the base of the natural log. <b>What it tells you:</b> the value is the high-dimensional relationship between the two points. It is near 1 for close points and near 0 for far points. A larger gamma makes it drop faster.</p></div>
+
+    <div class="formula"><span class="lbl">Polynomial kernel with r = 0</span><div class="math">$$ (a \times b + 0)^d = a^d b^d = (a^d)\cdot(b^d) $$</div><p class="explain"><b>Symbols:</b> \(r\) is the constant term of the polynomial kernel, here set to 0. \(d\) is the degree. \(\cdot\) is the dot product. <b>What it tells you:</b> with \(r = 0\), each kernel is a dot product with one coordinate, \(a^d\), so the data only moves along the original axis.</p></div>
+
+    <div class="formula"><span class="lbl">Multiply out the square</span><div class="math">$$ e^{-\gamma(a-b)^2} = e^{-\gamma(a^2+b^2)}\, e^{2\gamma ab} \;\xrightarrow{\;\gamma = 1/2\;}\; e^{-\frac{1}{2}(a^2+b^2)}\, e^{ab} $$</div><p class="explain"><b>Symbols:</b> same as above. <b>What it tells you:</b> \((a-b)^2 = a^2 - 2ab + b^2\), so the kernel splits into two factors. Josh sets \(\gamma = 1/2\) only so the 2 goes away and the math stays clean.</p></div>
+
+    <div class="formula"><span class="lbl">Taylor series</span><div class="math">$$ f(x) = f(a) + \frac{f'(a)}{1!}(x-a) + \frac{f''(a)}{2!}(x-a)^2 + \cdots $$
+    $$ e^{x} = 1 + x + \frac{x^2}{2!} + \frac{x^3}{3!} + \cdots \quad (a = 0) $$</div><p class="explain"><b>Symbols:</b> \(f(x)\) is any suitable function. Here \(a\) is just the point we expand around (not a dosage). \(f'\) and \(f''\) are the first and second derivatives. \(n!\) is n factorial, \(n \times (n-1) \times \dots \times 1\). <b>What it tells you:</b> a function can be split into an infinite sum. For \(e^x\), every derivative is \(e^x\), and with \(a = 0\) each derivative equals \(e^0 = 1\), which gives the simple sum.</p></div>
+
+    <div class="formula"><span class="lbl">e to the ab as a dot product</span><div class="math">$$ e^{ab} = 1 + ab + \frac{(ab)^2}{2!} + \frac{(ab)^3}{3!} + \cdots $$
+    $$ = \Big(1,\ a,\ \tfrac{a^2}{\sqrt{2!}},\ \tfrac{a^3}{\sqrt{3!}},\ \dots\Big)\cdot\Big(1,\ b,\ \tfrac{b^2}{\sqrt{2!}},\ \tfrac{b^3}{\sqrt{3!}},\ \dots\Big) $$</div><p class="explain"><b>Symbols:</b> \(ab\) replaces \(x\) in the series for \(e^x\). <b>What it tells you:</b> the terms \(1, ab, (ab)^2, \dots\) are polynomial kernels with \(r = 0\) and \(d = 0, 1, 2, \dots\). Multiply matching terms and add them, and you get the series back.</p></div>
+
+    <div class="formula"><span class="lbl">Radial kernel as one infinite dot product</span><div class="math">$$ S = \sqrt{e^{-\frac{1}{2}(a^2+b^2)}} $$
+    $$ e^{-\frac{1}{2}(a-b)^2} = \Big(S,\ Sa,\ S\tfrac{a^2}{\sqrt{2!}},\ \dots\Big)\cdot\Big(S,\ Sb,\ S\tfrac{b^2}{\sqrt{2!}},\ \dots\Big) $$</div><p class="explain"><b>Symbols:</b> \(S\) is the square root of the first factor, used to multiply both parts of the dot product. <b>What it tells you:</b> the radial kernel is a dot product with infinitely many coordinates, so its value is the relationship between two points in infinite dimensions.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p><b>Influence and gamma.</b> Josh takes two observations that are relatively close. With \(\gamma = 1\), the kernel gives 0.11. With \(\gamma = 2\) and the same two dosages, it gives 0.01. So a larger gamma gives less influence for the same pair. A quick check: doubling gamma squares the value, because \(e^{-2\gamma d^2} = (e^{-\gamma d^2})^2\), and \(0.11^2 \approx 0.01\).</p>
+      <p><b>A far pair.</b> With \(\gamma = 1\) again, two observations that are relatively far apart give a number very close to zero. They have almost no influence on each other.</p>
+      <p><b>Polynomial kernel with r = 0, d = 2.</b> For dosages 2.5 and 4, the kernel is the dot product \((2.5^2)\cdot(4^2)\). The new x-axis coordinates are \(2.5^2 = 6.25\) and \(4^2 = 16\). The data only shifts along the same line. With \(d = 3\) it shifts further, and with \(d = 1\) it stays put.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> A larger gamma does not mean more influence. Gamma scales the squared distance, so a larger gamma makes influence fall off faster. In the video, the same close pair drops from 0.11 to 0.01 when gamma goes from 1 to 2.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Setting \(\gamma = 1/2\) is only a step to make the derivation tidy. In practice, gamma is chosen by cross validation.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The kernel never builds the infinite coordinates. Just like with the polynomial kernel, you plug two values into the kernel and the number you get is the high-dimensional relationship.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> In the Taylor series, \(a\) is the point you expand around, set to 0. It is not the same \(a\) as the dosage in the kernel.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>How does an RBF kernel classify a new point, intuitively?</summary><div class="a">It behaves like a weighted nearest neighbor model. Training points close to the new point have a lot of influence on its class. Points far away have very little influence. So the new point mostly takes the class of its nearest neighbors.</div></details>
+    <details class="qa" open><summary>What does gamma do, and how do you pick it?</summary><div class="a">Gamma multiplies the squared distance between two points inside the kernel. A larger gamma makes the kernel value, and so the influence, drop faster with distance. We choose gamma with cross validation.</div></details>
+    <details class="qa" open><summary>Why do people say the RBF kernel works in infinite dimensions?</summary><div class="a">If you multiply out the square and expand the \(e^{ab}\) part as a Taylor series, each term is a polynomial kernel with r equal to zero, for every degree up to infinity. That sum can be written as a dot product with infinitely many coordinates. So the kernel value is the relationship between two points in infinite dimensions.</div></details>
+    <details class="qa" open><summary>If it is infinite-dimensional, how can we compute it?</summary><div class="a">We never do the transformation. We plug the two values into the kernel formula and get one number. That number already equals the infinite-dimensional dot product.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>The radial (RBF) kernel helps a support vector machine separate heavily overlapping data.</li>
+      <li>On a new point, it acts like a weighted nearest neighbor model: close points matter most.</li>
+      <li>The kernel is \(e^{-\gamma(a-b)^2}\), so influence depends on the squared distance.</li>
+      <li>Gamma scales that distance; a larger gamma makes influence fall off faster, and cross validation picks it.</li>
+      <li>Polynomial kernels with r = 0 only move data along the original axis, but adding them adds dimensions.</li>
+      <li>A Taylor series shows the radial kernel is a sum of such kernels for every degree up to infinity.</li>
+      <li>So the kernel value is the relationship between two points in infinite dimensions.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Radial (RBF) kernel</span><span class="board-tag">close points count, far points fade</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 275" role="img" aria-label="Over a new point on the dosage line stands a hill of influence: a close point gets 0.11 with gamma 1 and 0.01 under the narrower gamma 2 hill, and a far point gets about 0.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <line x1="20" y1="200" x2="385" y2="200" class="sv-stroke-ink" stroke-width="2"/>
+            <polyline points="20,198.7 30,197.1 42.5,192.5 55,183.1 67.5,166.5 80,141.1 92.5,108.8 105,75.4 117.5,49.7 123.75,42.5 130,40 136.25,42.5 142.5,49.7 155,75.4 167.5,108.8 180,141.1 192.5,166.5 205,183.1 217.5,192.5 230,197.1 242.5,199" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="50,199 55,198.2 67.5,193 73.75,187.3 80,178.3 86.25,165.4 92.5,148.1 98.75,126.7 105,103 111.25,79.2 117.5,58.8 123.75,44.9 130,40 136.25,44.9 142.5,58.8 148.75,79.2 155,103 161.25,126.7 167.5,148.1 173.75,165.4 180,178.3 186.25,187.3 192.5,193 205,198.2 210,199" class="sv-stroke-key" stroke-width="2.5" stroke-dasharray="6 5" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="204" y1="200" x2="204" y2="182" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="204" cy="200" r="6" class="sv-ink2"/>
+              <circle cx="345" cy="200" r="6" class="sv-ink2"/>
+              <circle cx="130" cy="200" r="9" class="sv-key"/>
+            </g>
+            <text x="388" y="30" text-anchor="end" class="sv-ts">height = influence</text>
+            <text x="236" y="100" class="sv-tb">close point</text>
+            <line x1="238" y1="121" x2="256" y2="121" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round"/>
+            <text x="264" y="127" class="sv-t">γ = 1: 0.11</text>
+            <line x1="238" y1="145" x2="256" y2="145" class="sv-stroke-key" stroke-width="2.5" stroke-dasharray="6 5" stroke-linecap="round"/>
+            <text x="264" y="151" class="sv-t">γ = 2: 0.01</text>
+            <line x1="232" y1="158" x2="210" y2="177" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="130" y="232" text-anchor="middle" class="sv-tb">new point</text>
+            <text x="388" y="232" text-anchor="end" class="sv-t">far point: ≈ 0</text>
+            <text x="388" y="256" text-anchor="end" class="sv-ts">dosage →</text>
+          </svg>
+          <p>On a new point, the radial kernel acts like a weighted nearest neighbor model: close points have a lot of influence, far points very little. A larger gamma makes influence fall off faster. Underneath, it is a dot product with infinitely many coordinates.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Kernel value</dt><dd>The two points' relationship; near 1 if close, near 0 if far.</dd>
+            <dt>Gamma (γ)</dt><dd>Scales the squared distance. Picked by cross validation.</dd>
+            <dt>Weighted nearest neighbor</dt><dd>The closest training points decide most of a new point's class.</dd>
+            <dt>Polynomial kernel, r = 0</dt><dd>\((a\times b)^d\): only moves data along the original axis.</dd>
+            <dt>Taylor series</dt><dd>Writes a function as an infinite sum.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Squared distance</b>\((a-b)^2\) for two dosages</li>
+            <li><b>Scale by gamma</b>larger γ, faster drop</li>
+            <li><b>Read the value</b>close 0.11, far near 0</li>
+            <li><b>Set r = 0</b>data only moves along the axis</li>
+            <li><b>Add degrees</b>each adds one dimension</li>
+            <li><b>To infinity</b>Taylor series gives the radial kernel</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$K(a,b)=e^{-\gamma(a-b)^2}$$
+          $$e^{-\frac{1}{2}(a-b)^2}=e^{-\frac{1}{2}(a^2+b^2)}\,e^{ab}$$
+          $$e^{ab}=1+ab+\frac{(ab)^2}{2!}+\cdots$$
+          <ul class="keys">
+            <li>\(a\), \(b\): two dosages; \(\gamma\) scales their squared distance.</li>
+            <li>Line 2 sets \(\gamma = 1/2\) only to tidy the math.</li>
+            <li>Each term holds a polynomial kernel with \(r = 0\), one per degree.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>pair</th><th>γ</th><th>kernel value</th></tr>
+            <tr><td>close</td><td>1</td><td>0.11</td></tr>
+            <tr><td>far</td><td>1</td><td>≈ 0</td></tr>
+            <tr class="final"><td>close</td><td>2</td><td>0.01</td></tr>
+          </table>
+          <p class="hand">Doubling γ squares the value: 0.11² ≈ 0.01. Far pairs have almost no influence.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">A larger gamma means more influence.</span><span class="yes">It makes influence fall off faster: the close pair drops from 0.11 to 0.01.</span></li>
+            <li><span class="no">Use γ = 1/2, as in the derivation.</span><span class="yes">That only tidies the math. In practice, cross validation picks gamma.</span></li>
+            <li><span class="no">The kernel builds the infinite coordinates.</span><span class="yes">It never does. Plug in two values; the number is the high-dimensional relationship.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="73-support-vector-machines-part-2-the-polynomial-kernel-part-2.html"><small>Previous</small>Support Vector Machines Part 2: The Polynomial Kernel (Part 2 of 3)</a> <a href="75-support-vector-machines-in-python-from-start-to-finish.html"><small>Next</small>Support Vector Machines in Python from Start to Finish.</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

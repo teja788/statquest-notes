@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Logistic Regression in R — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>21</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 21 · 17.2 min</div>
+    <h1>Logistic Regression in R</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=C4N3_XJJ-jU" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Josh fits a real logistic regression from start to finish. He cleans the UCI heart disease data, fits two models, and reads the output.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Most of the work is cleaning. You name the columns, turn question marks into missing values, and cast the categorical columns to factors. Six of the 303 samples have missing values, so 297 remain. A simple model uses sex alone, and its two coefficients are a log odds and a log odds ratio. A full model uses every variable and fits much better, with a pseudo R squared of 0.55.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Logistic regression predicts a yes or no outcome. In R you fit it with the <code>glm</code> function. The name stands for generalized linear model. You pass <code>family = "binomial"</code> to ask for logistic regression and not some other kind.</p>
+    <p>The coefficients that come back are not probabilities. They sit on the log odds scale. The odds are the chance of the event divided by the chance of no event. The log odds are the natural log of the odds. The intercept is the log odds for the baseline group. Every other coefficient is a log odds ratio.</p>
+    <p>The figure follows Josh's simple model from the two printed numbers to a probability.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="The two coefficients of the simple model turned into log odds, odds, and probability for female and male patients">
+        <defs>
+          <marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" class="sv-ink3"></path>
+          </marker>
+        </defs>
+        <text x="30" y="30" class="sv-tb">From the glm coefficients to a probability</text>
+        <text x="30" y="58" class="sv-ts">model equation</text>
+        <text x="300" y="58" class="sv-ts">log odds</text>
+        <text x="466" y="58" class="sv-ts">odds</text>
+        <text x="628" y="58" class="sv-ts">probability</text>
+
+        <rect x="30" y="76" width="240" height="52" rx="6" class="sv-key-soft"></rect>
+        <text x="42" y="98" class="sv-tm">Female (sex = 0)</text>
+        <text x="42" y="118" class="sv-tm">-1.0438 + 1.2737 x 0</text>
+        <line x1="278" y1="102" x2="298" y2="102" class="sv-line" stroke-width="2" marker-end="url(#ar1)"></line>
+        <rect x="302" y="76" width="130" height="52" rx="6" class="sv-paper2"></rect>
+        <text x="314" y="108" class="sv-tm">-1.0438</text>
+        <line x1="440" y1="102" x2="460" y2="102" class="sv-line" stroke-width="2" marker-end="url(#ar1)"></line>
+        <rect x="464" y="76" width="130" height="52" rx="6" class="sv-paper2"></rect>
+        <text x="476" y="108" class="sv-tm">0.35</text>
+        <line x1="602" y1="102" x2="622" y2="102" class="sv-line" stroke-width="2" marker-end="url(#ar1)"></line>
+        <rect x="626" y="76" width="104" height="52" rx="6" class="sv-key-soft"></rect>
+        <text x="638" y="108" class="sv-tm">0.26</text>
+
+        <rect x="30" y="150" width="240" height="52" rx="6" class="sv-acc-soft"></rect>
+        <text x="42" y="172" class="sv-tm">Male (sex = 1)</text>
+        <text x="42" y="192" class="sv-tm">-1.0438 + 1.2737 x 1</text>
+        <line x1="278" y1="176" x2="298" y2="176" class="sv-line" stroke-width="2" marker-end="url(#ar1)"></line>
+        <rect x="302" y="150" width="130" height="52" rx="6" class="sv-paper2"></rect>
+        <text x="314" y="182" class="sv-tm">0.2299</text>
+        <line x1="440" y1="176" x2="460" y2="176" class="sv-line" stroke-width="2" marker-end="url(#ar1)"></line>
+        <rect x="464" y="150" width="130" height="52" rx="6" class="sv-paper2"></rect>
+        <text x="476" y="182" class="sv-tm">1.26</text>
+        <line x1="602" y1="176" x2="622" y2="176" class="sv-line" stroke-width="2" marker-end="url(#ar1)"></line>
+        <rect x="626" y="150" width="104" height="52" rx="6" class="sv-acc-soft"></rect>
+        <text x="638" y="182" class="sv-tm">0.56</text>
+
+        <rect x="30" y="228" width="700" height="48" rx="6" class="sv-paper"></rect>
+        <rect x="30" y="228" width="4" height="48" class="sv-acc"></rect>
+        <text x="46" y="248" class="sv-t">The gap between the two rows is the coefficient 1.2737.</text>
+        <text x="46" y="268" class="sv-ts">On the odds scale that gap is a ratio: 1.26 / 0.35 = 3.57, the odds ratio for male over female.</text>
+      </svg>
+      <figcaption>Notice that adding 1.2737 on the log odds scale becomes a multiplication by 3.57 on the odds scale.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Read the UCI heart disease data and name the columns yourself.</li>
+      <li>Cast <code>sex</code>, <code>cp</code> and the other categorical columns to factors. A factor is R's type for a categorical variable.</li>
+      <li>Turn every question mark into <code>NA</code>, then drop those rows. That leaves 297 of the 303 samples.</li>
+      <li>Count the levels with <code>xtabs</code> and check that each level has enough patients.</li>
+      <li>Fit the simple model with sex alone, then the full model with every variable.</li>
+      <li>Compute McFadden's pseudo R squared, then plot the ranked predicted probabilities.</li>
+    </ol>
+
+    <h3>Load and clean the data</h3>
+    <p>This block reads the file, names the columns, and casts the messy columns to factors.</p>
+<pre><code>url &lt;- "http://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/processed.cleveland.data"
+data &lt;- read.csv(url, header = FALSE)
+
+colnames(data) &lt;- c("age","sex","cp","trestbps","chol","fbs","restecg",
+                    "thalach","exang","oldpeak","slope","ca","thal","hd")
+
+data[data == "?"] &lt;- NA
+data$sex  &lt;- as.factor(ifelse(data$sex == 0, "F", "M"))
+data$cp   &lt;- as.factor(data$cp)
+data$ca   &lt;- as.factor(as.integer(data$ca))    # was read as strings
+data$thal &lt;- as.factor(as.integer(data$thal))
+data$hd   &lt;- as.factor(ifelse(data$hd == 0, "Healthy", "Unhealthy"))
+
+data &lt;- data[!(is.na(data$ca) | is.na(data$thal)), ]   # 303 rows become 297</code></pre>
+    <p><b>The same thing in Python</b>, with pandas.</p>
+<pre><code>import pandas as pd
+
+cols = ["age","sex","cp","trestbps","chol","fbs","restecg",
+        "thalach","exang","oldpeak","slope","ca","thal","hd"]
+df = pd.read_csv(url, header=None, names=cols, na_values="?")
+
+df["sex"] = df["sex"].map({0: "F", 1: "M"}).astype("category")
+for c in ["cp","fbs","restecg","exang","slope","ca","thal"]:
+    df[c] = df[c].astype("category")
+df["hd"] = (df["hd"] &gt; 0).astype(int)          # 0 = Healthy, 1 = Unhealthy
+
+df = df.dropna()                               # 303 rows become 297</code></pre>
+
+    <h3>Sanity check the counts</h3>
+    <p>Count how many patients sit in each combination of outcome and predictor.</p>
+<pre><code>xtabs(~ hd + sex, data = data)
+xtabs(~ hd + cp, data = data)
+xtabs(~ hd + restecg, data = data)   # only 4 patients in one level</code></pre>
+    <p><b>In Python</b>, <code>pd.crosstab</code> does the same job.</p>
+<pre><code>pd.crosstab(df["hd"], df["sex"])
+pd.crosstab(df["hd"], df["cp"])</code></pre>
+
+    <h3>Fit the simple model, then the full model</h3>
+    <p>The first model uses sex only. The <code>family = "binomial"</code> argument is what makes <code>glm</code> do logistic regression.</p>
+<pre><code>logistic &lt;- glm(hd ~ sex, data = data, family = "binomial")
+summary(logistic)
+
+logistic &lt;- glm(hd ~ ., data = data, family = "binomial")   # "." means all other columns
+summary(logistic)</code></pre>
+    <p><b>In Python</b>, statsmodels is the closest match. It prints coefficients, p values and deviances.</p>
+<pre><code>import statsmodels.formula.api as smf
+
+simple = smf.logit("hd ~ sex", data=df).fit()
+print(simple.summary())
+
+rhs  = " + ".join(c for c in df.columns if c != "hd")
+full = smf.logit(f"hd ~ {rhs}", data=df).fit()
+print(full.summary())</code></pre>
+
+    <h3>Effect size and the plot</h3>
+    <p>McFadden's pseudo R squared comes from the two deviances in the summary.</p>
+<pre><code>ll.null     &lt;- logistic$null.deviance / -2
+ll.proposed &lt;- logistic$deviance / -2
+
+(ll.null - ll.proposed) / ll.null                       # 0.55
+1 - pchisq(2 * (ll.proposed - ll.null),
+           df = (length(logistic$coefficients) - 1))    # a tiny p value</code></pre>
+    <p><b>In Python</b>, statsmodels reports both numbers directly.</p>
+<pre><code>full.prsquared     # McFadden pseudo R-squared, about 0.55
+full.llr_pvalue    # chi-squared p value for the whole model</code></pre>
+    <p>The last block builds the graph. Patients are sorted by predicted probability and coloured by their true status.</p>
+<pre><code>predicted.data &lt;- data.frame(
+  probability.of.hd = logistic$fitted.values,
+  hd = data$hd)
+predicted.data &lt;- predicted.data[order(predicted.data$probability.of.hd), ]
+predicted.data$rank &lt;- 1:nrow(predicted.data)
+
+library(ggplot2)
+library(cowplot)
+ggplot(data = predicted.data, aes(x = rank, y = probability.of.hd)) +
+  geom_point(aes(color = hd), shape = 4, stroke = 2)
+ggsave("heart_disease_probabilities.pdf")</code></pre>
+    <p><b>In Python</b>, with matplotlib.</p>
+<pre><code>import matplotlib.pyplot as plt
+
+pred = pd.DataFrame({"prob": full.predict(df), "hd": df["hd"]}).sort_values("prob")
+pred["rank"] = range(1, len(pred) + 1)
+
+plt.scatter(pred["rank"], pred["prob"], marker="x",
+            c=pred["hd"].map({0: "salmon", 1: "turquoise"}))
+plt.savefig("heart_disease_probabilities.pdf")</code></pre>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 340" role="img" aria-label="Predicted probability of heart disease for each patient, sorted from low to high, coloured by true status">
+        <rect x="70" y="40" width="660" height="210" class="sv-paper2"></rect>
+        <line x1="70" y1="250" x2="730" y2="250" class="sv-line" stroke-width="1.5"></line>
+        <line x1="70" y1="40" x2="70" y2="250" class="sv-line" stroke-width="1.5"></line>
+        <line x1="70" y1="145" x2="730" y2="145" class="sv-line" stroke-width="1" stroke-dasharray="4 4"></line>
+        <text x="40" y="255" class="sv-ts">0.0</text>
+        <text x="40" y="150" class="sv-ts">0.5</text>
+        <text x="40" y="45" class="sv-ts">1.0</text>
+        <text x="24" y="28" class="sv-tb">Predicted probability of heart disease</text>
+        <text x="300" y="278" class="sv-ts">Patients, sorted from lowest to highest predicted probability</text>
+
+        <circle cx="78"  cy="246" r="4" class="sv-key"></circle>
+        <circle cx="95"  cy="244" r="4" class="sv-key"></circle>
+        <circle cx="111" cy="242" r="4" class="sv-key"></circle>
+        <circle cx="128" cy="240" r="4" class="sv-key"></circle>
+        <circle cx="144" cy="237" r="4" class="sv-key"></circle>
+        <circle cx="161" cy="235" r="4" class="sv-key"></circle>
+        <circle cx="177" cy="231" r="4" class="sv-key"></circle>
+        <circle cx="194" cy="229" r="4" class="sv-key"></circle>
+        <circle cx="210" cy="225" r="4" class="sv-key"></circle>
+        <circle cx="227" cy="221" r="4" class="sv-key"></circle>
+        <circle cx="243" cy="216" r="4" class="sv-key"></circle>
+        <circle cx="260" cy="210" r="4" class="sv-key"></circle>
+        <circle cx="276" cy="204" r="4" class="sv-key"></circle>
+        <circle cx="293" cy="198" r="4" class="sv-key"></circle>
+        <circle cx="309" cy="189" r="4" class="sv-key"></circle>
+        <circle cx="326" cy="181" r="4" class="sv-key"></circle>
+        <circle cx="342" cy="172" r="4" class="sv-acc"></circle>
+        <circle cx="359" cy="162" r="4" class="sv-key"></circle>
+        <circle cx="375" cy="153" r="4" class="sv-key"></circle>
+        <circle cx="392" cy="145" r="4" class="sv-acc"></circle>
+        <circle cx="408" cy="137" r="4" class="sv-key"></circle>
+        <circle cx="425" cy="128" r="4" class="sv-acc"></circle>
+        <circle cx="441" cy="118" r="4" class="sv-acc"></circle>
+        <circle cx="458" cy="109" r="4" class="sv-key"></circle>
+        <circle cx="474" cy="101" r="4" class="sv-acc"></circle>
+        <circle cx="491" cy="93"  r="4" class="sv-acc"></circle>
+        <circle cx="507" cy="86"  r="4" class="sv-acc"></circle>
+        <circle cx="524" cy="80"  r="4" class="sv-acc"></circle>
+        <circle cx="540" cy="74"  r="4" class="sv-acc"></circle>
+        <circle cx="557" cy="69"  r="4" class="sv-acc"></circle>
+        <circle cx="573" cy="65"  r="4" class="sv-acc"></circle>
+        <circle cx="590" cy="61"  r="4" class="sv-acc"></circle>
+        <circle cx="606" cy="57"  r="4" class="sv-acc"></circle>
+        <circle cx="623" cy="55"  r="4" class="sv-acc"></circle>
+        <circle cx="639" cy="53"  r="4" class="sv-acc"></circle>
+        <circle cx="656" cy="50"  r="4" class="sv-acc"></circle>
+        <circle cx="672" cy="48"  r="4" class="sv-acc"></circle>
+        <circle cx="689" cy="46"  r="4" class="sv-acc"></circle>
+        <circle cx="705" cy="44"  r="4" class="sv-acc"></circle>
+        <circle cx="722" cy="44"  r="4" class="sv-acc"></circle>
+
+        <rect x="70" y="292" width="360" height="22" rx="4" class="sv-paper"></rect>
+        <circle cx="84" cy="303" r="4" class="sv-key"></circle>
+        <text x="96" y="308" class="sv-ts">actually healthy</text>
+        <circle cx="216" cy="303" r="4" class="sv-acc"></circle>
+        <text x="228" y="308" class="sv-ts">actually has heart disease</text>
+      </svg>
+      <figcaption>Notice that almost all healthy patients sit low on the curve and almost all sick patients sit high, with only a few mixed points in the middle.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">The logistic model</span>
+      <div class="math">$$ \log\!\left(\frac{p}{1-p}\right) = \beta_0 + \beta_1 x_1 + \dots + \beta_k x_k $$</div>
+      <p class="explain"><b>Symbols:</b> \(p\) is the probability of the event, here heart disease. \(p/(1-p)\) are the odds. \(\beta_0\) is the intercept and \(\beta_1 \dots \beta_k\) are the coefficients for the predictors \(x_1 \dots x_k\). <b>What it tells you:</b> the model is linear on the log odds scale, not the probability scale. That is why <code>glm</code> prints log odds.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">The fitted simple model</span>
+      <div class="math">$$ \log(\text{odds of heart disease}) = -1.0438 + 1.2737 \times \text{sex}_{M} $$</div>
+      <p class="explain"><b>Symbols:</b> \(\text{sex}_M\) is 0 for a female patient and 1 for a male patient. <b>What it tells you:</b> \(-1.0438\) is the female log odds, and \(1.2737\) is how much higher the male log odds are.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">The second coefficient is a log odds ratio</span>
+      <div class="math">$$ 1.2737 = \log\!\left(\frac{\text{odds}_{male}}{\text{odds}_{female}}\right) \quad\Longrightarrow\quad \frac{\text{odds}_{male}}{\text{odds}_{female}} = e^{1.2737} = 3.57 $$</div>
+      <p class="explain"><b>Symbols:</b> the two odds are the odds of heart disease within each sex. <b>What it tells you:</b> the odds of heart disease for a male patient are about 3.6 times the odds for a female patient. That is the effect size, which matters more than a small p value.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">McFadden's pseudo R squared</span>
+      <div class="math">$$ R^2 = \frac{LL(\text{null}) - LL(\text{fit})}{LL(\text{null})}, \qquad LL = \frac{\text{deviance}}{-2} $$</div>
+      <p class="explain"><b>Symbols:</b> \(LL(\text{null})\) comes from the null deviance, the model with no predictors. \(LL(\text{fit})\) comes from the residual deviance the same way. <b>What it tells you:</b> the share of the null model's badness the predictors explain. Here it is 0.55.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">P value for that R squared</span>
+      <div class="math">$$ \chi^2 = 2\big(LL(\text{fit}) - LL(\text{null})\big), \qquad df = k $$</div>
+      <p class="explain"><b>Symbols:</b> \(k\) is the number of coefficients minus one for the intercept. <b>What it tells you:</b> how likely an R squared this big is by chance. Here the p value is tiny, so the fit is not luck.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>The simple model prints an intercept of \(-1.0438\) and \(1.2737\) for the male level of sex.</p>
+      <p>For a <b>female</b> patient \(\text{sex}_M = 0\), so the log odds are \(-1.0438\). The odds are \(e^{-1.0438} = 0.35\), a probability of \(0.35 / 1.35 = 0.26\).</p>
+      <p>For a <b>male</b> patient \(\text{sex}_M = 1\), so the log odds are \(-1.0438 + 1.2737 = 0.2299\). The odds are \(e^{0.2299} = 1.26\), a probability of \(1.26 / 2.26 = 0.56\).</p>
+      <p>Both Wald test p values are well below 0.05, so both coefficients are significant.</p>
+      <p>The full model, fitted with <code>hd ~ .</code>, has a much smaller residual deviance and AIC. Age is a weak predictor, because the median age is 56 and most patients are old. Sex stays a good predictor. The pseudo R squared is 0.55.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not read the coefficients as probabilities. They are log odds. An intercept of \(-1.0438\) means odds of 0.35, or a probability of 0.26.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Check your column types before you fit. If <code>sex</code> or <code>cp</code> stay numeric, R treats them as continuous. That silently changes the model.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Count the levels with <code>xtabs</code> first. One level of <code>restecg</code> has only four patients. Levels that thin can make the fit unstable.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The fitted probability plot uses the training data. It shows the fit, not future performance.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>Why do you pass family = "binomial" to glm?</summary><div class="a">The <code>glm</code> function fits many kinds of generalized linear model. The family argument tells it which one. Binomial gives logistic regression, so the model predicts a yes or no outcome on the log odds scale.</div></details>
+    <details class="qa" open><summary>How do you interpret a logistic regression coefficient?</summary><div class="a">The intercept is the log odds of the outcome for the baseline group. Every other coefficient is a log odds ratio for a one unit change in that predictor. I exponentiate it to make it readable. Here 1.2737 becomes an odds ratio of about 3.6 for male over female.</div></details>
+    <details class="qa" open><summary>Why is there no ordinary R squared, and what do you report instead?</summary><div class="a">Logistic regression is fitted by maximum likelihood, not least squares. So there is no residual sum of squares to split. I report McFadden's pseudo R squared, which compares the fitted model's log likelihood with the null model's. Here it was 0.55, with a tiny chi squared p value.</div></details>
+    <details class="qa" open><summary>How do you compare two logistic models?</summary><div class="a">I look at the residual deviance and the AIC. Lower deviance means a better fit. The AIC is that deviance adjusted for the number of parameters. The full model beat the sex only model on both.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Most of the work is cleaning: column names, question marks, and factor columns.</li>
+      <li>Six of the 303 samples have missing values, and this example drops them, leaving 297.</li>
+      <li><code>glm(hd ~ sex, data = data, family = "binomial")</code> fits the simple logistic regression.</li>
+      <li>The coefficients \(-1.0438\) and \(1.2737\) are a log odds and a log odds ratio, and \(e^{1.2737} = 3.57\) is the odds ratio.</li>
+      <li>The full model, <code>hd ~ .</code>, gives a much lower residual deviance and AIC.</li>
+      <li>McFadden's pseudo R squared is 0.55, with a tiny chi squared p value, so the effect is large and real.</li>
+      <li>The ranked probability plot separates the two groups well, but cross validation judges new data.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Logistic regression</span><span class="board-tag">coefficients are log odds, not probabilities</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 238" role="img" aria-label="The logistic curve turns log odds into probability. The female log odds, −1.0438, give p = 0.26. Adding the male coefficient 1.2737 gives log odds 0.2299 and p = 0.56. On the odds scale that step of 1.2737 multiplies the odds by 3.57.">
+            <line x1="30" y1="166" x2="385" y2="166" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <polyline points="45,158.9 72.5,154.6 100,148.1 127.5,138.6 155,125.7 168.8,117.9 182.5,109.4 196.3,100.3 210,91 223.8,81.7 237.5,72.6 251.3,64.1 265,56.3 292.5,43.4 320,33.9 347.5,27.4 375,23.1" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="152.6" y1="134" x2="152.6" y2="164" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="3 5" stroke-linecap="round"/>
+            <line x1="222.6" y1="90" x2="222.6" y2="164" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="3 5" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="152.6" cy="126.9" r="6" class="sv-key"/>
+              <circle cx="222.6" cy="82.4" r="6" class="sv-key"/>
+            </g>
+            <text x="142" y="112" text-anchor="end" class="sv-ts">female p = 0.26</text>
+            <text x="212" y="72" text-anchor="end" class="sv-ts">male p = 0.56</text>
+            <text x="152.6" y="186" text-anchor="middle" class="sv-ts">−1.0438</text>
+            <text x="222.6" y="186" text-anchor="middle" class="sv-ts">0.2299</text>
+            <text x="385" y="186" text-anchor="end" class="sv-ts">log odds →</text>
+            <path d="M152.6 196 L152.6 202 L222.6 202 L222.6 196" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="187.6" y="224" text-anchor="middle" class="sv-tb">+1.2737</text>
+            <text x="234" y="224" class="sv-t">→ odds × 3.57</text>
+          </svg>
+          <p><code>glm</code> prints log odds, not probabilities. The female intercept −1.0438 maps to p = 0.26. Adding the male coefficient 1.2737 gives 0.2299, so p = 0.56. On the odds scale that step is ×3.57, the odds ratio.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt><code>glm</code></dt><dd>Generalized linear model. <code>family = "binomial"</code> makes it logistic.</dd>
+            <dt>Factor</dt><dd>R's type for a categorical variable.</dd>
+            <dt>Log odds</dt><dd>The coefficients' scale: the natural log of the odds.</dd>
+            <dt>Log odds ratio</dt><dd>Each coefficient after the intercept. Exponentiate it for the odds ratio.</dd>
+            <dt>AIC</dt><dd>Deviance adjusted for the number of parameters. Lower is better.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Read the data</b>UCI heart disease, name columns</li>
+            <li><b>Make factors</b>sex, cp and other categories</li>
+            <li><b>Drop "?" rows</b>303 → 297 samples</li>
+            <li><b>Check counts</b><code>xtabs</code>; one restecg level has 4</li>
+            <li><b>Fit two models</b><code>hd ~ sex</code>, then <code>hd ~ .</code></li>
+            <li><b>Score and plot</b>pseudo R² 0.55, ranked probabilities</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\log\Big(\frac{p}{1-p}\Big)=-1.0438+1.2737\,\text{sex}_M$$
+          $$\frac{\text{odds}_M}{\text{odds}_F}=e^{1.2737}=3.57$$
+          $$R^2=\frac{LL(\text{null})-LL(\text{fit})}{LL(\text{null})}$$
+          <ul class="keys">
+            <li>\(\text{sex}_M\) is 0 for female and 1 for male.</li>
+            <li>\(LL=\text{deviance}/(-2)\), from the null and residual deviances.</li>
+            <li>The full model gives \(R^2=0.55\) with a tiny p value.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>sex</th><th>log odds</th><th>odds</th><th>p</th></tr>
+            <tr><td>female</td><td>−1.0438</td><td>0.35</td><td>0.26</td></tr>
+            <tr><td>male</td><td>0.2299</td><td>1.26</td><td>0.56</td></tr>
+            <tr class="final"><td>male / female</td><td>+1.2737</td><td>×3.57</td><td></td></tr>
+          </table>
+          <p class="hand">The full model, hd ~ ., fits much better: pseudo R² 0.55, tiny p value.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">The coefficients are probabilities.</span><span class="yes">They are log odds. −1.0438 means odds of 0.35, a probability of 0.26.</span></li>
+            <li><span class="no">Column types will sort themselves out.</span><span class="yes">If sex or cp stay numeric, R treats them as continuous. That silently changes the model.</span></li>
+            <li><span class="no">The ranked plot shows how it does on new data.</span><span class="yes">It uses the training data, so it shows the fit. Cross validation judges new data.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="20-saturated-models-and-deviance.html"><small>Previous</small>Saturated Models and Deviance</a> <a href="22-deviance-residuals.html"><small>Next</small>Deviance Residuals</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

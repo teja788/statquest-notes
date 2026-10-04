@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Machine Learning Fundamentals: Bias and Variance — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>06</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 06 · 6.6 min</div>
+    <h1>Machine Learning Fundamentals: Bias and Variance</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=EuBBz3bI-aA" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Bias and variance are the two ways a model can let you down. Josh shows both with one small data set of mouse weights and heights.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>We measure the weight and height of many mice. Light mice are short, heavier mice are taller, then the growth flattens out. Josh splits the data into a training set and a testing set. He fits a straight line and a squiggly line. The squiggly line wins on the training data and loses badly on the testing data. Bias is missing the true shape. Variance is the score changing a lot between data sets.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>We want to predict mouse height from mouse weight. The true relationship is a curve that rises and then flattens. Very heavy mice get fatter, not taller. In real work we never know that curve. Josh leaves it in the picture so we can judge each model.</p>
+    <p>He splits the data first. The training set is used to fit the models. The testing set is held back, so it behaves like future data.</p>
+    <p>Linear regression fits a straight line to the training set. A straight line cannot bend, so it never follows the arc. This inability to capture the true relationship is called <strong>bias</strong>. The straight line has a lot of bias.</p>
+    <p>The second method fits a squiggly line. It is very flexible, so it hugs the arc and touches every training point. Its bias is very small. That same flexibility causes its problem later.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 376" role="img" aria-label="Mouse weight against height, showing the true curved relationship, a straight line fit and a squiggly line fit, with training and testing points">
+        <defs>
+          <marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" class="sv-ink3"></path>
+          </marker>
+        </defs>
+        <rect x="70" y="40" width="660" height="240" class="sv-paper"></rect>
+        <line x1="70" y1="280" x2="738" y2="280" class="sv-line" stroke-width="1.5" marker-end="url(#ar1)"></line>
+        <line x1="70" y1="280" x2="70" y2="38" class="sv-line" stroke-width="1.5" marker-end="url(#ar1)"></line>
+        <text x="400" y="304" class="sv-ts" text-anchor="middle">Weight</text>
+        <text x="30" y="165" class="sv-ts" text-anchor="middle" transform="rotate(-90 30 165)">Height</text>
+
+        <path d="M115,248 C230,150 360,105 700,90" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="7 5"></path>
+        <path d="M120,209 L700,67" class="sv-stroke-acc" stroke-width="3"></path>
+        <path d="M150,228 Q200,148 250,162 Q300,178 350,140 Q400,96 450,112 Q505,124 560,104 Q610,88 660,92" class="sv-stroke-key" stroke-width="2.5"></path>
+
+        <circle cx="150" cy="228" r="5" class="sv-ink"></circle>
+        <circle cx="250" cy="162" r="5" class="sv-ink"></circle>
+        <circle cx="350" cy="140" r="5" class="sv-ink"></circle>
+        <circle cx="450" cy="112" r="5" class="sv-ink"></circle>
+        <circle cx="560" cy="104" r="5" class="sv-ink"></circle>
+        <circle cx="660" cy="92" r="5" class="sv-ink"></circle>
+
+        <circle cx="190" cy="196" r="5" class="sv-good"></circle>
+        <circle cx="300" cy="150" r="5" class="sv-good"></circle>
+        <circle cx="400" cy="126" r="5" class="sv-good"></circle>
+        <circle cx="510" cy="104" r="5" class="sv-good"></circle>
+        <circle cx="610" cy="98" r="5" class="sv-good"></circle>
+        <circle cx="700" cy="90" r="5" class="sv-good"></circle>
+
+        <line x1="90" y1="330" x2="122" y2="330" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="7 5"></line>
+        <text x="130" y="334" class="sv-ts">True relationship (unknown)</text>
+        <line x1="340" y1="330" x2="372" y2="330" class="sv-stroke-acc" stroke-width="3"></line>
+        <text x="380" y="334" class="sv-ts">Straight line: high bias</text>
+        <path d="M90,352 Q98,344 106,352 Q114,360 122,352" class="sv-stroke-key" stroke-width="2.5"></path>
+        <text x="130" y="356" class="sv-ts">Squiggly line: low bias</text>
+        <circle cx="352" cy="352" r="5" class="sv-ink"></circle>
+        <text x="364" y="356" class="sv-ts">Training set</text>
+        <circle cx="482" cy="352" r="5" class="sv-good"></circle>
+        <text x="494" y="356" class="sv-ts">Testing set</text>
+      </svg>
+      <figcaption>Notice that the straight line never touches the arc, while the squiggly line runs through every training dot but ignores the green testing dots.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Plot weight against height. The points rise and then level off, so the true relationship is an arc.</li>
+      <li>Split the data. Blue dots are the training set, green dots are the testing set.</li>
+      <li>Fit a straight line to the training set. It misses the arc, and that miss is bias.</li>
+      <li>Fit a squiggly line. It reaches every training point, so its bias is very small.</li>
+      <li>Score both fits on the training set with sums of squares. The squiggly line wins.</li>
+      <li>Score both fits on the testing set. Now the straight line wins. That change between data sets is variance.</li>
+      <li>Aim for the sweet spot between simple and complex. Regularization, boosting and bagging are the three usual tools.</li>
+    </ol>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Bar comparison of sums of squares for the straight line and the squiggly line on the training set and the testing set">
+        <defs>
+          <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" class="sv-ink"></path>
+          </marker>
+        </defs>
+        <text x="220" y="38" class="sv-tb" text-anchor="middle">Fit to the TRAINING set</text>
+        <text x="560" y="38" class="sv-tb" text-anchor="middle">Fit to the TESTING set</text>
+        <line x1="385" y1="24" x2="385" y2="272" class="sv-line" stroke-width="1"></line>
+        <line x1="60" y1="235" x2="730" y2="235" class="sv-line" stroke-width="1.5"></line>
+
+        <rect x="130" y="145" width="80" height="90" class="sv-acc"></rect>
+        <rect x="250" y="231" width="80" height="4" class="sv-key"></rect>
+        <text x="170" y="138" class="sv-ts" text-anchor="middle">moderate</text>
+        <text x="290" y="224" class="sv-ts" text-anchor="middle">zero</text>
+        <text x="170" y="254" class="sv-t" text-anchor="middle">Straight</text>
+        <text x="290" y="254" class="sv-t" text-anchor="middle">Squiggly</text>
+
+        <rect x="460" y="155" width="80" height="80" class="sv-acc"></rect>
+        <rect x="580" y="70" width="80" height="165" class="sv-key"></rect>
+        <text x="500" y="148" class="sv-ts" text-anchor="middle">about the same</text>
+        <text x="620" y="63" class="sv-ts" text-anchor="middle">much larger</text>
+        <text x="500" y="254" class="sv-t" text-anchor="middle">Straight</text>
+        <text x="620" y="254" class="sv-t" text-anchor="middle">Squiggly</text>
+
+        <path d="M295,215 C360,170 480,150 605,95" class="sv-stroke-ink" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ar2)"></path>
+        <rect x="376" y="168" width="196" height="22" rx="4" class="sv-paper"></rect>
+        <text x="474" y="183" class="sv-ts" text-anchor="middle">this jump is the variance</text>
+      </svg>
+      <figcaption>Sums of squares, where lower is better. The squiggly line is perfect on training data and worst on testing data.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">Sum of squares</span><div class="math">$$ \mathrm{SS} \;=\; \sum_{i=1}^{n} \left( y_i - \hat{y}_i \right)^{2} $$</div><p class="explain"><b>Symbols:</b> \(n\) is the number of mice. \(y_i\) is the real height of mouse \(i\). \(\hat{y}_i\) is the height the fitted line predicts for that mouse. We square each distance so negative distances do not cancel positive ones. <b>What it tells you:</b> one number for how far the line sits from the data. Smaller is a better fit.</p></div>
+    <div class="formula"><span class="lbl">Reading bias and variance from the scores</span><div class="math">$$ \text{bias} \;\approx\; \mathrm{SS}_{\text{train}} \qquad\qquad \text{variance} \;\approx\; \mathrm{SS}_{\text{test}} - \mathrm{SS}_{\text{train}} $$</div><p class="explain"><b>Symbols:</b> \(\mathrm{SS}_{\text{train}}\) is the sum of squares on the training set. \(\mathrm{SS}_{\text{test}}\) is the same sum on the testing set. <b>What it tells you:</b> this is a rule of thumb, not a proof. High training error means high bias. A big jump on new data means high variance.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>On the training set the squiggly line passes through every blue dot. Every distance is zero, so its sum of squares is \(0^2 + 0^2 + \dots + 0^2 = 0\). The straight line leaves a gap at each dot, so its sum is larger. The squiggly line wins this first contest.</p>
+      <p>Josh then repeats the calculation on the green testing points. Both lines stay exactly as they were. The straight line's sum of squares stays close to before. The squiggly line now sits far from many testing points, so its sum becomes very large. The straight line wins this second contest.</p>
+      <p>So the squiggly line has low bias and high variance, and we call it <strong>overfit</strong>. The straight line has high bias and low variance. Its predictions are good rather than great, but they are consistently good.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Bias here does not mean the intercept term, and it does not mean unfair data. It means the model cannot match the true relationship.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A perfect training score is a warning sign, not a prize. A sum of squares of zero usually means the model memorised the points.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Variance here is not the spread of one column of numbers. It is how much the fit changes when you give the model different data.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What are bias and variance, in plain words?</summary><div class="a">Bias is how much a method fails to capture the true relationship. A straight line fitted to a curve has high bias, because it can never bend. Variance is how much the fit changes when the data changes. A flexible model can score perfectly on one data set and terribly on the next.</div></details>
+    <details class="qa" open><summary>How would you spot overfitting?</summary><div class="a">I compare the error on the training data with the error on held-out testing data. If the training error is tiny and the testing error is much larger, the model is overfit.</div></details>
+    <details class="qa" open><summary>Why does a flexible model usually have higher variance?</summary><div class="a">It bends to match noise as well as signal. The noise is different in every sample, so the fitted shape changes a lot between data sets. Future performance then becomes hard to predict.</div></details>
+    <details class="qa" open><summary>What do you do about high variance?</summary><div class="a">I look for the sweet spot between a simple model and a complex one. The three common tools are regularization, boosting and bagging. Random forests are an example of bagging.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>We split the mouse data into a training set for fitting and a testing set for judging.</li>
+      <li>Bias is a method's inability to reproduce the true relationship, so the straight line has high bias.</li>
+      <li>The squiggly line is flexible enough to follow the arc, so its bias is very low.</li>
+      <li>We compare fits with sums of squares, the squared vertical distances from the points to the line.</li>
+      <li>The squiggly line scores zero on the training set and then loses badly on the testing set.</li>
+      <li>That large difference between data sets is variance, and such a model is called overfit.</li>
+      <li>The ideal method has low bias and low variance, so it is accurate and consistent.</li>
+      <li>Regularization, boosting and bagging are the three usual ways to find that sweet spot.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Bias and Variance</span><span class="board-tag">bias misses the shape; variance changes with data</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 278" role="img" aria-label="Two panels of mouse weight against height. On the training set the squiggly line passes through every dot, so it wins. On the testing set it lands far from the dots, so the straight line wins. The straight line has high bias; the squiggly line has high variance.">
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 44 V178 H192"/>
+              <path d="M212 44 V178 H382"/>
+            </g>
+            <g class="sv-stroke-acc" stroke-width="3" stroke-linecap="round">
+              <line x1="27" y1="138.8" x2="187" y2="55.6"/>
+              <line x1="217" y1="138.8" x2="377" y2="55.6"/>
+              <line x1="96" y1="231" x2="132" y2="231"/>
+            </g>
+            <g class="sv-stroke-key" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M37 151 Q54.5 170.5 72 100 Q89.5 39.5 107 89 Q124.5 131.5 142 72 Q159.5 31 177 74"/>
+              <path d="M227 151 Q244.5 170.5 262 100 Q279.5 39.5 297 89 Q314.5 131.5 332 72 Q349.5 31 367 74"/>
+              <path d="M96 257 Q105 247 114 257 Q123 267 132 257"/>
+            </g>
+            <g class="sv-stroke-key" stroke-width="2" stroke-dasharray="3 4" stroke-linecap="round">
+              <line x1="244" y1="127" x2="244" y2="147"/>
+              <line x1="279" y1="88" x2="279" y2="69"/>
+              <line x1="314" y1="85" x2="314" y2="105"/>
+              <line x1="349" y1="67" x2="349" y2="55"/>
+            </g>
+            <g class="sv-ink">
+              <circle cx="37" cy="151" r="6"/>
+              <circle cx="72" cy="100" r="6"/>
+              <circle cx="107" cy="89" r="6"/>
+              <circle cx="142" cy="72" r="6"/>
+              <circle cx="177" cy="74" r="6"/>
+            </g>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="244" cy="120" r="6" class="sv-good"/>
+              <circle cx="279" cy="95" r="6" class="sv-good"/>
+              <circle cx="314" cy="78" r="6" class="sv-good"/>
+              <circle cx="349" cy="74" r="6" class="sv-good"/>
+            </g>
+            <text x="107" y="32" text-anchor="middle" class="sv-tb">training set</text>
+            <text x="297" y="32" text-anchor="middle" class="sv-tb">testing set</text>
+            <text x="107" y="204" text-anchor="middle" class="sv-tb">squiggly wins</text>
+            <text x="297" y="204" text-anchor="middle" class="sv-tb">straight wins</text>
+            <text x="142" y="236" class="sv-ts">straight: high bias</text>
+            <text x="142" y="262" class="sv-ts">squiggly: high variance</text>
+          </svg>
+          <p>A straight line cannot bend, so it misses the true arc: that is bias. The squiggly line hits every training dot but lands far from the testing dots: that change between data sets is variance.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Bias</dt><dd>A method's inability to capture the true relationship.</dd>
+            <dt>Variance</dt><dd>How much the fit changes between data sets.</dd>
+            <dt>Training and testing sets</dt><dd>Fit on one; judge on the held-back other, like future data.</dd>
+            <dt>Sum of squares</dt><dd>Squared distances from the points to the line. Smaller is better.</dd>
+            <dt>Overfit</dt><dd>Low bias, high variance: perfect on training, bad on testing.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Plot the mice</b>weight vs height: an arc</li>
+            <li><b>Split the data</b>training and testing sets</li>
+            <li><b>Fit two lines</b>straight misses the arc: bias</li>
+            <li><b>Score training</b>squiggly wins, SS = 0</li>
+            <li><b>Score testing</b>straight wins; that change is variance</li>
+            <li><b>Sweet spot</b>regularization, boosting, bagging</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\mathrm{SS}=\sum_{i=1}^{n}\left(y_i-\hat{y}_i\right)^2$$
+          $$\text{bias}\approx\mathrm{SS}_{\text{train}}$$
+          $$\text{variance}\approx\mathrm{SS}_{\text{test}}-\mathrm{SS}_{\text{train}}$$
+          <ul class="keys">
+            <li>\(y_i\) is mouse \(i\)'s real height; \(\hat{y}_i\) is the height the line predicts.</li>
+            <li>The last two are a rule of thumb, not a proof.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>sum of squares</th><th>training</th><th>testing</th></tr>
+            <tr><td>straight line</td><td>moderate</td><td>about the same</td></tr>
+            <tr><td>squiggly line</td><td>0</td><td>much larger</td></tr>
+            <tr class="final"><td>winner</td><td>squiggly</td><td>straight</td></tr>
+          </table>
+          <p class="hand">Squiggly: low bias, high variance, so overfit. Straight: high bias, low variance, good rather than great but consistent.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Bias means the intercept, or unfair data.</span><span class="yes">Here it means the model cannot match the true relationship.</span></li>
+            <li><span class="no">A perfect training score is a prize.</span><span class="yes">It is a warning sign. A sum of squares of zero usually means memorised points.</span></li>
+            <li><span class="no">Variance is the spread of one column.</span><span class="yes">Here it is how much the fit changes when the data changes.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="04-machine-learning-fundamentals-sensitivity-and-specificity.html"><small>Previous</small>Machine Learning Fundamentals: Sensitivity and Specificity</a> <a href="07-entropy-for-data-science.html"><small>Next</small>Entropy (for data science)</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

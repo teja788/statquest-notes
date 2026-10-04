@@ -1,0 +1,98 @@
+/* Arcade kit: shared sketchbook look for every game */
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&family=Caveat:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root{
+  --bg:#FFF8EC; --card:#FFFFFF; --card-2:#F6EEDC; --rule:#E6DCC6;
+  --ink:#2C2C2A; --ink-2:#5F5E5A; --ink-3:#888780;
+  --coral:#D85A30; --coral-soft:#FAECE7; --coral-ink:#712B13;
+  --teal:#1D9E75; --teal-soft:#E1F5EE; --teal-ink:#085041;
+  --purple:#7F77DD; --purple-soft:#EEEDFE; --purple-ink:#3C3489;
+  --amber:#EF9F27; --amber-soft:#FAEEDA; --amber-ink:#633806;
+  --blue:#378ADD; --blue-soft:#E6F1FB; --blue-ink:#0C447C;
+  --red:#E24B4A; --red-soft:#FCEBEB;
+  --green:#639922; --green-soft:#EAF3DE;
+  --sticky:#FFF1B8;
+  --display:'Fredoka',system-ui,sans-serif; --body:'Nunito',system-ui,sans-serif;
+  --hand:'Caveat',cursive; --mono:'JetBrains Mono',Consolas,monospace;
+  --hard:4px 4px 0 var(--ink); --radius:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg) radial-gradient(#e9dfc8 1.2px,transparent 1.2px) 0 0/22px 22px;color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh}
+a{color:var(--coral-ink)}
+h1,h2,h3{font-family:var(--display);font-weight:600;line-height:1.15;margin:0}
+button{font:inherit}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+
+.wrap{max-width:1000px;margin:0 auto;padding:14px 16px 40px}
+
+/* Top bar */
+.topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.topbar .back{font-family:var(--display);font-weight:500;text-decoration:none;color:var(--ink);background:var(--card);border:2px solid var(--ink);border-radius:999px;padding:4px 12px;box-shadow:2px 2px 0 var(--ink)}
+.topbar h1{font-size:26px;flex:1;min-width:160px}
+.levels{display:flex;gap:6px;flex-wrap:wrap}
+.levels button{min-width:44px;height:44px;border:2px solid var(--ink);border-radius:12px;background:var(--card);font-family:var(--display);font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;padding:2px 8px}
+.levels button small{font-size:10px;letter-spacing:1px;color:var(--amber)}
+.levels button.on{background:var(--ink);color:#fff}
+.levels button:disabled{opacity:.4;cursor:not-allowed}
+
+/* Building blocks */
+.panel{background:var(--card);border:2px solid var(--ink);border-radius:16px;box-shadow:var(--hard);padding:14px}
+.stage{position:relative;width:100%;background:var(--card);border:2px solid var(--ink);border-radius:16px;box-shadow:var(--hard);overflow:hidden;touch-action:none}
+.stage canvas{display:block;width:100%;height:auto}
+.hud{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:2px solid var(--ink);border-radius:999px;padding:3px 12px;font-family:var(--display);font-weight:500;font-size:15px}
+.chip b{font-weight:700}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.hand{font-family:var(--hand);font-size:22px;line-height:1.1;color:var(--ink-2)}
+.goal{background:var(--sticky);border:2px solid var(--ink);border-radius:12px;padding:8px 12px;transform:rotate(-.6deg);box-shadow:3px 3px 0 var(--ink);font-weight:600}
+
+/* Buttons */
+.btn{appearance:none;border:2px solid var(--ink);border-radius:12px;background:var(--card);color:var(--ink);font-family:var(--display);font-weight:600;font-size:17px;padding:9px 16px;min-height:44px;cursor:pointer;box-shadow:3px 3px 0 var(--ink);transition:transform .06s,box-shadow .06s;display:inline-flex;align-items:center;gap:8px;justify-content:center;text-decoration:none}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:3px 3px 0 var(--ink)}
+.btn.primary{background:var(--coral);color:#fff}
+.btn.teal{background:var(--teal);color:#fff}
+.btn.purple{background:var(--purple);color:#fff}
+.btn.small{font-size:15px;padding:5px 12px;min-height:44px}
+
+/* Slider */
+.slider{display:flex;align-items:center;gap:10px;flex:1;min-width:220px}
+.slider label{font-family:var(--display);font-weight:500;white-space:nowrap}
+.slider output{font-family:var(--mono);font-weight:500;min-width:52px;text-align:right}
+input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:12px;background:var(--card-2);border:2px solid var(--ink);border-radius:999px;margin:0}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:var(--amber);border:2px solid var(--ink);box-shadow:2px 2px 0 var(--ink);cursor:grab}
+input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:var(--amber);border:2px solid var(--ink);box-shadow:2px 2px 0 var(--ink);cursor:grab}
+
+/* Modal card (intro, result, lesson) */
+.overlay{position:fixed;inset:0;background:rgba(44,44,42,.45);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50;animation:fade .15s ease-out}
+.overlay .card{background:var(--card);border:2px solid var(--ink);border-radius:18px;box-shadow:6px 6px 0 var(--ink);max-width:520px;width:100%;max-height:calc(100vh - 32px);overflow:auto;padding:20px 22px;animation:pop .22s cubic-bezier(.2,1.4,.4,1)}
+.card h2{font-size:26px;margin-bottom:6px}
+.card p{margin:8px 0}
+.card .actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-top:16px}
+.lesson{background:var(--blue-soft);border:2px dashed var(--blue-ink);border-radius:12px;padding:10px 14px;margin:12px 0}
+.lesson .lbl{font-family:var(--hand);font-size:22px;color:var(--blue-ink);display:block;line-height:1}
+.formula{font-family:var(--mono);background:var(--card-2);border-radius:8px;padding:6px 10px;display:inline-block;margin:4px 0}
+.stars{display:flex;gap:6px;justify-content:center;margin:6px 0 2px}
+.stars svg{width:44px;height:44px}
+.stars .on{animation:pop .3s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+
+/* Arcade grid */
+.games{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:18px;margin-top:18px}
+.game{display:flex;flex-direction:column;gap:8px;background:var(--card);border:2px solid var(--ink);border-radius:18px;box-shadow:var(--hard);padding:16px;text-decoration:none;color:var(--ink);transition:transform .12s}
+a.game:hover{transform:translate(-2px,-2px) rotate(-.5deg);box-shadow:6px 6px 0 var(--ink)}
+.game .art{height:120px;border:2px solid var(--ink);border-radius:12px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.game h3{font-size:22px}
+.game .concept{font-family:var(--hand);font-size:20px;color:var(--ink-2);line-height:1.1}
+.game.soon{opacity:.55;box-shadow:2px 2px 0 var(--ink)}
+.tag{display:inline-block;font-family:var(--display);font-size:12px;font-weight:600;border:2px solid var(--ink);border-radius:999px;padding:1px 9px;background:var(--amber-soft)}
+
+@media (max-width:640px){
+  .topbar h1{font-size:22px}
+  .overlay .card{padding:16px}
+  .card h2{font-size:22px}
+  .stars svg{width:36px;height:36px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

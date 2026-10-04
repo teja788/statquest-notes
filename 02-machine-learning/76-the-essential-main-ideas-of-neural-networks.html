@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Essential Main Ideas of Neural Networks — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>76</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 76 · 18.9 min</div>
+    <h1>The Essential Main Ideas of Neural Networks</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=CqOfi41LfDw" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: Neural Networks / Deep Learning (video 2)</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video opens the "black box" of a neural network. It shows, number by number, how a tiny network bends simple curves and adds them into a squiggle that fits data.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>A drug works at medium dosages but not at low or high ones, so no straight line fits the data. A neural network can fit a squiggle instead. Each connection multiplies the input by a weight and adds a bias. This picks a slice of a bent curve called an activation function. The network then scales these bent shapes, adds them together, and shifts the result to fit the data. Josh suggests a better name: a "big fancy squiggle fitting machine".</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh uses a drug tested at three dosages: low, medium, and high. Low and high dosages were not effective, so their efficacy is 0. Medium dosages were effective, so their efficacy is 1. A straight line cannot fit this pattern. However you rotate it, it predicts only two of the three groups correctly.</p>
+    <p>A neural network is made of nodes and connections between the nodes. A node is a point where values arrive, and a connection carries a value between nodes. The numbers on the connections are parameters. They play the same role as the slope and intercept of a straight line. They start unknown and are estimated with a method called backpropagation, which is the topic of Part 2. In this video we assume the network is already fit.</p>
+    <p>Some nodes contain a bent or curved line. These curves are called <strong>activation functions</strong>, and they are the building blocks of the squiggle. This video uses <strong>softplus</strong>. Other choices are <strong>ReLU</strong> (rectified linear unit), a bent line, and the S-shaped <strong>sigmoid</strong>. Josh notes that most teachers use sigmoid, but ReLU and softplus are much more common in practice.</p>
+    <p>The layer of nodes between the input and the output is a <strong>hidden layer</strong>. This network is as simple as they get: one input node (dosage), one hidden layer with two nodes, and one output node (predicted efficacy).</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Neural network with one input, two softplus hidden nodes, and one output, with all weights and biases labelled">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker>
+        </defs>
+        <line x1="102" y1="140" x2="336" y2="74" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ar)"/>
+        <line x1="102" y1="160" x2="336" y2="226" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ar)"/>
+        <line x1="424" y1="74" x2="618" y2="140" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ar)"/>
+        <line x1="424" y1="226" x2="618" y2="160" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#ar)"/>
+        <circle cx="70" cy="150" r="32" class="sv-acc-soft"/>
+        <circle cx="70" cy="150" r="32" class="sv-stroke-acc" stroke-width="2"/>
+        <text x="70" y="155" text-anchor="middle" class="sv-tb">Dosage</text>
+        <rect x="340" y="40" width="80" height="64" rx="10" class="sv-acc-soft"/>
+        <rect x="340" y="40" width="80" height="64" rx="10" class="sv-stroke-acc" stroke-width="2"/>
+        <path d="M350,92 C372,92 382,90 392,82 C400,75 405,62 412,50" class="sv-stroke-acc" stroke-width="2.5"/>
+        <rect x="340" y="196" width="80" height="64" rx="10" class="sv-key-soft"/>
+        <rect x="340" y="196" width="80" height="64" rx="10" class="sv-stroke-key" stroke-width="2"/>
+        <path d="M350,248 C372,248 382,246 392,238 C400,231 405,218 412,206" class="sv-stroke-key" stroke-width="2.5"/>
+        <circle cx="650" cy="150" r="30" class="sv-good-soft"/>
+        <circle cx="650" cy="150" r="30" class="sv-stroke-good" stroke-width="2"/>
+        <text x="650" y="157" text-anchor="middle" class="sv-tb">+</text>
+        <rect x="160" y="78" width="112" height="24" rx="4" class="sv-paper"/>
+        <text x="216" y="95" text-anchor="middle" class="sv-tm">×(−34.4) +2.14</text>
+        <rect x="160" y="200" width="112" height="24" rx="4" class="sv-paper"/>
+        <text x="216" y="217" text-anchor="middle" class="sv-tm">×(−2.52) +1.29</text>
+        <rect x="490" y="72" width="64" height="24" rx="4" class="sv-paper"/>
+        <text x="522" y="89" text-anchor="middle" class="sv-tm">×(−1.3)</text>
+        <rect x="490" y="200" width="64" height="24" rx="4" class="sv-paper"/>
+        <text x="522" y="217" text-anchor="middle" class="sv-tm">×2.28</text>
+        <text x="650" y="204" text-anchor="middle" class="sv-tm">then −0.58</text>
+        <text x="650" y="224" text-anchor="middle" class="sv-ts">predicted efficacy</text>
+        <text x="380" y="130" text-anchor="middle" class="sv-ts">softplus</text>
+        <text x="380" y="279" text-anchor="middle" class="sv-ts">hidden layer (two nodes)</text>
+      </svg>
+      <figcaption>Each path multiplies by a weight and adds a bias before softplus, then scales the result; the output node adds both paths and subtracts 0.58.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <p>To keep the math simple, dosage runs from 0 (low) to 1 (high).</p>
+    <ol class="steps">
+      <li>Plug a dosage into the input node. Start with the lowest dosage, 0.</li>
+      <li>On the way to the top hidden node, multiply the dosage by −34.4 and add 2.14. The result is an x-axis coordinate for the activation function. For dosage 0 this gives 2.14.</li>
+      <li>Put 2.14 into softplus to get the y-axis value: 2.25. For dosage 0.1, x is −1.3 and y is 0.24. Repeat for every dosage up to 1 to trace a blue curve.</li>
+      <li>Notice that dosages 0 to 1 map to only a narrow slice of the softplus curve. Only that slice shapes the blue curve.</li>
+      <li>Scale every y value on the blue curve by −1.3. For dosage 0, 2.25 becomes −2.93. This flips the curve upside down.</li>
+      <li>Repeat for the bottom hidden node, which uses weight −2.52 and bias 1.29. For dosage 0, x is 1.29 and softplus gives 1.53. Tracing all dosages gives an orange curve from a different slice of the same function.</li>
+      <li>Scale the orange curve by a positive number, 2.28.</li>
+      <li>Add the y values of the blue and orange curves to get a green squiggle. Finally, subtract 0.58. Now the green squiggle fits the data.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 410" role="img" aria-label="Scaled blue and orange curves across dosage 0 to 1, and the green squiggle made by adding them and subtracting 0.58">
+        <line x1="80" y1="200" x2="690" y2="200" class="sv-line" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <line x1="80" y1="370" x2="690" y2="370" class="sv-stroke-ink" stroke-width="1.2"/>
+        <line x1="80" y1="20" x2="80" y2="370" class="sv-stroke-ink" stroke-width="1.2"/>
+        <text x="72" y="54" text-anchor="end" class="sv-ts">3</text>
+        <text x="72" y="154" text-anchor="end" class="sv-ts">1</text>
+        <text x="72" y="204" text-anchor="end" class="sv-ts">0</text>
+        <text x="72" y="304" text-anchor="end" class="sv-ts">−2</text>
+        <text x="80" y="388" text-anchor="middle" class="sv-ts">0</text>
+        <text x="380" y="388" text-anchor="middle" class="sv-ts">0.5</text>
+        <text x="680" y="388" text-anchor="middle" class="sv-ts">1</text>
+        <text x="530" y="388" text-anchor="middle" class="sv-ts">dosage</text>
+        <polyline points="80.0,346.3 92.0,308.1 104.0,274.5 116.0,247.6 128.0,228.2 140.0,215.7 152.0,208.3 164.0,204.3 176.0,202.2 188.0,201.1 200.0,200.6 224.0,200.1 260.0,200.0 680.0,200.0" class="sv-stroke-acc" stroke-width="3"/>
+        <polyline points="80.0,25.2 104.0,34.1 128.0,42.8 152.0,51.3 176.0,59.6 200.0,67.6 224.0,75.4 248.0,82.9 272.0,90.1 296.0,97.1 320.0,103.8 344.0,110.2 368.0,116.3 392.0,122.1 416.0,127.7 440.0,132.9 464.0,137.9 488.0,142.6 512.0,147.0 536.0,151.1 560.0,155.0 584.0,158.6 608.0,162.0 632.0,165.1 656.0,168.1 680.0,170.8" class="sv-stroke-key" stroke-width="3"/>
+        <polyline points="80.0,200.6 92.0,166.8 104.0,137.6 116.0,115.1 128.0,100.0 140.0,91.8 152.0,88.7 164.0,88.8 176.0,90.8 188.0,93.7 200.0,97.2 212.0,100.8 224.0,104.5 236.0,108.2 248.0,111.9 260.0,115.5 272.0,119.1 284.0,122.6 296.0,126.1 308.0,129.5 320.0,132.8 332.0,136.0 344.0,139.2 356.0,142.3 368.0,145.3 380.0,148.3 392.0,151.1 404.0,153.9 416.0,156.7 428.0,159.3 440.0,161.9 452.0,164.5 464.0,166.9 476.0,169.3 488.0,171.6 500.0,173.8 512.0,176.0 524.0,178.1 536.0,180.1 548.0,182.1 560.0,184.0 572.0,185.9 584.0,187.6 596.0,189.4 608.0,191.0 620.0,192.6 632.0,194.1 644.0,195.6 656.0,197.1 668.0,198.4 680.0,199.8" class="sv-stroke-good" stroke-width="3.5"/>
+        <circle cx="80" cy="200" r="6" class="sv-ink"/>
+        <circle cx="380" cy="150" r="6" class="sv-ink"/>
+        <circle cx="680" cy="200" r="6" class="sv-ink"/>
+        <rect x="190" y="30" width="200" height="22" rx="4" class="sv-paper"/>
+        <text x="196" y="46" class="sv-t">orange: 2.28 × softplus</text>
+        <rect x="140" y="300" width="200" height="22" rx="4" class="sv-paper"/>
+        <text x="146" y="316" class="sv-t">blue: −1.3 × softplus</text>
+        <rect x="430" y="104" width="250" height="22" rx="4" class="sv-paper"/>
+        <text x="436" y="120" class="sv-t">green = blue + orange − 0.58</text>
+        <text x="390" y="142" class="sv-tm">1.03</text>
+      </svg>
+      <figcaption>The flipped blue curve and the stretched orange curve add, after a shift of −0.58, into a green squiggle near 0 at the ends and near 1 at dosage 0.5.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">Input to a hidden node</span><div class="math">$$ x = w \cdot d + b $$</div><p class="explain"><b>Symbols:</b> \(d\) is the dosage. \(w\) is the <em>weight</em>, the number we multiply by. \(b\) is the <em>bias</em>, the number we add. \(x\) is the x-axis coordinate we feed into the activation function. <b>What it tells you:</b> the weight and bias choose which slice of the activation function the node uses, and whether it is flipped or stretched.</p></div>
+    <div class="formula"><span class="lbl">Softplus activation function</span><div class="math">$$ f(x) = \log\left(1 + e^{x}\right) $$</div><p class="explain"><b>Symbols:</b> \(x\) is the input from the connection. \(e\) is the base of the natural log. \(\log\) is the natural log (log base \(e\)), as is standard in statistics, machine learning, and most programming languages. <b>What it tells you:</b> softplus gives the y-axis value for each x on its bent curve; for example \(f(2.14) = 2.25\).</p></div>
+    <div class="formula"><span class="lbl">The whole network from the video</span><div class="math">$$ \hat{y} = -1.3\, f(-34.4\,d + 2.14) + 2.28\, f(-2.52\,d + 1.29) - 0.58 $$</div><p class="explain"><b>Symbols:</b> \(\hat{y}\) is the predicted efficacy. \(f\) is softplus. \(-34.4, -2.52\) are the weights into the hidden nodes and \(2.14, 1.29\) their biases. \(-1.3, 2.28\) are the weights out of the hidden nodes, and \(-0.58\) is the final bias. <b>What it tells you:</b> the whole green squiggle is just two reshaped softplus curves added together and shifted.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p><b>Dosage 0 (low).</b> Top node: \(-34.4 \times 0 + 2.14 = 2.14\), and \(f(2.14) = 2.25\). Scale: \(2.25 \times (-1.3) = -2.93\). Bottom node: \(-2.52 \times 0 + 1.29 = 1.29\), and \(f(1.29) = 1.53\). Scale: \(1.53 \times 2.28 \approx 3.49\). Output: \(-2.93 + 3.49 - 0.58 = -0.02 \approx 0\). The network predicts "not effective", which matches the data.</p>
+      <p><b>Dosage 0.1.</b> Top node: \(-34.4 \times 0.1 + 2.14 = -1.3\), and \(f(-1.3) = 0.24\). This is the second blue dot in the video.</p>
+      <p><b>Dosage 0.5 (a new patient).</b> Top node: \(-34.4 \times 0.5 + 2.14 = -15.06\), and \(f(-15.06) \approx 0\), so the blue part adds almost nothing. Bottom node: \(-2.52 \times 0.5 + 1.29 = 0.03\), and \(f(0.03) \approx 0.708\). Scale: \(0.708 \times 2.28 \approx 1.614\). Output: \(0 + 1.614 - 0.58 \approx 1.03\). Because 1.03 is closer to 1 than to 0, Josh concludes that dosage 0.5 is effective.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> The "log" in softplus is the natural log. Using log base 10 gives wrong numbers, so \(f(2.14)\) would not equal 2.25.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A node does not use its whole activation function. Dosages 0 to 1 map to only a narrow range of x values. Different weights and biases pick different slices, and that is why two identical curves become two different shapes.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The parameters in this video were not chosen by hand. They come from fitting the network to the data with backpropagation, which Part 2 explains.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Sigmoid is the usual teaching example, but ReLU and softplus are much more common in practice. The activation function is a choice you make when you build the network.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>In plain words, what does a neural network do?</summary><div class="a">It fits a squiggle to data. Each hidden node takes an activation function, and the weights and biases slice, flip, and stretch it into a new shape. The network adds these shapes and shifts the result so it fits the data.</div></details>
+    <details class="qa" open><summary>What are weights and biases?</summary><div class="a">They are the parameters on the connections. Weights are the numbers we multiply by, and biases are the numbers we add. They are like the slope and intercept of a straight line, and backpropagation estimates them from the data.</div></details>
+    <details class="qa" open><summary>What is an activation function, and which ones are common?</summary><div class="a">It is the bent or curved line inside a hidden node, and it is the building block of the squiggle. Common choices are ReLU, softplus, and sigmoid. Sigmoid is popular in teaching, but ReLU and softplus are much more common in practice.</div></details>
+    <details class="qa" open><summary>Why can a neural network fit data that a straight line cannot?</summary><div class="a">In the dosage example, efficacy is low, then high, then low again. A straight line can only get two of the three groups right. The network adds reshaped bent curves, so it can make a hump that rises and falls with the data.</div></details>
+    <details class="qa" open><summary>How do you decide how many hidden layers and nodes to use?</summary><div class="a">There are rules of thumb, but in practice you make a guess and check how well the network performs. If it does not do well enough, you add more layers or more nodes. With more of them, the network can fit much more complex squiggles.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>The drug data is 0, then 1, then 0, so a straight line cannot fit it.</li>
+      <li>A neural network is nodes plus connections, and the connections carry weights and biases.</li>
+      <li>Each connection multiplies the input by a weight and adds a bias to get an x value for the activation function.</li>
+      <li>Activation functions such as softplus, ReLU, and sigmoid are the bent building blocks of the fit.</li>
+      <li>The hidden nodes turn two identical softplus curves into two new shapes by slicing, flipping, and stretching them.</li>
+      <li>The output adds the shapes and subtracts 0.58, and this gives a squiggle that predicts 1.03 for dosage 0.5.</li>
+      <li>Backpropagation, covered in Part 2, estimates the weights and biases.</li>
+      <li>With more hidden layers and nodes, a network can in theory fit a squiggle to almost any dataset.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Neural networks</span><span class="board-tag">bend, scale, add: a squiggle fitting machine</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 266" role="img" aria-label="Two slices of the softplus curve: one is multiplied by −1.3, which flips it, and one by 2.28, which stretches it. They are added and 0.58 is subtracted, giving a squiggle through the data 0, 1, 0 that predicts 1.03 at dosage 0.5.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <rect x="12" y="36" width="124" height="64" rx="8" class="sv-paper"/>
+              <rect x="12" y="150" width="124" height="64" rx="8" class="sv-paper"/>
+              <circle cx="164" cy="125" r="14" class="sv-paper"/>
+            </g>
+            <path d="M22 92 C 32 62, 42 53, 64 52 L 126 52" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M22 160 C 56 182, 90 198, 126 204" class="sv-stroke-key" stroke-width="4" stroke-linecap="round"/>
+            <path d="M157 125 H171 M164 118 V132" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round"/>
+            <line x1="140" y1="76" x2="155" y2="107" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="140" y1="174" x2="155" y2="143" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="181" y1="125" x2="212" y2="125" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="222" y1="196" x2="388" y2="196" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="306" y1="145" x2="306" y2="194" class="sv-stroke-good" stroke-width="2" stroke-dasharray="3 3"/>
+            <path d="M236 196 C 242 150, 248 104, 262 104 C 276 104, 288 124, 306 136 C 330 152, 352 186, 376 196" class="sv-stroke-good" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="236" cy="196" r="6" class="sv-ink"/>
+              <circle cx="306" cy="136" r="6" class="sv-ink"/>
+              <circle cx="376" cy="196" r="6" class="sv-ink"/>
+            </g>
+            <text x="14" y="27" class="sv-tm">×(−1.3) flip</text>
+            <text x="74" y="130" text-anchor="middle" class="sv-ts">softplus slices</text>
+            <text x="14" y="240" class="sv-tm">×2.28 stretch</text>
+            <text x="197" y="106" text-anchor="middle" class="sv-tm">−0.58</text>
+            <text x="318" y="128" class="sv-tb">1.03</text>
+            <text x="306" y="222" text-anchor="middle" class="sv-ts">dosage 0.5</text>
+            <text x="388" y="250" text-anchor="end" class="sv-t">squiggle fits 0, 1, 0</text>
+          </svg>
+          <p>Weights and biases pick a slice of softplus in each hidden node. The network flips or stretches the slices, adds them and subtracts 0.58. The result fits data no straight line can.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Node</dt><dd>A point where values arrive; connections carry them between nodes.</dd>
+            <dt>Weight and bias</dt><dd>Parameters on the connections: weights multiply, biases add.</dd>
+            <dt>Activation function</dt><dd>The bent curve in a hidden node: softplus here, or ReLU, or sigmoid.</dd>
+            <dt>Hidden layer</dt><dd>Nodes between the input and the output; here, two.</dd>
+            <dt>Backpropagation</dt><dd>The method that estimates the weights and biases (Part 2).</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Plug in</b>a dosage from 0 to 1</li>
+            <li><b>Weight, bias</b>×(−34.4) + 2.14 gives x</li>
+            <li><b>Softplus slice</b>2.14 → 2.25 at dosage 0</li>
+            <li><b>Scale</b>×(−1.3) flips it to −2.93</li>
+            <li><b>Bottom node</b>×(−2.52) + 1.29, then ×2.28</li>
+            <li><b>Add, shift</b>add both, subtract 0.58</li>
+          </ol>
+          <p class="loop">↺ repeat for every dosage from 0 to 1 to trace the curves</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$x = w\,d + b$$
+          $$f(x) = \log\left(1 + e^{x}\right)$$
+          $$\hat{y} = -1.3\,f_1 + 2.28\,f_2 - 0.58$$
+          <ul class="keys">
+            <li>\(d\) is the dosage, \(w\) the weight, \(b\) the bias; \(x\) goes into softplus \(f\).</li>
+            <li>\(\log\) is the natural log, so \(f(2.14) = 2.25\).</li>
+            <li>\(\hat{y}\) is predicted efficacy; \(f_1 = f(-34.4\,d + 2.14)\), \(f_2 = f(-2.52\,d + 1.29)\).</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th></th><th>dosage 0</th><th>dosage 0.5</th></tr>
+            <tr><td>top x</td><td>2.14</td><td>−15.06</td></tr>
+            <tr><td>−1.3 f(x)</td><td>−2.93</td><td>≈ 0</td></tr>
+            <tr><td>bottom x</td><td>1.29</td><td>0.03</td></tr>
+            <tr><td>2.28 f(x)</td><td>3.49</td><td>1.614</td></tr>
+            <tr class="final"><td>sum − 0.58</td><td>−0.02</td><td>1.03</td></tr>
+          </table>
+          <p class="hand">Dosage 0 gives about 0, not effective. Dosage 0.5 gives 1.03, closer to 1, so it is effective.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Softplus uses log base 10.</span><span class="yes">It is the natural log. With base 10, \(f(2.14)\) would not equal 2.25.</span></li>
+            <li><span class="no">Each node uses its whole activation function.</span><span class="yes">Dosages 0 to 1 hit a narrow slice; different weights and biases pick different slices.</span></li>
+            <li><span class="no">The weights and biases were picked by hand.</span><span class="yes">Backpropagation fits them to the data; Part 2 explains how.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="75-support-vector-machines-in-python-from-start-to-finish.html"><small>Previous</small>Support Vector Machines in Python from Start to Finish.</a> <a href="77-neural-networks-pt-2-backpropagation-main-ideas.html"><small>Next</small>Neural Networks Pt. 2: Backpropagation Main Ideas</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

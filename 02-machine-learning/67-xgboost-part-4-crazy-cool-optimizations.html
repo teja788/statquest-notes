@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>XGBoost Part 4 (of 4): Crazy Cool Optimizations — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>67</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 67 · 24.4 min</div>
+    <h1>XGBoost Part 4 (of 4): Crazy Cool Optimizations</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=oRrKeUCEbq8" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: —</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Parts 1 to 3 showed how XGBoost builds its trees. This video covers the other parts, the optimizations that make XGBoost fast on large training data.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>For huge data, XGBoost tests only quantiles as split thresholds, not every value. It finds these quantiles with a weighted quantile sketch that can run on many computers in parallel. Each observation's weight is the Hessian, so uncertain predictions get smaller quantiles. Sparsity-aware split finding learns a default path for missing values. Cache-aware access and blocks for out-of-core computation make good use of the computer hardware.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>XGBoost builds trees with a <b>greedy algorithm</b>. That means it picks the threshold with the largest gain now, without looking ahead to see how later splits play out. This is fast, but with a lot of measurements it still has to test every possible threshold. With many variables, that takes forever.</p>
+    <p>The <b>approximate greedy algorithm</b> fixes this. It divides the data into quantiles and tests only the quantile boundaries as candidate thresholds. More quantiles give better predictions but take longer. By default XGBoost uses about 33 quantiles.</p>
+    <p>These are <b>weighted quantiles</b>. In a normal quantile, each bin has the same number of observations. In a weighted quantile, each bin has the same sum of weights. The weight of an observation is the Hessian, the second derivative of the loss function. This is the same quantity behind the cover metric from Parts 2 and 3.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 330" role="img" aria-label="Six observations split into equal quantiles and into weighted quantiles">
+        <circle cx="40" cy="36" r="6" class="sv-ink3"/>
+        <text x="54" y="40" class="sv-ts">small dot: p = 0.1 or 0.9, weight 0.09</text>
+        <circle cx="400" cy="36" r="11" class="sv-acc"/>
+        <text x="420" y="40" class="sv-ts">large dot: p = 0.4 or 0.6, weight 0.24</text>
+
+        <circle cx="180" cy="80" r="6" class="sv-ink3"/>
+        <circle cx="260" cy="80" r="6" class="sv-ink3"/>
+        <circle cx="340" cy="80" r="6" class="sv-ink3"/>
+        <circle cx="420" cy="80" r="6" class="sv-ink3"/>
+        <circle cx="500" cy="80" r="11" class="sv-acc"/>
+        <circle cx="580" cy="80" r="11" class="sv-acc"/>
+        <defs><marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker></defs>
+        <line x1="160" y1="112" x2="620" y2="112" class="sv-stroke-ink" stroke-width="1.2" marker-end="url(#ah1)"/>
+        <text x="640" y="116" class="sv-ts">dosage</text>
+
+        <text x="24" y="177" class="sv-tb">Equal</text>
+        <rect x="160" y="150" width="120" height="42" rx="8" class="sv-paper2"/>
+        <rect x="320" y="150" width="120" height="42" rx="8" class="sv-paper2"/>
+        <rect x="480" y="150" width="120" height="42" rx="8" class="sv-acc-soft"/>
+        <text x="220" y="176" text-anchor="middle" class="sv-tm">sum 0.18</text>
+        <text x="380" y="176" text-anchor="middle" class="sv-tm">sum 0.18</text>
+        <text x="540" y="176" text-anchor="middle" class="sv-tm">sum 0.48</text>
+        <text x="540" y="212" text-anchor="middle" class="sv-ts">low-confidence pair lumped together</text>
+
+        <text x="24" y="267" class="sv-tb">Weighted</text>
+        <rect x="160" y="240" width="120" height="42" rx="8" class="sv-good-soft"/>
+        <rect x="320" y="240" width="120" height="42" rx="8" class="sv-good-soft"/>
+        <rect x="470" y="240" width="60" height="42" rx="8" class="sv-good-soft"/>
+        <rect x="550" y="240" width="60" height="42" rx="8" class="sv-good-soft"/>
+        <text x="220" y="266" text-anchor="middle" class="sv-tm">sum 0.18</text>
+        <text x="380" y="266" text-anchor="middle" class="sv-tm">sum 0.18</text>
+        <text x="500" y="266" text-anchor="middle" class="sv-tm">0.24</text>
+        <text x="580" y="266" text-anchor="middle" class="sv-tm">0.24</text>
+      </svg>
+      <figcaption>Equal quantiles put the two uncertain points in one bin; weighted quantiles give each of them its own bin.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li><b>Greedy recap.</b> XGBoost starts at 0.5, computes residuals, and picks the threshold with the largest gain. It does not look ahead, so it builds trees quickly.</li>
+      <li><b>Approximate greedy.</b> With lots of data, XGBoost tests only quantile boundaries as thresholds. One quantile is fast but predicts badly. More quantiles predict better but slow down tree building.</li>
+      <li><b>Parallel learning and the quantile sketch.</b> When data does not fit in memory, even sorting and finding quantiles is slow. XGBoost splits the data across computers on a network. A sketch is a fast algorithm that gives an approximate answer. The quantile sketch combines the pieces into an approximate histogram, which gives approximate quantiles. This is why the default is "about" 33 quantiles.</li>
+      <li><b>Weighted quantiles.</b> Each bin holds a similar sum of weights. For regression all weights are 1, so these are ordinary quantiles. For classification the weight is \(p(1-p)\), so low-confidence points land in smaller bins.</li>
+      <li><b>Only for huge data.</b> XGBoost uses approximate greedy, parallel learning and the weighted quantile sketch only when the training data is huge. For small data it uses the normal greedy algorithm.</li>
+      <li><b>Sparsity-aware split finding.</b> Put rows with a missing value in a separate table. For each threshold on the known rows, compute the gain twice: missing rows in the left leaf, then in the right leaf. Pick the best overall. That direction becomes the default path for missing values.</li>
+      <li><b>Cache-aware access.</b> The CPU cache is the fastest memory, then main memory, then the hard drive. XGBoost keeps the gradients and Hessians in the cache, so it can quickly compute similarity scores and output values.</li>
+      <li><b>Blocks for out-of-core computation.</b> When data must sit on the hard drive, XGBoost compresses it. Decompressing on the CPU is faster than reading more from disk. With several drives, it uses <b>sharding</b>: each drive gets a unique set of rows, so drives read at the same time.</li>
+      <li><b>Random subsets.</b> XGBoost can also build each tree from a random subset of the data. It can look at only a random subset of features when it decides how to split.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 330" role="img" aria-label="Sparsity-aware split: missing values tried in the left leaf and in the right leaf">
+        <defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-ink"/></marker></defs>
+        <rect x="20" y="20" width="340" height="266" rx="10" class="sv-paper"/>
+        <rect x="20" y="20" width="340" height="266" rx="10" class="sv-stroke-good" stroke-width="2.5"/>
+        <rect x="400" y="20" width="340" height="266" rx="10" class="sv-paper"/>
+        <rect x="400" y="20" width="340" height="266" rx="10" class="sv-line" stroke-width="1"/>
+        <text x="190" y="42" text-anchor="middle" class="sv-tb">Gain left (largest here)</text>
+        <text x="570" y="42" text-anchor="middle" class="sv-tb">Gain right</text>
+
+        <rect x="110" y="54" width="160" height="34" rx="6" class="sv-key-soft"/>
+        <text x="190" y="76" text-anchor="middle" class="sv-t">Dosage &lt; 15.5</text>
+        <line x1="190" y1="88" x2="100" y2="152" class="sv-stroke-ink" stroke-width="1.2"/>
+        <line x1="190" y1="88" x2="280" y2="152" class="sv-stroke-ink" stroke-width="1.2"/>
+        <rect x="30" y="152" width="140" height="40" rx="6" class="sv-paper2"/>
+        <text x="100" y="177" text-anchor="middle" class="sv-ts">known &lt; 15.5</text>
+        <rect x="210" y="152" width="140" height="40" rx="6" class="sv-paper2"/>
+        <text x="280" y="177" text-anchor="middle" class="sv-ts">known ≥ 15.5</text>
+        <rect x="120" y="234" width="140" height="36" rx="6" class="sv-acc-soft"/>
+        <text x="190" y="257" text-anchor="middle" class="sv-t">missing dosage</text>
+        <line x1="170" y1="234" x2="112" y2="196" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah2)"/>
+
+        <rect x="490" y="54" width="160" height="34" rx="6" class="sv-key-soft"/>
+        <text x="570" y="76" text-anchor="middle" class="sv-t">Dosage &lt; 15.5</text>
+        <line x1="570" y1="88" x2="480" y2="152" class="sv-stroke-ink" stroke-width="1.2"/>
+        <line x1="570" y1="88" x2="660" y2="152" class="sv-stroke-ink" stroke-width="1.2"/>
+        <rect x="410" y="152" width="140" height="40" rx="6" class="sv-paper2"/>
+        <text x="480" y="177" text-anchor="middle" class="sv-ts">known &lt; 15.5</text>
+        <rect x="590" y="152" width="140" height="40" rx="6" class="sv-paper2"/>
+        <text x="660" y="177" text-anchor="middle" class="sv-ts">known ≥ 15.5</text>
+        <rect x="500" y="234" width="140" height="36" rx="6" class="sv-acc-soft"/>
+        <text x="570" y="257" text-anchor="middle" class="sv-t">missing dosage</text>
+        <line x1="590" y1="234" x2="648" y2="196" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah2)"/>
+
+        <text x="380" y="306" text-anchor="middle" class="sv-ts">The winning side becomes the default path for future rows with a missing dosage.</text>
+      </svg>
+      <figcaption>For each threshold, XGBoost scores both places for the missing rows; in the video, the left leaf at Dosage &lt; 15.5 won.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">Weight of an observation</span>
+      <div class="math">$$ w_i = \text{Hessian}_i = \begin{cases} 1 & \text{regression} \\ p_i\,(1-p_i) & \text{classification} \end{cases} $$</div>
+      <p class="explain"><b>Symbols:</b> \(w_i\) is the weight of observation \(i\) in the weighted quantile sketch. The Hessian is the second derivative of the loss function. \(p_i\) is the previously predicted probability for observation \(i\). <b>What it tells you:</b> in classification the weight is largest near \(p = 0.5\) and small near 0 or 1, so weight measures how unsure the model is.</p>
+    </div>
+    <div class="formula"><span class="lbl">Weighted quantile rule</span>
+      <div class="math">$$ \sum_{i \in Q_1} w_i \;\approx\; \sum_{i \in Q_2} w_i \;\approx\; \cdots \;\approx\; \sum_{i \in Q_K} w_i $$</div>
+      <p class="explain"><b>Symbols:</b> \(Q_1, \dots, Q_K\) are the quantiles (bins). \(w_i\) is the weight of each observation inside a bin. <b>What it tells you:</b> bins hold a similar total weight, not a similar count, so heavy (uncertain) points get bins with fewer observations.</p>
+    </div>
+    <div class="formula"><span class="lbl">Sparsity-aware choice</span>
+      <div class="math">$$ \text{best split} = \max_{t}\; \max\big(\text{Gain}_{\text{left}}(t),\ \text{Gain}_{\text{right}}(t)\big) $$</div>
+      <p class="explain"><b>Symbols:</b> \(t\) is a candidate threshold, such as the average of two neighbouring sorted dosages. \(\text{Gain}_{\text{left}}(t)\) is the gain when all rows with a missing value go to the left leaf. \(\text{Gain}_{\text{right}}(t)\) is the gain when they go to the right leaf. <b>What it tells you:</b> the model picks a threshold and a side for missing values at the same time.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh uses dosage to predict whether a drug is effective. After some trees, six observations have these previously predicted probabilities: two at 0.1, two at 0.9, one at 0.6 and one at 0.4.</p>
+      <p>Weights: \(0.1 \times (1-0.1) = 0.09\), and \(0.9 \times (1-0.9) = 0.09\). For the uncertain points, \(0.6 \times 0.4 = 0.24\) and \(0.4 \times 0.6 = 0.24\).</p>
+      <p>Equal quantiles of two observations each would lump the last two points together. They then end up in the same leaf. Their positive and negative residuals cancel, so the predictions hardly improve.</p>
+      <p>Weighted quantiles give bin sums of 0.18, 0.18, 0.24 and 0.24. The two low-confidence points now sit in separate bins.</p>
+      <p>For missing data, Josh tests thresholds 7.5, 15.5 and 23 on the rows with known dosages. Each gets a Gain left and a Gain right. The largest was Gain left at Dosage &lt; 15.5. So a new row without a dosage goes to the left leaf.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> The approximate greedy algorithm, parallel learning and the weighted quantile sketch are only used for huge training data. On small data, XGBoost uses the normal greedy algorithm and tests every threshold.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> For regression every weight is 1, so weighted quantiles are just normal quantiles. The weighting only changes things in classification. There, the weights are recalculated after each tree.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> "About 33 quantiles" is not exact because the sketch gives approximate quantiles from an approximate histogram.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Cache-aware access and blocks for out-of-core computation are about hardware, not statistics. Josh uses them to argue that machine learning is more than applied statistics.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>How does XGBoost handle missing values?</summary><div class="a">It uses sparsity-aware split finding. For each threshold, it computes the gain with all missing rows in the left leaf, and again with them in the right leaf. The best combination wins. That side becomes the default path for new rows with a missing value.</div></details>
+    <details class="qa" open><summary>What is the approximate greedy algorithm?</summary><div class="a">Instead of testing every possible threshold, XGBoost tests only quantile boundaries. By default it uses about 33 quantiles. More quantiles give better splits but take longer. It is only used for very large data sets.</div></details>
+    <details class="qa" open><summary>Why weighted quantiles, and what are the weights?</summary><div class="a">Each weight is the Hessian, the second derivative of the loss. For classification that is p times one minus p, which is largest when the model is unsure. Bins with equal total weight put uncertain points in smaller bins. So the tree can separate them instead of letting their residuals cancel.</div></details>
+    <details class="qa" open><summary>Which XGBoost optimizations are about hardware?</summary><div class="a">Cache-aware access keeps gradients and Hessians in the CPU cache, so similarity scores are fast. Out-of-core blocks compress data on disk, because decompressing is faster than reading from disk. Sharding spreads rows across drives so they can read in parallel.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>XGBoost is greedy: it picks the best split now without looking ahead.</li>
+      <li>For huge data, it tests only about 33 quantiles instead of every threshold.</li>
+      <li>A quantile sketch builds approximate quantiles from data spread across many computers.</li>
+      <li>Weighted quantiles use the Hessian as weight, which is 1 for regression and p(1 − p) for classification.</li>
+      <li>Sparsity-aware split finding tries missing values in both leaves and keeps the better side as a default path.</li>
+      <li>Cache-aware access, compression and sharding make good use of the hardware.</li>
+      <li>Random subsets of rows and features can speed up tree building further.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">XGBoost optimizations</span><span class="board-tag">test quantile edges, not every value</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 270" role="img" aria-label="Six points on a line: four with p = 0.1 or 0.9 and two unsure ones with p = 0.6 or 0.4. Weighted quantile bins hold weight sums of 0.18, 0.18, 0.24 and 0.24, so each unsure point gets its own bin. Only the bin edges are tested as thresholds.">
+            <text x="221" y="30" text-anchor="middle" class="sv-tb">test only quantile edges</text>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <rect x="18" y="108" width="100" height="72" rx="6" class="sv-paper"/>
+              <rect x="134" y="108" width="100" height="72" rx="6" class="sv-paper"/>
+              <rect x="250" y="84" width="58" height="96" rx="6" class="sv-key-soft"/>
+              <rect x="324" y="84" width="58" height="96" rx="6" class="sv-key-soft"/>
+            </g>
+            <g class="sv-stroke-acc" stroke-width="3" stroke-dasharray="5 8" stroke-linecap="round">
+              <line x1="126" y1="48" x2="126" y2="194"/>
+              <line x1="242" y1="48" x2="242" y2="194"/>
+              <line x1="316" y1="48" x2="316" y2="194"/>
+            </g>
+            <line x1="12" y1="180" x2="388" y2="180" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="46" cy="180" r="6" class="sv-ink3"/>
+              <circle cx="90" cy="180" r="6" class="sv-ink3"/>
+              <circle cx="162" cy="180" r="6" class="sv-ink3"/>
+              <circle cx="206" cy="180" r="6" class="sv-ink3"/>
+              <circle cx="279" cy="180" r="12" class="sv-key"/>
+              <circle cx="353" cy="180" r="12" class="sv-key"/>
+            </g>
+            <text x="68" y="150" text-anchor="middle" class="sv-tm">0.18</text>
+            <text x="184" y="150" text-anchor="middle" class="sv-tm">0.18</text>
+            <text x="279" y="150" text-anchor="middle" class="sv-tm">0.24</text>
+            <text x="353" y="150" text-anchor="middle" class="sv-tm">0.24</text>
+            <text x="126" y="214" text-anchor="middle" class="sv-ts">p = 0.1 or 0.9</text>
+            <text x="316" y="214" text-anchor="middle" class="sv-ts">p = 0.6 or 0.4</text>
+            <text x="200" y="252" text-anchor="middle" class="sv-tb">weight = Hessian = p(1 − p)</text>
+          </svg>
+          <p>For huge data, XGBoost tests only the edges of about 33 quantiles as thresholds. The quantiles are weighted: each bin holds a similar sum of Hessians, so the unsure points (0.24 each) get bins of their own.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Greedy</dt><dd>Takes the biggest gain now, without looking ahead.</dd>
+            <dt>Approximate greedy</dt><dd>Tests only quantile edges, not every threshold.</dd>
+            <dt>Quantile sketch</dt><dd>Fast, approximate quantiles from data spread over many computers.</dd>
+            <dt>Weight</dt><dd>The Hessian: 1 for regression, p(1 − p) for classification.</dd>
+            <dt>Sparsity-aware split</dt><dd>Learns a default path for rows with a missing value.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Greedy</b>picks largest gain, no look-ahead</li>
+            <li><b>Approximate greedy</b>about 33 quantiles, edges only</li>
+            <li><b>Quantile sketch</b>many computers, approximate quantiles</li>
+            <li><b>Weighted quantiles</b>bins hold similar total weight</li>
+            <li><b>Sparsity-aware</b>missing rows tried left and right</li>
+            <li><b>Hardware</b>cache, compressed blocks, sharding</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$w_i=\begin{cases}1 & \text{regression}\\ p_i(1-p_i) & \text{classification}\end{cases}$$
+          $$\sum_{Q_1} w_i\approx\sum_{Q_2} w_i\approx\cdots\approx\sum_{Q_K} w_i$$
+          $$\max_t\,\max\big(\text{Gain}_L(t),\,\text{Gain}_R(t)\big)$$
+          <ul class="keys">
+            <li>\(w_i\) is the weight (Hessian) of observation \(i\); \(p_i\) is its previous probability.</li>
+            <li>\(Q_1\dots Q_K\) are the quantiles, or bins.</li>
+            <li>\(t\) is a threshold; L or R is where the missing rows go.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>p</th><th>p(1 − p)</th><th>count</th></tr>
+            <tr><td>0.1</td><td>0.09</td><td>2</td></tr>
+            <tr><td>0.9</td><td>0.09</td><td>2</td></tr>
+            <tr><td>0.6</td><td>0.24</td><td>1</td></tr>
+            <tr><td>0.4</td><td>0.24</td><td>1</td></tr>
+            <tr class="final"><td>bins</td><td colspan="2">0.18 · 0.18 · 0.24 · 0.24 ✓</td></tr>
+          </table>
+          <p class="hand">Equal bins would lump the two unsure points together. Missing dosages go left: Gain left at Dosage &lt; 15.5 was largest.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">XGBoost always sketches quantiles.</span><span class="yes">Only for huge training data. Small data gets the normal greedy algorithm, testing every threshold.</span></li>
+            <li><span class="no">Weighting changes regression quantiles too.</span><span class="yes">Regression weights are all 1, so quantiles stay normal. Classification weights are recalculated after each tree.</span></li>
+            <li><span class="no">It uses exactly 33 quantiles.</span><span class="yes">About 33: the sketch gives approximate quantiles from an approximate histogram.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="66-xgboost-part-3-mathematical-details.html"><small>Previous</small>XGBoost Part 3 (of 4): Mathematical Details</a> <a href="68-xgboost-in-python-from-start-to-finish.html"><small>Next</small>XGBoost in Python from Start to Finish</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

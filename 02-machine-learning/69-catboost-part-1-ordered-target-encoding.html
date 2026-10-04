@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CatBoost Part 1: Ordered Target Encoding — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>69</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 69 · 8.5 min</div>
+    <h1>CatBoost Part 1: Ordered Target Encoding</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=KXOTSkPL2X4" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: —</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video shows how CatBoost turns a categorical feature into numbers without leakage. The trick is to encode each row using only the rows that came before it.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Basic target encoding uses each row's own target to encode that same row, and this causes leakage. CatBoost avoids it by reading the rows one at a time, in order. Each row is encoded with a simple formula that uses only earlier rows with the same category, plus a prior of 0.05. Because the row order changes the result, the method is called ordered target encoding. When you classify new data, CatBoost uses the whole training set to encode it.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>CatBoost is a machine learning method that is very similar to gradient boost and XGBoost at a basic level. Its name is short for "categorical boosting". This is because the way it handles categorical features (features with named options, like colors) is central to the method.</p>
+    <p>The video uses the Troll 2 data from the target encoding video. We want to use favorite color and height to predict if someone loves Troll 2. The problem is how to turn the color names into numbers.</p>
+    <p>In basic target encoding, each row's target value (the thing we want to predict) changes that same row's encoded color. This is <strong>leakage</strong>: the model sees the answer while it learns. Leakage gives models that work well on training data but not so well on testing data.</p>
+    <p>CatBoost treats the rows as if they arrive one after another. When it encodes a row, it acts as if the earlier rows are all the data it has seen so far. It ignores the current row and every later row.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 400" role="img" aria-label="Table of seven rows showing how CatBoost encodes each favorite color using only earlier rows">
+        <defs>
+          <marker id="ar1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-acc"/></marker>
+        </defs>
+        <text x="60" y="34" text-anchor="middle" class="sv-ts">Row</text>
+        <text x="110" y="34" class="sv-ts">Favorite color</text>
+        <text x="290" y="34" text-anchor="middle" class="sv-ts">Option count</text>
+        <text x="380" y="34" text-anchor="middle" class="sv-ts">n</text>
+        <text x="440" y="34" class="sv-ts">(count + 0.05) / (n + 1)</text>
+        <text x="690" y="34" text-anchor="middle" class="sv-ts">Encoded</text>
+
+        <g>
+          <rect x="40" y="48" width="700" height="34" rx="4" class="sv-paper2"/>
+          <rect x="640" y="48" width="100" height="34" rx="4" class="sv-paper2"/>
+          <text x="60" y="70" text-anchor="middle" class="sv-t">1</text><text x="110" y="70" class="sv-tb">Blue</text>
+          <text x="290" y="70" text-anchor="middle" class="sv-tm">0</text><text x="380" y="70" text-anchor="middle" class="sv-tm">0</text>
+          <text x="440" y="70" class="sv-tm">(0 + 0.05) / (0 + 1)</text><text x="690" y="70" text-anchor="middle" class="sv-tb">0.05</text>
+
+          <rect x="40" y="88" width="700" height="34" rx="4" class="sv-paper2"/>
+          <rect x="640" y="88" width="100" height="34" rx="4" class="sv-paper2"/>
+          <text x="60" y="110" text-anchor="middle" class="sv-t">2</text><text x="110" y="110" class="sv-tb">Red</text>
+          <text x="290" y="110" text-anchor="middle" class="sv-tm">0</text><text x="380" y="110" text-anchor="middle" class="sv-tm">0</text>
+          <text x="440" y="110" class="sv-tm">(0 + 0.05) / (0 + 1)</text><text x="690" y="110" text-anchor="middle" class="sv-tb">0.05</text>
+
+          <rect x="40" y="128" width="700" height="34" rx="4" class="sv-paper2"/>
+          <rect x="640" y="128" width="100" height="34" rx="4" class="sv-paper2"/>
+          <text x="60" y="150" text-anchor="middle" class="sv-t">3</text><text x="110" y="150" class="sv-tb">Green</text>
+          <text x="290" y="150" text-anchor="middle" class="sv-tm">0</text><text x="380" y="150" text-anchor="middle" class="sv-tm">0</text>
+          <text x="440" y="150" class="sv-tm">(0 + 0.05) / (0 + 1)</text><text x="690" y="150" text-anchor="middle" class="sv-tb">0.05</text>
+
+          <rect x="40" y="168" width="700" height="34" rx="4" class="sv-paper2"/>
+          <rect x="640" y="168" width="100" height="34" rx="4" class="sv-acc-soft"/>
+          <text x="60" y="190" text-anchor="middle" class="sv-t">4</text><text x="110" y="190" class="sv-tb">Blue</text>
+          <text x="290" y="190" text-anchor="middle" class="sv-tm">1</text><text x="380" y="190" text-anchor="middle" class="sv-tm">1</text>
+          <text x="440" y="190" class="sv-tm">(1 + 0.05) / (1 + 1)</text><text x="690" y="190" text-anchor="middle" class="sv-tb">0.525</text>
+
+          <rect x="40" y="208" width="700" height="34" rx="4" class="sv-paper2"/>
+          <rect x="640" y="208" width="100" height="34" rx="4" class="sv-acc-soft"/>
+          <text x="60" y="230" text-anchor="middle" class="sv-t">5</text><text x="110" y="230" class="sv-tb">Green</text>
+          <text x="290" y="230" text-anchor="middle" class="sv-tm">1</text><text x="380" y="230" text-anchor="middle" class="sv-tm">1</text>
+          <text x="440" y="230" class="sv-tm">(1 + 0.05) / (1 + 1)</text><text x="690" y="230" text-anchor="middle" class="sv-tb">0.525</text>
+
+          <rect x="40" y="248" width="700" height="34" rx="4" class="sv-paper2"/>
+          <rect x="640" y="248" width="100" height="34" rx="4" class="sv-good-soft"/>
+          <text x="60" y="270" text-anchor="middle" class="sv-t">6</text><text x="110" y="270" class="sv-tb">Green</text>
+          <text x="290" y="270" text-anchor="middle" class="sv-tm">2</text><text x="380" y="270" text-anchor="middle" class="sv-tm">2</text>
+          <text x="440" y="270" class="sv-tm">(2 + 0.05) / (2 + 1)</text><text x="690" y="270" text-anchor="middle" class="sv-tb">0.683</text>
+
+          <rect x="40" y="288" width="700" height="34" rx="4" class="sv-paper2"/>
+          <rect x="640" y="288" width="100" height="34" rx="4" class="sv-key-soft"/>
+          <text x="60" y="310" text-anchor="middle" class="sv-t">7</text><text x="110" y="310" class="sv-tb">Blue</text>
+          <text x="290" y="310" text-anchor="middle" class="sv-tm">1</text><text x="380" y="310" text-anchor="middle" class="sv-tm">2</text>
+          <text x="440" y="310" class="sv-tm">(1 + 0.05) / (2 + 1)</text><text x="690" y="310" text-anchor="middle" class="sv-tb">0.35</text>
+        </g>
+
+        <line x1="24" y1="52" x2="24" y2="318" class="sv-stroke-acc" stroke-width="2.5" marker-end="url(#ar1)"/>
+        <text x="40" y="352" class="sv-ts">Rows are read top to bottom. Each row looks only at earlier rows with the same color.</text>
+        <text x="40" y="374" class="sv-ts">Option count = earlier people with this color who love Troll 2. n = earlier people with this color.</text>
+      </svg>
+      <figcaption>Notice that the first time each color appears it gets the prior, 0.05, because nothing came before it.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li><strong>See the leakage in basic target encoding.</strong> Each row's own target changes its encoded value. Josh earlier described k-fold target encoding, which splits the data into k groups to reduce this.</li>
+      <li><strong>See the leakage case from the CatBoost paper.</strong> Suppose everyone's favorite color is blue. We use leave-one-out target encoding, which encodes each row with every row except itself. Then people who love Troll 2 all get 0.33, and people who do not all get 0.5.</li>
+      <li><strong>Notice the perfect split.</strong> Any tree that first splits on "favorite color &lt; 0.42" now classifies every training row correctly. The encoded feature carries the answer, so this is leakage.</li>
+      <li><strong>Read the rows in order.</strong> CatBoost treats each row as if it arrives one at a time. It encodes a row using only the rows before it.</li>
+      <li><strong>Use the CatBoost formula.</strong> It adds a prior of 0.05 to the option count, and divides by the number of earlier matching rows plus one.</li>
+      <li><strong>Encode new data with everything.</strong> After the model is built, the whole training set is used to target encode new data you want to classify.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 240" role="img" aria-label="Number line showing leave-one-out encoded values at 0.33 and 0.5 separated by a split at 0.42">
+        <line x1="80" y1="150" x2="680" y2="150" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="152" y1="145" x2="152" y2="155" class="sv-stroke-ink" stroke-width="1.5"/>
+        <line x1="560" y1="145" x2="560" y2="155" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="152" y="176" text-anchor="middle" class="sv-tm">0.33</text>
+        <text x="560" y="176" text-anchor="middle" class="sv-tm">0.5</text>
+        <circle cx="152" cy="132" r="8" class="sv-good"/>
+        <circle cx="152" cy="114" r="8" class="sv-good"/>
+        <circle cx="152" cy="96" r="8" class="sv-good"/>
+        <circle cx="560" cy="132" r="8" class="sv-key"/>
+        <circle cx="560" cy="114" r="8" class="sv-key"/>
+        <circle cx="560" cy="96" r="8" class="sv-key"/>
+        <circle cx="560" cy="78" r="8" class="sv-key"/>
+        <text x="152" y="60" text-anchor="middle" class="sv-t">Love Troll 2 (3)</text>
+        <text x="560" y="60" text-anchor="middle" class="sv-t">Do not love Troll 2 (4)</text>
+        <line x1="368" y1="40" x2="368" y2="190" class="sv-stroke-key" stroke-width="2" stroke-dasharray="6 5"/>
+        <rect x="278" y="196" width="180" height="24" rx="4" class="sv-paper2"/>
+        <text x="368" y="213" text-anchor="middle" class="sv-tm">favorite color &lt; 0.42</text>
+        <text x="40" y="30" class="sv-ts">Everyone likes blue, leave-one-out encoding:</text>
+      </svg>
+      <figcaption>With only one category, leave-one-out values separate the classes perfectly, so one split at 0.42 leaks the answer.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>The CatBoost formula differs from basic target encoding in two ways. It uses a defined prior (a guess) instead of the overall mean. It also simplifies the denominator: it adds one to the row count instead of adding a weight.</p>
+    <div class="formula"><span class="lbl">CatBoost ordered target encoding</span><div class="math">$$ \text{encoded value} = \frac{\text{OptionCount} + \text{Prior}}{n + 1} $$</div><p class="explain"><b>Symbols:</b> OptionCount is the number of earlier rows that have this same category and also have target 1 (here, love Troll 2). Prior is a fixed guess; in the examples Josh saw it was 0.05. \(n\) is the number of earlier rows that have this same category. The \(+1\) keeps the denominator above zero. <b>What it tells you:</b> a category seen for the first time gets the prior, and the value then moves toward the share of earlier matching rows that had target 1.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p><b>Row 1, blue.</b> No data came before it. So OptionCount = 0 and \(n = 0\). The value is \((0 + 0.05)/(0 + 1) = 0.05\).</p>
+      <p><b>Rows 2 and 3, red and green.</b> No earlier row has red or green. Both get 0.05 in the same way.</p>
+      <p><b>Row 4, blue.</b> We saw blue once before, in row 1, and that person loved Troll 2. So OptionCount = 1 and \(n = 1\). The value is \((1 + 0.05)/(1 + 1) = 0.525\).</p>
+      <p><b>Row 5, second green.</b> The one earlier green person loved Troll 2, so the value is also 0.525.</p>
+      <p><b>Row 6, third green.</b> Both earlier green people loved Troll 2. So OptionCount = 2 and \(n = 2\). The value is \((2 + 0.05)/(2 + 1) = 0.683\).</p>
+      <p><b>Row 7, third blue.</b> Only one of the two earlier blue people loved Troll 2. So OptionCount = 1 and \(n = 2\). The value is \((1 + 0.05)/(2 + 1) = 0.35\).</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> The same color can get different numbers in different rows. Blue becomes 0.05, then 0.525, then 0.35. This is expected, because each row sees a different amount of earlier data.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The order of the rows changes the encoding. That is the reason for the name "ordered" target encoding.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The ordered method is for training only. New data is encoded with the entire training set.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Josh thinks the paper's one-category example is a little silly. Standard practice turns a feature with one or two options into zeros and ones, so blue would just become 0. He still notes that CatBoost works, and works well.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is ordered target encoding in CatBoost?</summary><div class="a">CatBoost treats the training rows as if they arrive one at a time. Each row's category is encoded using only the earlier rows with the same category. The formula is option count plus a prior, divided by n plus one. Because the result depends on row order, it is called ordered target encoding.</div></details>
+    <details class="qa" open><summary>Why does basic target encoding cause leakage?</summary><div class="a">Each row's own target value is used to encode that same row. So the feature partly contains the answer. The model then does well on training data but worse on testing data.</div></details>
+    <details class="qa" open><summary>What happens the first time a category appears?</summary><div class="a">No earlier rows have that category, so the option count and n are both zero. The value is just the prior divided by one. In the video's example, that is 0.05.</div></details>
+    <details class="qa" open><summary>How does CatBoost encode new data at prediction time?</summary><div class="a">After the model is trained, it uses the whole training data set to target encode the new rows. The one-row-at-a-time order is only used while training.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>CatBoost stands for categorical boosting and is close to gradient boost and XGBoost.</li>
+      <li>Basic target encoding leaks because a row's target encodes that same row.</li>
+      <li>CatBoost encodes each row using only the earlier rows with the same category.</li>
+      <li>The formula is (OptionCount + Prior) / (n + 1), with a prior of 0.05 in the examples.</li>
+      <li>In the example, blue goes 0.05, 0.525, 0.35 and green goes 0.05, 0.525, 0.683.</li>
+      <li>Row order changes the values, so the method is called ordered target encoding.</li>
+      <li>New data is encoded with the whole training set.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Ordered target encoding</span><span class="board-tag">each row sees only the rows before it</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 264" role="img" aria-label="Seven rows arrive in order: blue, red, green, blue, green, green, blue. Row 7 is blue, so it looks back only at the earlier blue rows, row 1, who loved Troll 2, and row 4, who did not, and gets (1 + 0.05) / (2 + 1) = 0.35, where 0.05 is the prior.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <text x="20" y="30" class="sv-ts">rows arrive in order →</text>
+            <text x="380" y="56" text-anchor="end" class="sv-t">only earlier blues</text>
+            <line x1="16" y1="150" x2="383" y2="150" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <path d="M349 131 Q 197 12 44 132" class="sv-stroke-acc" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <path d="M334 143 Q 269 90 204 132" class="sv-stroke-acc" stroke-width="2.5" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="36" cy="150" r="12" class="sv-acc"/>
+              <circle cx="89" cy="150" r="12" class="sv-key"/>
+              <circle cx="141" cy="150" r="12" class="sv-good"/>
+              <circle cx="194" cy="150" r="12" class="sv-acc"/>
+              <circle cx="247" cy="150" r="12" class="sv-good"/>
+              <circle cx="299" cy="150" r="12" class="sv-good"/>
+            </g>
+            <g class="sv-stroke-ink" stroke-width="3"><circle cx="352" cy="150" r="15" class="sv-acc"/></g>
+            <text x="36" y="190" text-anchor="middle" class="sv-ts">loved</text>
+            <text x="194" y="190" text-anchor="middle" class="sv-ts">not loved</text>
+            <text x="352" y="190" text-anchor="middle" class="sv-tb">row 7</text>
+            <text x="100" y="224" class="sv-tm">(1 + 0.05) / (2 + 1) = 0.35</text>
+            <text x="165" y="250" text-anchor="middle" class="sv-ts">prior</text>
+          </svg>
+          <p>Basic target encoding leaks: a row's own target shapes its value. CatBoost reads rows in order and encodes each from earlier same-category rows, plus a prior.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Categorical feature</dt><dd>A feature with named options, like favorite color.</dd>
+            <dt>Target</dt><dd>What we want to predict; here, loves Troll 2.</dd>
+            <dt>Leakage</dt><dd>The model sees the answer while learning, then does worse on new data.</dd>
+            <dt>Leave-one-out</dt><dd>Encodes each row with every row except itself.</dd>
+            <dt>Prior</dt><dd>A fixed guess, 0.05 here; a first-seen category gets just this.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Basic encoding leaks</b>a row's target sets its value</li>
+            <li><b>All-blue case</b>leave-one-out gives 0.33 or 0.5</li>
+            <li><b>Perfect split</b>at 0.42, every row classified right</li>
+            <li><b>Read in order</b>only earlier rows count</li>
+            <li><b>Apply formula</b>add prior 0.05; divide by n+1</li>
+            <li><b>New data</b>encoded with the whole training set</li>
+          </ol>
+          <p class="loop">↺ steps 4 and 5 repeat for every row, top to bottom</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{encoded}=\frac{\text{OptionCount}+\text{Prior}}{n+1}$$
+          $$\text{first time: }\frac{0+0.05}{0+1}=0.05$$
+          <ul class="keys">
+            <li>OptionCount: earlier rows with this category and target 1; \(n\): all earlier rows with this category.</li>
+            <li>Prior: a fixed guess, 0.05 here, instead of the overall mean.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>row</th><th>color</th><th>count, n</th><th>value</th></tr>
+            <tr><td>1–3</td><td>blue, red, green</td><td>0, 0</td><td>0.05</td></tr>
+            <tr><td>4</td><td>blue</td><td>1, 1</td><td>0.525</td></tr>
+            <tr><td>5</td><td>green</td><td>1, 1</td><td>0.525</td></tr>
+            <tr><td>6</td><td>green</td><td>2, 2</td><td>0.683</td></tr>
+            <tr class="final"><td>7</td><td>blue</td><td>1, 2</td><td>0.35 ✓</td></tr>
+          </table>
+          <p class="hand">A color's first row gets the prior, 0.05; later rows drift toward the earlier same-color share.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">A color always gets the same number.</span><span class="yes">Blue goes 0.05, 0.525, 0.35: each row sees different earlier rows.</span></li>
+            <li><span class="no">Row order does not matter.</span><span class="yes">Order changes the encoding; that is why it is called ordered.</span></li>
+            <li><span class="no">New data is encoded row by row too.</span><span class="yes">Ordered encoding is for training only; new data uses the whole training set.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="68-xgboost-in-python-from-start-to-finish.html"><small>Previous</small>XGBoost in Python from Start to Finish</a> <a href="70-catboost-part-2-building-and-using-trees.html"><small>Next</small>CatBoost Part 2: Building and Using Trees</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

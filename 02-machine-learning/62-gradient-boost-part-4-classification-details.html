@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gradient Boost Part 4 (of 4): Classification Details — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>62</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 62 · 37 min</div>
+    <h1>Gradient Boost Part 4 (of 4): Classification Details</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=StWY5QWMXCw" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video walks through the original gradient boost algorithm for classification, line by line. It shows where the strange looking leaf output formula comes from.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Gradient boost for classification predicts <b>log odds</b>, not probabilities. The loss function is the negative log likelihood, rewritten as a function of the predicted log odds. Its negative first derivative is the pseudo residual, which is simply observed minus predicted probability. Its second derivative is \(p(1-p)\). A second order Taylor approximation of the loss then gives each leaf the output value \(\sum r \,/\, \sum p(1-p)\).</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh uses a very small training set: three people. We know whether each person likes popcorn, their age, their favourite colour, and whether they love the movie Troll 2. Two people love Troll 2 and one does not. The set is too small for real trees, so the video uses stumps. In practice gradient boost uses trees with 8 to 32 leaves.</p>
+    <p>The algorithm is the same as for regression, with one twist. The predictions are on the log odds scale, as in logistic regression. The <b>log odds</b> is the log of the probability of yes divided by the probability of no. Every prediction is a log odds value, and we convert it to a probability when we need one.</p>
+    <p>Josh moves between log odds and probability again and again, because some steps are easier in one form. The first derivative of the loss gives the residual. The second derivative, \(p(1-p)\), goes in the denominator of the leaf output. That is the whole story of this video.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 260" role="img" aria-label="Pipeline of the gradient boost classification loop from initial leaf to new prediction">
+        <defs><marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker></defs>
+        <rect x="20" y="40" width="128" height="70" rx="8" class="sv-acc-soft"/>
+        <rect x="20" y="40" width="128" height="70" rx="8" class="sv-stroke-acc" stroke-width="1.5"/>
+        <text x="84" y="68" text-anchor="middle" class="sv-tb">Initial leaf</text>
+        <text x="84" y="90" text-anchor="middle" class="sv-tm">log(odds) = 0.69</text>
+
+        <rect x="168" y="40" width="128" height="70" rx="8" class="sv-paper2"/>
+        <rect x="168" y="40" width="128" height="70" rx="8" class="sv-line" stroke-width="1.5"/>
+        <text x="232" y="68" text-anchor="middle" class="sv-tb">Residuals</text>
+        <text x="232" y="90" text-anchor="middle" class="sv-tm">r = obs − p</text>
+
+        <rect x="316" y="40" width="128" height="70" rx="8" class="sv-paper2"/>
+        <rect x="316" y="40" width="128" height="70" rx="8" class="sv-line" stroke-width="1.5"/>
+        <text x="380" y="68" text-anchor="middle" class="sv-tb">Fit a tree</text>
+        <text x="380" y="90" text-anchor="middle" class="sv-ts">to the residuals</text>
+
+        <rect x="464" y="40" width="128" height="70" rx="8" class="sv-key-soft"/>
+        <rect x="464" y="40" width="128" height="70" rx="8" class="sv-stroke-key" stroke-width="1.5"/>
+        <text x="528" y="68" text-anchor="middle" class="sv-tb">Leaf output γ</text>
+        <text x="528" y="90" text-anchor="middle" class="sv-tm">Σr / Σp(1−p)</text>
+
+        <rect x="612" y="40" width="128" height="70" rx="8" class="sv-good-soft"/>
+        <rect x="612" y="40" width="128" height="70" rx="8" class="sv-stroke-good" stroke-width="1.5"/>
+        <text x="676" y="68" text-anchor="middle" class="sv-tb">New log odds</text>
+        <text x="676" y="90" text-anchor="middle" class="sv-tm">F + ν·γ</text>
+
+        <line x1="150" y1="75" x2="164" y2="75" class="sv-line" stroke-width="2" marker-end="url(#ah1)"/>
+        <line x1="298" y1="75" x2="312" y2="75" class="sv-line" stroke-width="2" marker-end="url(#ah1)"/>
+        <line x1="446" y1="75" x2="460" y2="75" class="sv-line" stroke-width="2" marker-end="url(#ah1)"/>
+        <line x1="594" y1="75" x2="608" y2="75" class="sv-line" stroke-width="2" marker-end="url(#ah1)"/>
+
+        <path d="M676,112 L676,170 L232,170 L232,116" class="sv-line" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ah1)"/>
+        <rect x="360" y="155" width="190" height="26" rx="5" class="sv-paper"/>
+        <text x="455" y="173" text-anchor="middle" class="sv-ts">repeat for m = 1 … M trees</text>
+        <text x="380" y="220" text-anchor="middle" class="sv-ts">Everything inside the loop is on the log odds scale.</text>
+        <text x="380" y="240" text-anchor="middle" class="sv-ts">We convert to a probability only to compute residuals and the final answer.</text>
+      </svg>
+      <figcaption>Notice that the loop is identical to regression. Only the loss function and the leaf output formula change.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Write the log likelihood of the data given a predicted probability, the same one used in logistic regression. Multiply it by \(-1\) so that smaller means better. This is now a loss function.</li>
+      <li>Rewrite that loss as a function of the predicted log odds instead of the predicted probability. This takes a few algebra steps, shown in the Formulas section.</li>
+      <li>Take the derivative of the loss with respect to the predicted log odds. It is differentiable, which is what gradient boost needs.</li>
+      <li><b>Step 1 of the algorithm.</b> Find the constant log odds value that minimises the total loss. Setting the sum of derivatives to zero gives \(p = 2/3\), so the first leaf is \(F_0(x) = \log(2/1) = 0.69\).</li>
+      <li><b>Step 2A.</b> Compute the pseudo residuals. The negative derivative of the loss is exactly observed minus predicted probability, so with \(p = 0.67\) the residuals are 0.33, 0.33 and −0.67.</li>
+      <li><b>Step 2B.</b> Fit a regression tree to those residuals using the features. Name the leaves \(R_{j,m}\), where \(j\) is the leaf and \(m\) is the tree.</li>
+      <li><b>Step 2C.</b> Compute an output value \(\gamma_{j,m}\) for each leaf. Solving directly is a mess, so approximate the loss with a second order Taylor polynomial and solve that instead.</li>
+      <li><b>Step 2D.</b> Update the prediction: \(F_m(x) = F_{m-1}(x) + \nu \gamma_{j,m}\). Then set \(m = m+1\) and repeat from 2A.</li>
+      <li><b>Step 3.</b> Output \(F_M(x)\). Convert the final log odds to a probability and apply a threshold, usually 0.5.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 275" role="img" aria-label="First tree split on likes popcorn with residuals and leaf output values">
+        <rect x="20" y="30" width="290" height="150" rx="8" class="sv-paper2"/>
+        <text x="36" y="56" class="sv-tb">Residuals, with every p = 0.67</text>
+        <text x="36" y="88" class="sv-tm">x₁ : 1 − 0.67 = 0.33</text>
+        <text x="36" y="114" class="sv-tm">x₂ : 1 − 0.67 = 0.33</text>
+        <text x="36" y="140" class="sv-tm">x₃ : 0 − 0.67 = −0.67</text>
+        <text x="36" y="168" class="sv-ts">observed − predicted probability</text>
+
+        <rect x="450" y="30" width="180" height="44" rx="8" class="sv-acc-soft"/>
+        <rect x="450" y="30" width="180" height="44" rx="8" class="sv-stroke-acc" stroke-width="1.5"/>
+        <text x="540" y="58" text-anchor="middle" class="sv-tb">Likes Popcorn?</text>
+
+        <line x1="510" y1="74" x2="430" y2="140" class="sv-line" stroke-width="2"/>
+        <line x1="570" y1="74" x2="650" y2="140" class="sv-line" stroke-width="2"/>
+        <text x="436" y="106" class="sv-ts">Yes</text>
+        <text x="622" y="106" class="sv-ts">No</text>
+
+        <rect x="350" y="140" width="160" height="86" rx="8" class="sv-key-soft"/>
+        <rect x="350" y="140" width="160" height="86" rx="8" class="sv-stroke-key" stroke-width="1.5"/>
+        <text x="430" y="166" text-anchor="middle" class="sv-tb">R₁,₁</text>
+        <text x="430" y="190" text-anchor="middle" class="sv-tm">r = 0.33</text>
+        <text x="430" y="214" text-anchor="middle" class="sv-tm">γ = 1.5</text>
+
+        <rect x="560" y="140" width="180" height="86" rx="8" class="sv-key-soft"/>
+        <rect x="560" y="140" width="180" height="86" rx="8" class="sv-stroke-key" stroke-width="1.5"/>
+        <text x="650" y="166" text-anchor="middle" class="sv-tb">R₂,₁</text>
+        <text x="650" y="190" text-anchor="middle" class="sv-tm">r = 0.33, −0.67</text>
+        <text x="650" y="214" text-anchor="middle" class="sv-tm">γ = −0.77</text>
+
+        <text x="380" y="252" text-anchor="middle" class="sv-ts">γ = sum of residuals in the leaf ÷ sum of p(1−p) in the leaf</text>
+      </svg>
+      <figcaption>Notice that the leaf value is not the average residual. The denominator \(p(1-p)\) converts the residual back onto the log odds scale.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Loss function, in probability</span><div class="math">$$ L = -\left[\,\text{obs}\cdot\log(p) + (1-\text{obs})\cdot\log(1-p)\,\right] $$</div><p class="explain"><b>Symbols:</b> \(\text{obs}\) is the observed label, 1 for yes and 0 for no. \(p\) is the predicted probability of yes. \(\log\) is the natural log. <b>What it tells you:</b> this is the log likelihood from logistic regression, flipped by the minus sign so that a smaller value means a better fit.</p></div>
+
+    <div class="formula"><span class="lbl">Derivation, step 1 of 3</span><div class="math">$$ L = -\text{obs}\left[\log(p) - \log(1-p)\right] - \log(1-p) $$</div><p class="explain">We distribute the minus sign and group the two \(\log\) terms that contain \(\text{obs}\). This grouping lets the log odds appear in the next step.</p></div>
+
+    <div class="formula"><span class="lbl">Derivation, step 2 of 3</span><div class="math">$$ \log(p) - \log(1-p) = \log\!\left(\frac{p}{1-p}\right) = \log(\text{odds}) $$</div><p class="explain">The bracket is exactly the definition of the log odds, so the first term becomes \(-\text{obs}\cdot\log(\text{odds})\).</p></div>
+
+    <div class="formula"><span class="lbl">Derivation, step 3 of 3</span><div class="math">$$ \log(1-p) = \log\!\left(\frac{1}{1+e^{\log(\text{odds})}}\right) = -\log\!\left(1+e^{\log(\text{odds})}\right) $$</div><p class="explain">We write \(1-p\) in terms of the log odds, and \(\log(1) = 0\) drops out. So the second term of the loss changes sign from minus to plus.</p></div>
+
+    <div class="formula"><span class="lbl">Loss function, in log odds</span><div class="math">$$ L = -\,\text{obs}\cdot\log(\text{odds}) + \log\!\left(1+e^{\log(\text{odds})}\right) $$</div><p class="explain"><b>Symbols:</b> \(\text{obs}\) is 1 or 0, and \(\log(\text{odds})\) is the current prediction. <b>What it tells you:</b> this is the version gradient boost actually uses, because the trees add up log odds values.</p></div>
+
+    <div class="formula"><span class="lbl">First derivative (the pseudo residual)</span><div class="math">$$ \frac{\partial L}{\partial \log(\text{odds})} = -\,\text{obs} + \frac{e^{\log(\text{odds})}}{1+e^{\log(\text{odds})}} = -(\text{obs} - p) $$</div><p class="explain"><b>Symbols:</b> the fraction is the standard conversion from log odds to the predicted probability \(p\). <b>What it tells you:</b> the negative derivative, which gradient boost calls the pseudo residual, is simply observed minus predicted probability.</p></div>
+
+    <div class="formula"><span class="lbl">Second derivative</span><div class="math">$$ \frac{\partial^2 L}{\partial \log(\text{odds})^2} = \frac{\partial}{\partial \log(\text{odds})}\left[-\text{obs} + e^{\log(\text{odds})}\left(1+e^{\log(\text{odds})}\right)^{-1}\right] $$</div><p class="explain">The second derivative is the derivative of the first one. Josh writes the fraction as a product, so he can use the product rule.</p>
+    <div class="math">$$ = \frac{e^{\log(\text{odds})}}{1+e^{\log(\text{odds})}} - \frac{e^{2\log(\text{odds})}}{\left(1+e^{\log(\text{odds})}\right)^{2}} = \frac{e^{\log(\text{odds})}}{\left(1+e^{\log(\text{odds})}\right)^{2}} $$</div><p class="explain">The \(-\text{obs}\) term has no log odds in it, so its derivative is zero. Over a common denominator, two terms in the numerator cancel.</p>
+    <div class="math">$$ = \frac{e^{\log(\text{odds})}}{1+e^{\log(\text{odds})}} \times \frac{1}{1+e^{\log(\text{odds})}} = p\,(1-p) $$</div><p class="explain">Split the fraction into two factors. The first factor is \(p\), and the second is \(1-p\) from derivation step 3. <b>Symbols:</b> \(p\) is the current predicted probability. <b>What it tells you:</b> the messy second derivative is a simple product of two probabilities.</p></div>
+
+    <div class="formula"><span class="lbl">Second order Taylor approximation</span><div class="math">$$ L\!\left(\text{obs},\, F_{m-1}+\gamma\right) \approx L + \frac{\partial L}{\partial F}\,\gamma + \frac{1}{2}\frac{\partial^2 L}{\partial F^2}\,\gamma^{2} $$</div><p class="explain"><b>Symbols:</b> \(\gamma\) is the value we add to the current prediction, and \(F\) is short for the current log odds. <b>What it tells you:</b> the true loss is hard to minimise for \(\gamma\) directly, but this quadratic stand in is easy.</p>
+    <div class="math">$$ \frac{d}{d\gamma}: \quad \frac{\partial L}{\partial F} + \frac{\partial^2 L}{\partial F^2}\,\gamma = 0 $$</div><p class="explain">Take the derivative with respect to \(\gamma\) and set it to zero. The first term has no \(\gamma\), so it drops out, and the square cancels the 1/2.</p></div>
+
+    <div class="formula"><span class="lbl">Leaf output value</span><div class="math">$$ \gamma_{j,m} = \frac{-\sum \partial L/\partial F}{\sum \partial^2 L/\partial F^2} = \frac{\sum_i r_{i,m}}{\sum_i p_i\,(1-p_i)} $$</div><p class="explain"><b>Symbols:</b> the sums run over the samples in leaf \(j\) of tree \(m\). \(r_{i,m}\) is that sample's residual and \(p_i\) its most recent predicted probability. <b>What it tells you:</b> solve for \(\gamma\), then plug in \(-(\text{obs}-p)\) and \(p(1-p)\). With two samples in a leaf, Josh adds their Taylor polynomials, so each part becomes a sum.</p></div>
+
+    <div class="formula"><span class="lbl">Update rule</span><div class="math">$$ F_m(x) = F_{m-1}(x) + \nu \sum_{j} \gamma_{j,m}\,\mathbf{1}\!\left(x \in R_{j,m}\right) $$</div><p class="explain"><b>Symbols:</b> \(\nu\) is the learning rate, \(R_{j,m}\) is leaf \(j\) of tree \(m\), and the indicator is 1 when the sample lands in that leaf. <b>What it tells you:</b> each new prediction is the old one plus a scaled leaf value. The sum is there only in case a sample reaches more than one leaf.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p><b>Step 1, the initial leaf.</b> Two of the three people love Troll 2, so the probability that minimises the total loss is \(p = 2/3 = 0.67\). Converting gives \(F_0(x) = \log(2/1) = 0.69\). Every sample starts with this same log odds.</p>
+      <p><b>Step 2A, residuals.</b> With \(p = 0.67\) for everyone, the residuals are \(1-0.67=0.33\), \(1-0.67=0.33\) and \(0-0.67=-0.67\).</p>
+      <p><b>Step 2B, the tree.</b> The stump splits on Likes Popcorn. Sample \(x_1\) goes to leaf \(R_{1,1}\). Samples \(x_2\) and \(x_3\) go to leaf \(R_{2,1}\).</p>
+      <p><b>Step 2C, leaf outputs.</b> For the leaf with one sample: \(\gamma_{1,1} = 0.33 \,/\, (0.67 \times 0.33) = 1.5\). For the leaf with two samples: \(\gamma_{2,1} = (0.33 - 0.67) \,/\, (0.67 \times 0.33 + 0.67 \times 0.33) = -0.77\).</p>
+      <p><b>Step 2D, new predictions.</b> The learning rate is \(\nu = 0.8\), which is deliberately large here. So \(F_1(x_1) = 0.69 + 0.8 \times 1.5 = 1.89\), and \(F_1(x_2) = F_1(x_3) = 0.69 + 0.8 \times (-0.77) = 0.07\).</p>
+      <p>Samples 1 and 3 improved, but sample 2 got worse. The video then builds a second tree and stops at \(M = 2\). In practice \(M\) is 100 or more.</p>
+      <p><b>Step 3, prediction for a new person.</b> \(F_2(x) = 3.4\) in log odds. The probability is \(e^{3.4}/(1+e^{3.4}) = 0.97\). Since 0.97 is above the 0.5 threshold, we predict that this person loves Troll 2.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> The leaf output is <b>not</b> the average of the residuals in the leaf. The residuals live in probability space, but the prediction lives in log odds space. Dividing by \(\sum p(1-p)\) is the conversion between them.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Each \(p_i\) in the denominator is that sample's own most recent predicted probability, not a shared value. They happen to be equal for the first tree because every sample starts at the same initial leaf. After the first tree they differ.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A single tree can make one sample worse, as sample 2 shows here. Josh says this is why we build more than one tree. Judge the whole model, not any one tree.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>Why does gradient boost for classification work with log odds instead of probabilities?</summary><div class="a">The trees add their outputs to the previous prediction. Probabilities are bounded between 0 and 1, so adding numbers to them can go out of range. Log odds are unbounded, so addition is always valid. We apply the logistic conversion at the end to get a probability back.</div></details>
+    <details class="qa" open><summary>What is the loss function, and what is the pseudo residual?</summary><div class="a">The loss is the negative log likelihood, written as a function of the predicted log odds. Its negative first derivative is the pseudo residual, and that works out to be observed minus predicted probability. So the residual is simple even though the loss looks intimidating.</div></details>
+    <details class="qa" open><summary>Why do we need a Taylor approximation to get the leaf output?</summary><div class="a">Taking the derivative of the real loss with respect to gamma and solving in closed form is not practical. So we replace the loss with its second order Taylor polynomial around the current prediction. That is a quadratic in gamma, so setting its derivative to zero gives gamma as minus the first derivative divided by the second derivative.</div></details>
+    <details class="qa" open><summary>Explain the leaf output formula in one sentence.</summary><div class="a">The output of a leaf is the sum of the residuals of the samples in that leaf, divided by the sum of \(p(1-p)\) for those same samples. The numerator says which direction to move. The denominator is the sum of second derivatives of the loss, which puts the step on the log odds scale.</div></details>
+    <details class="qa" open><summary>How does the classification version differ from the regression version?</summary><div class="a">The loop is identical: initial guess, residuals, tree on the residuals, leaf outputs, scaled update. Only two pieces change. The loss becomes the negative log likelihood instead of squared error, and the leaf output becomes \(\sum r / \sum p(1-p)\) instead of the plain average of the residuals.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Gradient boost for classification predicts log odds, then converts to a probability at the end.</li>
+      <li>The loss function is the negative log likelihood, rewritten as a function of the predicted log odds.</li>
+      <li>Its first derivative gives the pseudo residual, which equals observed minus predicted probability.</li>
+      <li>Its second derivative simplifies to \(p(1-p)\).</li>
+      <li>The initial leaf is the log odds of the overall class balance, here \(\log(2/1) = 0.69\).</li>
+      <li>Each leaf output is the sum of residuals divided by the sum of \(p(1-p)\), found with a second order Taylor approximation.</li>
+      <li>Each new prediction adds the learning rate times the leaf output to the previous prediction.</li>
+      <li>After \(M\) trees, convert the final log odds to a probability and compare it to a threshold such as 0.5.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Gradient Boost classification details</span><span class="board-tag">predict log odds, divide residuals by p(1−p)</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 272" role="img" aria-label="For the leaf holding x₂ and x₃, the true loss and its Taylor stand in touch at the start, γ = 0, with the same 1st derivative, −Σr, and 2nd derivative, Σp(1−p), and the stand in's bottom gives the leaf output, γ = −0.77.">
+            <line x1="16" y1="205" x2="388" y2="205" class="sv-stroke-ink" stroke-width="2"/>
+            <line x1="24" y1="30" x2="54" y2="30" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round"/>
+            <line x1="24" y1="58" x2="54" y2="58" class="sv-stroke-key" stroke-width="3" stroke-dasharray="8 7" stroke-linecap="round"/>
+            <polyline points="28,83.4 40,103.3 55,124.6 70,142.2 85,155.9 100,166.1 115,172.6 130,175.5 145,175.1 160,171.2 175,163.9 190,153.4 205,139.7 220,122.9 235,103 250,80.2 265,54.4 281,23.7" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="28,107.3 40,122.9 55,139.8 70,153.5 85,164.2 100,171.9 115,176.5 130,178 145,176.5 160,171.9 175,164.2 190,153.5 205,139.8 220,122.9 235,103 250,80.1 265,54.1 281,23" class="sv-stroke-key" stroke-width="3" stroke-dasharray="8 7" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="130" y1="189" x2="130" y2="204" class="sv-stroke-good" stroke-width="2" stroke-dasharray="3 3"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="220" cy="122.9" r="7" class="sv-key"/>
+              <circle cx="130" cy="178" r="8" class="sv-good"/>
+            </g>
+            <text x="64" y="36" class="sv-t">true loss (x₂, x₃)</text>
+            <text x="64" y="64" class="sv-t">Taylor stand in</text>
+            <text x="386" y="128" text-anchor="end" class="sv-tb">← start: γ = 0</text>
+            <text x="386" y="154" text-anchor="end" class="sv-ts">1st derivative: −Σr</text>
+            <text x="386" y="178" text-anchor="end" class="sv-ts">2nd derivative: Σp(1−p)</text>
+            <text x="130" y="231" text-anchor="middle" class="sv-tb">bottom: γ = −0.77</text>
+            <text x="386" y="257" text-anchor="end" class="sv-ts">leaf output γ →</text>
+          </svg>
+          <p>Predictions are log odds, so trees can add them up. A leaf's output is hard to solve for directly, so minimise a Taylor stand in for the loss. Its bottom sits at Σr ÷ Σp(1−p).</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Log odds</dt><dd>Log of p ÷ (1 − p). Every prediction is one.</dd>
+            <dt>Pseudo residual</dt><dd>Minus the loss's first derivative: observed minus predicted probability.</dd>
+            <dt>Second derivative</dt><dd>Simplifies to p(1 − p). Summed, it is γ's denominator.</dd>
+            <dt>Taylor approximation</dt><dd>An easy quadratic stand in for the hard loss.</dd>
+            <dt>Learning rate ν</dt><dd>Scales each leaf output; 0.8 here, deliberately large.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Write the loss</b>negative log likelihood, in log odds</li>
+            <li><b>Initial leaf</b>log(2/1) = 0.69 for all</li>
+            <li><b>Residuals</b>observed − predicted probability</li>
+            <li><b>Fit a tree</b>to the residuals</li>
+            <li><b>Leaf outputs</b>Σr ÷ Σp(1−p), via Taylor</li>
+            <li><b>Update</b>log odds + ν × γ</li>
+          </ol>
+          <p class="loop">↺ repeat steps 3 to 6 for M trees, then convert to a probability, threshold usually 0.5</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$r=-\frac{\partial L}{\partial F}=\text{obs}-p$$
+          $$\frac{\partial^2 L}{\partial F^2}=p\,(1-p)$$
+          $$\gamma=\frac{\sum r}{\sum p\,(1-p)}$$
+          <ul class="keys">
+            <li>\(L\) is the loss, \(F\) the predicted log odds, \(p\) its probability; obs is 1 or 0.</li>
+            <li>Sums run over one leaf's samples.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>sample</th><th>x₁</th><th>x₂</th><th>x₃</th></tr>
+            <tr><td>obs</td><td>1</td><td>1</td><td>0</td></tr>
+            <tr><td>r = obs − 0.67</td><td>0.33</td><td>0.33</td><td>−0.67</td></tr>
+            <tr><td>leaf γ</td><td>1.5</td><td>−0.77</td><td>−0.77</td></tr>
+            <tr><td>0.69 + 0.8γ</td><td>1.89</td><td>0.07</td><td>0.07</td></tr>
+            <tr class="final"><td>new person</td><td colspan="3">F₂ = 3.4 → p = 0.97 ✓</td></tr>
+          </table>
+          <p class="hand">Sample 2 got worse, so a second tree follows. The new person's 0.97 is above 0.5: loves Troll 2.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">A leaf outputs its average residual.</span><span class="yes">Residuals live in probability space, predictions in log odds; dividing by Σp(1−p) converts.</span></li>
+            <li><span class="no">The denominator uses one shared p.</span><span class="yes">Each p is that sample's latest predicted probability; they differ after tree 1.</span></li>
+            <li><span class="no">Each tree improves every sample.</span><span class="yes">Tree 1 made sample 2 worse. Judge the whole model, not one tree.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="61-gradient-boost-part-3-classification.html"><small>Previous</small>Gradient Boost Part 3 (of 4): Classification</a> <a href="64-xgboost-part-1-regression.html"><small>Next</small>XGBoost Part 1 (of 4): Regression</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

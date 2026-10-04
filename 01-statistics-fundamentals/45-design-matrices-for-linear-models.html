@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Design Matrices For Linear Models — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>45</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 45 · 14.7 min</div>
+    <h1>Design Matrices For Linear Models</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=CqLGvwi-5Pc" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: Machine Learning (video 13)</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">A design matrix is the small table of numbers that tells a linear model which parts of its equation to use for each measurement. This video shows that one simple table can run a t-test, a regression, or both at the same time.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Part three of the general linear models series starts with the standard design matrix for a t-test. It has a column of ones plus a column that switches a mutant offset on or off. Josh then shows that the numbers do not have to be ones and zeros. A column can hold the actual x-axis values, which turns the same machinery into linear regression. Finally he combines both ideas in one model, compares it to simpler models with an F test, and uses the same trick to remove a batch effect.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>A linear model is just an equation with a few terms. Each term has a parameter, such as a mean, an offset, or a slope. The design matrix holds one row for every measurement you collected. Each column of that row is a number that multiplies one term of the equation.</p>
+    <p>The standard design matrix for a t-test uses only ones and zeros. The first column is all ones, so every mouse, control and mutant, turns on the term for the mean of the control values. The second column is zero for control mice and one for mutant mice. That second term is the difference between the mutant mean and the control mean, so it acts as an offset that only the mutants receive.</p>
+    <p>Multiplying a term by one keeps it, which turns it on. Multiplying a term by zero removes it, which turns it off. In part two the same t-test was written with two separate mean terms. Both versions give the same residuals and both have two parameters, so they give the same F value and the same p-value.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 240" role="img" aria-label="The standard t-test design matrix multiplied by two parameters gives the predicted value for each mouse">
+        <text x="148" y="44" class="sv-ts" text-anchor="middle">design matrix</text>
+        <text x="321" y="44" class="sv-ts" text-anchor="middle">parameters</text>
+        <text x="580" y="44" class="sv-ts" text-anchor="middle">what each row predicts</text>
+
+        <text x="118" y="72" class="sv-ts" text-anchor="middle">col 1</text>
+        <text x="178" y="72" class="sv-ts" text-anchor="middle">col 2</text>
+
+        <path d="M90,78 L78,78 L78,212 L90,212" class="sv-stroke-ink" stroke-width="1.5"/>
+        <path d="M206,78 L218,78 L218,212 L206,212" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="118" y="94" class="sv-tm" text-anchor="middle">1</text>
+        <text x="178" y="94" class="sv-tm" text-anchor="middle">0</text>
+        <text x="118" y="129" class="sv-tm" text-anchor="middle">1</text>
+        <text x="178" y="129" class="sv-tm" text-anchor="middle">0</text>
+        <text x="118" y="164" class="sv-tm" text-anchor="middle">1</text>
+        <text x="178" y="164" class="sv-tm" text-anchor="middle">1</text>
+        <text x="118" y="199" class="sv-tm" text-anchor="middle">1</text>
+        <text x="178" y="199" class="sv-tm" text-anchor="middle">1</text>
+
+        <text x="70" y="94" font-size="12" class="sv-key" text-anchor="end">control</text>
+        <text x="70" y="129" font-size="12" class="sv-key" text-anchor="end">control</text>
+        <text x="70" y="164" font-size="12" class="sv-good" text-anchor="end">mutant</text>
+        <text x="70" y="199" font-size="12" class="sv-good" text-anchor="end">mutant</text>
+
+        <text x="236" y="150" class="sv-tb" text-anchor="middle">×</text>
+
+        <path d="M268,108 L256,108 L256,182 L268,182" class="sv-stroke-ink" stroke-width="1.5"/>
+        <path d="M374,108 L386,108 L386,182 L374,182" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="321" y="132" class="sv-tm" text-anchor="middle">mean(control)</text>
+        <text x="321" y="170" class="sv-tm" text-anchor="middle">mutant offset</text>
+
+        <text x="402" y="150" class="sv-tb" text-anchor="middle">=</text>
+
+        <path d="M432,78 L420,78 L420,212 L432,212" class="sv-stroke-ink" stroke-width="1.5"/>
+        <path d="M728,78 L740,78 L740,212 L728,212" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="580" y="94" class="sv-tm" text-anchor="middle">mean(control)</text>
+        <text x="580" y="129" class="sv-tm" text-anchor="middle">mean(control)</text>
+        <text x="580" y="164" class="sv-tm" text-anchor="middle">mean(control) + offset</text>
+        <text x="580" y="199" class="sv-tm" text-anchor="middle">mean(control) + offset</text>
+      </svg>
+      <figcaption>Notice that column two is the switch: a zero drops the offset, a one adds it, so mutant rows predict a different value.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Write the equation you want to fit. Each term needs one parameter, such as a mean, an offset, or a slope.</li>
+      <li>Build the design matrix with one row per measurement and one column per term. The first column is usually all ones.</li>
+      <li>Use ones and zeros when a term should switch on or off. This is what a t-test or an ANOVA needs, because the data fall into categories.</li>
+      <li>Use real numbers in a column when a term should be scaled instead. For linear regression the second column holds the x-axis value of each point.</li>
+      <li>Plug each row into the equation, one row at a time. Each row gives one predicted point on the fitted line, so you can measure the residuals.</li>
+      <li>Compare the fitted model with a simpler model using the F statistic, and turn that F value into a p-value.</li>
+    </ol>
+    <p>The interesting step is number four. Once a column can hold any number, a single framework covers categories, continuous predictors, and both together.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 350" role="img" aria-label="Scatter plot with a control line and a higher mutant line, next to the three column design matrix that produces them">
+        <text x="60" y="42" class="sv-tb">Two types of mouse, one slope</text>
+        <text x="470" y="42" class="sv-tb">The design matrix</text>
+
+        <path d="M60,70 L60,300 L400,300" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="230" y="326" class="sv-ts" text-anchor="middle">weight</text>
+        <text x="30" y="185" class="sv-ts" text-anchor="middle" transform="rotate(-90 30 185)">size</text>
+
+        <line x1="90" y1="200" x2="360" y2="100" class="sv-stroke-good" stroke-width="2"/>
+        <line x1="90" y1="250" x2="360" y2="150" class="sv-stroke-key" stroke-width="2"/>
+
+        <circle cx="120" cy="186" r="5" class="sv-good"/>
+        <circle cx="190" cy="166" r="5" class="sv-good"/>
+        <circle cx="260" cy="134" r="5" class="sv-good"/>
+        <circle cx="340" cy="110" r="5" class="sv-good"/>
+        <circle cx="110" cy="240" r="5" class="sv-key"/>
+        <circle cx="170" cy="224" r="5" class="sv-key"/>
+        <circle cx="240" cy="191" r="5" class="sv-key"/>
+        <circle cx="330" cy="164" r="5" class="sv-key"/>
+
+        <rect x="92" y="136" width="72" height="20" rx="4" class="sv-paper"/>
+        <text x="100" y="151" font-size="12" class="sv-good">mutant mice</text>
+        <rect x="232" y="248" width="76" height="20" rx="4" class="sv-paper"/>
+        <text x="240" y="263" font-size="12" class="sv-key">control mice</text>
+
+        <text x="505" y="90" class="sv-ts" text-anchor="middle">1</text>
+        <text x="575" y="90" class="sv-ts" text-anchor="middle">mutant?</text>
+        <text x="665" y="90" class="sv-ts" text-anchor="middle">weight</text>
+
+        <path d="M482,104 L470,104 L470,228 L482,228" class="sv-stroke-ink" stroke-width="1.5"/>
+        <path d="M708,104 L720,104 L720,228 L708,228" class="sv-stroke-ink" stroke-width="1.5"/>
+
+        <text x="505" y="125" class="sv-tm" text-anchor="middle">1</text>
+        <text x="575" y="125" class="sv-tm" text-anchor="middle">0</text>
+        <text x="665" y="125" class="sv-tm" text-anchor="middle">w1</text>
+        <text x="505" y="155" class="sv-tm" text-anchor="middle">1</text>
+        <text x="575" y="155" class="sv-tm" text-anchor="middle">0</text>
+        <text x="665" y="155" class="sv-tm" text-anchor="middle">w2</text>
+        <text x="505" y="185" class="sv-tm" text-anchor="middle">1</text>
+        <text x="575" y="185" class="sv-tm" text-anchor="middle">1</text>
+        <text x="665" y="185" class="sv-tm" text-anchor="middle">w5</text>
+        <text x="505" y="215" class="sv-tm" text-anchor="middle">1</text>
+        <text x="575" y="215" class="sv-tm" text-anchor="middle">1</text>
+        <text x="665" y="215" class="sv-tm" text-anchor="middle">w6</text>
+
+        <text x="460" y="125" font-size="12" class="sv-key" text-anchor="end">control</text>
+        <text x="460" y="155" font-size="12" class="sv-key" text-anchor="end">control</text>
+        <text x="460" y="185" font-size="12" class="sv-good" text-anchor="end">mutant</text>
+        <text x="460" y="215" font-size="12" class="sv-good" text-anchor="end">mutant</text>
+
+        <text x="595" y="262" class="sv-ts" text-anchor="middle">offset off &#8594; control line</text>
+        <text x="595" y="282" class="sv-ts" text-anchor="middle">offset on &#8594; mutant line</text>
+      </svg>
+      <figcaption>Notice that the middle column only moves the intercept, so the two lines stay parallel and share one slope.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Standard t-test model</span>
+      <div class="math">$$ \text{size} = \mu_{c}\cdot x_{1} \;+\; (\mu_{m}-\mu_{c})\cdot x_{2} $$</div>
+      <p class="explain"><b>Symbols:</b> \(\mu_{c}\) is the mean of the control measurements. \(\mu_{m}\) is the mean of the mutant measurements, so \(\mu_{m}-\mu_{c}\) is the mutant offset. \(x_{1}\) is the value in column one, always 1. \(x_{2}\) is the value in column two, 0 for a control mouse and 1 for a mutant mouse. <b>What it tells you:</b> every mouse gets the control mean, and mutants get an extra offset on top.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Regression model, one row at a time</span>
+      <div class="math">$$ \text{size} = b\cdot 1 \;+\; m\cdot \text{weight} \quad\Rightarrow\quad \text{size} = 0.01\cdot 1 + 0.8\cdot \text{weight} $$</div>
+      <p class="explain"><b>Symbols:</b> \(b\) is the y-intercept, which the video fits at 0.01. \(m\) is the slope, fitted at 0.8. The column of ones turns the intercept on, and the weight column scales the slope. <b>What it tells you:</b> each row of the design matrix returns one point on the least squares line, and those points give you the residuals.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">The combined model</span>
+      <div class="math">$$ \text{size} = b \;+\; d\cdot x_{\text{mutant}} \;+\; m\cdot \text{weight} $$</div>
+      <p class="explain"><b>Symbols:</b> \(b\) is the y-intercept for the control mice. \(d\) is the mutant offset, the vertical gap between the two lines. \(x_{\text{mutant}}\) is 0 for control mice and 1 for mutant mice. \(m\) is the slope, shared by both groups. <b>What it tells you:</b> three parameters describe two parallel lines, so the model uses weight and mouse type at once.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">F statistic for comparing two models</span>
+      <div class="math">$$ F=\frac{\bigl(SS_{\text{simple}}-SS_{\text{fancy}}\bigr)\big/\bigl(p_{\text{fancy}}-p_{\text{simple}}\bigr)}{SS_{\text{fancy}}\big/\bigl(n-p_{\text{fancy}}\bigr)} $$</div>
+      <p class="explain"><b>Symbols:</b> \(SS_{\text{simple}}\) and \(SS_{\text{fancy}}\) are the sums of squared residuals for the simple and the fancy model. \(p_{\text{simple}}\) and \(p_{\text{fancy}}\) are the numbers of parameters in each model. \(n\) is the number of measurements. <b>What it tells you:</b> how much the extra parameters reduce the leftover error, per extra parameter. A large F gives a small p-value.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh measures the weight and the size of eight mice. Four are normal controls and four are mutants that grow tall and thin. By eye the mutants are larger even at the same weight. A plain regression would fit one line and ignore the mouse type. A plain t-test would compare the two mean sizes and ignore weight, and here that gives a p-value above 0.05.</p>
+      <p>So he builds the fancy model with three columns: ones, the mutant switch, and the weight values. Rows with the switch off land on the control line. Rows with the switch on land on the mutant line. The residuals turn out to be very small.</p>
+      <p>He then compares this fancy model, with \(p_{\text{fancy}}=3\), against three different simple models.</p>
+      <ul>
+        <li>Against the overall mean alone, \(p_{\text{simple}}=1\), the F value is 21.88 and the p-value is 0.003.</li>
+        <li>Against regression on weight alone, \(p_{\text{simple}}=2\), the p-value is 0.0023.</li>
+        <li>Against a plain t-test on mouse type alone, \(p_{\text{simple}}=2\), the p-value is 0.0025.</li>
+      </ul>
+      <p>All three p-values are small. Using weight and mouse type together predicts size better than the mean alone, better than weight alone, and better than type alone.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Two design matrices can look different and still be the same model. The two t-test versions have the same residuals and the same parameter count. So they give the same F and the same p-value.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A design matrix is not restricted to ones and zeros. A column of ones and zeros switches a term on or off, while a column of measured values scales a term. Mixing both kinds of column in one matrix is what lets you test categories and a continuous predictor together.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The p-value depends on which simple model you choose. Comparing against the overall mean, against weight alone, and against type alone answers three different questions. Pick the simple model that matches the question you actually care about.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Count the parameters carefully, because they sit in the F formula. The combined model has three, the simple regression has two, and the mean-only model has one.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is a design matrix?</summary><div class="a">It is a table with one row for each measurement and one column for each term in the model equation. The number in a cell multiplies that term for that measurement. A one keeps the term, a zero removes it, and any other number scales it. Plugging a row into the equation gives the model's prediction for that measurement.</div></details>
+    <details class="qa" open><summary>Why does a t-test design matrix usually have a column of ones and an offset column?</summary><div class="a">The column of ones gives every measurement a common baseline, which here is the control mean. The second column is one only for the treated group, so it adds the difference between the two group means. Writing it this way keeps the same form as regression. The version with two separate mean terms returns the same p-value.</div></details>
+    <details class="qa" open><summary>How would you test whether two groups have different lines rather than different means?</summary><div class="a">I would fit one model with three terms: an intercept, a group offset, and a shared slope on the continuous predictor. The design matrix has a column of ones, a zero-one group column, and a column of predictor values. Then I compare that model to a simpler one with an F test.</div></details>
+    <details class="qa" open><summary>How do you handle a batch effect with a design matrix?</summary><div class="a">In the video, Lab B repeats Lab A's experiment but its measurements are lower overall. You add a term for the Lab A control mean, a term for the Lab B offset, and a term for the mutant to control difference. The Lab B offset absorbs the batch shift. You then test the last term by comparing against a model that drops that column.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>A design matrix holds one row per measurement and one column per term in the model equation.</li>
+      <li>The standard t-test matrix uses a column of ones plus a zero-one column that switches a group offset on.</li>
+      <li>Different but equivalent design matrices give the same residuals, the same F, and the same p-value.</li>
+      <li>Columns do not have to be ones and zeros; a column of x-axis values turns the same machinery into linear regression.</li>
+      <li>Adding a ones column, a group switch column, and a predictor column fits two parallel lines with three parameters.</li>
+      <li>In the mouse example that combined model beat the mean-only model with F equal to 21.88 and a p-value of 0.003.</li>
+      <li>It also beat weight alone, p equal to 0.0023, and type alone, p equal to 0.0025.</li>
+      <li>The same idea removes a batch effect by giving the second lab its own offset column.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Design matrices</span><span class="board-tag">one row per measurement, one column per term</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 232" role="img" aria-label="A design matrix with a column of ones, a 0 or 1 mutant switch and a column of weights fits two parallel lines, a mutant offset d apart, with a shared slope m.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <rect x="36" y="54" width="96" height="52" rx="6" class="sv-key-soft"/>
+            <rect x="36" y="110" width="96" height="52" rx="6" class="sv-good-soft"/>
+            <path d="M38 50 L30 50 L30 166 L38 166 M130 50 L138 50 L138 166 L130 166" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="50" y="38" text-anchor="middle" class="sv-tb">b</text>
+            <text x="84" y="38" text-anchor="middle" class="sv-tb">d</text>
+            <text x="118" y="38" text-anchor="middle" class="sv-tb">m</text>
+            <text x="50" y="73" text-anchor="middle" class="sv-tm">1</text><text x="84" y="73" text-anchor="middle" class="sv-tm">0</text><text x="118" y="73" text-anchor="middle" class="sv-tm">w</text>
+            <text x="50" y="99" text-anchor="middle" class="sv-tm">1</text><text x="84" y="99" text-anchor="middle" class="sv-tm">0</text><text x="118" y="99" text-anchor="middle" class="sv-tm">w</text>
+            <text x="50" y="129" text-anchor="middle" class="sv-tm">1</text><text x="84" y="129" text-anchor="middle" class="sv-tm">1</text><text x="118" y="129" text-anchor="middle" class="sv-tm">w</text>
+            <text x="50" y="155" text-anchor="middle" class="sv-tm">1</text><text x="84" y="155" text-anchor="middle" class="sv-tm">1</text><text x="118" y="155" text-anchor="middle" class="sv-tm">w</text>
+            <line x1="146" y1="128" x2="174" y2="128" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <path d="M190 24 L190 166 L386 166" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="190" y1="150" x2="380" y2="86" class="sv-stroke-key" stroke-width="4" stroke-linecap="round"/>
+            <line x1="190" y1="108" x2="380" y2="44" class="sv-stroke-good" stroke-width="4" stroke-linecap="round"/>
+            <line x1="250" y1="124" x2="250" y2="94" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" marker-start="url(#board-arr)" marker-end="url(#board-arr)"/>
+            <path d="M300 71 L340 71 L340 58" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <g class="sv-stroke-ink" stroke-width="1.5"><circle cx="226" cy="147" r="5" class="sv-key"/><circle cx="296" cy="105" r="5" class="sv-key"/><circle cx="236" cy="102" r="5" class="sv-good"/><circle cx="286" cy="66" r="5" class="sv-good"/></g>
+            <text x="258" y="114" class="sv-tb">d</text>
+            <text x="320" y="92" text-anchor="middle" class="sv-tb">m</text>
+            <text x="198" y="78" class="sv-ts">mutant</text>
+            <text x="318" y="134" class="sv-ts">control</text>
+            <g class="sv-stroke-ink" stroke-width="2"><rect x="60" y="184" width="280" height="34" rx="10" class="sv-paper"/></g>
+            <text x="200" y="207" text-anchor="middle" class="sv-t">0/1 switch, numbers scale</text>
+          </svg>
+          <p>Each row is one measurement and each column multiplies one term: a 1 keeps it, a 0 drops it, a number scales it. Ones, a mutant switch and weights give two parallel lines.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Design matrix</dt><dd>One row per measurement, one column per term of the equation.</dd>
+            <dt>Switch column</dt><dd>Zeros and ones that turn a term off or on.</dd>
+            <dt>Mutant offset</dt><dd>Mutant mean minus control mean; with weight, the gap between the lines.</dd>
+            <dt>Batch effect</dt><dd>A shift between labs, absorbed by its own offset column.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Write the equation</b>one parameter per term</li>
+            <li><b>Build the matrix</b>first column usually all ones</li>
+            <li><b>Ones and zeros</b>switch terms on or off</li>
+            <li><b>Real numbers</b>scale a term, like weight</li>
+            <li><b>Plug in rows</b>one predicted point each</li>
+            <li><b>F test</b>versus a simpler model, then p</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{size}=b+d\,x_{\text{mut}}+m\,\text{weight}$$
+          $$F=\frac{(SS_s-SS_f)/(p_f-p_s)}{SS_f/(n-p_f)}$$
+          <ul class="keys">
+            <li>\(b\): control intercept. \(d\): mutant offset. \(m\): slope shared by both groups.</li>
+            <li>\(x_{\text{mut}}\) is 0 for a control mouse, 1 for a mutant.</li>
+            <li>\(s\), \(f\): simple and fancy model; \(p\) counts parameters, \(n\) measurements.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>model</th><th>params</th><th>F</th><th>p-value</th></tr>
+            <tr><td>mean alone</td><td>1</td><td>21.88</td><td>0.003</td></tr>
+            <tr><td>weight alone</td><td>2</td><td>–</td><td>0.0023</td></tr>
+            <tr><td>type alone</td><td>2</td><td>–</td><td>0.0025</td></tr>
+            <tr class="final"><td>fancy model</td><td>3</td><td>–</td><td>beats all ✓</td></tr>
+          </table>
+          <p class="hand">Each p-value compares the fancy model with one simple model. All are small, so weight and type together win.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Different-looking matrices mean different models.</span><span class="yes">Both t-test versions share residuals and parameter count, so same F and p-value.</span></li>
+            <li><span class="no">Design matrices hold only ones and zeros.</span><span class="yes">Measured values can scale a term, so one matrix mixes categories and a predictor.</span></li>
+            <li><span class="no">Any simple model gives the same p-value.</span><span class="yes">Mean, weight alone and type alone answer different questions. Pick the one you care about.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="44-using-linear-models-for-t-tests-and-anova.html"><small>Previous</small>Using Linear Models for t-tests and ANOVA</a> <a href="46-sampling-from-a-distribution.html"><small>Next</small>Sampling from a Distribution</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

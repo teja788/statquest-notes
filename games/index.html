@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Arcade</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+  .hero{position:relative;background:var(--card);border:2px solid var(--ink);border-radius:22px;box-shadow:6px 6px 0 var(--ink);padding:24px 24px 18px;margin:18px 0 8px}
+  .hero::before{content:"";position:absolute;top:-15px;left:50%;width:130px;height:28px;background:var(--amber-soft);border:2px solid var(--ink);border-radius:4px;transform:translateX(-50%) rotate(-2.5deg)}
+  .hero h1{font-size:44px}
+  .hero p{margin:8px 0 0;max-width:62ch}
+  .crumb{font-family:var(--display);text-decoration:none;color:var(--ink-2);background:var(--card);border:1.5px solid var(--ink);border-radius:999px;padding:1px 10px;font-size:14px}
+  .game .foot{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:4px}
+  .game .stars{justify-content:flex-start;margin:0}
+  .game .stars svg{width:22px;height:22px}
+  .game .go{font-family:var(--display);font-weight:600;font-size:15px;background:var(--coral);color:#fff;border:2px solid var(--ink);border-radius:10px;padding:2px 12px;box-shadow:2px 2px 0 var(--ink)}
+  .game.soon .go{background:var(--card-2);color:var(--ink-2)}
+  .tag.stats{background:var(--teal-soft);color:var(--teal-ink)}
+  .tag.ml{background:var(--coral-soft);color:var(--coral-ink)}
+  .tag.dl{background:var(--purple-soft);color:var(--purple-ink)}
+  @media (max-width:640px){.hero h1{font-size:32px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="crumb" href="../index.html">← Notes</a>
+  <header class="hero">
+    <h1>The Arcade</h1>
+    <p>Little games where you handle the real mechanism. Play first; a short card afterwards names what you just felt. Each game links back to its note.</p>
+  </header>
+  <div class="games" id="games"></div>
+</div>
+<script src="kit.js"></script>
+<script>
+// ready: set to true once a game is built and reviewed
+const GAMES = [
+  { slug: 'foggy-valley', title: 'Foggy Valley', area: 'ml', concept: 'gradient descent, learning rate, local minima', ready: true,
+    art: '<path d="M10 30 C 60 30, 80 95, 120 95 S 190 40, 230 25" fill="none" stroke="#2C2C2A" stroke-width="3" stroke-linecap="round"/><circle cx="84" cy="70" r="26" fill="#FAEEDA" opacity=".9"/><circle cx="84" cy="66" r="7" fill="#D85A30" stroke="#2C2C2A" stroke-width="2"/><circle cx="96" cy="60" r="4" fill="#EF9F27" stroke="#2C2C2A" stroke-width="1.5"/><circle cx="160" cy="45" r="22" fill="#F6EEDC"/><circle cx="185" cy="60" r="18" fill="#F6EEDC"/><circle cx="40" cy="52" r="16" fill="#F6EEDC"/>' },
+  { slug: 'checkpoint', title: 'Checkpoint', area: 'ml', concept: 'thresholds, confusion matrix, ROC and AUC', ready: false,
+    art: '<rect x="10" y="70" width="220" height="16" rx="8" fill="#F6EEDC" stroke="#2C2C2A" stroke-width="2"/><rect x="30" y="46" width="34" height="24" rx="5" fill="#E1F5EE" stroke="#2C2C2A" stroke-width="2"/><rect x="90" y="46" width="34" height="24" rx="5" fill="#FAECE7" stroke="#2C2C2A" stroke-width="2"/><rect x="150" y="46" width="34" height="24" rx="5" fill="#E1F5EE" stroke="#2C2C2A" stroke-width="2"/><path d="M140 20 V 100" stroke="#D85A30" stroke-width="3" stroke-dasharray="6 5"/><text x="146" y="28" font-family="Fredoka" font-size="13" fill="#2C2C2A">threshold</text>' },
+  { slug: 'split', title: 'Split!', area: 'ml', concept: 'decision trees, Gini, overfitting, random forests', ready: false,
+    art: '<path d="M120 12 V 100 M120 56 H 230" stroke="#2C2C2A" stroke-width="3" stroke-linecap="round"/><g fill="#1D9E75" stroke="#2C2C2A" stroke-width="1.5"><circle cx="40" cy="30" r="7"/><circle cx="70" cy="60" r="7"/><circle cx="50" cy="85" r="7"/><circle cx="95" cy="40" r="7"/></g><g fill="#D85A30" stroke="#2C2C2A" stroke-width="1.5"><path d="M160 22 l8 14 h-16z"/><path d="M200 30 l8 14 h-16z"/><path d="M175 75 l8 14 h-16z"/></g><g fill="#1D9E75" stroke="#2C2C2A" stroke-width="1.5"><circle cx="205" cy="85" r="7"/></g>' },
+  { slug: 'net-the-mean', title: 'Net the Mean', area: 'stats', concept: 'sampling, central limit theorem, confidence intervals', ready: false,
+    art: '<ellipse cx="120" cy="75" rx="105" ry="28" fill="#E6F1FB" stroke="#2C2C2A" stroke-width="2"/><g fill="#EF9F27" stroke="#2C2C2A" stroke-width="1.5"><path d="M60 72 q10 -8 20 0 q-10 8 -20 0z M80 72 l7 -5 v10z"/><path d="M140 82 q8 -6 16 0 q-8 6 -16 0z M156 82 l6 -4 v8z"/></g><path d="M95 20 Q 120 50 150 20" fill="none" stroke="#2C2C2A" stroke-width="2.5"/><path d="M100 26 L 145 26 M106 34 L 140 34" stroke="#2C2C2A" stroke-width="1.2"/>' },
+  { slug: 'attention-party', title: 'Attention Party', area: 'dl', concept: 'attention, queries, keys, values', ready: false,
+    art: '<g font-family="Fredoka" font-size="13" fill="#2C2C2A"><rect x="14" y="16" width="58" height="26" rx="13" fill="#FAECE7" stroke="#2C2C2A" stroke-width="2"/><text x="26" y="34">pizza</text><rect x="14" y="70" width="58" height="26" rx="13" fill="#F6EEDC" stroke="#2C2C2A" stroke-width="2"/><text x="27" y="88">oven</text><rect x="170" y="42" width="44" height="26" rx="13" fill="#EEEDFE" stroke="#2C2C2A" stroke-width="2"/><text x="185" y="60">it</text></g><path d="M72 29 Q 120 30 170 52" fill="none" stroke="#D85A30" stroke-width="6" stroke-linecap="round"/><path d="M72 83 Q 120 80 170 60" fill="none" stroke="#B4B2A9" stroke-width="1.5" stroke-linecap="round"/>' },
+  { slug: 'p-hack-casino', title: 'p-Hack Casino', area: 'stats', concept: 'p-values, multiple testing, false discoveries', ready: false,
+    art: '<rect x="45" y="14" width="150" height="86" rx="14" fill="#EEEDFE" stroke="#2C2C2A" stroke-width="2.5"/><g fill="#fff" stroke="#2C2C2A" stroke-width="2"><rect x="58" y="34" width="38" height="44" rx="6"/><rect x="101" y="34" width="38" height="44" rx="6"/><rect x="144" y="34" width="38" height="44" rx="6"/></g><g font-family="Fredoka" font-size="20" font-weight="600" fill="#2C2C2A"><text x="70" y="63">p</text><text x="113" y="63">&lt;</text><text x="148" y="63">.05</text></g><path d="M195 40 h14 v-18" fill="none" stroke="#2C2C2A" stroke-width="3" stroke-linecap="round"/><circle cx="209" cy="18" r="6" fill="#D85A30" stroke="#2C2C2A" stroke-width="2"/>' },
+  { slug: 'boost-squad', title: 'Boost Squad', area: 'ml', concept: 'AdaBoost and gradient boosting', ready: false,
+    art: '<g stroke="#2C2C2A" stroke-width="2"><path d="M40 95 V 60" /><path d="M100 95 V 50"/><path d="M160 95 V 66"/><path d="M210 95 V 56"/></g><g stroke="#2C2C2A" stroke-width="2"><circle cx="40" cy="48" r="14" fill="#1D9E75"/><circle cx="100" cy="36" r="17" fill="#1D9E75"/><circle cx="160" cy="55" r="12" fill="#1D9E75"/><circle cx="210" cy="42" r="15" fill="#1D9E75"/></g><path d="M10 98 H 230" stroke="#2C2C2A" stroke-width="2.5" stroke-linecap="round"/>' },
+  { slug: 'lasso-rodeo', title: 'Lasso Rodeo', area: 'ml', concept: 'ridge, lasso, elastic net', ready: false,
+    art: '<rect x="112" y="40" width="14" height="60" rx="3" fill="#F6EEDC" stroke="#2C2C2A" stroke-width="2"/><path d="M119 50 C 90 40, 60 60, 40 45" fill="none" stroke="#2C2C2A" stroke-width="2"/><path d="M119 60 C 150 70, 170 50, 200 62" fill="none" stroke="#2C2C2A" stroke-width="2"/><ellipse cx="40" cy="45" rx="16" ry="9" fill="none" stroke="#D85A30" stroke-width="3"/><circle cx="200" cy="62" r="9" fill="#EF9F27" stroke="#2C2C2A" stroke-width="2"/><circle cx="125" cy="98" r="6" fill="#7F77DD" stroke="#2C2C2A" stroke-width="2"/>' },
+  { slug: 'kernel-lift', title: 'Kernel Lift', area: 'ml', concept: 'SVMs, margins, the kernel trick', ready: false,
+    art: '<path d="M30 95 L 90 70 L 230 70 L 170 95 Z" fill="#E1F5EE" stroke="#2C2C2A" stroke-width="2"/><g fill="#7F77DD" stroke="#2C2C2A" stroke-width="1.5"><circle cx="128" cy="40" r="6"/><circle cx="110" cy="34" r="6"/><circle cx="146" cy="30" r="6"/></g><g fill="#EF9F27" stroke="#2C2C2A" stroke-width="1.5"><circle cx="80" cy="86" r="6"/><circle cx="185" cy="80" r="6"/><circle cx="120" cy="90" r="6"/></g><path d="M200 50 v-30 m-6 8 l6 -8 l6 8" fill="none" stroke="#2C2C2A" stroke-width="2.5" stroke-linecap="round"/>' },
+  { slug: 'flashlight', title: 'Flashlight', area: 'ml', concept: 'PCA and variance explained', ready: false,
+    art: '<path d="M30 70 L 60 58 L 66 72 L 36 84 Z" fill="#EF9F27" stroke="#2C2C2A" stroke-width="2"/><path d="M66 60 L 200 20 L 200 110 L 66 74 Z" fill="#FFF1B8" opacity=".9"/><path d="M210 14 V 112" stroke="#2C2C2A" stroke-width="3" stroke-linecap="round"/><g fill="#7F77DD" stroke="#2C2C2A" stroke-width="1.5"><circle cx="120" cy="56" r="5"/><circle cx="140" cy="48" r="5"/><circle cx="160" cy="66" r="5"/><circle cx="132" cy="74" r="5"/></g><g fill="#2C2C2A"><rect x="206" y="34" width="8" height="5" rx="2"/><rect x="206" y="52" width="8" height="5" rx="2"/><rect x="206" y="76" width="8" height="5" rx="2"/><rect x="206" y="90" width="8" height="5" rx="2"/></g>' }
+];
+const AREA = { stats: 'Statistics', ml: 'Machine learning', dl: 'Deep learning' };
+const BG = { stats: 'var(--teal-soft)', ml: 'var(--coral-soft)', dl: 'var(--purple-soft)' };
+document.getElementById('games').innerHTML = GAMES.map(g => {
+  const got = Object.values(Kit.load(g.slug).stars).reduce((a, b) => a + b, 0);
+  const tagName = g.ready ? 'a' : 'div';
+  return `<${tagName} class="game${g.ready ? '' : ' soon'}"${g.ready ? ` href="${g.slug}.html"` : ''}>
+    <div class="art" style="background:${BG[g.area]}"><svg viewBox="0 0 240 110" width="100%" height="100%" aria-hidden="true">${g.art}</svg></div>
+    <span><span class="tag ${g.area}">${AREA[g.area]}</span></span>
+    <h3>${g.title}</h3>
+    <span class="concept">${g.concept}</span>
+    <div class="foot"><span class="chip" title="Stars earned">★ ${got}</span><span class="go">${g.ready ? 'Play' : 'Coming soon'}</span></div>
+  </${tagName}>`;
+}).join('');
+</script>
+</body>
+</html>

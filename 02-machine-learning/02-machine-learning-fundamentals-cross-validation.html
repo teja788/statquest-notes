@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Machine Learning Fundamentals: Cross Validation — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>02</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 02 · 6.1 min</div>
+    <h1>Machine Learning Fundamentals: Cross Validation</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=fSytzGwwBVw" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Cross validation is a simple way to compare machine learning methods on the same data. You cut the data into blocks, then let every block take a turn as the test set.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Your data must do two jobs: train a method and test it. If you train and test on the same rows, the score is not honest. A single 75/25 split is better, but the block you hold back is an arbitrary choice. Cross validation tests on every block, one at a time. You compare methods by their summarised scores and keep the winner.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh starts with heart disease data. Variables such as chest pain and good blood circulation predict whether a person has heart disease. Many methods can do this job: logistic regression, k-nearest neighbours, or support vector machines. We must decide which one to use.</p>
+    <p>The same data has to do two jobs. First we estimate the parameters of a method, such as the shape of a logistic regression curve. That job is called <strong>training</strong>. Second we check how well the fitted method labels new data. That job is called <strong>testing</strong>.</p>
+    <p>Using all the data for training leaves nothing to test with. Holding back the last 25 percent is better, but that choice is arbitrary. Cross validation ends the argument. It tests on every block, one at a time, and summarises the results at the end.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 326" role="img" aria-label="Four rounds of four-fold cross validation, with the test block moving one place left each round, and the four scores averaged at the end">
+        <defs>
+          <marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" class="sv-ink2"></path>
+          </marker>
+        </defs>
+        <text x="20" y="26" class="sv-tb">Every block takes one turn as the test block</text>
+
+        <text x="20" y="75" class="sv-ts">Round 1</text>
+        <rect x="112" y="48" width="118" height="44" rx="4" class="sv-acc-soft"></rect>
+        <rect x="238" y="48" width="118" height="44" rx="4" class="sv-acc-soft"></rect>
+        <rect x="364" y="48" width="118" height="44" rx="4" class="sv-acc-soft"></rect>
+        <rect x="490" y="48" width="118" height="44" rx="4" class="sv-key-soft"></rect>
+        <text x="549" y="75" text-anchor="middle" class="sv-tm">test</text>
+
+        <text x="20" y="133" class="sv-ts">Round 2</text>
+        <rect x="112" y="106" width="118" height="44" rx="4" class="sv-acc-soft"></rect>
+        <rect x="238" y="106" width="118" height="44" rx="4" class="sv-acc-soft"></rect>
+        <rect x="364" y="106" width="118" height="44" rx="4" class="sv-key-soft"></rect>
+        <rect x="490" y="106" width="118" height="44" rx="4" class="sv-acc-soft"></rect>
+        <text x="423" y="133" text-anchor="middle" class="sv-tm">test</text>
+
+        <text x="20" y="191" class="sv-ts">Round 3</text>
+        <rect x="112" y="164" width="118" height="44" rx="4" class="sv-acc-soft"></rect>
+        <rect x="238" y="164" width="118" height="44" rx="4" class="sv-key-soft"></rect>
+        <rect x="364" y="164" width="118" height="44" rx="4" class="sv-acc-soft"></rect>
+        <rect x="490" y="164" width="118" height="44" rx="4" class="sv-acc-soft"></rect>
+        <text x="297" y="191" text-anchor="middle" class="sv-tm">test</text>
+
+        <text x="20" y="249" class="sv-ts">Round 4</text>
+        <rect x="112" y="222" width="118" height="44" rx="4" class="sv-key-soft"></rect>
+        <rect x="238" y="222" width="118" height="44" rx="4" class="sv-acc-soft"></rect>
+        <rect x="364" y="222" width="118" height="44" rx="4" class="sv-acc-soft"></rect>
+        <rect x="490" y="222" width="118" height="44" rx="4" class="sv-acc-soft"></rect>
+        <text x="171" y="249" text-anchor="middle" class="sv-tm">test</text>
+
+        <path d="M622,48 L622,266" class="sv-stroke-ink" stroke-width="1.5"></path>
+        <path d="M622,157 L646,157" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"></path>
+        <text x="652" y="152" class="sv-ts">Average</text>
+        <text x="652" y="170" class="sv-ts">the 4 scores</text>
+
+        <rect x="112" y="288" width="16" height="14" rx="3" class="sv-acc-soft"></rect>
+        <text x="136" y="300" class="sv-ts">blocks used for training</text>
+        <rect x="330" y="288" width="16" height="14" rx="3" class="sv-key-soft"></rect>
+        <text x="354" y="300" class="sv-ts">block used for testing</text>
+      </svg>
+      <figcaption>Notice that the test block slides across the data, so every row is tested once by a model that never saw it.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Divide the collected data into equal blocks. Josh draws four blocks in the video.</li>
+      <li>Train the method on the first three blocks. Test it on the last block and record the score.</li>
+      <li>Move the test block one place. Train on the other three blocks and record the score again.</li>
+      <li>Repeat until every block has been the test block exactly once.</li>
+      <li>Summarise the scores for each method and compare. The support vector machine did the best job here, so we use it.</li>
+    </ol>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 230" role="img" aria-label="Three choices for the number of blocks: four folds, ten folds, and leave one out where each sample is its own block">
+        <text x="20" y="26" class="sv-tb">The number of blocks is your choice</text>
+
+        <text x="20" y="75" class="sv-ts">4-fold</text>
+        <rect x="210" y="55" width="118" height="30" rx="3" class="sv-acc-soft"></rect>
+        <rect x="334" y="55" width="118" height="30" rx="3" class="sv-acc-soft"></rect>
+        <rect x="458" y="55" width="118" height="30" rx="3" class="sv-acc-soft"></rect>
+        <rect x="582" y="55" width="118" height="30" rx="3" class="sv-key-soft"></rect>
+
+        <text x="20" y="135" class="sv-ts">10-fold (most common)</text>
+        <rect x="210" y="115" width="45.4" height="30" rx="3" class="sv-acc-soft"></rect>
+        <rect x="259.4" y="115" width="45.4" height="30" rx="3" class="sv-acc-soft"></rect>
+        <rect x="308.8" y="115" width="45.4" height="30" rx="3" class="sv-acc-soft"></rect>
+        <rect x="358.2" y="115" width="45.4" height="30" rx="3" class="sv-acc-soft"></rect>
+        <rect x="407.6" y="115" width="45.4" height="30" rx="3" class="sv-acc-soft"></rect>
+        <rect x="457" y="115" width="45.4" height="30" rx="3" class="sv-acc-soft"></rect>
+        <rect x="506.4" y="115" width="45.4" height="30" rx="3" class="sv-acc-soft"></rect>
+        <rect x="555.8" y="115" width="45.4" height="30" rx="3" class="sv-acc-soft"></rect>
+        <rect x="605.2" y="115" width="45.4" height="30" rx="3" class="sv-acc-soft"></rect>
+        <rect x="654.6" y="115" width="45.4" height="30" rx="3" class="sv-key-soft"></rect>
+
+        <text x="20" y="195" class="sv-ts">Leave one out</text>
+        <rect x="210" y="175" width="18.5" height="30" rx="2" class="sv-acc-soft"></rect>
+        <rect x="230.5" y="175" width="18.5" height="30" rx="2" class="sv-acc-soft"></rect>
+        <rect x="251" y="175" width="18.5" height="30" rx="2" class="sv-acc-soft"></rect>
+        <rect x="271.5" y="175" width="18.5" height="30" rx="2" class="sv-acc-soft"></rect>
+        <rect x="292" y="175" width="18.5" height="30" rx="2" class="sv-acc-soft"></rect>
+        <rect x="312.5" y="175" width="18.5" height="30" rx="2" class="sv-acc-soft"></rect>
+        <rect x="333" y="175" width="18.5" height="30" rx="2" class="sv-acc-soft"></rect>
+        <rect x="353.5" y="175" width="18.5" height="30" rx="2" class="sv-acc-soft"></rect>
+        <rect x="374" y="175" width="18.5" height="30" rx="2" class="sv-acc-soft"></rect>
+        <rect x="394.5" y="175" width="18.5" height="30" rx="2" class="sv-acc-soft"></rect>
+        <rect x="415" y="175" width="18.5" height="30" rx="2" class="sv-acc-soft"></rect>
+        <rect x="435.5" y="175" width="18.5" height="30" rx="2" class="sv-acc-soft"></rect>
+        <rect x="456" y="175" width="18.5" height="30" rx="2" class="sv-acc-soft"></rect>
+        <rect x="476.5" y="175" width="18.5" height="30" rx="2" class="sv-acc-soft"></rect>
+        <rect x="497" y="175" width="18.5" height="30" rx="2" class="sv-acc-soft"></rect>
+        <rect x="517.5" y="175" width="18.5" height="30" rx="2" class="sv-acc-soft"></rect>
+        <rect x="538" y="175" width="18.5" height="30" rx="2" class="sv-acc-soft"></rect>
+        <rect x="558.5" y="175" width="18.5" height="30" rx="2" class="sv-acc-soft"></rect>
+        <rect x="579" y="175" width="18.5" height="30" rx="2" class="sv-acc-soft"></rect>
+        <rect x="599.5" y="175" width="18.5" height="30" rx="2" class="sv-acc-soft"></rect>
+        <rect x="620" y="175" width="18.5" height="30" rx="2" class="sv-acc-soft"></rect>
+        <rect x="640.5" y="175" width="18.5" height="30" rx="2" class="sv-acc-soft"></rect>
+        <rect x="661" y="175" width="18.5" height="30" rx="2" class="sv-acc-soft"></rect>
+        <rect x="681.5" y="175" width="18.5" height="30" rx="2" class="sv-key-soft"></rect>
+      </svg>
+      <figcaption>Notice that the same data is just cut more finely. Leave-one-out puts one patient in each block.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>The video writes no equations. These three lines put its picture into symbols.</p>
+
+    <div class="formula"><span class="lbl">Summarised score</span><div class="math">$$ \text{CV score} = \frac{1}{k}\sum_{i=1}^{k} S_i $$</div><p class="explain"><b>Symbols:</b> \(k\) is the number of blocks. \(S_i\) is the score the method got when block \(i\) was the test block. <b>What it tells you:</b> one number per method, built from every row of data, that you can compare across methods.</p></div>
+
+    <div class="formula"><span class="lbl">Size of each split</span><div class="math">$$ \text{train fraction} = \frac{k-1}{k}, \qquad \text{test fraction} = \frac{1}{k} $$</div><p class="explain"><b>Symbols:</b> \(k\) is again the number of blocks. <b>What it tells you:</b> with \(k=4\) you train on 75 percent of the rows and test on 25 percent in each round.</p></div>
+
+    <div class="formula"><span class="lbl">Leave one out</span><div class="math">$$ k = n $$</div><p class="explain"><b>Symbols:</b> \(n\) is the number of samples, that is patients, in the data. <b>What it tells you:</b> leave-one-out is not a separate technique. It is k-fold with one patient in each block.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh cuts the heart disease data into four blocks. This is called four-fold cross validation. Round one trains on blocks 1, 2 and 3, then tests on block 4. Round two tests on block 3, round three on block 2, and round four on block 1.</p>
+      <p>Each round trains on \(3/4 = 75\%\) of the data and tests on \(1/4 = 25\%\). The four scores are summarised into one: \( \text{CV score} = (S_1+S_2+S_3+S_4)/4 \). Josh compares logistic regression, k-nearest neighbours and support vector machines this way. The support vector machine classified the test blocks best, so he keeps it.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Never judge a method on the data it was trained on. That score looks good and tells you nothing about new patients.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A single 75/25 split is one arbitrary choice out of many. A different quarter can give you a different winner.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The number of blocks is arbitrary. Four is easy to draw, ten is common in practice, and leave-one-out is the extreme.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>Why can we not train and test on the same data?</summary><div class="a">Because the method already fits those rows, so the score is not honest. We need to know how it works on data it never saw. That is why we always hold some data back for testing.</div></details>
+    <details class="qa" open><summary>Explain k-fold cross validation in a minute.</summary><div class="a">Split the data into k equal blocks. Train on k minus one blocks and test on the block you held back. Repeat until every block has been the test block once. Average the k scores to get one number per method, then compare methods on that number.</div></details>
+    <details class="qa" open><summary>How do you choose the number of blocks?</summary><div class="a">There is no fixed rule, because the number is arbitrary. Ten folds is the common default in practice. At the extreme, k equals the number of samples, which is leave-one-out cross validation.</div></details>
+    <details class="qa" open><summary>What is a tuning parameter, and how does cross validation help?</summary><div class="a">A tuning parameter is guessed, not estimated from the data. Ridge regression has one. We try several values, run 10-fold cross validation for each, and keep the value with the best score.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Data must do two jobs: train a method, and test how well it works.</li>
+      <li>Training estimates parameters. Testing checks the result on unseen data.</li>
+      <li>Using all the data for training leaves nothing to test with.</li>
+      <li>A single 75/25 split is better, but the block you hold back is arbitrary.</li>
+      <li>Cross validation uses every block as the test block and summarises the scores.</li>
+      <li>Four blocks is four-fold; ten blocks is the usual choice; one sample per block is leave-one-out.</li>
+      <li>Cross validation also helps choose tuning parameters, such as the one in ridge regression.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Cross validation</span><span class="board-tag">every block takes a turn as the test</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 280" role="img" aria-label="Four rounds of four blocks. Each round one block, one place further left each time, is the test block and the other three train. The four scores are averaged into one cross validation score, and the support vector machine wins.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round">
+              <rect x="16" y="16" width="14" height="14" rx="3" class="sv-acc"/>
+              <rect x="96" y="16" width="14" height="14" rx="3" class="sv-key"/>
+              <rect x="16" y="46" width="40" height="36" rx="4" class="sv-acc"/>
+              <rect x="61" y="46" width="40" height="36" rx="4" class="sv-acc"/>
+              <rect x="106" y="46" width="40" height="36" rx="4" class="sv-acc"/>
+              <rect x="151" y="46" width="40" height="36" rx="4" class="sv-key"/>
+              <rect x="16" y="94" width="40" height="36" rx="4" class="sv-acc"/>
+              <rect x="61" y="94" width="40" height="36" rx="4" class="sv-acc"/>
+              <rect x="106" y="94" width="40" height="36" rx="4" class="sv-key"/>
+              <rect x="151" y="94" width="40" height="36" rx="4" class="sv-acc"/>
+              <rect x="16" y="142" width="40" height="36" rx="4" class="sv-acc"/>
+              <rect x="61" y="142" width="40" height="36" rx="4" class="sv-key"/>
+              <rect x="106" y="142" width="40" height="36" rx="4" class="sv-acc"/>
+              <rect x="151" y="142" width="40" height="36" rx="4" class="sv-acc"/>
+              <rect x="16" y="190" width="40" height="36" rx="4" class="sv-key"/>
+              <rect x="61" y="190" width="40" height="36" rx="4" class="sv-acc"/>
+              <rect x="106" y="190" width="40" height="36" rx="4" class="sv-acc"/>
+              <rect x="151" y="190" width="40" height="36" rx="4" class="sv-acc"/>
+              <circle cx="214" cy="64" r="6" class="sv-good"/>
+              <circle cx="214" cy="112" r="6" class="sv-good"/>
+              <circle cx="214" cy="160" r="6" class="sv-good"/>
+              <circle cx="214" cy="208" r="6" class="sv-good"/>
+            </g>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linecap="round">
+              <path d="M195 64 H206 M195 112 H206 M195 160 H206 M195 208 H206"/>
+              <path d="M221 64 L238 136 M221 112 L238 136 M221 160 L238 136 M221 208 L238 136"/>
+            </g>
+            <line x1="238" y1="136" x2="248" y2="136" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="36" y="29" class="sv-ts">train</text>
+            <text x="116" y="29" class="sv-ts">test</text>
+            <text x="386" y="29" text-anchor="end" class="sv-ts">four-fold: 4 rounds</text>
+            <text x="258" y="114" class="sv-t">average the</text>
+            <text x="258" y="138" class="sv-t">4 scores</text>
+            <text x="258" y="164" class="sv-tb">= CV score</text>
+            <text x="16" y="262" class="sv-tb">winner: support vector machine</text>
+          </svg>
+          <p>Cut the data into blocks. Each round trains on the rest and tests on one block, until every block has been the test once. Average the scores per method and keep the best.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Training</dt><dd>Estimating a method's parameters from the data.</dd>
+            <dt>Testing</dt><dd>Checking how well the fitted method labels new data.</dd>
+            <dt>k-fold</dt><dd>\(k\) blocks, \(k\) rounds. Four here; ten is most common.</dd>
+            <dt>Leave-one-out</dt><dd>k-fold with one patient in each block.</dd>
+            <dt>Tuning parameter</dt><dd>Guessed, not estimated; choose it with cross validation.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Cut into blocks</b>four equal blocks here</li>
+            <li><b>Train</b>on the other three blocks</li>
+            <li><b>Test</b>on the held-back block; record score</li>
+            <li><b>Move the test</b>one place along</li>
+            <li><b>Summarise</b>average the scores per method</li>
+            <li><b>Compare</b>support vector machine wins</li>
+          </ol>
+          <p class="loop">↺ repeat steps 2 to 4 until every block has been the test block once</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{CV score}=\frac{1}{k}\sum_{i=1}^{k}S_i$$
+          $$\text{train}=\frac{k-1}{k},\qquad\text{test}=\frac{1}{k}$$
+          $$k=n\quad\text{(leave one out)}$$
+          <ul class="keys">
+            <li>\(k\): number of blocks; \(S_i\): score when block \(i\) was the test.</li>
+            <li>With \(k=4\): train on 75%, test on 25%.</li>
+            <li>\(n\): number of samples, that is patients.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>round</th><th>test block</th><th>score</th></tr>
+            <tr><td>1</td><td>4</td><td>\(S_1\)</td></tr>
+            <tr><td>2</td><td>3</td><td>\(S_2\)</td></tr>
+            <tr><td>3</td><td>2</td><td>\(S_3\)</td></tr>
+            <tr><td>4</td><td>1</td><td>\(S_4\)</td></tr>
+            <tr class="final"><td>CV score</td><td colspan="2">\((S_1+S_2+S_3+S_4)/4\)</td></tr>
+          </table>
+          <p class="hand">Each round trains on 75% and tests on 25%. The support vector machine scored best, so Josh keeps it.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">The training data can score the method.</span><span class="yes">That score looks good and tells you nothing about new patients.</span></li>
+            <li><span class="no">One 75/25 split settles it.</span><span class="yes">The quarter held back is arbitrary; a different quarter can give a different winner.</span></li>
+            <li><span class="no">There is one right number of blocks.</span><span class="yes">It is arbitrary: four is easy to draw, ten is common, leave-one-out is the extreme.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="01-a-gentle-introduction-to-machine-learning.html"><small>Previous</small>A Gentle Introduction to Machine Learning</a> <a href="03-machine-learning-fundamentals-the-confusion-matrix.html"><small>Next</small>Machine Learning Fundamentals: The Confusion Matrix</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

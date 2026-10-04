@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cosine Similarity — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>71</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 71 · 10.2 min</div>
+    <h1>Cosine Similarity</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=e9U0QAFbfLI" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: —</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video shows how the cosine similarity tells a computer how similar or different two phrases are. It is an easy metric to calculate, so it works even when we have far too many phrases to compare by eye.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>We count how many times each word appears in each phrase. Each phrase then becomes a point, and we draw a line from the origin to it. The cosine similarity is the cosine of the angle between two such lines. Identical phrases score 1, phrases with no shared words score 0, and partial overlap scores between 0 and 1. A simple formula gives the same number straight from the word counts, so we never need to draw the graph.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh starts with sentences about the 1990 movie Troll 2. By eye, it is easy to see which sentences praise the movie and which one does not. But if we collected a whole month of Twitter traffic, we could not read it all. We need a computer to measure similarity for us.</p>
+    <p>The trick is to turn each phrase into counts of words. Take the phrases "Hello World" and "Hello". We make a table with one column per word. "Hello World" has one "hello" and one "world". "Hello" has one "hello" and zero "world".</p>
+    <p>Now each phrase is a point on a graph. The x-axis is the count of "hello" and the y-axis is the count of "world". We draw a line from the origin, (0, 0), to each point. The angle between the two lines tells us how similar the phrases are. Here the angle is 45 degrees, and the cosine of 45 degrees is 0.71.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 340" role="img" aria-label="Word-count graph with lines to Hello World at (1,1), Hello at (1,0) and Hello Hello Hello at (3,0), with a 45 degree angle">
+        <defs>
+          <marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink2"/></marker>
+          <marker id="ah1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="sv-acc"/></marker>
+          <marker id="ah1k" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="sv-key"/></marker>
+        </defs>
+        <!-- axes -->
+        <line x1="80" y1="290" x2="420" y2="290" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah1)"/>
+        <line x1="80" y1="290" x2="80" y2="50" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah1)"/>
+        <text x="428" y="294" class="sv-ts">count of "hello"</text>
+        <text x="92" y="52" class="sv-ts">count of "world"</text>
+        <!-- ticks -->
+        <line x1="170" y1="290" x2="170" y2="296" class="sv-stroke-ink" stroke-width="1"/>
+        <line x1="260" y1="290" x2="260" y2="296" class="sv-stroke-ink" stroke-width="1"/>
+        <line x1="350" y1="290" x2="350" y2="296" class="sv-stroke-ink" stroke-width="1"/>
+        <line x1="74" y1="200" x2="80" y2="200" class="sv-stroke-ink" stroke-width="1"/>
+        <text x="170" y="312" text-anchor="middle" class="sv-ts">1</text>
+        <text x="260" y="312" text-anchor="middle" class="sv-ts">2</text>
+        <text x="350" y="312" text-anchor="middle" class="sv-ts">3</text>
+        <text x="66" y="204" text-anchor="end" class="sv-ts">1</text>
+        <!-- vectors -->
+        <line x1="80" y1="290" x2="166" y2="204" class="sv-stroke-acc" stroke-width="3" marker-end="url(#ah1a)"/>
+        <line x1="80" y1="288" x2="344" y2="288" class="sv-stroke-key" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#ah1k)"/>
+        <line x1="80" y1="290" x2="164" y2="290" class="sv-stroke-key" stroke-width="3"/>
+        <circle cx="170" cy="200" r="6" class="sv-acc"/>
+        <circle cx="170" cy="290" r="6" class="sv-key"/>
+        <circle cx="350" cy="290" r="6" class="sv-key-soft"/>
+        <!-- angle -->
+        <path d="M130 290 A50 50 0 0 0 115.4 254.6" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="136" y="272" class="sv-tb">45°</text>
+        <!-- point labels -->
+        <rect x="182" y="180" width="170" height="24" rx="4" class="sv-paper"/>
+        <text x="188" y="197" class="sv-t">"Hello World" (1, 1)</text>
+        <text x="180" y="280" class="sv-ts">"Hello" (1, 0)</text>
+        <text x="350" y="260" text-anchor="middle" class="sv-ts">"Hello Hello Hello" (3, 0)</text>
+        <!-- result box -->
+        <rect x="470" y="110" width="270" height="120" rx="8" class="sv-paper2"/>
+        <text x="605" y="145" text-anchor="middle" class="sv-tb">Angle is 45° for both</text>
+        <text x="605" y="175" text-anchor="middle" class="sv-tm">cos(45°) = 0.71</text>
+        <text x="605" y="205" text-anchor="middle" class="sv-ts">Only the angle counts, not the length</text>
+      </svg>
+      <figcaption>Notice that "Hello" and "Hello Hello Hello" sit on the same line, so both make the same 45° angle with "Hello World" and get the same score.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Make a table of word counts. There is one column for each different word and one row for each phrase.</li>
+      <li>Plot each phrase as a point, using the word counts as its coordinates. With two words, this is a normal two-dimensional graph.</li>
+      <li>Draw a line from the origin to each point and find the angle between the two lines.</li>
+      <li>Take the cosine of that angle. This number is the cosine similarity.</li>
+      <li>Check what happens when a phrase repeats a word. If "Hello" becomes "Hello Hello Hello", its point moves further out on the x-axis. The angle stays at 45 degrees, so the score stays 0.71.</li>
+      <li>Look at the two extreme cases. Two identical phrases land on the same point, the angle is 0 degrees, and the cosine is 1. Two phrases with no shared words, like "Hello" and "World", make a 90 degree angle, and the cosine is 0.</li>
+      <li>Replace the drawing with the formula. The four steps above are tedious, and the formula computes the same number directly from the table.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 240" role="img" aria-label="Three cases: angle 0 gives 1, angle 45 gives 0.71, angle 90 gives 0">
+        <defs>
+          <marker id="ah2a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="sv-acc"/></marker>
+          <marker id="ah2k" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="sv-key"/></marker>
+        </defs>
+        <!-- panel 1: identical -->
+        <rect x="20" y="20" width="220" height="200" rx="8" class="sv-paper2"/>
+        <text x="130" y="44" text-anchor="middle" class="sv-tb">Same phrase</text>
+        <line x1="60" y1="170" x2="146" y2="84" class="sv-stroke-acc" stroke-width="5" marker-end="url(#ah2a)"/>
+        <line x1="60" y1="170" x2="146" y2="84" class="sv-stroke-key" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ah2k)"/>
+        <text x="130" y="205" text-anchor="middle" class="sv-tm">0° → cos = 1</text>
+        <!-- panel 2: overlap -->
+        <rect x="270" y="20" width="220" height="200" rx="8" class="sv-paper2"/>
+        <text x="380" y="44" text-anchor="middle" class="sv-tb">Some overlap</text>
+        <line x1="310" y1="170" x2="396" y2="84" class="sv-stroke-acc" stroke-width="3" marker-end="url(#ah2a)"/>
+        <line x1="310" y1="170" x2="394" y2="170" class="sv-stroke-key" stroke-width="3" marker-end="url(#ah2k)"/>
+        <path d="M350 170 A40 40 0 0 0 338.3 141.7" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="380" y="205" text-anchor="middle" class="sv-tm">45° → cos = 0.71</text>
+        <!-- panel 3: nothing shared -->
+        <rect x="520" y="20" width="220" height="200" rx="8" class="sv-paper2"/>
+        <text x="630" y="44" text-anchor="middle" class="sv-tb">Nothing shared</text>
+        <line x1="560" y1="170" x2="644" y2="170" class="sv-stroke-key" stroke-width="3" marker-end="url(#ah2k)"/>
+        <line x1="560" y1="170" x2="560" y2="86" class="sv-stroke-acc" stroke-width="3" marker-end="url(#ah2a)"/>
+        <path d="M560 152 L578 152 L578 170" class="sv-stroke-ink" stroke-width="1.5"/>
+        <text x="630" y="205" text-anchor="middle" class="sv-tm">90° → cos = 0</text>
+      </svg>
+      <figcaption>The smaller the angle between the lines, the closer the cosine similarity gets to 1.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>The formula looks complicated, but it only adds up products and squares of the word counts. It gives the cosine of the angle without drawing anything.</p>
+    <div class="formula"><span class="lbl">Cosine similarity</span><div class="math">$$ \text{cosine similarity} = \frac{\sum_{i=1}^{n} A_i B_i}{\sqrt{\sum_{i=1}^{n} A_i^2}\;\sqrt{\sum_{i=1}^{n} B_i^2}} $$</div><p class="explain"><b>Symbols:</b> \(A\) and \(B\) are the two phrases. \(i\) is the index, which keeps track of the word we are working on; it starts at 1, the first word in the table. \(n\) is the number of different words in the two phrases together. \(A_i\) and \(B_i\) are how many times word \(i\) appears in phrase \(A\) and in phrase \(B\). Each \(\sum\) (sigma) means "add up this term for every word from 1 to \(n\)". <b>What it tells you:</b> the result is the cosine of the angle between the two phrases, computed straight from the table of word counts.</p></div>
+    <p>The formula has one more big advantage. With more than two different words, we need more than two dimensions to plot the points. We cannot draw a five-dimensional graph, but we can still plug five columns of counts into the formula.</p>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p><b>Two words.</b> Let \(A\) = "Hello World" and \(B\) = "Hello". The words are hello and world, so \(n = 2\). The counts are \(A = (1, 1)\) and \(B = (1, 0)\).</p>
+      $$ \text{top} = (1 \times 1) + (1 \times 0) = 1 $$
+      $$ \text{bottom} = \sqrt{1^2 + 1^2}\;\sqrt{1^2 + 0^2} = \sqrt{2} \times 1 \approx 1.41 $$
+      $$ \text{cosine similarity} = \frac{1}{1.41} \approx 0.71 $$
+      <p>This matches the cosine of 45 degrees that we got from the graph.</p>
+      <p><b>Five words.</b> Let \(A\) = "I love Troll 2" and \(B\) = "I love Gymkata". The different words are I, love, Troll, 2 and Gymkata, so \(n = 5\). The counts are \(A = (1, 1, 1, 1, 0)\) and \(B = (1, 1, 0, 0, 1)\).</p>
+      $$ \text{top} = 1 + 1 + 0 + 0 + 0 = 2 $$
+      $$ \text{bottom} = \sqrt{4}\;\sqrt{3} = 2 \times 1.73 \approx 3.46 $$
+      $$ \text{cosine similarity} = \frac{2}{3.46} \approx 0.58 $$
+      <p>We would need a five-dimensional graph to see this angle, but the formula gives 0.58 directly.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> The score depends only on the angle, not on the length of the lines. "Hello" and "Hello Hello Hello" both score 0.71 against "Hello World". Repeating a word moves the point further out along the same line.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The count \(n\) covers every different word in both phrases, not just one phrase. A word that is missing from a phrase still gets a column, with a count of 0.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> With word counts, a score of 0 means the phrases share no words at all. It does not mean they are opposites. The range in the video runs from 0 (nothing in common) to 1 (exactly the same).</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not try to picture the graph for more than two or three words. Use the formula; it works the same way in any number of dimensions.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is cosine similarity?</summary><div class="a">It is an easy-to-calculate metric that tells us how similar two things are. For text, we turn each phrase into a vector of word counts. The cosine similarity is the cosine of the angle between those two vectors.</div></details>
+    <details class="qa" open><summary>What values can it take for word counts, and what do they mean?</summary><div class="a">It runs from 0 to 1. Identical phrases give an angle of 0 degrees and a score of 1. Phrases with no words in common give 90 degrees and a score of 0. Partial overlap falls in between.</div></details>
+    <details class="qa" open><summary>Does repeating a word change the score?</summary><div class="a">Not if it only stretches the vector. "Hello" and "Hello Hello Hello" point the same way, so they make the same angle with "Hello World". Cosine similarity ignores the length of the lines and looks only at the angle.</div></details>
+    <details class="qa" open><summary>How do you compute it when there are many different words?</summary><div class="a">We skip the graph and use the formula. Multiply the matching counts and add them up, then divide by the square root of each phrase's sum of squared counts, multiplied together. For "I love Troll 2" and "I love Gymkata" that gives 2 divided by about 3.46, which is 0.58.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Cosine similarity measures how similar two things are, such as two phrases.</li>
+      <li>Each phrase becomes a row of word counts, which we can treat as a point.</li>
+      <li>The score is the cosine of the angle between the lines from the origin to the two points.</li>
+      <li>Identical phrases score 1, phrases with no shared words score 0, and partial overlap scores in between.</li>
+      <li>Only the angle matters, so repeating words in a phrase does not change the score.</li>
+      <li>The formula computes the score straight from the counts, with no drawing.</li>
+      <li>The formula also works when there are more words than we can draw, like the five-word example that gives 0.58.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Cosine similarity</span><span class="board-tag">count the words, then measure the angle</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 270" role="img" aria-label="Word-count graph. Hello World at (1, 1) and Hello at (1, 0) make a 45 degree angle, and the cosine of 45 degrees is 0.71. Hello Hello Hello at (3, 0) lies on the same line as Hello, so the angle and the score stay the same.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <path d="M50 220 L106 220 A56 56 0 0 0 89.6 180.4 Z" class="sv-key-soft"/>
+            <line x1="50" y1="220" x2="376" y2="220" class="sv-stroke-ink" stroke-width="2" marker-end="url(#board-arr)"/>
+            <line x1="50" y1="220" x2="50" y2="40" class="sv-stroke-ink" stroke-width="2" marker-end="url(#board-arr)"/>
+            <line x1="150" y1="220" x2="350" y2="220" class="sv-stroke-key" stroke-width="3" stroke-dasharray="7 6" stroke-linecap="round"/>
+            <line x1="50" y1="220" x2="150" y2="220" class="sv-stroke-key" stroke-width="4" stroke-linecap="round"/>
+            <line x1="50" y1="220" x2="150" y2="120" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round"/>
+            <path d="M106 220 A56 56 0 0 0 89.6 180.4" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="150" cy="120" r="8" class="sv-acc"/>
+              <circle cx="150" cy="220" r="8" class="sv-key"/>
+              <circle cx="350" cy="220" r="8" class="sv-key-soft"/>
+              <rect x="196" y="18" width="188" height="68" rx="10" class="sv-good-soft"/>
+            </g>
+            <text x="64" y="46" class="sv-ts">“world” count</text>
+            <text x="290" y="46" text-anchor="middle" class="sv-tb">cos 45° = 0.71</text>
+            <text x="290" y="73" text-anchor="middle" class="sv-ts">only the angle counts</text>
+            <text x="164" y="126" class="sv-t">“Hello World” (1, 1)</text>
+            <text x="114" y="204" class="sv-tb">45°</text>
+            <text x="380" y="196" text-anchor="end" class="sv-ts">“Hello Hello Hello” (3, 0)</text>
+            <text x="150" y="250" text-anchor="middle" class="sv-ts">“Hello” (1, 0)</text>
+            <text x="380" y="250" text-anchor="end" class="sv-ts">“hello” count</text>
+          </svg>
+          <p>Word counts turn each phrase into a point. The score is the cosine of the angle between the lines from the origin to the points. Repeating a word stretches a line but keeps the angle.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Word counts</dt><dd>How many times each word appears in a phrase.</dd>
+            <dt>Cosine similarity</dt><dd>The cosine of the angle between two phrases' lines.</dd>
+            <dt>\(n\)</dt><dd>The number of different words in both phrases together.</dd>
+            <dt>\(\sum\) (sigma)</dt><dd>Add up the term for every word \(i\), from 1 to \(n\).</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Count words</b>one column per word</li>
+            <li><b>Plot points</b>counts are the coordinates</li>
+            <li><b>Cosine of angle</b>between lines from the origin</li>
+            <li><b>Repeat a word?</b>still 45°, still 0.71</li>
+            <li><b>Extremes</b>0° gives 1, 90° gives 0</li>
+            <li><b>Use the formula</b>same number, no drawing</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{sim}=\frac{\sum_{i=1}^{n} A_iB_i}{\sqrt{\sum_{i=1}^{n} A_i^2}\;\sqrt{\sum_{i=1}^{n} B_i^2}}$$
+          <ul class="keys">
+            <li>\(A_i\), \(B_i\): how often word \(i\) appears in phrase \(A\) and in phrase \(B\).</li>
+            <li>sim is the cosine of the angle, straight from the counts.</li>
+            <li>Works in any number of dimensions, so no graph is needed.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>words</th><th>A</th><th>B</th><th>A × B</th></tr>
+            <tr><td>I, love</td><td>1, 1</td><td>1, 1</td><td>1, 1</td></tr>
+            <tr><td>Troll, 2</td><td>1, 1</td><td>0, 0</td><td>0, 0</td></tr>
+            <tr><td>Gymkata</td><td>0</td><td>1</td><td>0</td></tr>
+            <tr class="final"><td>score</td><td colspan="2">2 / (√4 × √3)</td><td>≈ 0.58</td></tr>
+          </table>
+          <p class="hand">A is “I love Troll 2”, B is “I love Gymkata”: 2 / 3.46 ≈ 0.58, with no five-dimensional graph.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Repeating a word changes the score.</span><span class="yes">Only the angle counts: “Hello” and “Hello Hello Hello” both score 0.71 against “Hello World”.</span></li>
+            <li><span class="no">A score of 0 means opposite phrases.</span><span class="yes">With word counts, 0 means no shared words. The range runs from 0 to 1.</span></li>
+            <li><span class="no">\(n\) counts the words in one phrase.</span><span class="yes">It counts every different word in both phrases; a missing word gets a column with count 0.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="70-catboost-part-2-building-and-using-trees.html"><small>Previous</small>CatBoost Part 2: Building and Using Trees</a> <a href="72-support-vector-machines-part-1-main-ideas.html"><small>Next</small>Support Vector Machines Part 1 (of 3): Main Ideas</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

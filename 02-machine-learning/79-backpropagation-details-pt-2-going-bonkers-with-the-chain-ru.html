@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Backpropagation Details Pt. 2: Going bonkers with The Chain Rule — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>79</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 79 · 13.2 min</div>
+    <h1>Backpropagation Details Pt. 2: Going bonkers with The Chain Rule</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=GKZoOHXGcLo" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: Neural Networks / Deep Learning (video 7)</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video finishes backpropagation for the small neural network from Part 1. It uses the chain rule to get the derivatives for the hidden-layer weights and biases. Then gradient descent trains every parameter at once.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Part 1 already gave the derivatives for \(b_3\), \(w_3\) and \(w_4\), and they do not change. Now we need the derivatives of the sum of the squared residuals (SSR) with respect to \(w_1\), \(b_1\), \(w_2\) and \(b_2\). The SSR is linked to \(w_1\) through a chain: predicted values, then the activation output \(y_{1,i}\), then the activation input \(x_{1,i}\). The chain rule multiplies one derivative for each link. With all derivatives in hand, gradient descent updates all the parameters together until the green squiggle fits the data.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Think about how \(w_1\) affects the final error. The network multiplies each input by \(w_1\) and adds \(b_1\). That gives \(x_{1,i}\), the x-axis coordinate for the activation function in the top node. The softplus activation function turns \(x_{1,i}\) into a y-axis value, \(y_{1,i}\).</p>
+    <p>Next, \(y_{1,i}\) times \(w_3\) gives the blue curve. The blue curve, the orange curve and the bias \(b_3\) add up to the green squiggle, which gives the predicted values. The predicted values give the residuals, and the residuals give the SSR.</p>
+    <p>So the SSR depends on \(w_1\) through three in-between values: \(x_{1,i}\), \(y_{1,i}\) and the predicted values. That makes four links in a row. The chain rule says: to get the derivative across the whole chain, multiply the derivative of each link. Josh spreads the equations out so you can see each link clearly. Then he solves each small derivative one at a time.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 280" role="img" aria-label="Forward path from w1 to the SSR, with the chain-rule derivatives flowing backward from the SSR to w1">
+        <defs>
+          <marker id="ah-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker>
+          <marker id="ah-key" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-key"/></marker>
+        </defs>
+        <!-- forward boxes -->
+        <rect x="20" y="40" width="80" height="60" rx="8" class="sv-acc-soft"/>
+        <text x="60" y="76" text-anchor="middle" class="sv-tb">w₁</text>
+        <rect x="135" y="40" width="130" height="60" rx="8" class="sv-paper2"/>
+        <text x="200" y="64" text-anchor="middle" class="sv-tb">x₁,ᵢ</text>
+        <text x="200" y="86" text-anchor="middle" class="sv-ts">input × w₁ + b₁</text>
+        <rect x="300" y="40" width="120" height="60" rx="8" class="sv-paper2"/>
+        <text x="360" y="64" text-anchor="middle" class="sv-tb">y₁,ᵢ</text>
+        <text x="360" y="86" text-anchor="middle" class="sv-ts">log(1 + eˣ)</text>
+        <rect x="455" y="40" width="150" height="60" rx="8" class="sv-paper2"/>
+        <text x="530" y="64" text-anchor="middle" class="sv-tb">Predicted</text>
+        <text x="530" y="86" text-anchor="middle" class="sv-ts">w₃y₁ + w₄y₂ + b₃</text>
+        <rect x="640" y="40" width="100" height="60" rx="8" class="sv-good-soft"/>
+        <text x="690" y="64" text-anchor="middle" class="sv-tb">SSR</text>
+        <text x="690" y="86" text-anchor="middle" class="sv-ts">Σ(obs − pred)²</text>
+        <!-- forward arrows -->
+        <line x1="100" y1="70" x2="133" y2="70" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah-ink)"/>
+        <line x1="265" y1="70" x2="298" y2="70" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah-ink)"/>
+        <line x1="420" y1="70" x2="453" y2="70" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah-ink)"/>
+        <line x1="605" y1="70" x2="638" y2="70" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah-ink)"/>
+        <!-- backward chain-rule arrows -->
+        <path d="M690,104 Q610,176 530,106" class="sv-stroke-key" stroke-width="2" marker-end="url(#ah-key)"/>
+        <path d="M530,104 Q445,176 360,106" class="sv-stroke-key" stroke-width="2" marker-end="url(#ah-key)"/>
+        <path d="M360,104 Q280,176 200,106" class="sv-stroke-key" stroke-width="2" marker-end="url(#ah-key)"/>
+        <path d="M200,104 Q130,176 60,106" class="sv-stroke-key" stroke-width="2" marker-end="url(#ah-key)"/>
+        <!-- derivative labels -->
+        <rect x="550" y="148" width="120" height="22" rx="4" class="sv-paper"/>
+        <text x="610" y="164" text-anchor="middle" class="sv-tm">Σ −2(obs−pred)</text>
+        <rect x="425" y="148" width="40" height="22" rx="4" class="sv-paper"/>
+        <text x="445" y="164" text-anchor="middle" class="sv-tm">w₃</text>
+        <rect x="235" y="148" width="90" height="22" rx="4" class="sv-paper"/>
+        <text x="280" y="164" text-anchor="middle" class="sv-tm">eˣ/(1+eˣ)</text>
+        <rect x="100" y="148" width="60" height="22" rx="4" class="sv-paper"/>
+        <text x="130" y="164" text-anchor="middle" class="sv-tm">input</text>
+        <!-- product -->
+        <rect x="20" y="205" width="720" height="50" rx="8" class="sv-key-soft"/>
+        <text x="380" y="235" text-anchor="middle" class="sv-tm">dSSR/dw₁ = Σ −2(obs − pred) × w₃ × eˣ/(1+eˣ) × input</text>
+      </svg>
+      <figcaption>Black arrows run the network forward; orange arrows walk back from the SSR to w₁, and their four labels multiply into the derivative.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Keep the derivatives for \(b_3\), \(w_3\) and \(w_4\) from Part 1. They do not change.</li>
+      <li>For \(w_1\), trace the links from the SSR back to \(w_1\): predicted values, then \(y_{1,i}\), then \(x_{1,i}\). The chain rule multiplies four derivatives, one per link.</li>
+      <li>Link 1: the SSR with respect to the predicted values is the sum of \(-2\) times (observed minus predicted). This is the same result as in Part 1, because the SSR formula has not changed.</li>
+      <li>Link 2: the predicted values with respect to \(y_1\) give \(w_3\). The orange curve and \(b_3\) do not contain \(y_1\), so their derivatives are 0.</li>
+      <li>Link 3: the softplus output \(y_1\) with respect to \(x_1\) gives \(e^x/(1+e^x)\). It needs the chain rule again, because softplus wraps a log around \(1+e^x\).</li>
+      <li>Link 4: \(x_1\) with respect to \(w_1\) gives the input value. This is because \(x_1\) is the input times \(w_1\), plus \(b_1\).</li>
+      <li>Multiply the four parts together. Josh calls the result a "big fancy equation" (BFE).</li>
+      <li>For \(b_1\), the same links apply, so the first three parts stay the same. Only the last part changes: \(x_1\) with respect to \(b_1\) is 1.</li>
+      <li>For \(w_2\) and \(b_2\), use the bottom node instead. Swap in \(w_4\), \(x_{2,i}\) and \(y_{2,i}\), and the steps are the same.</li>
+      <li>Initialize the weights with random numbers from a standard normal distribution, and set the biases to 0.</li>
+      <li>Plug the current values into every derivative. Use each derivative to get a step size and a new value. Update all parameters and repeat until the predictions stop improving very much, or some other rule says stop.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="The network with two hidden nodes: the top path uses w1, b1 and w3, the bottom path uses w2, b2 and w4">
+        <defs>
+          <marker id="ah2-key" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-key"/></marker>
+          <marker id="ah2-acc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-acc"/></marker>
+          <marker id="ah2-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker>
+        </defs>
+        <!-- edges -->
+        <line x1="100" y1="140" x2="258" y2="76" class="sv-stroke-acc" stroke-width="2" marker-end="url(#ah2-acc)"/>
+        <line x1="100" y1="160" x2="258" y2="224" class="sv-stroke-key" stroke-width="2" marker-end="url(#ah2-key)"/>
+        <line x1="430" y1="72" x2="561" y2="136" class="sv-stroke-acc" stroke-width="2" marker-end="url(#ah2-acc)"/>
+        <line x1="430" y1="228" x2="561" y2="164" class="sv-stroke-key" stroke-width="2" marker-end="url(#ah2-key)"/>
+        <line x1="620" y1="150" x2="648" y2="150" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah2-ink)"/>
+        <!-- nodes -->
+        <circle cx="70" cy="150" r="30" class="sv-acc-soft"/>
+        <text x="70" y="155" text-anchor="middle" class="sv-t">Input</text>
+        <rect x="260" y="40" width="170" height="64" rx="8" class="sv-paper2"/>
+        <text x="345" y="66" text-anchor="middle" class="sv-tb">softplus</text>
+        <text x="345" y="90" text-anchor="middle" class="sv-ts">x₁,ᵢ → y₁,ᵢ</text>
+        <rect x="260" y="196" width="170" height="64" rx="8" class="sv-paper2"/>
+        <text x="345" y="222" text-anchor="middle" class="sv-tb">softplus</text>
+        <text x="345" y="246" text-anchor="middle" class="sv-ts">x₂,ᵢ → y₂,ᵢ</text>
+        <circle cx="590" cy="150" r="30" class="sv-good-soft"/>
+        <text x="590" y="155" text-anchor="middle" class="sv-tb">+ b₃</text>
+        <text x="654" y="146" class="sv-tb">Predicted</text>
+        <text x="654" y="166" class="sv-ts">→ SSR</text>
+        <!-- edge labels -->
+        <rect x="118" y="74" width="88" height="20" rx="4" class="sv-paper"/>
+        <text x="162" y="88" text-anchor="middle" class="sv-tm">× w₁ + b₁</text>
+        <rect x="118" y="196" width="88" height="20" rx="4" class="sv-paper"/>
+        <text x="162" y="210" text-anchor="middle" class="sv-tm">× w₂ + b₂</text>
+        <rect x="476" y="74" width="48" height="20" rx="4" class="sv-paper"/>
+        <text x="500" y="88" text-anchor="middle" class="sv-tm">× w₃</text>
+        <rect x="476" y="206" width="48" height="20" rx="4" class="sv-paper"/>
+        <text x="500" y="220" text-anchor="middle" class="sv-tm">× w₄</text>
+      </svg>
+      <figcaption>The blue top path makes the blue curve and holds the chain for w₁ and b₁; the orange bottom path does the same for w₂ and b₂.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">The network, top node</span><div class="math">$$ x_{1,i} = \text{input}_i \, w_1 + b_1, \qquad y_{1,i} = \log\!\left(1 + e^{x_{1,i}}\right) $$ $$ \text{Predicted}_i = w_3\, y_{1,i} + w_4\, y_{2,i} + b_3, \qquad \text{SSR} = \sum_{i} (\text{Observed}_i - \text{Predicted}_i)^2 $$</div><p class="explain"><b>Symbols:</b> \(\text{input}_i\) is the i-th input value (a dosage). \(w_1, w_2, w_3, w_4\) are weights and \(b_1, b_2, b_3\) are biases. \(x_{1,i}\) is the x-axis coordinate that goes into the top node's activation function. \(y_{1,i}\) is the y-axis value that comes out of it, using softplus. \(y_{2,i}\) is the same thing for the bottom node. <b>What it tells you:</b> these are the links that connect \(w_1\) to the SSR, one after another.</p></div>
+
+    <div class="formula"><span class="lbl">Chain rule for w1</span><div class="math">$$ \frac{d\,\text{SSR}}{d\,w_1} = \frac{d\,\text{SSR}}{d\,\text{Predicted}} \times \frac{d\,\text{Predicted}}{d\,y_1} \times \frac{d\,y_1}{d\,x_1} \times \frac{d\,x_1}{d\,w_1} $$</div><p class="explain"><b>Symbols:</b> each fraction is the derivative of one link in the chain. <b>What it tells you:</b> a change in \(w_1\) passes through \(x_1\), then \(y_1\), then the predicted values, before it reaches the SSR, so we multiply the four effects.</p></div>
+
+    <div class="formula"><span class="lbl">Solving each link</span><div class="math">$$ \frac{d\,\text{SSR}}{d\,\text{Predicted}} = \sum_i -2(\text{Observed}_i - \text{Predicted}_i) $$</div><p class="explain">This is the same first link we used in earlier videos.</p>
+    <div class="math">$$ \frac{d\,\text{Predicted}}{d\,y_1} = w_3 + 0 + 0 = w_3 $$</div><p class="explain">Only the \(w_3 y_1\) term contains \(y_1\), so the other two terms drop out.</p>
+    <div class="math">$$ \frac{d\,y_1}{d\,x_1} = \frac{1}{1+e^{x}} \times (0 + e^{x}) = \frac{e^{x}}{1+e^{x}} $$</div><p class="explain">Let \(z = 1 + e^x\). The derivative of \(\log z\) is \(1/z\), and the derivative of the inside is \(e^x\), since the 1 has no \(x\).</p>
+    <div class="math">$$ \frac{d\,x_1}{d\,w_1} = \text{input} + 0 = \text{input} $$</div><p class="explain">The \(b_1\) term does not contain \(w_1\), so only the input value is left.</p></div>
+
+    <div class="formula"><span class="lbl">The big fancy equations</span><div class="math">$$ \frac{d\,\text{SSR}}{d\,w_1} = \sum_i -2(\text{Observed}_i - \text{Predicted}_i)\; w_3\; \frac{e^{x_{1,i}}}{1+e^{x_{1,i}}}\; \text{input}_i $$ $$ \frac{d\,\text{SSR}}{d\,b_1} = \sum_i -2(\text{Observed}_i - \text{Predicted}_i)\; w_3\; \frac{e^{x_{1,i}}}{1+e^{x_{1,i}}}\; \times 1 $$</div><p class="explain"><b>Symbols:</b> the same as above; the \(x\) in \(e^{x}\) is \(x_{1,i}\) for each input value. <b>What it tells you:</b> the two derivatives differ only in the last factor, because \(d\,x_1/d\,b_1 = 0 + 1 = 1\). For \(w_2\) and \(b_2\), replace \(w_3\) with \(w_4\) and \(x_{1,i}\) with \(x_{2,i}\).</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh first sets the starting values. The weights get random numbers from a standard normal distribution. The biases \(b_1\), \(b_2\) and \(b_3\) start at 0.</p>
+      <p>Then he evaluates \(d\,\text{SSR}/d\,w_1\). He expands the sum into one term per data point. He plugs in the observed values and the predicted values from the green squiggle. The predicted values come from running the dosages through the network with the current parameters.</p>
+      <p>Next he plugs in the current \(w_3\), the values \(x_{1,i}\) from the top node, and the input values. Doing the math gives \(d\,\text{SSR}/d\,w_1 = 0.76\).</p>
+      <p>He solves all the other derivatives the same way, turns each into a step size and a new value, and updates the network. At the start, the green squiggle fits so badly that it goes off the screen. After 450 steps of gradient descent, it fits the data.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> The \(x\) in \(e^x/(1+e^x)\) is not the dosage. It is \(x_{1,i}\), the x-axis coordinate for the activation function, which you get for each input value.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The derivative of the predicted values with respect to \(y_1\) is just \(w_3\). The orange curve term and \(b_3\) do not contain \(y_1\), so they add 0.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The \(w_1\) and \(b_1\) derivatives share the first three factors. Only the last factor differs: the input value for \(w_1\) and 1 for \(b_1\).</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Josh flags that a standard normal distribution is only one of many ways to initialize weights. Starting biases at 0 is common, not required.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>How do you get the derivative of the loss with respect to a first-layer weight?</summary><div class="a">I trace how the weight reaches the loss. In this network, \(w_1\) sets the activation input, which sets the activation output, which sets the prediction, which sets the SSR. The chain rule multiplies the derivative of each link. So I get the SSR term, times \(w_3\), times the softplus derivative, times the input.</div></details>
+    <details class="qa" open><summary>What is the derivative of the softplus function?</summary><div class="a">Softplus is \(\log(1+e^x)\). Using the chain rule, the outside gives \(1/(1+e^x)\) and the inside gives \(e^x\). So the derivative is \(e^x/(1+e^x)\).</div></details>
+    <details class="qa" open><summary>How is the gradient for a bias different from the gradient for its weight?</summary><div class="a">The chain is the same, so the first factors match. Only the last link changes. The derivative of the activation input with respect to the weight is the input value, but with respect to the bias it is just 1.</div></details>
+    <details class="qa" open><summary>Why can you reuse the output-layer derivatives when you add hidden-layer parameters?</summary><div class="a">The derivatives for \(w_3\), \(w_4\) and \(b_3\) do not change when we also optimize the earlier parameters. We just add the new derivatives next to them. Then gradient descent updates all of the parameters together.</div></details>
+    <details class="qa" open><summary>How did the video initialize and train the network?</summary><div class="a">The weights came from a standard normal distribution, and the biases started at 0. At each step, we plug the current values into every derivative, get a step size and a new value for each parameter, and update. In the video, the fit was good after 450 steps.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>The derivatives for \(b_3\), \(w_3\) and \(w_4\) from Part 1 stay the same.</li>
+      <li>The SSR is linked to \(w_1\) through the predicted values, \(y_{1,i}\) and \(x_{1,i}\).</li>
+      <li>The chain rule multiplies four parts: the SSR term, \(w_3\), \(e^x/(1+e^x)\), and the input.</li>
+      <li>For \(b_1\), the last part becomes 1 and everything else stays the same.</li>
+      <li>For \(w_2\) and \(b_2\), use the bottom node, with \(w_4\) and \(x_{2,i}\).</li>
+      <li>Weights start from a standard normal distribution and biases start at 0.</li>
+      <li>Gradient descent updates all parameters together, and in the video it fits the data after 450 steps.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Hidden-layer backpropagation</span><span class="board-tag">one derivative per link, multiply them all</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 300" role="img" aria-label="Bottom to top: w1 and b1 feed the top softplus node through links worth the input and 1, the node's own factor is e to the x over 1 plus e to the x, a link worth w3 leads to the predicted values, and a link worth the sum of −2 times observed minus predicted leads to the SSR.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <rect x="165" y="12" width="70" height="36" rx="10" class="sv-paper2"/>
+              <rect x="138" y="96" width="124" height="38" rx="10" class="sv-good-soft"/>
+              <rect x="150" y="170" width="100" height="48" rx="10" class="sv-paper"/>
+            </g>
+            <g class="sv-stroke-acc" stroke-width="3">
+              <circle cx="110" cy="268" r="20" class="sv-paper"/>
+              <circle cx="290" cy="268" r="20" class="sv-paper"/>
+            </g>
+            <polyline points="160,209.3 168,208.9 176,208.2 184,207.1 192,205.5 200,203.1 208,200 216,195.9 224,191 232,185.3 240,179.2" class="sv-stroke-acc" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="200" y1="92" x2="200" y2="56" class="sv-stroke-good" stroke-width="4" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="200" y1="166" x2="200" y2="141" class="sv-stroke-acc" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="130.5" y1="253.7" x2="176" y2="222" class="sv-stroke-acc" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <line x1="269.5" y1="253.7" x2="224" y2="222" class="sv-stroke-acc" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="200" y="37" text-anchor="middle" class="sv-tb">SSR</text>
+            <text x="218" y="80" class="sv-tm">Σ −2(obs − pred)</text>
+            <text x="200" y="122" text-anchor="middle" class="sv-tb">Predicted</text>
+            <text x="216" y="157" class="sv-tm">× w₃</text>
+            <text x="262" y="200" class="sv-tm">× eˣ/(1+eˣ)</text>
+            <text x="142" y="234" text-anchor="end" class="sv-tm">× input</text>
+            <text x="258" y="234" class="sv-tm">× 1</text>
+            <text x="110" y="275" text-anchor="middle" class="sv-tb">w₁</text>
+            <text x="290" y="275" text-anchor="middle" class="sv-tb">b₁</text>
+          </svg>
+          <p>The weight \(w_1\) reaches the SSR in four links, through \(x_{1,i}\), \(y_{1,i}\) and the predicted values. Multiply one derivative per link; for \(b_1\), only the last factor changes, to 1.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Softplus</dt><dd>The activation function \(\log(1+e^{x})\). Its derivative is \(e^{x}/(1+e^{x})\).</dd>
+            <dt>\(x_{1,i}\), \(y_{1,i}\)</dt><dd>The x-axis value into the top node, and the y-axis value out.</dd>
+            <dt>Chain rule</dt><dd>For a chain of links, multiply the derivative of each link.</dd>
+            <dt>BFE</dt><dd>Josh's "big fancy equation": the four link derivatives multiplied.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Keep Part 1</b>\(b_3\), \(w_3\), \(w_4\) derivatives stay</li>
+            <li><b>Trace \(w_1\)</b>back via predicted, \(y_{1,i}\), \(x_{1,i}\)</li>
+            <li><b>Multiply</b>four link derivatives: the BFE</li>
+            <li><b>Swap the end</b>for \(b_1\), the last is 1</li>
+            <li><b>Bottom node</b>\(w_2\), \(b_2\): use \(w_4\), \(x_{2,i}\)</li>
+            <li><b>Initialize</b>weights standard normal, biases 0</li>
+          </ol>
+          <p class="loop">↺ plug in, step and update every parameter; repeat until the predictions stop improving much</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\frac{d\,\text{SSR}}{d\,w_1}=\frac{d\,\text{SSR}}{d\,\text{Pred}}\times\frac{d\,\text{Pred}}{d\,y_1}\times\frac{d\,y_1}{d\,x_1}\times\frac{d\,x_1}{d\,w_1}$$
+          $$=\sum_i -2(\text{Obs}_i-\text{Pred}_i)\,w_3\,\frac{e^{x_{1,i}}}{1+e^{x_{1,i}}}\,\text{input}_i$$
+          $$\frac{d\,y_1}{d\,x_1}=\frac{1}{1+e^{x}}\times e^{x}=\frac{e^{x}}{1+e^{x}}$$
+          <ul class="keys">
+            <li>Obs, Pred: observed and predicted values. \(\text{input}_i\) is dosage \(i\); the \(x\) is \(x_{1,i}\).</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>stage</th><th>value</th></tr>
+            <tr><td>biases at start</td><td>0</td></tr>
+            <tr><td>weights at start</td><td>standard normal</td></tr>
+            <tr><td>first squiggle</td><td>off the screen</td></tr>
+            <tr><td>\(d\,\text{SSR}/d\,w_1\)</td><td>0.76</td></tr>
+            <tr class="final"><td>gradient descent</td><td>fits after 450 steps</td></tr>
+          </table>
+          <p class="hand">Expand the sum into one term per data point, then plug in. Every other derivative is solved the same way.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">The \(x\) in \(e^{x}/(1+e^{x})\) is the dosage.</span><span class="yes">It is \(x_{1,i}\), the activation function's x-axis coordinate, one per input value.</span></li>
+            <li><span class="no">\(d\,\text{Pred}/d\,y_1\) uses every term of the prediction.</span><span class="yes">It is just \(w_3\). The orange curve term and \(b_3\) have no \(y_1\), so they add 0.</span></li>
+            <li><span class="no">Weights must start from a standard normal.</span><span class="yes">That is one of many ways. Starting biases at 0 is common, not required.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="78-backpropagation-details-pt-1-optimizing-3-parameters-simulta.html"><small>Previous</small>Backpropagation Details Pt. 1: Optimizing 3 parameters simultaneously.</a> <a href="80-neural-networks-pt-3-relu-in-action.html"><small>Next</small>Neural Networks Pt. 3: ReLU In Action</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

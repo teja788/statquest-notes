@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Neural Networks Pt. 4: Multiple Inputs and Outputs — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>81</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 81 · 13.8 min</div>
+    <h1>Neural Networks Pt. 4: Multiple Inputs and Outputs</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=83LYR-1IcjA" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: Neural Networks / Deep Learning (video 9)</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video shows what a neural network does when it has two inputs and three outputs. It uses the Iris flower data, and it shows that the same "bend, scale, and add" idea still works, only now in three dimensions.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>The network takes petal width and sepal width and predicts the species: setosa, versicolor, or virginica. With two inputs, each hidden node makes a bent surface instead of a bent line. Each output node scales the two bent surfaces by its own weights, adds them, and adds a bias, which gives one crinkled surface per species. To classify a flower, you run its two widths through the network and pick the output closest to 1. In practice, the outputs usually go to argmax or softmax first.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>The earlier networks in this series had one input (drug dosage) and one output (effectiveness). One input needs one axis, and one output needs one more axis. So everything fit on a flat two-dimensional graph, and we could watch the weights and biases slice, flip, and stretch the activation functions into a squiggle.</p>
+    <p>This network has two input nodes and three output nodes. The inputs are two measurements of an iris flower: the width of a petal and the width of a sepal. A sepal is the leafy part under the petals. The outputs are one score for each of the three species. There are two hidden nodes, and both use the ReLU activation function, which turns any negative value into zero.</p>
+    <p>Two inputs plus one output need three axes, so each picture is now a 3-D surface. The key point is that nothing new happens in the math. Each hidden node still makes one bent shape. Each output still scales and adds those shapes. The only change is that the shapes are surfaces, not lines.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 320" role="img" aria-label="Iris neural network with two inputs, two ReLU hidden nodes, and three outputs">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink3"/></marker>
+        </defs>
+        <text x="100" y="34" text-anchor="middle" class="sv-ts">Inputs (scaled 0 to 1)</text>
+        <text x="370" y="34" text-anchor="middle" class="sv-ts">Hidden layer</text>
+        <text x="655" y="34" text-anchor="middle" class="sv-ts">Outputs</text>
+        <!-- input to hidden -->
+        <line x1="170" y1="120" x2="336" y2="120" class="sv-stroke-acc" stroke-width="2.5" marker-end="url(#ar)"/>
+        <line x1="170" y1="240" x2="340" y2="134" class="sv-stroke-acc" stroke-width="2.5" marker-end="url(#ar)"/>
+        <line x1="170" y1="120" x2="340" y2="226" class="sv-line" stroke-width="2" marker-end="url(#ar)"/>
+        <line x1="170" y1="240" x2="336" y2="240" class="sv-line" stroke-width="2" marker-end="url(#ar)"/>
+        <!-- hidden to output -->
+        <line x1="402" y1="120" x2="578" y2="80" class="sv-line" stroke-width="2" marker-end="url(#ar)"/>
+        <line x1="402" y1="120" x2="578" y2="180" class="sv-line" stroke-width="2" marker-end="url(#ar)"/>
+        <line x1="402" y1="120" x2="578" y2="280" class="sv-line" stroke-width="2" marker-end="url(#ar)"/>
+        <line x1="402" y1="240" x2="578" y2="80" class="sv-line" stroke-width="2" marker-end="url(#ar)"/>
+        <line x1="402" y1="240" x2="578" y2="180" class="sv-line" stroke-width="2" marker-end="url(#ar)"/>
+        <line x1="402" y1="240" x2="578" y2="280" class="sv-line" stroke-width="2" marker-end="url(#ar)"/>
+        <!-- weight labels for top hidden node -->
+        <rect x="232" y="104" width="44" height="22" rx="4" class="sv-paper"/>
+        <text x="254" y="120" text-anchor="middle" class="sv-tm">−2.5</text>
+        <rect x="282" y="150" width="36" height="22" rx="4" class="sv-paper"/>
+        <text x="300" y="166" text-anchor="middle" class="sv-tm">0.6</text>
+        <text x="370" y="76" text-anchor="middle" class="sv-tm">bias +1.6</text>
+        <!-- input nodes -->
+        <rect x="30" y="100" width="140" height="40" rx="8" class="sv-key-soft"/>
+        <text x="100" y="125" text-anchor="middle" class="sv-t">Petal width</text>
+        <rect x="30" y="220" width="140" height="40" rx="8" class="sv-key-soft"/>
+        <text x="100" y="245" text-anchor="middle" class="sv-t">Sepal width</text>
+        <!-- hidden nodes -->
+        <circle cx="370" cy="120" r="32" class="sv-acc-soft"/>
+        <text x="370" y="125" text-anchor="middle" class="sv-tb">ReLU</text>
+        <circle cx="370" cy="240" r="32" class="sv-paper2"/>
+        <text x="370" y="245" text-anchor="middle" class="sv-tb">ReLU</text>
+        <!-- output nodes -->
+        <rect x="580" y="60" width="150" height="40" rx="8" class="sv-good-soft"/>
+        <text x="655" y="85" text-anchor="middle" class="sv-t">Setosa</text>
+        <rect x="580" y="160" width="150" height="40" rx="8" class="sv-good-soft"/>
+        <text x="655" y="185" text-anchor="middle" class="sv-t">Versicolor</text>
+        <rect x="580" y="260" width="150" height="40" rx="8" class="sv-good-soft"/>
+        <text x="655" y="285" text-anchor="middle" class="sv-t">Virginica</text>
+      </svg>
+      <figcaption>Notice that all three outputs share the same two hidden surfaces; only the output weights and biases differ.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li><b>Scale the inputs.</b> Josh scales both widths so the smallest value in the training data is 0 and the largest is 1. This keeps the math simple.</li>
+      <li><b>Start with one output.</b> To keep things simple, he first uses both inputs but only the setosa output. The graph has petal width and sepal width on the floor, and the setosa score going up.</li>
+      <li><b>Compute the top hidden node.</b> Multiply petal width by −2.5, multiply sepal width by 0.6, add them, and add the bias 1.6. This gives the x-axis coordinate for the activation function.</li>
+      <li><b>Apply ReLU.</b> ReLU returns the value if it is above zero, and zero otherwise. Doing this for every pair of widths from 0 to 1 gives a blue bent surface. The bend is where ReLU sets values to zero.</li>
+      <li><b>Scale the blue surface.</b> Multiply every height on the blue surface by the setosa weight for that node, −0.1.</li>
+      <li><b>Repeat for the bottom hidden node.</b> The same steps give an orange bent surface. Its heights are multiplied by 1.5.</li>
+      <li><b>Add and add the bias.</b> Add the blue and orange heights point by point to get a green crinkled surface. Then add the final bias, 0. This is the setosa output.</li>
+      <li><b>Repeat for the other outputs.</b> Versicolor and virginica reuse the same blue and orange surfaces. Only the output weights and final bias change, so each species gets its own crinkled surface.</li>
+      <li><b>Classify a flower.</b> Run its widths through the network and pick the output closest to 1. Usually the outputs go to argmax or softmax first, which is the topic of the next video.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 320" role="img" aria-label="Top hidden node output versus petal width when sepal width is zero, showing the ReLU bend">
+        <defs>
+          <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink3"/></marker>
+        </defs>
+        <line x1="80" y1="250" x2="720" y2="250" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <line x1="80" y1="250" x2="80" y2="40" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <polyline points="80,74 204,129 477,250 700,250" class="sv-stroke-acc" stroke-width="3.5"/>
+        <circle cx="80" cy="74" r="6" class="sv-acc"/>
+        <circle cx="204" cy="129" r="6" class="sv-acc"/>
+        <circle cx="477" cy="250" r="6" class="sv-key"/>
+        <text x="94" y="68" class="sv-tm">1.6 at petal width 0</text>
+        <text x="218" y="124" class="sv-tm">1.1 at petal width 0.2</text>
+        <rect x="490" y="200" width="226" height="24" rx="4" class="sv-paper"/>
+        <text x="500" y="217" class="sv-ts">bend: ReLU sets values to 0 here</text>
+        <text x="80" y="272" text-anchor="middle" class="sv-ts">0</text>
+        <text x="204" y="272" text-anchor="middle" class="sv-ts">0.2</text>
+        <text x="477" y="272" text-anchor="middle" class="sv-ts">0.64</text>
+        <text x="700" y="272" text-anchor="middle" class="sv-ts">1</text>
+        <text x="400" y="292" text-anchor="middle" class="sv-ts">Petal width (sepal width held at 0)</text>
+        <text x="30" y="150" text-anchor="middle" class="sv-ts" transform="rotate(-90 30 150)">Top node after ReLU</text>
+      </svg>
+      <figcaption>One slice of the blue bent surface: the value falls as petal width grows, then ReLU flattens it to zero.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">Scaling the inputs</span><div class="math">$$ x_{\text{scaled}} = \frac{x - x_{\min}}{x_{\max} - x_{\min}} $$</div><p class="explain"><b>Symbols:</b> \(x\) is the raw width; \(x_{\min}\) and \(x_{\max}\) are the smallest and largest widths in the training data. <b>What it tells you:</b> a scaled value of 0 means "the smallest width seen", not "zero centimetres".</p></div>
+    <div class="formula"><span class="lbl">Top hidden node</span><div class="math">$$ z_{\text{top}} = -2.5\,p + 0.6\,s + 1.6, \qquad h_{\text{top}} = \max(0,\; z_{\text{top}}) $$</div><p class="explain"><b>Symbols:</b> \(p\) is scaled petal width; \(s\) is scaled sepal width; −2.5 and 0.6 are the weights on the two connections; 1.6 is the bias; \(z_{\text{top}}\) is the x-axis coordinate for the activation function; \(h_{\text{top}}\) is the ReLU output. <b>What it tells you:</b> over all \((p, s)\) pairs, \(h_{\text{top}}\) forms the blue bent surface. The bottom node works the same way with its own weights and gives the orange surface.</p></div>
+    <div class="formula"><span class="lbl">One output node</span><div class="math">$$ y_k = w_{k,\text{top}}\, h_{\text{top}} + w_{k,\text{bot}}\, h_{\text{bot}} + b_k $$</div><p class="explain"><b>Symbols:</b> \(k\) is the species; \(h_{\text{top}}\) and \(h_{\text{bot}}\) are the blue and orange surface heights; \(w_{k,\text{top}}\) and \(w_{k,\text{bot}}\) are that species' weights on the two hidden nodes; \(b_k\) is its final bias; \(y_k\) is its score. <b>What it tells you:</b> every species' crinkled surface is just a different weighted sum of the same two bent surfaces.</p></div>
+    <p>The output weights and biases from the video are:</p>
+    <table>
+      <thead><tr><th>Output</th><th>Weight on top node</th><th>Weight on bottom node</th><th>Final bias</th></tr></thead>
+      <tbody>
+        <tr><td>Setosa</td><td>−0.1</td><td>1.5</td><td>0</td></tr>
+        <tr><td>Versicolor</td><td>2.4</td><td>−5.2</td><td>0</td></tr>
+        <tr><td>Virginica</td><td>−2.2</td><td>3.7</td><td>1</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p><b>Corner point, petal width 0 and sepal width 0.</b> The top node gets \(-2.5(0) + 0.6(0) + 1.6 = 1.6\). ReLU keeps 1.6, because it is greater than zero. For setosa, multiply by −0.1: \(1.6 \times -0.1 = -0.16\). At the same point, the scaled orange height is 1.05. So the green height is \(-0.16 + 1.05 = 0.89\), and adding the bias 0 leaves 0.89.</p>
+      <p><b>Move along petal width.</b> With petal width 0.2 and sepal width 0, the top node gets \(-2.5(0.2) + 1.6 = 1.1\). ReLU keeps 1.1. Repeating this over the whole grid of widths builds the blue bent surface.</p>
+      <p><b>A flower found in the woods.</b> Its scaled petal width is 0.5 and its scaled sepal width is 0.37. The network gives setosa a score of 0.09, so it is probably not setosa. Versicolor scores 0.86, which is closest to 1, so the network predicts versicolor.</p>
+      <p><b>Reading the surfaces.</b> Setosa is highest when petal width is near 0 and lowest near 1. Versicolor is high when petal width is near 0.4. Virginica is high when petal width is near 1.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> A scaled petal width of 0 does not mean the petal is zero centimetres wide. It means the smallest width in the training data, and 1 means the largest.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The raw output surfaces live on very different scales. Josh changes the y-axis range for versicolor and virginica just to see their shape. Do not compare surface shapes without checking the axis range.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The three outputs do not have their own hidden nodes. They all reuse the same blue and orange surfaces and differ only in output weights and bias.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> "Pick the output closest to 1" is a simple reading. With two or more outputs, the values usually go through argmax or softmax before the final decision.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What changes when a neural network has two inputs instead of one?</summary><div class="a">The math is the same, but the shapes gain a dimension. Each hidden node now makes a bent surface over the two inputs instead of a bent line. The output adds scaled copies of those surfaces into a crinkled surface.</div></details>
+    <details class="qa" open><summary>How does a network with three outputs reuse its hidden layer?</summary><div class="a">Every output node sees the same hidden-node values. Each output has its own weights on those hidden nodes and its own bias. So each class gets a different weighted sum of the same bent surfaces.</div></details>
+    <details class="qa" open><summary>Walk me through one hidden node's calculation.</summary><div class="a">Multiply each input by its connection weight, add the products, and add the bias. Then pass the result through the activation function. In the Iris example, that is −2.5 times petal width plus 0.6 times sepal width plus 1.6, then ReLU.</div></details>
+    <details class="qa" open><summary>How do you turn the three output values into a class?</summary><div class="a">In the simple view, you pick the class whose output is closest to 1. In practice, with two or more outputs, you usually pass the values to argmax or softmax before making the final decision.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>The Iris network uses petal width and sepal width to predict setosa, versicolor, or virginica.</li>
+      <li>The inputs are scaled so 0 is the smallest and 1 is the largest width in the training data.</li>
+      <li>Each ReLU hidden node turns the two inputs into a bent surface.</li>
+      <li>Each output scales the two bent surfaces, adds them, and adds a bias to make a crinkled surface.</li>
+      <li>All three outputs share the hidden surfaces and differ only in their output weights and biases.</li>
+      <li>For the found iris, versicolor scored 0.86, closest to 1, so the network predicts versicolor.</li>
+      <li>With several outputs, the values usually go to argmax or softmax before the final choice.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Multiple Inputs and Outputs</span><span class="board-tag">same bend, scale and add, now in 3-D</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 290" role="img" aria-label="Two ReLU hidden nodes each make a bent surface; each species scales both by its own weights and adds a bias to get its own crinkled surface, and versicolor scores 0.86, closest to 1.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <text x="118" y="27" text-anchor="middle" class="sv-t">top ReLU node</text>
+            <text x="282" y="27" text-anchor="middle" class="sv-t">bottom ReLU node</text>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+              <polygon points="73,62 121,96 153,96 163,74 131,74 83,40" class="sv-acc"/>
+              <polygon points="237,68 269,96 317,96 327,74 279,74 247,46" class="sv-key"/>
+              <line x1="121" y1="96" x2="131" y2="74"/>
+              <line x1="269" y1="96" x2="279" y2="74"/>
+            </g>
+            <g class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round">
+              <line x1="125" y1="103" x2="151" y2="118" marker-end="url(#board-arr)"/>
+              <line x1="275" y1="103" x2="249" y2="118" marker-end="url(#board-arr)"/>
+              <line x1="125" y1="158" x2="52" y2="182" marker-end="url(#board-arr)"/>
+              <line x1="198" y1="158" x2="198" y2="180" marker-end="url(#board-arr)"/>
+              <line x1="275" y1="158" x2="362" y2="186" marker-end="url(#board-arr)"/>
+            </g>
+            <g class="sv-stroke-ink" stroke-width="2"><rect x="90" y="122" width="220" height="32" rx="10" class="sv-paper"/></g>
+            <text x="200" y="144" text-anchor="middle" class="sv-t">× own weights, + bias</text>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+              <polygon points="15,210 39,220 63,242 95,250 105,228 73,220 49,198 25,188" class="sv-good-soft"/>
+              <polygon points="155,236 187,210 211,244 235,250 245,228 221,222 197,188 165,214" class="sv-good"/>
+              <polygon points="295,250 327,246 351,228 375,210 385,188 361,206 337,224 305,228" class="sv-good-soft"/>
+              <line x1="39" y1="220" x2="49" y2="198"/>
+              <line x1="63" y1="242" x2="73" y2="220"/>
+              <line x1="187" y1="210" x2="197" y2="188"/>
+              <line x1="211" y1="244" x2="221" y2="222"/>
+              <line x1="327" y1="246" x2="337" y2="224"/>
+              <line x1="351" y1="228" x2="361" y2="206"/>
+            </g>
+            <text x="60" y="274" text-anchor="middle" class="sv-t">setosa</text>
+            <text x="200" y="274" text-anchor="middle" class="sv-tb">versicolor 0.86 ✓</text>
+            <text x="340" y="274" text-anchor="middle" class="sv-t">virginica</text>
+          </svg>
+          <p>Each ReLU hidden node turns the two widths into a bent surface. Each species scales both by its own weights, adds them, and adds a bias, giving one crinkled surface each. To classify, pick the output closest to 1; the found flower gives versicolor 0.86.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Petal and sepal width</dt><dd>The two inputs. A sepal is the leafy part under the petals.</dd>
+            <dt>Scaled width</dt><dd>0 is the smallest in the training data, 1 the largest.</dd>
+            <dt>ReLU</dt><dd>Turns any negative value into zero.</dd>
+            <dt>Bent surface</dt><dd>A hidden node's ReLU output over all pairs of widths.</dd>
+            <dt>Crinkled surface</dt><dd>Bent surfaces scaled, added, plus a bias. One per species.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Scale inputs</b>smallest width 0, largest 1</li>
+            <li><b>Top node</b>ReLU → blue surface, × −0.1</li>
+            <li><b>Bottom node</b>ReLU → orange surface, × 1.5</li>
+            <li><b>Add + bias</b>green setosa surface, bias 0</li>
+            <li><b>Other outputs</b>same surfaces, own weights, bias</li>
+            <li><b>Classify</b>pick the output closest to 1</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$x_{\text{scaled}}=\frac{x-x_{\min}}{x_{\max}-x_{\min}}$$
+          $$h_{\text{top}}=\max(0,\,-2.5p+0.6s+1.6)$$
+          $$y_k=w_{k,\text{top}}\,h_{\text{top}}+w_{k,\text{bot}}\,h_{\text{bot}}+b_k$$
+          <ul class="keys">
+            <li>\(p\), \(s\): scaled petal and sepal width.</li>
+            <li>\(h_{\text{top}}\), \(h_{\text{bot}}\): blue and orange surface heights.</li>
+            <li>\(w\), \(b_k\): species \(k\)'s own weights and bias.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>setosa at p = 0, s = 0</th><th>value</th></tr>
+            <tr><td>top node: −2.5(0) + 0.6(0) + 1.6</td><td>1.6</td></tr>
+            <tr><td>ReLU: above 0, kept</td><td>1.6</td></tr>
+            <tr><td>blue × −0.1</td><td>−0.16</td></tr>
+            <tr><td>+ scaled orange 1.05</td><td>0.89</td></tr>
+            <tr class="final"><td>+ bias 0 = setosa</td><td>0.89</td></tr>
+          </table>
+          <p class="hand">Found flower (petal 0.5, sepal 0.37): setosa 0.09, versicolor 0.86, closest to 1.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">A scaled width of 0 means zero centimetres.</span><span class="yes">It means the smallest width in the training data; 1 means the largest.</span></li>
+            <li><span class="no">Each output has its own hidden nodes.</span><span class="yes">All three reuse the same blue and orange surfaces; only output weights and bias differ.</span></li>
+            <li><span class="no">Just pick the output closest to 1.</span><span class="yes">With two or more outputs, values usually go to argmax or softmax first.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="80-neural-networks-pt-3-relu-in-action.html"><small>Previous</small>Neural Networks Pt. 3: ReLU In Action</a> <a href="82-neural-networks-part-5-argmax-and-softmax.html"><small>Next</small>Neural Networks Part 5: ArgMax and SoftMax</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

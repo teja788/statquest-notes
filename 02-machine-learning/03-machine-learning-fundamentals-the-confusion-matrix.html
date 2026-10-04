@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Machine Learning Fundamentals: The Confusion Matrix — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>03</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 03 · 7.2 min</div>
+    <h1>Machine Learning Fundamentals: The Confusion Matrix</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=Kdsp6soqA7o" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">A confusion matrix is a small table. It counts what a classifier got right and what it got wrong on test data.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh wants to predict heart disease, and many methods can do that job. So we need a fair way to compare them. We split the data, train each method, then test each one. We count the test results in a table. Its rows are the predictions and its columns are the known truth. The diagonal holds the correct calls, and the other cells hold the mistakes.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Imagine clinical measurements for a group of patients: chest pain, good blood circulation, blocked arteries, and weight. We want to predict who will develop heart disease. Logistic regression, K nearest neighbours and random forest can all try. Which one works best with our data?</p>
+    <p>A confusion matrix answers that by counting. Each row is what the algorithm predicted. Each column is the known truth from the testing data. With two categories the table has four cells, and each cell has a name.</p>
+    <p>The top left cell holds the true positives: sick patients called sick. The bottom right holds the true negatives: healthy patients called healthy. The bottom left holds the false negatives, where a sick patient was called healthy. The top right holds the false positives, where a healthy patient was called sick.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 260" role="img" aria-label="A two by two confusion matrix for the random forest, with rows for predictions and columns for the known truth">
+        <text class="sv-tb" x="460" y="32" text-anchor="middle">Known truth</text>
+        <text class="sv-ts" x="380" y="62" text-anchor="middle">Has heart disease</text>
+        <text class="sv-ts" x="540" y="62" text-anchor="middle">No heart disease</text>
+
+        <text class="sv-tb" transform="translate(44,156) rotate(-90)" text-anchor="middle">Predicted</text>
+        <text class="sv-ts" x="292" y="120" text-anchor="end">Has heart disease</text>
+        <text class="sv-ts" x="292" y="200" text-anchor="end">No heart disease</text>
+
+        <rect class="sv-good-soft" x="300" y="76" width="160" height="80"></rect>
+        <rect class="sv-key-soft" x="460" y="76" width="160" height="80"></rect>
+        <rect class="sv-key-soft" x="300" y="156" width="160" height="80"></rect>
+        <rect class="sv-good-soft" x="460" y="156" width="160" height="80"></rect>
+
+        <rect class="sv-stroke-good" stroke-width="1.5" x="300" y="76" width="160" height="80"></rect>
+        <rect class="sv-stroke-key" stroke-width="1.5" x="460" y="76" width="160" height="80"></rect>
+        <rect class="sv-stroke-key" stroke-width="1.5" x="300" y="156" width="160" height="80"></rect>
+        <rect class="sv-stroke-good" stroke-width="1.5" x="460" y="156" width="160" height="80"></rect>
+
+        <text class="sv-tb" x="380" y="112" text-anchor="middle">142</text>
+        <text class="sv-ts" x="380" y="132" text-anchor="middle">True positives</text>
+        <text class="sv-tb" x="540" y="112" text-anchor="middle">22</text>
+        <text class="sv-ts" x="540" y="132" text-anchor="middle">False positives</text>
+        <text class="sv-tb" x="380" y="192" text-anchor="middle">29</text>
+        <text class="sv-ts" x="380" y="212" text-anchor="middle">False negatives</text>
+        <text class="sv-tb" x="540" y="192" text-anchor="middle">110</text>
+        <text class="sv-ts" x="540" y="212" text-anchor="middle">True negatives</text>
+      </svg>
+      <figcaption>The two green cells on the diagonal hold every correct call. The two orange cells hold the two kinds of mistake.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Divide the data into a training set and a testing set. Cross validation is a good choice here.</li>
+      <li>Train every method you are interested in on the training data.</li>
+      <li>Test each trained method on the testing data, which it has never seen.</li>
+      <li>Build one confusion matrix per method. Each test patient goes in the cell matching its prediction and its true label.</li>
+      <li>Compare the matrices. The method with the bigger diagonal numbers is the better fit for this data.</li>
+    </ol>
+    <p>The size of the table comes from the number of things you predict. Two categories give two rows and two columns. Josh then shows a second data set. People rate four films, and the model guesses a favourite from three options. That needs a three by three table.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 240" role="img" aria-label="Three square confusion matrices of size two, three and four, each with a green diagonal">
+        <text class="sv-tb" x="380" y="28" text-anchor="middle">The number of categories sets the size</text>
+        <text class="sv-t" x="160" y="52" text-anchor="middle">2 categories</text>
+        <text class="sv-t" x="380" y="52" text-anchor="middle">3 categories</text>
+        <text class="sv-t" x="600" y="52" text-anchor="middle">4 categories</text>
+
+        <rect class="sv-paper2" x="100" y="70" width="120" height="120"></rect>
+        <rect class="sv-good-soft" x="100" y="70" width="60" height="60"></rect>
+        <rect class="sv-good-soft" x="160" y="130" width="60" height="60"></rect>
+        <path class="sv-line" stroke-width="1" d="M160 70 V190 M100 130 H220"></path>
+        <rect class="sv-stroke-ink" stroke-width="1.2" x="100" y="70" width="120" height="120"></rect>
+
+        <rect class="sv-paper2" x="320" y="70" width="120" height="120"></rect>
+        <rect class="sv-good-soft" x="320" y="70" width="40" height="40"></rect>
+        <rect class="sv-good-soft" x="360" y="110" width="40" height="40"></rect>
+        <rect class="sv-good-soft" x="400" y="150" width="40" height="40"></rect>
+        <path class="sv-line" stroke-width="1" d="M360 70 V190 M400 70 V190 M320 110 H440 M320 150 H440"></path>
+        <rect class="sv-stroke-ink" stroke-width="1.2" x="320" y="70" width="120" height="120"></rect>
+
+        <rect class="sv-paper2" x="540" y="70" width="120" height="120"></rect>
+        <rect class="sv-good-soft" x="540" y="70" width="30" height="30"></rect>
+        <rect class="sv-good-soft" x="570" y="100" width="30" height="30"></rect>
+        <rect class="sv-good-soft" x="600" y="130" width="30" height="30"></rect>
+        <rect class="sv-good-soft" x="630" y="160" width="30" height="30"></rect>
+        <path class="sv-line" stroke-width="1" d="M570 70 V190 M600 70 V190 M630 70 V190 M540 100 H660 M540 130 H660 M540 160 H660"></path>
+        <rect class="sv-stroke-ink" stroke-width="1.2" x="540" y="70" width="120" height="120"></rect>
+
+        <text class="sv-tm" x="160" y="214" text-anchor="middle">2 × 2</text>
+        <text class="sv-tm" x="380" y="214" text-anchor="middle">3 × 3</text>
+        <text class="sv-tm" x="600" y="214" text-anchor="middle">4 × 4</text>
+      </svg>
+      <figcaption>The table stays square and the green diagonal always means correct. Forty categories would give forty rows and forty columns.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>The video teaches a table, not an equation. Two short rules still help.</p>
+    <div class="formula"><span class="lbl">Size of the matrix</span><div class="math">$$ \text{rows} \times \text{columns} = k \times k $$</div><p class="explain"><b>Symbols:</b> \(k\) is the number of categories you predict. <b>What it tells you:</b> the matrix is always square. It grows with the number of classes, not with the number of samples.</p></div>
+    <div class="formula"><span class="lbl">Accuracy (the usual rule of thumb)</span><div class="math">$$ \text{Accuracy} = \frac{TP + TN}{TP + TN + FP + FN} $$</div><p class="explain"><b>Symbols:</b> \(TP\) is true positives, sick patients called sick. \(TN\) is true negatives, healthy patients called healthy. \(FP\) is false positives and \(FN\) is false negatives. <b>What it tells you:</b> it is the share of the table sitting on the diagonal. One number is easy to read, but it hides which kind of mistake you made.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh applied a random forest to the testing data. It found 142 true positives and 110 true negatives. It missed 29 patients who did have heart disease. It also flagged 22 healthy patients as sick. So the testing set held \(142 + 110 + 29 + 22 = 303\) patients, and accuracy was \((142 + 110) / 303 \approx 0.83\).</p>
+      <p>K nearest neighbours was tested on the same data. It got 107 sick patients right, against 142, and 79 healthy patients right, against 110. Both diagonal counts are lower, so we choose the random forest.</p>
+      <p>Logistic regression gave a third matrix that looked much like the random forest one. When two tables are that close, the counts cannot pick a winner. Josh points to sensitivity, specificity, ROC and AUC as the next step.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> The layout is a convention, not a law. Josh puts the predictions in the rows and the truth in the columns. Many software libraries do the opposite, so read the labels before you name a cell.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The two mistakes do not cost the same. Sending 29 sick patients home is not the same as worrying 22 healthy people. One accuracy number hides that difference.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> A confusion matrix summarises, it does not decide. When two matrices look alike, you need finer metrics before you commit.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>What is a confusion matrix?</summary><div class="a">It is a square table that compares predictions against the known truth on a test set. The diagonal counts the correct calls and the other cells count the errors. Almost every classification metric is built from it.</div></details>
+    <details class="qa" open><summary>What is the difference between a false positive and a false negative?</summary><div class="a">A false positive is a healthy patient labelled as sick. A false negative is a sick patient labelled as healthy. The two usually carry very different costs, so I look at them separately.</div></details>
+    <details class="qa" open><summary>How would you use it to choose between two models?</summary><div class="a">I build one matrix per model on the same testing data, then compare the diagonals. If one model wins in every correct cell, the choice is easy. If the matrices are close, I move on to sensitivity, specificity or an ROC curve.</div></details>
+    <details class="qa" open><summary>What happens with more than two classes?</summary><div class="a">Only the size changes. Three categories give a three by three table, and forty give a forty by forty table. The diagonal is still where the model was right. The other cells show which classes it confuses.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>A confusion matrix counts what a classifier did right and wrong on test data.</li>
+      <li>In this video the rows are the predictions and the columns are the known truth.</li>
+      <li>The four cells are true positives, true negatives, false positives and false negatives.</li>
+      <li>The green diagonal holds the correct calls, and the other cells hold the mistakes.</li>
+      <li>The random forest scored 142 and 110, against 107 and 79 for K nearest neighbours.</li>
+      <li>The table is always square, with one row and one column per category.</li>
+      <li>When two matrices look alike, use sensitivity, specificity, ROC and AUC to decide.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Confusion Matrix</span><span class="board-tag">right on the diagonal, wrong everywhere else</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 260" role="img" aria-label="The random forest's confusion matrix. Rows are what the model called each patient, columns are the truth. The green diagonal holds 142 true positives and 110 true negatives; the other two cells hold 22 false positives and 29 false negatives.">
+            <g class="sv-stroke-ink" stroke-width="3" stroke-linejoin="round">
+              <rect x="160" y="60" width="110" height="78" class="sv-good-soft"/>
+              <rect x="270" y="60" width="110" height="78" class="sv-key-soft"/>
+              <rect x="160" y="138" width="110" height="78" class="sv-key-soft"/>
+              <rect x="270" y="138" width="110" height="78" class="sv-good-soft"/>
+            </g>
+            <g class="sv-stroke-good" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="167" y="67" width="96" height="64" rx="6"/>
+              <rect x="277" y="145" width="96" height="64" rx="6"/>
+              <line x1="261" y1="129" x2="279" y2="147"/>
+            </g>
+            <text x="215" y="46" text-anchor="middle" class="sv-t">is sick</text>
+            <text x="325" y="46" text-anchor="middle" class="sv-t">is healthy</text>
+            <text x="150" y="105" text-anchor="end" class="sv-t">called sick</text>
+            <text x="150" y="183" text-anchor="end" class="sv-t">called healthy</text>
+            <text x="215" y="106" text-anchor="middle" class="sv-tb">TP 142</text>
+            <text x="325" y="106" text-anchor="middle" class="sv-tb">FP 22</text>
+            <text x="215" y="184" text-anchor="middle" class="sv-tb">FN 29</text>
+            <text x="325" y="184" text-anchor="middle" class="sv-tb">TN 110</text>
+            <text x="270" y="244" text-anchor="middle" class="sv-ts">diagonal = correct calls</text>
+          </svg>
+          <p>Each test patient lands in one cell: its row is what the model called it, its column is the known truth. The green diagonal holds every correct call, and the two orange cells hold the two kinds of mistake.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Confusion matrix</dt><dd>A square table: rows are predictions, columns are the known truth.</dd>
+            <dt>True positive (TP)</dt><dd>A sick patient called sick.</dd>
+            <dt>True negative (TN)</dt><dd>A healthy patient called healthy.</dd>
+            <dt>False negative (FN)</dt><dd>A sick patient called healthy: a miss.</dd>
+            <dt>False positive (FP)</dt><dd>A healthy patient called sick.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Split the data</b>training and testing sets</li>
+            <li><b>Train</b>every method on the training set</li>
+            <li><b>Test</b>on data it has never seen</li>
+            <li><b>Build a matrix</b>one per method</li>
+            <li><b>Compare</b>bigger diagonal numbers win</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{rows}\times\text{columns}=k\times k$$
+          $$\text{Accuracy}=\frac{TP+TN}{TP+TN+FP+FN}$$
+          <ul class="keys">
+            <li>\(k\) is the number of categories, so the table is always square.</li>
+            <li>Accuracy is the share of the table on the diagonal.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>random forest</th><th>count</th></tr>
+            <tr><td>TP</td><td>142</td></tr>
+            <tr><td>TN</td><td>110</td></tr>
+            <tr><td>FN (missed)</td><td>29</td></tr>
+            <tr><td>FP (flagged)</td><td>22</td></tr>
+            <tr class="final"><td>accuracy</td><td>(142 + 110) / 303 ≈ 0.83</td></tr>
+          </table>
+          <p class="hand">K nearest neighbours got only 107 and 79 on the diagonal, so we choose the random forest. Logistic regression looked too close to call.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Predictions are always in the rows.</span><span class="yes">A convention only. Many libraries flip it, so read the labels first.</span></li>
+            <li><span class="no">Both mistakes cost the same.</span><span class="yes">Sending 29 sick patients home is not like worrying 22 healthy people. Accuracy hides this.</span></li>
+            <li><span class="no">The matrix always picks a winner.</span><span class="yes">It summarises, it does not decide. Close tables need sensitivity, specificity, ROC and AUC.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="02-machine-learning-fundamentals-cross-validation.html"><small>Previous</small>Machine Learning Fundamentals: Cross Validation</a> <a href="04-machine-learning-fundamentals-sensitivity-and-specificity.html"><small>Next</small>Machine Learning Fundamentals: Sensitivity and Specificity</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

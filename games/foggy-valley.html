@@ -1,0 +1,1053 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Foggy Valley · Learning Arcade</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+  .goal{margin-bottom:14px}
+  .stage{margin:0 auto;width:100%}
+  .stage.wide{max-width:max(360px,calc((100vh - 170px) * 5 / 3))}
+  .stage.tall{max-width:max(300px,calc((100vh - 300px) * 5 / 6))}
+  .hud .chip b{font-family:var(--mono);font-weight:500}
+  .chip.eq{flex-wrap:wrap;border-radius:14px}
+  .ctrl{display:flex;gap:10px;flex-wrap:wrap;align-items:center;width:100%}
+  .ctrl .slider{flex-wrap:wrap;flex-basis:100%;min-width:0;gap:8px}
+  .ctrl .slider label{flex:1}
+  .ctrl .slider .brk{flex-basis:100%;height:0}
+  .ctrl .nudge{min-width:44px;min-height:44px;padding:0 12px;font-size:22px;line-height:1}
+  .keys{font-size:14px;color:var(--ink-2)}
+  @media (hover:none){.keys{display:none}}
+  @media (max-width:899px){.hud .ctrl{order:-1}}
+  @media (min-width:900px){
+    .play{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:18px;align-items:start}
+    .play .hud{flex-direction:column;align-items:stretch;margin:0}
+    .play .chip{justify-content:space-between}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="back" href="index.html">← Arcade</a>
+    <h1>Foggy Valley</h1>
+    <div class="levels" id="levels"></div>
+  </div>
+  <div class="goal" id="goal"></div>
+  <div class="play">
+    <div class="stage" id="stage"><canvas id="cv" role="img" aria-label="A foggy valley at dusk. A hiker with a lantern feels the tilt of the ground."></canvas></div>
+    <div class="hud" id="hud"></div>
+  </div>
+</div>
+<script src="kit.js"></script>
+<script>
+'use strict';
+/* ================= The math (pure functions, also checked by ?test) ================= */
+const SLUG = 'foggy-valley';
+const NOTE = '../02-machine-learning/56-gradient-descent-step-by-step.html';
+const PEOPLE = [[0.5, 1.4], [2.3, 1.9], [2.9, 3.2]];   // (weight, height) of the three people
+const FIXED_SLOPE = 0.64;                                // levels 1 and 2 only move the intercept
+
+// Sum of squared residuals for the line: height = intercept + slope × weight
+function ssr(b, m) {
+  let s = 0;
+  for (const [w, h] of PEOPLE) { const r = h - (b + m * w); s += r * r; }
+  return s;
+}
+// The gradient: dSSR/d intercept = Σ −2(h − (b + m·w)),  dSSR/d slope = Σ −2·w·(h − (b + m·w))
+function grad(b, m) {
+  let gb = 0, gm = 0;
+  for (const [w, h] of PEOPLE) { const r = h - (b + m * w); gb += -2 * r; gm += -2 * w * r; }
+  return [gb, gm];
+}
+// SSR is quadratic, so its curvature (Hessian) is constant: eigenvalues, eigenvectors and the least squares answer
+const HESS = (() => {
+  let n = 0, sw = 0, sww = 0, sh = 0, swh = 0;
+  for (const [w, h] of PEOPLE) { n++; sw += w; sww += w * w; sh += h; swh += w * h; }
+  const a = 2 * n, c = 2 * sw, d = 2 * sww, det = a * d - c * c, tr = a + d, root = Math.sqrt(tr * tr - 4 * det);
+  const eig = [(tr + root) / 2, (tr - root) / 2];                       // steep direction, flat direction
+  const vec = eig.map(l => { const s = Math.hypot(c, l - a); return [c / s, (l - a) / s]; });
+  const best = [(2 * sh * d - c * 2 * swh) / det, (a * 2 * swh - c * 2 * sh) / det];   // solves H·p = (2Σh, 2Σwh)
+  return { eig, vec, best };
+})();
+
+// Level 3: a made-up bumpy loss: a wide bowl with a shallow dip and a deep dip, each [depth, centre, width]
+const BUMP = { A: 0.55, c: 1.5, B: 4.6, dips: [[1.9, 0.55, 0.42], [4.6, 3.0, 0.52]] };
+function bumpy(x) {
+  let y = BUMP.A * (x - BUMP.c) ** 2 + BUMP.B;
+  for (const [d, p, s] of BUMP.dips) y -= d * Math.exp(-((x - p) ** 2) / (2 * s * s));
+  return y;
+}
+function dBumpy(x) {
+  let g = 2 * BUMP.A * (x - BUMP.c);
+  for (const [d, p, s] of BUMP.dips) g += d * (x - p) / (s * s) * Math.exp(-((x - p) ** 2) / (2 * s * s));
+  return g;
+}
+// Valley floors of a 1D loss: where the derivative crosses from minus to plus (refined by bisection)
+function floorsOf(df, lo, hi) {
+  const out = [];
+  for (let x = lo; x < hi; x += 0.01) {
+    if (df(x) < 0 && df(x + 0.01) >= 0) {
+      let l = x, r = x + 0.01;
+      for (let i = 0; i < 40; i++) { const mid = (l + r) / 2; if (df(mid) < 0) l = mid; else r = mid; }
+      out.push((l + r) / 2);
+    }
+  }
+  return out;
+}
+
+// Gradient descent in 1D: step size = slope × learning rate, new = old − step size.
+// Ends 'done' when |step size| < tiny, 'night' after max steps, 'out' when it leaves [lo, hi].
+function descend1(df, x, lr, max, lo, hi, tiny = 0.001) {
+  const xs = [x];
+  for (let k = 0; ; k++) {
+    const step = lr * df(x);
+    if (Math.abs(step) < tiny) return { xs, end: 'done' };
+    if (k >= max) return { xs, end: 'night' };
+    x -= step; xs.push(x);
+    if (!(x >= lo && x <= hi)) return { xs, end: 'out' };
+  }
+}
+// Gradient descent on intercept and slope together. box = [bLo, bHi, mLo, mHi].
+// The floor of this valley is very flat, so its finish line is finer: both steps under 0.00004.
+const TINY2 = 4e-5;
+function descend2(b, m, lr, max, box, tiny = TINY2) {
+  const pts = [[b, m]];
+  for (let k = 0; ; k++) {
+    const [gb, gm] = grad(b, m);
+    if (Math.max(Math.abs(lr * gb), Math.abs(lr * gm)) < tiny) return { pts, end: 'done' };
+    if (k >= max) return { pts, end: 'night' };
+    b -= lr * gb; m -= lr * gm; pts.push([b, m]);
+    if (!(b >= box[0] && b <= box[1] && m >= box[2] && m <= box[3])) return { pts, end: 'out' };
+  }
+}
+
+// The two 1D worlds: x range on screen and the loss height at the top of the picture
+const V1 = { f: b => ssr(b, FIXED_SLOPE), df: b => grad(b, FIXED_SLOPE)[0], lo: -0.75, hi: 2.65, top: 9.5, seed: 5 };
+const V3 = { f: bumpy, df: dBumpy, lo: -1.2, hi: 4.2, top: 9.5, seed: 9 };
+const BOTTOM = floorsOf(V1.df, V1.lo, V1.hi)[0];                              // 0.9507
+const PITS = floorsOf(dBumpy, V3.lo, V3.hi).sort((a, b) => bumpy(a) - bumpy(b));  // [deep, shallow]
+
+// Level rules and star thresholds (★★★, ★★); the slider maps 0..1000 onto a log scale
+const R1 = { max: 12, flat: 0.1, stars: [4, 7], maxStride: 2 };
+const R2 = { lo: 0.001, hi: 0.5, max: 25, stars: [4, 10] };
+const R3 = { lr: 0.06, drops: 4, max: 200 };
+const R4 = { lo: 0.001, hi: 0.08, max: 1000, stars: [140, 350], box: [-0.7, 1.7, -0.15, 1.8] };
+const lrAt = (v, lo, hi) => lo * Math.pow(hi / lo, v / 1000);
+const tickOf = (lr, lo, hi) => Math.round(1000 * Math.log(lr / lo) / Math.log(hi / lo));
+const starsFor = (n, [t3, t2]) => n <= t3 ? 3 : n <= t2 ? 2 : 1;
+const run2At = v => { const lr = lrAt(v, R2.lo, R2.hi), r = descend1(V1.df, 0, lr, R2.max, V1.lo, V1.hi); return { ...r, n: r.xs.length - 1, lr }; };
+const run4At = v => { const lr = lrAt(v, R4.lo, R4.hi), r = descend2(0, 1, lr, R4.max, R4.box); return { ...r, n: r.pts.length - 1, lr }; };
+// Best result any slider position can reach (scans all 1001 positions once)
+function bestOf(run) {
+  let best = Infinity, lr = 0;
+  for (let v = 0; v <= 1000; v++) { const r = run(v); if (r.end === 'done' && r.n < best) { best = r.n; lr = r.lr; } }
+  return { best, lr };
+}
+let best2Cache, best4Cache;
+const best2 = () => best2Cache || (best2Cache = bestOf(run2At));
+const best4 = () => best4Cache || (best4Cache = bestOf(run4At));
+/* ================= Canvas, layout and drawing helpers ================= */
+const $ = id => document.getElementById(id);
+const cv = $('cv'), stage = $('stage'), hudEl = $('hud'), goalEl = $('goal'), levelsEl = $('levels');
+const fogCv = document.createElement('canvas');
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const C = { ink: '#2C2C2A', ink2: '#5F5E5A', bg: '#FFF8EC', card: '#FFFFFF', coral: '#D85A30', teal: '#1D9E75', purple: '#7F77DD',
+  amber: '#EF9F27', blue: '#378ADD', green: '#639922', blueSoft: '#E6F1FB', purpleInk: '#3C3489', skin: '#F2D3B3', grass: '#A8CC7A', grass2: '#8EB660' };
+const FD = 'Fredoka, system-ui, sans-serif', FB = 'Nunito, system-ui, sans-serif', FH = 'Caveat, cursive', FM = '"JetBrains Mono", Consolas, monospace';
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const fmt = (v, d = 2) => { const s = Math.abs(v).toFixed(d); return (v < 0 && +s !== 0 ? '−' : '') + s; };
+const fmtLr = lr => lr.toFixed(lr < 0.1 ? 4 : 3);
+const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+const mixRGB = (a, b, t) => hex(a).map((v, i) => Math.round(v + (hex(b)[i] - v) * t)).join(',');
+const mix = (a, b, t) => `rgb(${mixRGB(a, b, t)})`;
+let ctx, fctx, W, H, LAY, MAP, V = V1, T = 0;
+
+// Two fixed logical sizes: wide for laptops, tall for phones in portrait (text stays readable)
+function setupCanvas() {
+  stage.className = 'stage';
+  const tall = stage.clientWidth < 560;
+  stage.className = 'stage ' + (tall ? 'tall' : 'wide');
+  if (LAY && LAY.tall === tall) return;
+  [W, H] = tall ? [400, 480] : [800, 480];
+  ctx = Kit.canvas(cv, W, H); fctx = Kit.canvas(fogCv, W, H);
+  MAP = null;
+  LAY = tall ? {
+    tall, lamp: 52, hiker: 0.85, gauge: [8, 8, 196, 120], inset: [204, 8, 392, 120],
+    land: [8, 200, 392, 456], sun: [236, 152, 330, 470],
+    map: [8, 8, 392, 300], gauge2: [8, 312, 196, 472], inset2: [204, 312, 392, 472]
+  } : {
+    tall, lamp: 72, hiker: 1, gauge: [12, 12, 236, 128], inset: [564, 12, 788, 132],
+    land: [12, 168, 788, 456], sun: [330, 60, 560, 470],
+    map: [12, 12, 548, 468], gauge2: [562, 12, 788, 212], inset2: [562, 226, 788, 468]
+  };
+}
+// World ↔ screen for the 1D valleys
+const vx = x => LAY.land[0] + (x - V.lo) / (V.hi - V.lo) * (LAY.land[2] - LAY.land[0]);
+const vy = y => LAY.land[3] - y / V.top * (LAY.land[3] - LAY.land[1]);
+const xOf = sx => V.lo + (sx - LAY.land[0]) / (LAY.land[2] - LAY.land[0]) * (V.hi - V.lo);
+const groundY = x => vy(V.f(x));
+
+function seg(x0, y0, x1, y1) { ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke(); }
+function dot(x, y, r) { ctx.moveTo(x + r, y); ctx.arc(x, y, r, 0, 2 * Math.PI); }   // a circle as its own sub-path
+function rr(x, y, w, h, r) { ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, w, h, r); else ctx.rect(x, y, w, h); }
+function paint(fill) { ctx.fillStyle = fill; ctx.fill(); ctx.stroke(); }
+function ink(w = 2.5) { ctx.strokeStyle = C.ink; ctx.lineWidth = w; ctx.lineCap = ctx.lineJoin = 'round'; }
+function text(s, x, y, px, fam = FD, col = C.ink, align = 'center', wt = 600) {
+  ctx.font = `${wt} ${px}px ${fam}`; ctx.fillStyle = col; ctx.textAlign = align; ctx.textBaseline = 'middle'; ctx.fillText(s, x, y);
+}
+function halo(s, x, y, px, fam = FD, align = 'center', col = C.ink) {   // text with a paper-coloured outline
+  ctx.font = `600 ${px}px ${fam}`; ctx.textAlign = align; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+  ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(255,248,236,.92)'; ctx.strokeText(s, x, y); ctx.fillStyle = col; ctx.fillText(s, x, y);
+}
+function star(x, y, r, col) {
+  ctx.beginPath();
+  for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, q = i % 2 ? r * 0.45 : r; ctx.lineTo(x + q * Math.cos(a), y + q * Math.sin(a)); }
+  ctx.closePath(); ink(1.5); paint(col);
+}
+function panel([x0, y0, x1, y1], title, room = x1 - x0 - 20) {
+  ctx.fillStyle = C.ink; rr(x0 + 3, y0 + 3, x1 - x0, y1 - y0, 12); ctx.fill();
+  rr(x0, y0, x1 - x0, y1 - y0, 12); ink(2); paint(C.card);
+  let px = 21;                                   // shrink the title if a fallback font is wider than Caveat
+  do ctx.font = `700 ${px}px ${FH}`; while (ctx.measureText(title).width > room && --px > 13);
+  text(title, x0 + 10, y0 + 16, px, FH, C.ink2, 'left', 700);
+}
+
+/* ---- Sky, sun, land, decorations ---- */
+const SKY_STARS = (() => { const r = Kit.rng(11); return Array.from({ length: 40 }, () => [r(), r() * 0.42, 0.6 + r() * 1.2]); })();
+function drawSky(day) {     // day: 0 = late afternoon, 1 = night
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, mix('#F7C987', '#26215C', day)); g.addColorStop(0.6, mix('#FCE6C2', '#5B4FA0', day));
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  if (day > 0.5) {
+    ctx.fillStyle = `rgba(255,248,236,${Math.min(1, (day - 0.5) * 2.2)})`;
+    for (const [sx, sy, r] of SKY_STARS) { ctx.beginPath(); ctx.arc(sx * W, sy * H, r, 0, 7); ctx.fill(); }
+  }
+  const [ax, ay, bx, by] = LAY.sun, t = Math.min(day, 1), x = lerp(ax, bx, t), y = lerp(ay, by, t * t), r = LAY.tall ? 15 : 21;
+  ink(2.5);
+  for (let i = 0; i < 8; i++) {            // rays turn slowly
+    const a = i * Math.PI / 4 + (RM ? 0 : T * 0.3);
+    seg(x + Math.cos(a) * (r + 5), y + Math.sin(a) * (r + 5), x + Math.cos(a) * (r + 11), y + Math.sin(a) * (r + 11));
+  }
+  ctx.beginPath(); ctx.arc(x, y, r, 0, 7); paint(mix('#EF9F27', '#D85A30', t));
+  ink(2); const k = r / 21;                 // a sleepy face as the sun sets
+  if (t > 0.7) { seg(x - 8 * k, y - 3 * k, x - 3 * k, y - 3 * k); seg(x + 3 * k, y - 3 * k, x + 8 * k, y - 3 * k); }
+  else { ctx.fillStyle = C.ink; ctx.beginPath(); dot(x - 5 * k, y - 3 * k, 2 * k); dot(x + 5 * k, y - 3 * k, 2 * k); ctx.fill(); }
+  ctx.beginPath(); ctx.arc(x, y + 2 * k, 5 * k, 0.3, Math.PI - 0.3); ctx.stroke();
+}
+function landPath() {
+  const p = new Path2D(), [x0, , x1] = LAY.land;
+  p.moveTo(x0 - 10, H + 10);
+  for (let sx = x0 - 10; sx <= x1 + 10; sx += 4) p.lineTo(sx, groundY(xOf(sx)));
+  p.lineTo(x1 + 10, H + 10); p.closePath();
+  return p;
+}
+function drawLand() {
+  const p = landPath();
+  ctx.fillStyle = C.grass; ctx.fill(p);
+  ctx.save(); ctx.clip(p); ctx.translate(0, 18); ctx.fillStyle = C.grass2; ctx.fill(p); ctx.restore();
+  ink(3); ctx.stroke(p);
+  const d = V.decor || (V.decor = decorFor(V));
+  for (const [x, k] of d.pines) pine(vx(x), groundY(x) + 3, k * LAY.hiker);
+  ctx.strokeStyle = C.green; ctx.lineWidth = 2;
+  for (const x of d.tufts) { const sx = vx(x), sy = groundY(x) + 2; seg(sx - 4, sy, sx - 6, sy - 7); seg(sx, sy, sx, sy - 9); seg(sx + 4, sy, sx + 6, sy - 7); }
+  for (const [x, r] of d.rocks) { ctx.beginPath(); ctx.ellipse(vx(x), groundY(x) + 4, r * 1.4, r, 0, Math.PI, 0); ctx.closePath(); ink(2); paint('#CFC6B6'); }
+}
+function decorFor(Vc) {    // seeded so every visit looks the same; nothing sits on a valley floor
+  const r = Kit.rng(Vc.seed), keep = [0, ...floorsOf(Vc.df, Vc.lo, Vc.hi)], clear = x => keep.every(f => Math.abs(x - f) > 0.35);   // start spot too
+  const d = { pines: [], tufts: [], rocks: [] };
+  while (d.pines.length < 6) { const x = Vc.lo + 0.1 + r() * (Vc.hi - Vc.lo - 0.2); if (clear(x)) d.pines.push([x, 0.7 + r() * 0.5]); }
+  for (let x = Vc.lo + 0.05; x < Vc.hi; x += 0.12 + r() * 0.12) d.tufts.push(x);
+  while (d.rocks.length < 7) { const x = Vc.lo + r() * (Vc.hi - Vc.lo); if (clear(x)) d.rocks.push([x, 3 + r() * 4]); }
+  return d;
+}
+function pine(x, y, k) {
+  ink(2); ctx.beginPath(); ctx.rect(x - 2.5 * k, y - 10 * k, 5 * k, 10 * k); paint('#8A6A45');
+  for (let i = 0; i < 3; i++) {
+    const w = (15 - i * 4) * k, b = y - (8 + i * 10) * k;
+    ctx.beginPath(); ctx.moveTo(x - w, b); ctx.lineTo(x, b - 17 * k); ctx.lineTo(x + w, b); ctx.closePath(); paint('#4F8A3A');
+  }
+}
+
+/* ---- Fog with a lantern-shaped hole; drawn on its own canvas, then laid over the scene ---- */
+const WISPS = (() => { const r = Kit.rng(3); return Array.from({ length: 6 }, () => ({ x: r(), y: r(), w: 110 + r() * 150, v: 6 + r() * 10 })); })();
+function drawFog(lx, ly, alpha, day, rect) {   // rect: fog only inside it (map); otherwise a bank over the land
+  if (alpha <= 0.01) return;
+  const f = fctx, r = LAY.lamp, col = mixRGB('#E2DCF0', '#4E4590', day * 0.75);
+  f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, W, H);
+  const top = rect ? rect[1] : LAY.land[1], bot = rect ? rect[3] : H;
+  if (rect) { f.fillStyle = `rgb(${col})`; f.fillRect(0, 0, W, H); }
+  else {                                         // opaque over the land, fading out into the sky
+    const g = f.createLinearGradient(0, top - 70, 0, top + 12);
+    g.addColorStop(0, `rgba(${col},0)`); g.addColorStop(1, `rgb(${col})`);
+    f.fillStyle = g; f.fillRect(0, 0, W, H);
+  }
+  f.fillStyle = 'rgba(255,255,255,0.2)';
+  for (const w of WISPS) {
+    const x = (w.x * (W + 400) + (RM ? 0 : T * w.v)) % (W + 400) - 200;
+    f.beginPath(); f.ellipse(x, top + 20 + w.y * (bot - top - 30), w.w, 14, 0, 0, 7); f.fill();
+  }
+  f.globalCompositeOperation = 'destination-out';
+  const h = f.createRadialGradient(lx, ly, r * 0.4, lx, ly, r);
+  h.addColorStop(0, 'rgba(0,0,0,1)'); h.addColorStop(1, 'rgba(0,0,0,0)');
+  f.fillStyle = h; f.beginPath(); f.arc(lx, ly, r, 0, 7); f.fill();
+  f.globalCompositeOperation = 'source-over';
+  ctx.save();
+  if (rect) { ctx.beginPath(); ctx.rect(rect[0], rect[1], rect[2] - rect[0], rect[3] - rect[1]); ctx.clip(); }
+  ctx.globalAlpha = alpha; ctx.drawImage(fogCv, 0, 0, W, H);
+  ctx.restore();
+}
+function lampGlow(x, y) {
+  const r = LAY.lamp * 1.1, g = ctx.createRadialGradient(x, y, 0, x, y, r);
+  g.addColorStop(0, 'rgba(255,214,140,0.32)'); g.addColorStop(1, 'rgba(255,214,140,0)');
+  ctx.fillStyle = g; ctx.fillRect(x - r, y - r, 2 * r, 2 * r);
+}
+
+/* ---- The hiker (feet at x, y). o: {s, face, pose: stand|air|cheer|sit|dizzy, sx, sy, rot, sleep, chute} ---- */
+function drawHiker(x, y, o) {
+  const s = (o.s || 1) * LAY.hiker, pose = o.pose || 'stand', sit = pose === 'sit', cheer = pose === 'cheer';
+  ctx.save(); ctx.translate(x, y); ctx.rotate(o.rot || 0); ctx.scale((o.face || 1) * s * (o.sx || 1), s * (o.sy || 1));
+  ink();
+  if (o.chute) {
+    ctx.lineWidth = 1.5; seg(-6, -30, -24, -72); seg(6, -30, 24, -72); ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.ellipse(0, -72, 27, 20, 0, Math.PI, 0); ctx.closePath(); paint(C.coral);
+    ctx.beginPath(); ctx.ellipse(0, -72, 9, 20, 0, Math.PI, 0); paint(C.bg);
+  }
+  if (sit) { seg(-3, -6, 9, -2); seg(3, -6, 13, -1); ctx.translate(0, 9); }
+  else if (pose === 'air') { seg(-4, -14, -9, -6); seg(4, -14, 7, -7); }
+  else { seg(-4, -14, -5, 0); seg(4, -14, 5, 0); }
+  rr(-16, -34, 9, 18, 4); paint(C.amber);                         // backpack
+  rr(-9, -36, 18, 24, 8); paint(C.coral);                         // jacket
+  if (cheer) { seg(-6, -30, -13, -46); seg(6, -30, 13, -50); lantern(13, -50); }
+  else { seg(-5, -29, -9, -19); seg(5, -29, 13, -24); lantern(13, -24); }
+  ctx.beginPath(); ctx.arc(0, -45, 9, 0, 7); paint(C.skin);       // head
+  ctx.beginPath(); ctx.arc(0, -46, 9.5, Math.PI, 0); ctx.closePath(); paint(C.teal);   // beanie
+  ctx.beginPath(); ctx.arc(0, -57, 3.2, 0, 7); paint(C.amber);    // pom-pom
+  if (o.sleep || (!RM && T % 3.4 < 0.12)) { ctx.lineWidth = 2; seg(1.5, -44, 4, -44); seg(5.5, -44, 8, -44); }
+  else { ctx.fillStyle = C.ink; ctx.beginPath(); dot(3, -44, 1.6); dot(7, -44, 1.6); ctx.fill(); }
+  ctx.lineWidth = 1.8; ctx.beginPath();
+  if (cheer) { ctx.arc(5, -40.5, 2.6, 0, Math.PI); ctx.closePath(); paint(C.coral); } else { ctx.arc(5, -41.5, 2.4, 0.3, Math.PI - 0.3); ctx.stroke(); }
+  if (pose === 'dizzy') for (let i = 0; i < 3; i++) {
+    const a = (RM ? 0 : T * 4) + i * 2.1; star(Math.cos(a) * 11, -64 + Math.sin(a) * 3, 3.5, C.amber);
+  }
+  ctx.restore();
+}
+function lantern(x, y) { seg(x, y, x, y + 4); rr(x - 4.5, y + 4, 9, 10, 3); paint('#FFD67A'); }
+function flag(x, y) {
+  ink(2.5); seg(x, y, x, y - 44);
+  ctx.beginPath(); ctx.moveTo(x, y - 44); ctx.lineTo(x + 24, y - 37); ctx.lineTo(x, y - 30); ctx.closePath(); paint(C.teal);
+  text('✓', x + 8, y - 37, 12, FD, '#fff', 'center', 700);
+}
+function tent(x, y) {
+  ink(2.5); ctx.beginPath(); ctx.moveTo(x - 17, y); ctx.lineTo(x, y - 24); ctx.lineTo(x + 17, y); ctx.closePath(); paint(C.amber);
+  ctx.beginPath(); ctx.moveTo(x - 5, y); ctx.lineTo(x, y - 11); ctx.lineTo(x + 5, y); ctx.closePath(); paint(C.ink);
+}
+function bubble(x, y, s) {    // speech bubble with its tail at (x, y)
+  ctx.font = `600 15px ${FD}`;
+  const w = ctx.measureText(s).width + 20, bx = clamp(x - w / 2, 4, W - w - 4), by = Math.max(4, y - 40);
+  ink(2); rr(bx, by, w, 28, 10); paint(C.card);
+  ctx.beginPath(); ctx.moveTo(clamp(x, bx + 12, bx + w - 12) - 6, by + 27); ctx.lineTo(clamp(x, bx + 6, bx + w - 6), by + 37); ctx.lineTo(clamp(x, bx + 12, bx + w - 12) + 6, by + 27); paint(C.card);
+  text(s, bx + w / 2, by + 14, 15);
+}
+
+/* ---- Particles: dust puffs, sparkles, sleepy z's ---- */
+const parts = [];
+function burst(x, y, kind, n) {
+  if (RM) return;
+  for (let i = 0; i < n; i++) parts.push(kind === 'dust'
+    ? { kind, x, y, vx: (Math.random() - 0.5) * 80, vy: -Math.random() * 35, t: 0, life: 0.45, r: 3 + Math.random() * 3 }
+    : kind === 'spark' ? { kind, x, y, vx: (Math.random() - 0.5) * 240, vy: -90 - Math.random() * 170, t: 0, life: 1.1, r: 4 + Math.random() * 3 }
+    : { kind, x, y, vx: 10, vy: -20, t: 0, life: 1.6, r: 15 });
+}
+function stepParts(dt) {
+  for (const p of parts) { p.t += dt; p.x += p.vx * dt; p.y += p.vy * dt; if (p.kind === 'spark') p.vy += 280 * dt; }
+  for (let i = parts.length - 1; i >= 0; i--) if (parts[i].t >= parts[i].life) parts.splice(i, 1);
+}
+function drawParts() {
+  for (const p of parts) {
+    ctx.globalAlpha = 1 - p.t / p.life;
+    if (p.kind === 'dust') { ctx.fillStyle = '#EADFC6'; ctx.beginPath(); ctx.arc(p.x, p.y, p.r + p.t * 8, 0, 7); ctx.fill(); }
+    else if (p.kind === 'spark') star(p.x, p.y, p.r, C.amber);
+    else halo('z', p.x, p.y, p.r + p.t * 6, FH, 'center', C.purpleInk);
+  }
+  ctx.globalAlpha = 1;
+}
+
+/* ---- Instruments: the tilt dial, the gauge panels, the "your line" inset ---- */
+function dial(cx, cy, r, g) {      // a round level: its horizon tilts like the ground, a bubble floats to the high side
+  const a = clamp(Math.atan(-g / 4), -1.05, 1.05);
+  ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.fillStyle = C.blueSoft; ctx.fill(); ctx.clip();
+  ctx.translate(cx, cy); ctx.rotate(a);
+  ctx.fillStyle = C.grass; ctx.fillRect(-2 * r, 0, 4 * r, 2 * r);
+  ink(3); seg(-2 * r, 0, 2 * r, 0);
+  const bx = -Math.sign(a) * Math.min(Math.abs(a) * 1.3, 0.62) * r;
+  ink(2); ctx.beginPath(); ctx.ellipse(bx, -7, 7, 5, 0, 0, 7); paint('#FFF1B8');
+  ctx.restore();
+  ink(2); ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.stroke();
+  seg(cx - r - 5, cy, cx - r + 3, cy); seg(cx + r - 3, cy, cx + r + 5, cy);   // level marks
+}
+function drawGauge(g, title) {
+  const [x0, y0, , y1] = LAY.gauge, r = LAY.tall ? 29 : 33, cx = x0 + 12 + r, cy = (y0 + 30 + y1) / 2 + 2, tx = cx + r + 12;
+  panel(LAY.gauge, title);
+  dial(cx, cy, r, g || 0);
+  text('tilt', tx, cy - 24, 14, FB, C.ink2, 'left', 700);
+  text(g == null ? '—' : fmt(g), tx, cy, LAY.tall ? 22 : 26, FM, C.ink, 'left', 700);
+  if (g == null) return;
+  const flat = Math.abs(g) < 0.1;
+  text(flat ? 'flat ✓' : g < 0 ? 'downhill →' : '← downhill', tx, cy + 24, 15, FD, flat ? C.teal : C.coral, 'left');
+}
+function drawGauge2(gb, gm) {
+  const [x0, y0, , y1] = LAY.gauge2, row = (y1 - y0 - 30) / 2, r = Math.min(24, row / 2 - 6);
+  panel(LAY.gauge2, 'the gradient');
+  [['dSSR/d intercept', gb], ['dSSR/d slope', gm]].forEach(([lab, g], i) => {
+    const cy = y0 + 30 + row * (i + 0.5), cx = x0 + 12 + r;
+    dial(cx, cy, r, g);
+    text(lab, cx + r + 10, cy - 11, 13, FB, C.ink2, 'left', 700);
+    text(fmt(g, 3), cx + r + 10, cy + 10, 20, FM, C.ink, 'left', 700);
+  });
+}
+function drawInset(rect, b, m) {    // the three people and the current line, residuals dashed
+  const [x0, y0, x1, y1] = rect, px0 = x0 + 14, px1 = x1 - 10, py0 = y0 + 32, py1 = y1 - 26;
+  const X = w => px0 + w / 3.2 * (px1 - px0), Y = h => py1 - h / 3.6 * (py1 - py0);
+  panel(rect, 'your line');
+  text(`SSR ${fmt(ssr(b, m))}`, x1 - 10, y0 + 16, 13, FM, C.ink2, 'right', 500);
+  ctx.strokeStyle = '#D9CFB8'; ctx.lineWidth = 1.5; seg(px0, py0 - 4, px0, py1); seg(px0, py1, px1, py1);
+  ctx.save(); ctx.beginPath(); ctx.rect(px0, py0 - 8, px1 - px0, py1 - py0 + 8); ctx.clip();
+  ctx.setLineDash([3, 3]); ctx.strokeStyle = C.coral; ctx.lineWidth = 2;
+  for (const [w, h] of PEOPLE) seg(X(w), Y(h), X(w), Y(b + m * w));
+  ctx.setLineDash([]); ink(2.5); seg(X(0), Y(b), X(3.2), Y(b + m * 3.2));
+  ctx.restore();
+  for (const [w, h] of PEOPLE) { ink(2); ctx.beginPath(); ctx.arc(X(w), Y(h), 5, 0, 7); paint(C.blue); }
+  text(`h = ${fmt(b)} + ${fmt(m)}·w`, (x0 + x1) / 2, y1 - 13, 14, FM, C.ink, 'center', 500);
+}
+function axis(label) {   // ticks along the bottom: where you are, not what the ground looks like
+  const step = LAY.tall ? 1 : 0.5;
+  ctx.strokeStyle = C.ink2; ctx.lineWidth = 2;
+  for (let x = Math.ceil(V.lo / step) * step; x <= V.hi; x += step) {
+    const sx = vx(x); seg(sx, H - 3, sx, H - 9);
+    halo(fmt(x, step < 1 ? 1 : 0), sx, H - 17, 13, FM);
+  }
+  halo(label, LAY.land[2] - 4, H - 36, 15, FD, 'right');
+}
+/* ================= Shared valley mechanics ================= */
+let S = {};                        // the current level's state, replaced on every level start
+const later = (sec, fn) => { S.timer = { t: sec, fn }; };
+const say = (s, t = 1.8) => { S.say = { s, t }; };
+const hopArc = d => RM ? 0 : clamp(8 + d * 0.28, 8, 110);
+function hopTo(x1, done, quick) {
+  const x0 = S.x, d = Math.abs(vx(x1) - vx(x0));
+  S.hop = { x0, x1, t: 0, dur: RM ? 0.12 : clamp((quick ? 0.1 : 0.22) + d / 900, 0.12, 0.6), arc: hopArc(d), done };
+  if (x1 !== x0) S.face = x1 > x0 ? 1 : -1;
+}
+function feet() {                  // screen position of the hiker's feet, mid-hop included
+  const h = S.hop;
+  if (!h) return [vx(S.x), groundY(S.x)];
+  return [vx(lerp(h.x0, h.x1, h.t)), lerp(groundY(h.x0), groundY(h.x1), h.t) - h.arc * 4 * h.t * (1 - h.t)];
+}
+const curX = () => S.hop ? lerp(S.hop.x0, S.hop.x1, S.hop.t) : S.x;
+function hikerLook() {             // squash and stretch
+  const o = { face: S.face, pose: S.pose, sleep: S.sleep };
+  if (S.hop) { const k = Math.sin(Math.PI * S.hop.t); o.pose = 'air'; o.sy = 1 + 0.12 * k; o.sx = 1 - 0.08 * k; }
+  else if (S.squash > 0) { o.sy = 1 - 0.22 * S.squash; o.sx = 1 + 0.16 * S.squash; }
+  else if (S.crouch) { o.sy = 1 - 0.2 * S.crouch; o.sx = 1 + 0.14 * S.crouch; }
+  else if (!RM && S.pose === 'stand') o.sy = 1 + 0.015 * Math.sin(T * 3);
+  return o;
+}
+function tick(dt) {                // per-frame bookkeeping shared by every level
+  if (S.timer && (S.timer.t -= dt) <= 0) { const f = S.timer.fn; S.timer = null; f(); }
+  const h = S.hop;
+  if (h && (h.t = Math.min(1, h.t + dt / h.dur)) >= 1) {
+    S.hop = null; S.x = h.x1; S.squash = 1;
+    burst(vx(S.x), groundY(S.x), 'dust', 6);
+    if (h.done) h.done();
+  }
+  S.sunShown += (S.sun - S.sunShown) * Math.min(1, dt * 3);
+  if (S.squash > 0) S.squash = Math.max(0, S.squash - dt / 0.18);
+  if (S.lift) S.reveal = Math.min(1, S.reveal + dt / (RM ? 0.3 : 1.2));
+  if (S.say && (S.say.t -= dt) <= 0) S.say = null;
+  const f = S.fling;
+  if (f && !RM) {
+    f.x += f.vx * dt; f.y += f.vy * dt; f.vy += 700 * dt; f.rot += f.vr * dt;
+    if (!f.gone && (f.x < -30 || f.x > W + 30 || f.y < -30)) { f.gone = true; burst(clamp(f.x, 12, W - 12), clamp(f.y, 12, H - 12), 'spark', 10); }
+  }
+  if (S.sleep && Math.random() < dt * 1.4) { const [x, y] = feet(); burst(x + 12, y - 52 * LAY.hiker, 'z', 1); }
+  stepParts(dt);
+}
+function prints(xs, col, alpha) {  // a pair of footprints at every landing
+  ctx.save(); ctx.globalAlpha = alpha; ctx.fillStyle = col;
+  for (const x of xs) {
+    if (!(x >= V.lo && x <= V.hi)) continue;
+    const sx = vx(x), sy = groundY(x);
+    ctx.save(); ctx.translate(sx, sy); ctx.rotate(Math.atan2(groundY(x + 0.01) - sy, vx(x + 0.01) - sx));
+    ctx.beginPath(); ctx.moveTo(-0.8, -2); ctx.ellipse(-4, -2, 3.2, 2, 0, 0, 7); ctx.moveTo(7.2, -4); ctx.ellipse(4, -4, 3.2, 2, 0, 0, 7); ctx.fill();
+    ctx.restore();
+  }
+  ctx.restore();
+}
+function hops(xs, col, alpha) {    // faint dashed arcs between landings
+  ctx.save(); ctx.globalAlpha = alpha; ctx.setLineDash([4, 6]); ctx.lineWidth = 2; ctx.strokeStyle = col;
+  for (let i = 1; i < xs.length; i++) {
+    const a = xs[i - 1], b = xs[i];
+    if (!(a >= V.lo && a <= V.hi && b >= V.lo && b <= V.hi)) continue;
+    const ax = vx(a), ay = groundY(a), bx = vx(b), by = groundY(b), arc = hopArc(Math.abs(bx - ax));
+    ctx.beginPath(); ctx.moveTo(ax, ay); ctx.quadraticCurveTo((ax + bx) / 2, (ay + by) / 2 - 2 * arc, bx, by); ctx.stroke();
+  }
+  ctx.restore();
+}
+function sayBubble(fx, fy) { if (S.say) bubble(clamp(fx, 20, W - 20), clamp(fy - 66 * LAY.hiker, 46, H), S.say.s); }
+
+/* ---- Learning-rate slider shared by levels 2 and 4 (log scale, plus nudge buttons for fine control) ---- */
+function nudge(d) { const i = $('lr'); if (i) { i.value = clamp(+i.value + d, 0, 1000); i.dispatchEvent(new Event('input')); } }
+function lrControl(el, R, owner, go) {
+  el.innerHTML = `<div class="slider"><label for="lr">Learning rate</label><output id="lrOut" for="lr"></output><div class="brk"></div>
+    <button class="btn small nudge" data-d="-1" aria-label="Smaller learning rate">−</button>
+    <input type="range" id="lr" min="0" max="1000" step="1">
+    <button class="btn small nudge" data-d="1" aria-label="Bigger learning rate">+</button></div>
+    <button class="btn teal" id="go">Go ▶</button><span class="keys">Space: Go · ← →: nudge the rate</span>`;
+  const input = $('lr');
+  input.value = tickOf(owner.lr, R.lo, R.hi);
+  input.oninput = () => { owner.lr = lrAt(+input.value, R.lo, R.hi); $('lrOut').textContent = fmtLr(owner.lr); };
+  input.oninput();
+  el.querySelectorAll('.nudge').forEach(b => { b.onclick = () => nudge(+b.dataset.d); });
+  $('go').onclick = go;
+}
+const lrKeys = go => e => {
+  if (e.key === ' ' || e.key === 'Enter') go();
+  else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') nudge(e.key === 'ArrowRight' ? 1 : -1);
+  else return;
+  e.preventDefault();
+};
+
+/* ================= Level 1: Feel your way ================= */
+const clampAim = s => clamp(S.x + s, V.lo + 0.02, V.hi - 0.02) - S.x;
+function pullToStride(dx) {       // slingshot: pull left to go right; quadratic, so short pulls give fine control
+  const k = Math.min(Math.abs(dx), W * 0.36) / (W * 0.36);
+  return clampAim(-Math.sign(dx) * R1.maxStride * k * k);
+}
+function aimArrow(fx, fy) {
+  const tx = vx(S.x + S.aim), y = fy - 72 * LAY.hiker, hy = fy - 28 * LAY.hiker, dir = Math.sign(tx - fx) || 1;
+  if (S.drag) {                    // the rubber band
+    const px = clamp(fx + clamp(S.drag.dx, -W * 0.36, W * 0.36), 10, W - 10);
+    ctx.strokeStyle = C.ink2; ctx.lineWidth = 2; seg(fx - 5, hy, px, hy + 4); seg(fx + 5, hy, px, hy + 4);
+    ink(2); ctx.beginPath(); ctx.arc(px, hy + 4, 7, 0, 7); paint(C.amber);
+  }
+  ink(3); ctx.strokeStyle = C.coral; seg(fx, y, tx, y);
+  ctx.beginPath(); ctx.moveTo(tx, y); ctx.lineTo(tx - dir * 11, y - 7); ctx.lineTo(tx - dir * 11, y + 7); ctx.closePath(); ctx.fillStyle = C.coral; ctx.fill();
+  ctx.save(); ctx.setLineDash([3, 5]); ctx.lineWidth = 2; seg(tx, y + 8, tx, y + 48); ctx.restore();
+  halo(`stride ${S.aim > 0 ? '+' : ''}${fmt(S.aim)}`, clamp((fx + tx) / 2, 60, W - 60), y - 17, 17);
+}
+function stride() {
+  const to = S.x + S.aim, before = V.df(S.x);
+  S.aim = 0; S.n++; S.sun = S.n / R1.max;
+  hopTo(to, () => {
+    S.trail.push(S.x);
+    const g = V.df(S.x);
+    if (Math.abs(g) < R1.flat) {
+      S.phase = 'won'; S.pose = 'cheer'; S.flag = S.x; S.lift = true;
+      const [fx, fy] = feet(); burst(fx, fy - 40, 'spark', 16);
+      win(starsFor(S.n, R1.stars), 'Flat ground!', result1, 1.6);
+    } else if (S.n >= R1.max) {
+      S.phase = 'lost'; S.pose = 'sit'; S.sleep = true;
+      later(1.4, () => lose('Night fell on a slope', `<p>Twelve strides, and the ground still tilts <b>${fmt(g)}</b>. The hiker naps at a funny angle tonight.</p><p>Tip: a big tilt means the bottom is far, so stride far. A small tilt means it is close, so stride small.</p>`));
+    } else if (g * before < 0) say('whoa, past the bottom!');
+  });
+}
+function result1() {
+  const gd = descend1(V1.df, 0, 0.1, 100, V1.lo, V1.hi).xs.map(x => fmt(x)).join(' → ');
+  return `<p>You reached flat ground at intercept <b>${fmt(S.x)}</b> in <b>${S.n}</b> stride${S.n === 1 ? '' : 's'}. Three stars take ${R1.stars[0]} or fewer.</p>
+    <div class="lesson"><span class="lbl">What you just felt</span>Where the ground was steep you took big strides, and near the bottom you took baby steps. Gradient descent does this on its own: each step is the slope times a small learning rate, so the steps shrink as the ground flattens. The tilt on your gauge is that slope, the derivative dSSR/d intercept.</div>
+    <div class="formula">step size = slope × learning rate</div>
+    <p class="hand">With learning rate 0.1, gradient descent walks ${gd}.</p>`;
+}
+const L1 = {
+  name: 'Feel your way', V: V1, drag: true,
+  goal: 'Pull back and let go to stride. Reach flat ground (tilt under 0.1) within 12 strides.',
+  intro: `<p>Dusk, thick fog. The ground is the loss curve: where you stand is the line's <b>intercept</b> (its slope stays 0.64), and your height is the <b>sum of squared residuals</b>. You can't see the bottom. You can only feel the tilt under your feet.</p>
+    <p><b>How to play:</b> drag anywhere on the valley, pull back like a slingshot, and let go. A longer pull makes a longer stride. Reach flat ground within 12 strides. Keys: ← → aim, Space strides.</p>`,
+  chips: [['x', 'Intercept'], ['ssr', 'SSR'], ['g', 'Tilt'], ['n', 'Strides']],
+  reset: () => ({ x: 0, trail: [0], n: 0, aim: 0, sun: 0, reveal: 0, face: 1, pose: 'stand', phase: 'play' }),
+  hud: () => ({ x: fmt(S.x), ssr: fmt(V.f(S.x)), g: fmt(V.df(S.x)), n: `${S.n} / ${R1.max}` }),
+  controls(el) {
+    el.innerHTML = '<button class="btn" id="restart">Restart</button><span class="keys">Keys: ← → aim · Shift for fine · Space stride</span>';
+    $('restart').onclick = () => startLevel(lvl, false);
+  },
+  down(p) { if (S.phase === 'play' && !S.hop) S.drag = { x0: p.x, dx: 0 }; },
+  move(p) { if (S.drag) { S.drag.dx = p.x - S.drag.x0; S.aim = pullToStride(S.drag.dx); } },
+  up() {
+    if (!S.drag) return;
+    S.drag = null;
+    if (Math.abs(S.aim) >= 0.005) stride(); else { S.aim = 0; say('pull back, then let go'); }
+  },
+  cancel() { S.drag = null; S.aim = 0; },
+  key(e) {
+    if (S.phase !== 'play' || S.hop) return;
+    const d = e.shiftKey ? 0.01 : 0.05;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') S.aim = clampAim(S.aim + (e.key === 'ArrowRight' ? d : -d));
+    else if ((e.key === ' ' || e.key === 'Enter') && Math.abs(S.aim) >= 0.005) stride();
+    else if (e.key === 'Escape') S.aim = 0;
+    else return;
+    e.preventDefault();
+  },
+  update() { S.crouch = S.drag ? Math.min(1, Math.abs(S.aim) / 1.5) : 0; },
+  draw() {
+    drawSky(S.sunShown); drawLand();
+    const [fx, fy] = feet(), ly = fy - 26 * LAY.hiker;
+    drawFog(fx, ly, 1 - S.reveal, S.sunShown);
+    hops(S.trail, C.ink, 0.3); prints(S.trail, C.ink, 0.5);
+    if (S.aim) aimArrow(fx, fy);
+    if (S.flag != null) flag(vx(S.flag) + 16, groundY(S.flag));
+    drawHiker(fx, fy, hikerLook()); lampGlow(fx, ly);
+    drawParts();
+    if (S.n === 0 && !S.aim && !S.hop) halo(LAY.tall ? '← pull back, let go' : '← pull back like a slingshot, then let go', fx - 12, fy - 96 * LAY.hiker, 22, FH, 'left');
+    sayBubble(fx, fy);
+    drawGauge(V.df(curX()), 'dSSR / d intercept');
+    drawInset(LAY.inset, curX(), FIXED_SLOPE);
+    axis('intercept →');
+  }
+};
+
+/* ================= Level 2: Autopilot ================= */
+function archive2() {              // the last walk becomes a ghost trail
+  if (!S.run) return;
+  S.ghosts.push({ xs: S.trail, lr: S.run.lr, end: S.run.end });
+  if (S.ghosts.length > 3) S.ghosts.shift();
+}
+function go2() {
+  if (S.phase !== 'ready') return;               // a run is on, or its result card is on the way
+  archive2();
+  const lr = L2.lr;
+  Object.assign(S, L2.fresh(), { run: { ...descend1(V1.df, 0, lr, R2.max, V1.lo, V1.hi), lr }, phase: 'run' });
+  later(0.25, step2);
+}
+function step2() {
+  const xs = S.run.xs;
+  if (S.i >= xs.length - 1) return end2();
+  const x1 = xs[S.i + 1];
+  if (!(x1 >= V.lo && x1 <= V.hi)) return fling(x1);
+  hopTo(x1, () => {
+    S.i++; S.n++; S.sun = S.n / R2.max; S.trail.push(S.x);
+    if ((S.x - BOTTOM) * (xs[S.i - 1] - BOTTOM) < 0 && ++S.dizzy >= 3) S.pose = 'dizzy';   // jumped over the bottom again
+    later(RM ? 0.15 : 0.06, step2);
+  });
+}
+function end2() {
+  const r = S.run, n = r.xs.length - 1;
+  if (r.end === 'done') {
+    S.phase = 'won'; S.pose = 'cheer'; S.flag = S.x; S.lift = true;
+    const [fx, fy] = feet(); burst(fx, fy - 40, 'spark', 16);
+    win(starsFor(n, R2.stars), n <= 2 ? 'Straight to the bottom!' : 'Settled at the bottom', () => {
+      const b = best2();
+      return `<p>Learning rate <b>${fmtLr(r.lr)}</b>: settled at intercept <b>${fmt(S.x)}</b> in <b>${n}</b> step${n === 1 ? '' : 's'}. The best this slider allows is <b>${b.best}</b> steps (rate about ${fmtLr(b.lr)}). Three stars take ${R2.stars[0]} or fewer.</p>
+        <div class="lesson"><span class="lbl">What you just felt</span>A tiny learning rate crawls until night. A big one jumps past the bottom every step, zigzagging or even flying out of the valley. In between is a sweet spot where the steps shrink fast. This bowl's curvature is 6, so a rate near 1/6 lands almost at once.</div>
+        <div class="formula">new intercept = old − learning rate × tilt</div>`;
+    }, 1.5);
+    return;
+  }
+  S.phase = 'lost'; S.lift = true;
+  const dizzy = S.dizzy >= 3;
+  if (!dizzy) { S.pose = 'sit'; S.sleep = true; }
+  later(1.4, () => dizzy
+    ? lose('Dizzy at dusk', `<p>Every step with rate <b>${fmtLr(r.lr)}</b> jumped past the bottom, and the zigzag shrank too slowly. Night fell after ${R2.max} steps.</p><p>Tip: a slightly smaller rate.</p>`)
+    : lose('Too timid, night fell', `<p>With rate <b>${fmtLr(r.lr)}</b>, ${R2.max} steps only got you to intercept <b>${fmt(S.x)}</b> (the bottom is near ${fmt(BOTTOM)}). Each step is the tilt times the rate, so a tiny rate makes tiny steps.</p><p>Tip: try a bigger rate.</p>`));
+}
+function fling(x1) {              // the next step lands outside the valley: off you go
+  S.n++; S.sun = S.n / R2.max; S.phase = 'lost'; S.lift = true;
+  const [fx, fy] = feet(), dir = Math.sign(x1 - S.x) || 1;
+  S.face = dir; S.pose = 'air';
+  S.fling = RM ? { x: dir > 0 ? W - 30 : 30, y: LAY.land[1], rot: 0 } : { x: fx, y: fy, vx: dir * 520, vy: -560, rot: 0, vr: dir * 9 };
+  say('wheee!');
+  later(1.4, () => lose('Launched out of the valley', (S.n === 1
+    ? `<p>With rate <b>${fmtLr(S.run.lr)}</b> the very first jump was wider than the whole valley, so you flew straight out.</p>`
+    : `<p>With rate <b>${fmtLr(S.run.lr)}</b> every jump landed higher up the other side, where the ground is steeper, so the next jump was even bigger. After ${S.n} steps you flew out.</p>`)
+    + '<p>Tip: a smaller rate. In this bowl any rate above 1/3 throws you out.</p>'));
+}
+function ghostLegend(x, y, align) {   // earlier tries: dashed purple sample, rate, ✓ settled / ✗ failed
+  S.ghosts.forEach((g, i) => {
+    const yy = y + i * 19, sx = align === 'right' ? x - 22 : x;
+    ctx.save(); ctx.setLineDash([4, 4]); ctx.strokeStyle = C.purple; ctx.lineWidth = 2.5; seg(sx, yy, sx + 18, yy); ctx.restore();
+    halo(`${fmtLr(g.lr)} ${g.end === 'done' ? '✓' : '✗'}`, align === 'right' ? x - 28 : x + 24, yy, 14, FM, align, C.purpleInk);
+  });
+}
+const L2 = {
+  name: 'Autopilot', V: V1, lr: 0.01,
+  goal: 'Pick a learning rate and press Go. Settle at the bottom (a step under 0.001) before sunset: 25 steps.',
+  intro: `<p>Now the hiker walks alone, the way gradient descent does. Each step: <b>step size = tilt × learning rate</b>, then <b>new intercept = old − step size</b>. It stops when a step is smaller than 0.001.</p>
+    <p><b>How to play:</b> set the learning rate and press Go. You have 25 steps of daylight. Fewer steps, more stars. Earlier tries stay as ghost trails.</p>`,
+  chips: [['x', 'Intercept'], ['g', 'Tilt'], ['eq', 'step = tilt × rate', 'eq'], ['n', 'Steps']],
+  fresh: () => ({ x: 0, trail: [0], n: 0, i: 0, sun: 0, reveal: 0, lift: false, face: 1, pose: 'stand', sleep: false, flag: null, fling: null, hop: null, timer: null, say: null, dizzy: 0, run: null, phase: 'ready' }),
+  reset: () => ({ ...L2.fresh(), ghosts: [] }),
+  retry() { archive2(); Object.assign(S, L2.fresh()); },
+  hud() {
+    const g = V.df(S.x), lr = S.run ? S.run.lr : L2.lr;
+    return { x: fmt(S.x), g: fmt(g), eq: `${fmt(g)} × ${fmtLr(lr)} = ${fmt(g * lr, 4)}`, n: `${S.n} / ${R2.max}` };
+  },
+  controls: el => lrControl(el, R2, L2, go2),
+  key: lrKeys(() => go2()),
+  draw() {
+    drawSky(S.sunShown); drawLand();
+    const [fx, fy] = S.fling ? [S.fling.x, S.fling.y] : feet(), ly = fy - 26 * LAY.hiker;
+    drawFog(fx, ly, 1 - S.reveal, S.sunShown);
+    for (const g of S.ghosts) { hops(g.xs, C.purple, 0.35); prints(g.xs, C.purple, 0.3); }
+    ghostLegend(LAY.land[0] + 8, H - 50 - 19 * (S.ghosts.length - 1), 'left');
+    hops(S.trail, C.ink, 0.3); prints(S.trail, C.ink, 0.5);
+    if (S.flag != null) flag(vx(S.flag) + 16, groundY(S.flag));
+    const hiker = () => { drawHiker(fx, fy, { ...hikerLook(), rot: S.fling ? S.fling.rot : 0 }); lampGlow(fx, ly); sayBubble(fx, fy); };
+    if (!S.fling) hiker();
+    drawParts();
+    drawGauge(V.df(curX()), 'dSSR / d intercept');
+    drawInset(LAY.inset, curX(), FIXED_SLOPE);
+    axis('intercept →');
+    if (S.fling) hiker();                        // flung hikers fly in front of everything
+  }
+};
+/* ================= Level 3: Two pits ================= */
+const markAt = sx => clamp(xOf(sx), V3.lo + 0.05, V3.hi - 0.05);
+function drop3(x) {
+  if (S.phase !== 'aim') return;
+  S.drops++; S.sun = S.drops / R3.drops;
+  Object.assign(S, { x, phase: 'fall', fallY: LAY.land[1] + 10, trail: [x], pose: 'stand', sleep: false, face: 1, flag: null });
+  S.trails.push(S.trail);
+}
+function land3() {                // touchdown; autopilot takes over after a breath
+  S.phase = 'run'; S.squash = 1;
+  burst(vx(S.x), groundY(S.x), 'dust', 8);
+  S.run = descend1(dBumpy, S.x, R3.lr, R3.max, V3.lo, V3.hi); S.i = 0;
+  later(0.5, step3);
+}
+function step3() {
+  const xs = S.run.xs;
+  if (S.i >= xs.length - 1) return end3();
+  hopTo(xs[S.i + 1], () => { S.i++; S.trail.push(S.x); later(RM ? 0.1 : 0.03, step3); }, true);
+}
+function end3() {
+  const [deep, shallow] = PITS;
+  if (Math.abs(S.x - deep) < 0.05) {
+    S.phase = 'won'; S.pose = 'cheer'; S.flag = S.x; S.lift = true;
+    const [fx, fy] = feet(); burst(fx, fy - 40, 'spark', 18);
+    win(S.drops <= 2 ? 3 : S.drops === 3 ? 2 : 1, 'The lowest floor!', () => `<p>You found the lowest floor on drop <b>${S.drops}</b>. Its loss is <b>${fmt(bumpy(deep))}</b>; the cosy pit's is <b>${fmt(bumpy(shallow))}</b>. Three stars take 2 drops or fewer.</p>
+      <div class="lesson"><span class="lbl">What you just felt</span>Autopilot only feels the ground under its feet, so it walks to the nearest floor and stops. It can't see a deeper pit over the ridge. Where you start decides where you end, so with bumpy losses people try several starts and keep the best.</div>`, 1.8);
+    return;
+  }
+  const cosy = Math.abs(S.x - shallow) < 0.05;
+  S.camps.push({ x: S.x, k: S.camps.filter(c => Math.abs(c.x - S.x) < 0.1).length });
+  S.pose = 'sit'; say(cosy ? 'cosy, but not the lowest' : 'balanced on the ridge?!', 2);
+  if (S.drops < R3.drops) { S.phase = 'camp'; later(2, () => { S.phase = 'aim'; }); return; }
+  S.phase = 'lost'; S.sleep = true; S.lift = true;
+  later(2.2, () => lose('Cosy, but not the lowest', `<p>None of your ${R3.drops} drops reached the deepest floor (loss ${fmt(bumpy(deep))}). The cosy pit (loss ${fmt(bumpy(shallow))}) kept catching you.</p><p>Tip: gradient descent rolls to the nearest floor. To reach a different floor, start on the other side of the ridge.</p>`));
+}
+function startFlag() {            // where levels 1 and 2 began
+  const x = vx(0), top = LAY.land[1];
+  ink(2); seg(x, top - 16, x, top + 14);
+  ctx.beginPath(); ctx.moveTo(x, top - 16); ctx.lineTo(x + 16, top - 11); ctx.lineTo(x, top - 6); ctx.closePath(); paint(C.amber);
+  ctx.font = `600 19px ${FH}`;
+  const left = x - 6 - ctx.measureText('usual start').width > 4;   // label on the left unless it would clip
+  halo('usual start', left ? x - 6 : x + 20, top - 10, 19, FH, left ? 'right' : 'left');
+}
+function dropMarker() {
+  const x = vx(S.mark), y = LAY.land[1] - 14, right = x < W - 120;
+  ctx.save(); ctx.setLineDash([4, 5]); ctx.strokeStyle = C.coral; ctx.lineWidth = 2; seg(x, y + 6, x, y + 60); ctx.restore();
+  ink(2); seg(x - 12, y - 8, x, y + 6); seg(x + 12, y - 8, x, y + 6);
+  ctx.beginPath(); ctx.ellipse(x, y - 8, 14, 11, 0, Math.PI, 0); ctx.closePath(); paint(C.coral);
+  halo(`drop at ${fmt(S.mark)}`, x + (right ? 20 : -20), y + 18, 14, FM, right ? 'left' : 'right');
+}
+function noLinePanel() {
+  const [x0, y0, , y1] = LAY.inset;
+  panel(LAY.inset, 'no line here');
+  text('a made-up bumpy loss', x0 + 10, y0 + 42, 14, FB, C.ink2, 'left', 700);
+  for (let i = 0; i < R3.drops; i++) {    // parachutes: filled = still in your pack
+    const cx = x0 + 26 + i * 36, cy = y1 - 24;
+    ink(2); seg(cx - 12, cy, cx, cy + 11); seg(cx + 12, cy, cx, cy + 11);
+    ctx.beginPath(); ctx.ellipse(cx, cy, 13, 10, 0, Math.PI, 0); ctx.closePath();
+    if (i >= S.drops) paint(C.coral); else ctx.stroke();
+  }
+}
+const L3 = {
+  name: 'Two pits', V: V3, drag: true,
+  goal: 'Tap above the valley to parachute in; autopilot walks downhill. Find the lowest floor in as few drops as you can.',
+  intro: `<p>A new, bumpy valley. Two pits hide in the fog, and one is deeper. There is no line here, just a made-up loss with bumps.</p>
+    <p><b>How to play:</b> tap anywhere on the valley to parachute in at that spot. Autopilot (learning rate ${R3.lr}) then walks downhill until its steps are tiny. You have ${R3.drops} parachutes. Keys: ← → move, Space drops.</p>`,
+  chips: [['x', 'Position'], ['loss', 'Loss'], ['g', 'Tilt'], ['d', 'Parachutes']],
+  reset: () => ({ x: 0, mark: 0, drops: 0, trails: [], trail: [], camps: [], sun: 0, reveal: 0, face: 1, pose: 'stand', phase: 'aim' }),
+  hud() {
+    const on = S.phase !== 'aim';
+    return { x: on ? fmt(S.x) : '—', loss: on ? fmt(bumpy(S.x)) : '—', g: on ? fmt(dBumpy(S.x)) : '—', d: `${R3.drops - S.drops} left` };
+  },
+  controls(el) {
+    el.innerHTML = '<button class="btn teal" id="drop">Drop at the marker ▼</button><span class="keys">Keys: ← → move · Space drop</span>';
+    $('drop').onclick = () => drop3(S.mark);
+  },
+  down(p) { if (S.phase === 'aim') { S.press = true; S.mark = markAt(p.x); } },
+  move(p, e) { if (S.phase === 'aim' && (S.press || e.pointerType === 'mouse')) S.mark = markAt(p.x); },
+  up() { if (S.press) { S.press = false; drop3(S.mark); } },
+  cancel() { S.press = false; },
+  key(e) {
+    if (S.phase !== 'aim') return;
+    const d = e.shiftKey ? 0.02 : 0.1;
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') S.mark = clamp(S.mark + (e.key === 'ArrowRight' ? d : -d), V3.lo + 0.05, V3.hi - 0.05);
+    else if (e.key === ' ' || e.key === 'Enter') drop3(S.mark);
+    else return;
+    e.preventDefault();
+  },
+  update(dt) {
+    if (S.phase === 'fall' && (S.fallY += (RM ? 3000 : 230) * dt) >= groundY(S.x)) land3();
+  },
+  draw() {
+    drawSky(S.sunShown); drawLand();
+    const air = S.phase === 'fall', show = S.phase !== 'aim', sway = air && !RM ? Math.sin(T * 2.6) * 7 : 0;
+    const [fx, fy] = air ? [vx(S.x) + sway, Math.min(S.fallY, groundY(S.x))] : show ? feet() : [-999, -999], ly = fy - 26 * LAY.hiker;
+    drawFog(fx, ly, 1 - S.reveal, S.sunShown);
+    for (const t of S.trails) { hops(t, C.ink, 0.28); prints(t, C.ink, 0.45); }
+    for (const c of S.camps) { const sx = vx(c.x) - 26 - c.k * 22; tent(sx, groundY(xOf(sx)) + 2); }
+    if (S.reveal > 0) {
+      const [deep, shallow] = PITS;
+      ctx.globalAlpha = S.reveal;
+      halo('★ lowest floor', vx(deep), groundY(deep) - 70 * LAY.hiker, 17); halo('cosy pit', vx(shallow), groundY(shallow) - 70 * LAY.hiker, 17);
+      ctx.globalAlpha = 1;
+    }
+    startFlag();
+    if (S.phase === 'aim') dropMarker();
+    if (S.flag != null) flag(vx(S.flag) + 16, groundY(S.flag));
+    const hiker = () => { drawHiker(fx, fy, { ...hikerLook(), chute: air, rot: sway * 0.02 }); lampGlow(fx, ly); sayBubble(fx, fy); };
+    if (show && !air) hiker();
+    drawParts();
+    drawGauge(show ? dBumpy(air ? S.x : curX()) : null, 'd loss / dx');
+    noLinePanel();
+    axis('x →');
+    if (air) hiker();                            // the open canopy floats in front of the panels
+  }
+};
+
+/* ================= Level 4: Two dials ================= */
+function getMap() {   // SSR contours are ellipses: p = best + √(2Δ/λ1)·cos t·v1 + √(2Δ/λ2)·sin t·v2
+  if (MAP) return MAP;
+  const [x0, y0, x1, y1] = LAY.map, s = (x1 - x0) / 1.7, cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+  const mx = b => cx + (b - 0.5) * s, my = m => cy - (m - 0.82) * s;
+  const [l1, l2] = HESS.eig, [v1, v2] = HESS.vec, [bb, bm] = HESS.best;
+  const rings = [9.6, 4.8, 2.4, 1.2, 0.6, 0.3, 0.15, 0.06, 0.02].map(d => {
+    const p = new Path2D(), r1 = Math.sqrt(2 * d / l1), r2 = Math.sqrt(2 * d / l2);
+    for (let k = 0; k <= 120; k++) {
+      const t = k / 120 * 2 * Math.PI, c = Math.cos(t) * r1, sn = Math.sin(t) * r2;
+      p.lineTo(mx(bb + c * v1[0] + sn * v2[0]), my(bm + c * v1[1] + sn * v2[1]));
+    }
+    p.closePath(); return p;
+  });
+  return (MAP = { mx, my, rings });
+}
+function archive4() {
+  if (!S.run) return;
+  S.ghosts.push({ pts: S.run.pts.slice(0, S.i + 1), lr: S.run.lr, end: S.run.end });
+  if (S.ghosts.length > 3) S.ghosts.shift();
+}
+function go4() {
+  if (S.phase !== 'ready') return;               // a run is on, or its result card is on the way
+  archive4();
+  const lr = L4.lr;
+  Object.assign(S, L4.fresh(), { run: { ...descend2(0, 1, lr, R4.max, R4.box), lr }, phase: 'run' });
+}
+function end4() {
+  const r = S.run, n = r.pts.length - 1, M = getMap();
+  if (r.end === 'done') {
+    S.phase = 'won'; S.pose = 'cheer'; S.lift = true;
+    burst(M.mx(S.b), M.my(S.m) - 30, 'spark', 16);
+    win(starsFor(n, R4.stars), 'Bottom of the long valley', () => {
+      const b = best4(), slow = descend2(0, 1, 0.01, R4.max, R4.box).pts.length - 1;
+      return `<p>Learning rate <b>${fmtLr(r.lr)}</b>: reached intercept <b>${fmt(S.b)}</b> and slope <b>${fmt(S.m)}</b> in <b>${n}</b> steps. The video's rate, 0.01, needs ${slow}. The best this slider allows is <b>${b.best}</b> (rate about ${fmtLr(b.lr)}). Three stars take ${R4.stars[0]} or fewer.</p>
+        <div class="lesson"><span class="lbl">What you just felt</span>This valley is long and narrow: steep across, nearly flat along its floor. The steep walls cap the learning rate, because above about ${fmtLr(2 / HESS.eig[0])} each step jumps the ditch further than the last. The flat floor makes small rates crawl. So the fastest rate sits right at the edge, zigzag and all.</div>
+        <div class="formula">new (intercept, slope) = old − learning rate × gradient</div>`;
+    }, 1.5);
+    return;
+  }
+  S.phase = 'lost'; S.lift = true;
+  const l1 = fmt(HESS.eig[0], 1);
+  if (r.end === 'out') {
+    say('wheee!');
+    later(1.2, () => lose('Off the map!', `<p>The zigzag across the narrow valley grew with every step until it threw you off the map. Across the valley the curvature is ${l1}, so any rate above 2 ÷ ${l1} ≈ ${fmtLr(2 / HESS.eig[0])} overshoots more each time.</p><p>Tip: back off a little.</p>`));
+  } else if (r.lr >= 2 / (HESS.eig[0] + HESS.eig[1])) {
+    S.pose = 'dizzy';
+    later(1.2, () => lose('Zigzagged all night', `<p>Right at the edge, the zigzag across the valley barely shrinks, so after ${R4.max} steps you still had not settled.</p><p>Tip: back off a hair.</p>`));
+  } else {
+    S.pose = 'sit'; S.nap = true;
+    later(1.2, () => lose('Still shuffling at nightfall', `<p>${R4.max} steps with rate <b>${fmtLr(r.lr)}</b>, and you are still creeping along the flat valley floor, at intercept ${fmt(S.b)} and slope ${fmt(S.m)}.</p><p>Tip: a much bigger rate. How big can it get before the zigzag wins?</p>`));
+  }
+}
+function trailLine(pts, upto, col, alpha) {
+  const M = getMap();
+  ctx.save(); ctx.globalAlpha = alpha; ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.lineJoin = 'round'; ctx.beginPath();
+  for (let i = 0; i <= upto; i++) ctx.lineTo(M.mx(pts[i][0]), M.my(pts[i][1]));
+  ctx.stroke(); ctx.restore();
+}
+function mapTicks(M, [x0, y0, x1, y1]) {
+  for (const b of [0, 0.5, 1]) halo(fmt(b, 1), M.mx(b), y1 - 14, 13, FM);
+  for (const m of [0.5, 1]) halo(fmt(m, 1), x0 + 8, M.my(m), 13, FM, 'left');
+  halo('intercept →', x1 - 10, y1 - 36, 15, FD, 'right');
+  halo('slope ↑', x0 + 10, y0 + 18, 15, FD, 'left');
+}
+const L4 = {
+  name: 'Two dials', lr: 0.01,
+  goal: 'Both dials move now: pick a learning rate and press Go. Reach the bottom in as few steps as you can.',
+  intro: `<p>Now the intercept and the slope both move, so the valley is a map seen from above. You start at intercept 0, slope 1, as in the video. Each step moves both dials: <b>new = old − learning rate × tilt</b>, one tilt per dial.</p>
+    <p><b>How to play:</b> pick a learning rate and press Go. The run ends when both steps are under 0.00004 (this floor is very flat, so the finish line is finer) or after 1000 steps. Fewer steps, more stars.</p>`,
+  chips: [['b', 'Intercept'], ['m', 'Slope'], ['ssr', 'SSR'], ['st', 'Step sizes', 'eq'], ['n', 'Steps']],
+  fresh: () => ({ b: 0, m: 1, n: 0, i: 0, sun: 0, reveal: 0, lift: false, face: 1, pose: 'stand', nap: false, say: null, timer: null, run: null, phase: 'ready' }),
+  reset: () => ({ ...L4.fresh(), ghosts: [] }),
+  retry() { archive4(); Object.assign(S, L4.fresh()); },
+  hud() {
+    const [gb, gm] = grad(S.b, S.m), lr = S.run ? S.run.lr : L4.lr;
+    return { b: fmt(S.b, 3), m: fmt(S.m, 3), ssr: fmt(ssr(S.b, S.m), 3), st: `${fmt(lr * gb, 5)}, ${fmt(lr * gm, 5)}`, n: `${S.n} / ${R4.max}` };
+  },
+  controls: el => lrControl(el, R4, L4, go4),
+  key: lrKeys(() => go4()),
+  update(dt) {
+    if (S.phase === 'run') {
+      const pts = S.run.pts, last = pts.length - 1;
+      S.i = Math.min(last, S.i + (S.i < 30 ? 1 : S.i < 120 ? 2 : 6));
+      [S.b, S.m] = pts[S.i]; S.n = S.i; S.sun = S.n / R4.max;
+      if (S.i > 0 && pts[S.i][0] !== pts[S.i - 1][0]) S.face = pts[S.i][0] > pts[S.i - 1][0] ? 1 : -1;
+      if (S.i === last) end4();
+    }
+    if (S.nap && Math.random() < dt * 1.4) { const M = getMap(); burst(M.mx(S.b) + 10, M.my(S.m) - 34, 'z', 1); }
+  },
+  draw() {
+    const M = getMap(), [x0, y0, x1, y1] = LAY.map, R = [x0, y0, x1 - x0, y1 - y0];
+    const hx = M.mx(S.b), hy = M.my(S.m), cx = clamp(hx, x0 + 20, x1 - 20), cy = clamp(hy, y0 + 20, y1 - 10);
+    ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = C.ink; rr(x0 + 3, y0 + 3, R[2], R[3], 14); ctx.fill();
+    ctx.save(); rr(...R, 14); ctx.clip();
+    ctx.fillStyle = '#F8E3C8'; ctx.fillRect(...R);            // the high ground beyond the last ring
+    M.rings.forEach((p, i) => {
+      ctx.fillStyle = mix('#F8E3C8', '#7FCBA8', i / (M.rings.length - 1)); ctx.fill(p);
+      ctx.strokeStyle = 'rgba(44,44,42,.35)'; ctx.lineWidth = 1.5; ctx.stroke(p);
+    });
+    ctx.fillStyle = `rgba(38,33,92,${0.3 * S.sunShown})`; ctx.fillRect(...R);
+    ctx.restore();
+    drawFog(cx, cy - 16, 1 - S.reveal, S.sunShown, LAY.map);
+    ctx.save(); rr(...R, 14); ctx.clip();
+    if (S.reveal > 0) {
+      const bx = M.mx(HESS.best[0]), by = M.my(HESS.best[1]);
+      ctx.globalAlpha = S.reveal; star(bx, by, 9, C.amber); halo('lowest', bx, by + 20, 15); ctx.globalAlpha = 1;
+    }
+    mapTicks(M, LAY.map);
+    for (const g of S.ghosts) trailLine(g.pts, g.pts.length - 1, C.purple, 0.5);
+    ghostLegend(x1 - 10, y0 + 20, 'right');
+    if (S.run) trailLine(S.run.pts, S.i, C.ink, 0.85);
+    ink(2); ctx.beginPath(); ctx.arc(M.mx(0), M.my(1), 5, 0, 7); paint(C.card); halo('start', M.mx(0), M.my(1) + 18, 14);
+    drawHiker(hx, hy, { s: 0.62, face: S.face, pose: S.pose, sleep: S.nap }); lampGlow(cx, cy - 16);
+    ctx.restore();
+    ink(2); rr(...R, 14); ctx.stroke();
+    drawParts();
+    if (S.say) bubble(cx, cy - 40, S.say.s);
+    drawGauge2(...grad(S.b, S.m));
+    drawInset(LAY.inset2, S.b, S.m);
+  }
+};
+/* ================= Game shell: levels, cards, HUD, input, loop ================= */
+const LEVELS = [L1, L2, L3, L4];
+let lvl = 0, L = L1, HUDV = {};
+
+function renderBar() { Kit.levelBar(levelsEl, { count: LEVELS.length, current: lvl, game: SLUG, onPick: i => startLevel(i) }); }
+function buildHud() {
+  hudEl.innerHTML = ''; HUDV = {};
+  for (const [k, label, cls] of L.chips) {
+    const c = document.createElement('span');
+    c.className = 'chip' + (cls ? ' ' + cls : '');
+    c.innerHTML = `${label} <b></b>`;
+    hudEl.appendChild(c); HUDV[k] = c.lastElementChild;
+  }
+  const ctl = document.createElement('div');
+  ctl.className = 'ctrl'; hudEl.appendChild(ctl);
+  L.controls(ctl);
+}
+function hudUpdate() { const v = L.hud(); for (const k in v) if (HUDV[k].textContent !== v[k]) HUDV[k].textContent = v[k]; }
+function startLevel(i, intro = true) {
+  lvl = i; L = LEVELS[i]; V = L.V || V1;
+  S = L.reset(); S.sunShown = 0; parts.length = 0;
+  renderBar(); goalEl.textContent = L.goal; buildHud();
+  stage.style.touchAction = L.drag ? 'none' : 'pan-y';     // levels without dragging let the page scroll
+  if (intro) Kit.card({ title: `${i + 1}. ${L.name}`, html: L.intro, buttons: [{ label: "Let's go" }] });
+}
+const again = () => (L.retry ? L.retry() : startLevel(lvl, false));   // levels 2 and 4 keep their ghost trails
+function win(stars, title, html, delay) {   // stars are saved at once; the card waits for the celebration
+  Kit.save(SLUG, lvl, stars); renderBar();
+  later(delay, () => {
+    if (stars === 3) Kit.confetti();
+    const last = lvl === LEVELS.length - 1;
+    Kit.card({ title, stars, html: html(), buttons: [
+      { label: 'Read the note', href: NOTE },
+      { label: 'Try again', onClick: again },
+      last ? { label: 'Back to arcade', href: 'index.html' } : { label: 'Next level', onClick: () => startLevel(lvl + 1) }
+    ] });
+  });
+}
+function lose(title, html) {
+  Kit.card({ title, html, buttons: [{ label: 'Read the note', href: NOTE }, { label: 'Try again', onClick: again }] });
+}
+
+cv.addEventListener('pointerdown', e => {
+  if (!L.down) return;
+  e.preventDefault();
+  try { cv.setPointerCapture(e.pointerId); } catch (_) { /* capture is optional */ }
+  L.down(Kit.pointer(cv, e), e);
+});
+cv.addEventListener('pointermove', e => { if (L.move) L.move(Kit.pointer(cv, e), e); });
+cv.addEventListener('pointerup', e => { if (L.up) L.up(Kit.pointer(cv, e), e); });
+cv.addEventListener('pointercancel', () => { if (L.cancel) L.cancel(); });
+addEventListener('keydown', e => {
+  if (!L.key || document.querySelector('.overlay')) return;
+  const tag = e.target.tagName;
+  if (tag === 'INPUT' && e.key.startsWith('Arrow')) return;                              // the slider moves itself
+  if ((tag === 'BUTTON' || tag === 'A') && (e.key === ' ' || e.key === 'Enter')) return;  // the focused control clicks itself
+  L.key(e);
+});
+addEventListener('resize', setupCanvas);
+
+let lastT = performance.now();
+function frame(now) {
+  const dt = Math.min(0.05, Math.max(0, (now - lastT) / 1000));
+  lastT = now; T += dt;
+  tick(dt);
+  if (L.update) L.update(dt);
+  L.draw(); hudUpdate();
+  requestAnimationFrame(frame);
+}
+
+/* ================= ?test: checks of the core math, in the console only ================= */
+function selfTest() {
+  const bad = [], near = (a, b, tol) => Math.abs(a - b) <= tol, last = a => a[a.length - 1];
+  const check = (ok, what) => { console.assert(ok, what); if (!ok) bad.push(what); };
+  check(near(ssr(0, FIXED_SLOPE), 3.156, 0.001), 'SSR at intercept 0 is 3.16 (the note rounds to 3.1)');
+  check(near(V1.df(0), -5.704, 1e-9), 'tilt at intercept 0 is -5.7');
+  for (const [b, m] of [[0, 1], [0.3, 0.2], [1.2, 0.9]]) {
+    const [gb, gm] = grad(b, m), e = 1e-6;
+    check(near(gb, (ssr(b + e, m) - ssr(b - e, m)) / (2 * e), 1e-5) && near(gm, (ssr(b, m + e) - ssr(b, m - e)) / (2 * e), 1e-5), `gradient matches finite differences at (${b}, ${m})`);
+  }
+  for (const x of [-1, 0, 0.64, 1.6, 2.9, 4]) check(near(dBumpy(x), (bumpy(x + 1e-6) - bumpy(x - 1e-6)) / 2e-6, 1e-5), `bumpy slope matches finite differences at ${x}`);
+  const r1 = descend1(V1.df, 0, 0.1, 1000, -1e9, 1e9);
+  check(r1.end === 'done' && near(last(r1.xs), 0.95, 0.01), '1D: rate 0.1 from 0 reaches 0.95');
+  check(near(r1.xs[1], 0.57, 0.005) && near(r1.xs[2], 0.80, 0.005), '1D: first steps land at 0.57 and 0.80, as in the note');
+  const r2 = descend2(0, 1, 0.01, 2000, [-1e9, 1e9, -1e9, 1e9]), [eb, em] = last(r2.pts);
+  check(r2.end === 'done' && near(eb, 0.95, 0.01) && near(em, 0.64, 0.01), '2D: rate 0.01 from (0, 1) reaches (0.95, 0.64) within 2000 steps');
+  check(descend2(0, 1, 0.07, 2000, R4.box).end === 'out', '2D: rate 0.07 diverges');
+  check(near(HESS.eig[0], 32.76, 0.01) && near(HESS.eig[1], 1.143, 0.001), 'Hessian eigenvalues are 32.8 and 1.14');
+  check(near(HESS.best[0], 0.9487, 1e-3) && near(HESS.best[1], 0.641, 1e-3), 'least squares intercept and slope');
+  check(near(BOTTOM, 0.9507, 1e-3), 'bottom of the intercept-only valley');
+  const [deep, shallow] = PITS, from = x => descend1(dBumpy, x, R3.lr, R3.max, V3.lo, V3.hi);
+  check(PITS.length === 2 && bumpy(deep) < bumpy(shallow) - 1, 'level 3 has two pits, one clearly deeper');
+  check(from(0).end === 'done' && near(last(from(0).xs), shallow, 0.01), 'level 3: the usual start rolls into the shallow pit');
+  check(near(last(from(3.8).xs), deep, 0.01), 'level 3: a far drop rolls into the deep pit');
+  check(run2At(0).end === 'night' && run2At(1000).end === 'out', 'level 2: both slider ends fail (too slow, too big)');
+  check(best2().best <= R2.stars[0] && best4().best <= R4.stars[0], 'three stars are reachable on levels 2 and 4');
+  check(run4At(tickOf(0.062, R4.lo, R4.hi)).end !== 'done', 'level 4: a rate just above 2/λ1 never settles');
+  if (bad.length) console.error('SELF-TEST FAILED', bad); else console.log('SELF-TEST PASSED');
+}
+
+if (document.fonts) ['600 20px Fredoka', '700 20px Nunito', '700 20px Caveat', '500 20px "JetBrains Mono"'].forEach(f => document.fonts.load(f).catch(() => {}));
+setupCanvas();
+const saved = Kit.load(SLUG).stars, firstOpen = LEVELS.findIndex((_, i) => !saved[i]);
+startLevel(firstOpen < 0 ? 0 : firstOpen);
+requestAnimationFrame(frame);
+if (new URLSearchParams(location.search).has('test')) selfTest();
+</script>
+</body>
+</html>

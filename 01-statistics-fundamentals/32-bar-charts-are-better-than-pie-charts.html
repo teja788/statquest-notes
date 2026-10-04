@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bar Charts Are Better than Pie Charts — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>32</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 32 · 1.8 min</div>
+    <h1>Bar Charts Are Better than Pie Charts</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=RiEZ_hEf96A" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Josh takes the same numbers and draws them two ways. He shows why a bar chart answers questions that a pie chart hides.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>A pie chart cuts a circle into slices, one slice per category. A bar chart draws one bar per category on a shared baseline. Our eyes read bar heights well and slice angles badly. Josh shows one person's day, then two people's days, and the pie chart fails both times. His advice is simple: when you plan a pie chart, draw a bar chart instead.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Both charts hold the same numbers. The difference is the work your eye has to do. In a pie chart you compare wedges that point in different directions. Two slices that differ by a real amount can still look the same size. In a bar chart every bar starts on one baseline, so you compare heights on a single scale and a small gap stays visible.</p>
+    <p>Josh's first example is Herman's day. Herman sleeps, works, eats and rests. In the pie chart, sleeping and working look about equal. In the bar chart you see at once that Herman works one hour more than he sleeps. Resting beats eating by one hour too, and that is just as obvious.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="The same day drawn as a pie chart and as a bar chart, with the one hour gaps marked on the bars">
+        <defs>
+          <marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" class="sv-ink"></path>
+          </marker>
+        </defs>
+
+        <text x="130" y="30" text-anchor="middle" class="sv-tb">Pie chart</text>
+        <text x="530" y="30" text-anchor="middle" class="sv-tb">Bar chart</text>
+
+        <path d="M130,150 L130,65 A85,85 0 0,1 203.6,192.5 Z" class="sv-acc"></path>
+        <path d="M130,150 L203.6,192.5 A85,85 0 0,1 47.9,172.0 Z" class="sv-key"></path>
+        <path d="M130,150 L47.9,172.0 A85,85 0 0,1 56.4,107.5 Z" class="sv-good"></path>
+        <path d="M130,150 L56.4,107.5 A85,85 0 0,1 130,65 Z" class="sv-warn"></path>
+
+        <rect x="145" y="115" width="64" height="18" rx="4" class="sv-paper"></rect>
+        <text x="177" y="128" text-anchor="middle" class="sv-ts">Sleep 8 h</text>
+        <rect x="92" y="192" width="64" height="18" rx="4" class="sv-paper"></rect>
+        <text x="124" y="205" text-anchor="middle" class="sv-ts">Work 9 h</text>
+        <rect x="46" y="134" width="58" height="18" rx="4" class="sv-paper"></rect>
+        <text x="75" y="147" text-anchor="middle" class="sv-ts">Eat 3 h</text>
+        <rect x="74" y="97" width="60" height="18" rx="4" class="sv-paper"></rect>
+        <text x="104" y="110" text-anchor="middle" class="sv-ts">Rest 4 h</text>
+
+        <line x1="248" y1="150" x2="368" y2="150" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ar1)"></line>
+        <text x="308" y="142" text-anchor="middle" class="sv-ts">same numbers</text>
+
+        <rect x="400" y="114" width="52" height="136" class="sv-acc"></rect>
+        <rect x="472" y="97" width="52" height="153" class="sv-key"></rect>
+        <rect x="544" y="199" width="52" height="51" class="sv-good"></rect>
+        <rect x="616" y="182" width="52" height="68" class="sv-warn"></rect>
+        <line x1="385" y1="250" x2="700" y2="250" class="sv-stroke-ink" stroke-width="1.5"></line>
+
+        <text x="426" y="268" text-anchor="middle" class="sv-ts">Sleep</text>
+        <text x="498" y="268" text-anchor="middle" class="sv-ts">Work</text>
+        <text x="570" y="268" text-anchor="middle" class="sv-ts">Eat</text>
+        <text x="642" y="268" text-anchor="middle" class="sv-ts">Rest</text>
+
+        <line x1="400" y1="114" x2="548" y2="114" class="sv-stroke-ink" stroke-width="1" stroke-dasharray="4 4"></line>
+        <text x="556" y="110" class="sv-tm">+1 h work</text>
+        <line x1="544" y1="199" x2="678" y2="199" class="sv-stroke-ink" stroke-width="1" stroke-dasharray="4 4"></line>
+        <text x="642" y="176" text-anchor="middle" class="sv-tm">+1 h rest</text>
+      </svg>
+      <figcaption>Notice the pie: the sleep and work slices look almost the same. On the bars, the same one-hour gaps are plain steps in height.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>List the categories you want to compare. Josh uses four parts of Herman's day: sleep, work, eat and rest.</li>
+      <li>Put the categories on one axis and the amount on the other. Every bar then shares the same baseline and the same scale.</li>
+      <li>Read the differences straight off the chart. A one-hour gap is a clear step in height, not a small change in angle.</li>
+      <li>For a second person, add a second bar beside each first bar. Two heights side by side are far easier to compare than two circles.</li>
+    </ol>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <p>This video has no formula. The useful rule of thumb is about how we read pictures: we judge position on a common scale accurately, and we judge angle and area poorly. So put whatever you want compared on a shared baseline. A pie chart also forces the parts to add up to one whole, while a bar chart has no such rule.</p>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh then puts Herman next to Earl. With two pie charts he asks one simple question: does Earl work more than Herman, and if so, how much more? Two circles make that surprisingly hard. The bar chart answers it in seconds. Herman sleeps about 30 minutes longer than Earl. Herman works about 40 minutes longer. Earl eats one hour longer, and Earl rests one hour longer. Four answers, all read off the same picture.</p>
+    </div>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Bar chart of the four differences between Herman and Earl per day">
+        <text x="380" y="28" text-anchor="middle" class="sv-tb">How much more, per day?</text>
+        <text x="390" y="58" text-anchor="end" class="sv-ts">Earl more</text>
+        <text x="410" y="58" class="sv-ts">Herman more</text>
+
+        <line x1="280" y1="70" x2="280" y2="240" class="sv-line" stroke-width="1" stroke-dasharray="4 4"></line>
+        <line x1="520" y1="70" x2="520" y2="240" class="sv-line" stroke-width="1" stroke-dasharray="4 4"></line>
+
+        <rect x="400" y="82" width="60" height="26" class="sv-acc"></rect>
+        <rect x="400" y="126" width="80" height="26" class="sv-key"></rect>
+        <rect x="280" y="170" width="120" height="26" class="sv-good"></rect>
+        <rect x="280" y="214" width="120" height="26" class="sv-warn"></rect>
+
+        <line x1="400" y1="70" x2="400" y2="248" class="sv-stroke-ink" stroke-width="1.5"></line>
+        <text x="400" y="266" text-anchor="middle" class="sv-ts">0</text>
+        <text x="280" y="266" text-anchor="middle" class="sv-ts">1 h</text>
+        <text x="520" y="266" text-anchor="middle" class="sv-ts">1 h</text>
+
+        <text x="150" y="101" text-anchor="end" class="sv-t">Sleep</text>
+        <text x="150" y="145" text-anchor="end" class="sv-t">Work</text>
+        <text x="150" y="189" text-anchor="end" class="sv-t">Eat</text>
+        <text x="150" y="233" text-anchor="end" class="sv-t">Rest</text>
+
+        <text x="468" y="101" class="sv-tm">30 min</text>
+        <text x="488" y="145" class="sv-tm">40 min</text>
+        <text x="272" y="189" text-anchor="end" class="sv-tm">1 h</text>
+        <text x="272" y="233" text-anchor="end" class="sv-tm">1 h</text>
+      </svg>
+      <figcaption>These are the four comparisons Josh reads off the bars; the two pie charts left the same question open.</figcaption>
+    </figure>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> A pie chart is not always wrong. It can work when you only need a rough sense of one big slice against the rest. It fails as soon as the slices are close in size.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Two pie charts side by side are the worst case. Your eye must compare angles across two circles, so real differences vanish. One bar chart with paired bars solves it.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Pie charts also cost space. As Josh says, a bar chart saves space and still leaves room for clear labels and values.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>Why do you prefer bar charts to pie charts?</summary><div class="a">Because a bar chart puts every value on one shared baseline. We compare lengths on a common scale well, and angles poorly. In a pie chart two categories that differ by a full hour can look identical. On bars that hour is a visible step.</div></details>
+    <details class="qa" open><summary>Would you ever still use a pie chart?</summary><div class="a">Only when the question is rough and the parts are few, for example: is this slice about half of the total? If the differences are large and the audience expects a share-of-whole picture, a pie is readable. The moment someone asks how much more, I move to bars.</div></details>
+    <details class="qa" open><summary>How would you compare two groups across the same categories?</summary><div class="a">I would use one bar chart with the two groups side by side inside each category, on a shared scale. Then every comparison is a height difference the reader can see. I would avoid two separate pie charts, because comparing across circles hides the differences.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>A pie chart shows parts of a whole as slices of a circle.</li>
+      <li>A bar chart shows the same values as bars on one shared baseline.</li>
+      <li>People read lengths on a common scale much better than angles.</li>
+      <li>In Herman's day, the bars show the one-hour gaps that the pie hides.</li>
+      <li>With two people, two pie charts make the comparison very hard.</li>
+      <li>Paired bars answer four questions about Herman and Earl at a glance.</li>
+      <li>A bar chart also saves space, so plan bars where you were going to draw a pie.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Bars vs pies</span><span class="board-tag">planning a pie? draw bars instead</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 250" role="img" aria-label="Herman's day as a pie and as bars: the sleep and work slices look equal, but on one shared baseline the bars show work 1 h above sleep and rest 1 h above eat.">
+            <g class="sv-stroke-ink" stroke-width="2.5" stroke-linejoin="round">
+              <path d="M100 120 L100 42 A78 78 0 0 1 155.2 175.2 Z" class="sv-key"/>
+              <path d="M100 120 L155.2 175.2 A78 78 0 0 1 24.7 140.2 Z" class="sv-acc"/>
+              <path d="M100 120 L24.7 140.2 A78 78 0 0 1 44.8 64.8 Z" class="sv-warn"/>
+              <path d="M100 120 L44.8 64.8 A78 78 0 0 1 100 42 Z" class="sv-good"/>
+              <rect x="204" y="78" width="30" height="120" class="sv-acc"/>
+              <rect x="252" y="63" width="30" height="135" class="sv-key"/>
+              <rect x="300" y="153" width="30" height="45" class="sv-good"/>
+              <rect x="348" y="138" width="30" height="60" class="sv-warn"/>
+            </g>
+            <line x1="194" y1="198" x2="388" y2="198" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round"/>
+            <line x1="234" y1="78" x2="282" y2="78" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="4 4"/>
+            <line x1="330" y1="153" x2="378" y2="153" class="sv-stroke-ink" stroke-width="2" stroke-dasharray="4 4"/>
+            <text x="267" y="52" text-anchor="middle" class="sv-tb">+1 h</text>
+            <text x="363" y="127" text-anchor="middle" class="sv-tb">+1 h</text>
+            <text x="219" y="222" text-anchor="middle" class="sv-ts">sleep</text>
+            <text x="267" y="222" text-anchor="middle" class="sv-ts">work</text>
+            <text x="315" y="222" text-anchor="middle" class="sv-ts">eat</text>
+            <text x="363" y="222" text-anchor="middle" class="sv-ts">rest</text>
+            <text x="100" y="230" text-anchor="middle" class="sv-t">slices look equal</text>
+          </svg>
+          <p>Same numbers, two pictures. As slices, Herman's 8 h of sleep and 9 h of work look about equal. On one shared baseline, every 1 h gap is a plain step in height.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Pie chart</dt><dd>A circle cut into slices, one per category: parts of one whole.</dd>
+            <dt>Bar chart</dt><dd>One bar per category, every bar on one shared baseline.</dd>
+            <dt>Shared baseline</dt><dd>All bars start on the same line, so heights compare on one scale.</dd>
+            <dt>Paired bars</dt><dd>Two groups side by side inside each category, on a shared scale.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>List categories</b>sleep, work, eat, rest</li>
+            <li><b>Set the axes</b>categories one way, amounts the other</li>
+            <li><b>Read the gaps</b>1 h is a clear step</li>
+            <li><b>Pair the bars</b>second person beside each first bar</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          <p><b>We judge position on a common scale well and angle and area poorly, so put what you compare on a shared baseline.</b></p>
+          <ul class="keys">
+            <li>A pie also forces the parts to add up to one whole; a bar chart has no such rule.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>part</th><th>longer for</th><th>by</th></tr>
+            <tr><td>sleep</td><td>Herman</td><td>≈ 30 min</td></tr>
+            <tr><td>eat</td><td>Earl</td><td>1 h</td></tr>
+            <tr><td>rest</td><td>Earl</td><td>1 h</td></tr>
+            <tr class="final"><td>work</td><td>Herman</td><td>≈ 40 min</td></tr>
+          </table>
+          <p class="hand">Josh asked if Earl works more: no, Herman works about 40 minutes longer. One bar chart answers all four.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Pie charts are always wrong.</span><span class="yes">Fine for a rough look at one big slice; it fails when slices are close.</span></li>
+            <li><span class="no">Two pies side by side compare two people.</span><span class="yes">That is the worst case: angles across two circles hide real gaps. Use paired bars.</span></li>
+            <li><span class="no">A pie is the more compact choice.</span><span class="yes">Bars save space and still leave room for clear labels and values.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="31-using-bootstrapping-to-calculate-p-values.html"><small>Previous</small>Using Bootstrapping to Calculate p-values</a> <a href="33-boxplots-are-awesome.html"><small>Next</small>Boxplots are Awesome</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

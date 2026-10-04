@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Principal Component Analysis (PCA), Step-by-Step — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>30</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 30 · 22 min</div>
+    <h1>Principal Component Analysis (PCA), Step-by-Step</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=FgakZw6K1QQ" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: —</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">PCA turns a table with many variables into one simple two-dimensional picture. Josh builds that picture one step at a time, using singular value decomposition (SVD).</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Josh measures genes in six mice. With two genes you can draw an X-Y plot, but with four genes you can draw nothing. PCA first moves the centre of the data onto the origin. It then finds the line through the origin that the data spreads along the most, and calls it PC1. The next line, perpendicular to PC1, is PC2. Plotting each sample on PC1 and PC2 gives a flat map where similar samples sit close together.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh measures the activity of Gene 1 and Gene 2 in six mice. If you dislike mice, read "mice" as samples and "genes" as the variables you measure for each sample. One gene fits on a number line. Two genes fit on an X-Y plot. Three genes need a 3D plot, and four genes cannot be drawn at all.</p>
+    <p>PCA gives you a way out. It builds new axes from mixtures of the old ones, then draws the data on the best two. It also tells you which gene drives the spread, and how good the flat picture really is.</p>
+    <p>The work starts with centring. You calculate the average of each gene. Together the averages give the centre of the data. You then slide the whole cloud so the centre sits on the origin. Sliding does not change how the points sit relative to each other.</p>
+    <p>Now you fit a line through the origin. Start with a random line and rotate it until it fits the data as well as possible. That best line is <strong>Principal Component 1</strong>, or PC1. Here PC1 has a slope of 0.25. For every 4 units along Gene 1, it rises 1 unit along Gene 2. So the data spread out mostly along Gene 1.</p>
+    <p>Josh calls that ratio a cocktail recipe: mix 4 parts Gene 1 with 1 part Gene 2. Mathematicians call the same thing a <strong>linear combination</strong> of the variables. Because this graph has only two dimensions, PC2 needs no search. It is simply the line through the origin that is perpendicular to PC1.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 380" role="img" aria-label="Six centred data points with PC1 and PC2 drawn through the origin, and each point projected onto PC1">
+        <defs>
+          <marker id="arInk" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" class="sv-ink"></path>
+          </marker>
+        </defs>
+        <line x1="90" y1="190" x2="690" y2="190" class="sv-stroke-ink" stroke-width="1.2" marker-end="url(#arInk)"></line>
+        <line x1="380" y1="345" x2="380" y2="35" class="sv-stroke-ink" stroke-width="1.2" marker-end="url(#arInk)"></line>
+        <text x="700" y="195" class="sv-ts">Gene 1</text>
+        <text x="388" y="30" class="sv-ts">Gene 2</text>
+
+        <line x1="130" y1="252" x2="660" y2="120" class="sv-stroke-key" stroke-width="2.5"></line>
+        <line x1="347" y1="58" x2="413" y2="322" class="sv-stroke-acc" stroke-width="2" stroke-dasharray="7 5"></line>
+
+        <line x1="628" y1="113" x2="631" y2="127" class="sv-stroke-acc" stroke-width="1.4" stroke-dasharray="3 3"></line>
+        <line x1="556" y1="157" x2="553" y2="147" class="sv-stroke-acc" stroke-width="1.4" stroke-dasharray="3 3"></line>
+        <line x1="490" y1="130" x2="498" y2="161" class="sv-stroke-acc" stroke-width="1.4" stroke-dasharray="3 3"></line>
+        <line x1="259" y1="212" x2="261" y2="220" class="sv-stroke-acc" stroke-width="1.4" stroke-dasharray="3 3"></line>
+        <line x1="193" y1="256" x2="189" y2="238" class="sv-stroke-acc" stroke-width="1.4" stroke-dasharray="3 3"></line>
+        <line x1="155" y1="273" x2="149" y2="248" class="sv-stroke-acc" stroke-width="1.4" stroke-dasharray="3 3"></line>
+
+        <circle cx="631" cy="127" r="4" class="sv-key"></circle>
+        <circle cx="553" cy="147" r="4" class="sv-key"></circle>
+        <circle cx="498" cy="161" r="4" class="sv-key"></circle>
+        <circle cx="261" cy="220" r="4" class="sv-key"></circle>
+        <circle cx="189" cy="238" r="4" class="sv-key"></circle>
+        <circle cx="149" cy="248" r="4" class="sv-key"></circle>
+
+        <circle cx="628" cy="113" r="6" class="sv-ink"></circle>
+        <circle cx="556" cy="157" r="6" class="sv-ink"></circle>
+        <circle cx="490" cy="130" r="6" class="sv-ink"></circle>
+        <circle cx="259" cy="212" r="6" class="sv-ink"></circle>
+        <circle cx="193" cy="256" r="6" class="sv-ink"></circle>
+        <circle cx="155" cy="273" r="6" class="sv-ink"></circle>
+
+        <text x="640" y="107" class="sv-ts">1</text>
+        <text x="566" y="151" class="sv-ts">2</text>
+        <text x="500" y="122" class="sv-ts">3</text>
+        <text x="247" y="206" class="sv-ts" text-anchor="end">4</text>
+        <text x="181" y="250" class="sv-ts" text-anchor="end">5</text>
+        <text x="143" y="267" class="sv-ts" text-anchor="end">6</text>
+
+        <rect x="586" y="74" width="46" height="20" rx="4" class="sv-paper"></rect>
+        <text x="592" y="89" class="sv-tb">PC1</text>
+        <rect x="298" y="40" width="46" height="20" rx="4" class="sv-paper"></rect>
+        <text x="340" y="55" class="sv-tb" text-anchor="end">PC2</text>
+      </svg>
+      <figcaption>The data are centred on the origin. Notice that PC1 (solid) follows the long direction of the cloud, PC2 (dashed) is perpendicular to it, and every dark point drops onto PC1 at a right angle to give an orange projected point.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <p>First, look at how PCA scores a candidate line. Take one point. Its distance to the origin is fixed while the line rotates. Project the point onto the line and you get a right angle. Label the three sides \(a\), \(b\) and \(c\). Because \(a\) is fixed, a bigger \(c\) forces a smaller \(b\). So minimising the distance to the line and maximising the distance to the origin are the same job. PCA maximises \(c\) because it is easier to calculate.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Two panels showing the same point projected onto a poorly fitting line and a better fitting line">
+        <text x="60" y="34" class="sv-tb">Poor fit</text>
+        <text x="420" y="34" class="sv-tb">Better fit</text>
+
+        <line x1="106" y1="276" x2="188" y2="52" class="sv-stroke-key" stroke-width="2.5"></line>
+        <line x1="120" y1="240" x2="274" y2="168" class="sv-stroke-ink" stroke-width="1.4" stroke-dasharray="4 4"></line>
+        <line x1="274" y1="168" x2="161" y2="127" class="sv-stroke-ink" stroke-width="1.4" stroke-dasharray="4 4"></line>
+        <line x1="120" y1="240" x2="161" y2="127" class="sv-stroke-good" stroke-width="3"></line>
+        <path d="M161,127 L163.7,119.5 L171.2,122.2 L168.5,129.7 Z" class="sv-paper" stroke-width="0"></path>
+        <path d="M161,127 L163.7,119.5 L171.2,122.2 L168.5,129.7" class="sv-stroke-ink" stroke-width="1"></path>
+        <circle cx="120" cy="240" r="4" class="sv-ink3"></circle>
+        <circle cx="274" cy="168" r="6" class="sv-ink"></circle>
+        <circle cx="161" cy="127" r="5" class="sv-key"></circle>
+        <text x="197" y="222" class="sv-t">a</text>
+        <text x="228" y="146" class="sv-t">b</text>
+        <text x="120" y="188" class="sv-t" text-anchor="end">c</text>
+
+        <line x1="445" y1="269" x2="633" y2="111" class="sv-stroke-key" stroke-width="2.5"></line>
+        <line x1="480" y1="240" x2="634" y2="168" class="sv-stroke-ink" stroke-width="1.4" stroke-dasharray="4 4"></line>
+        <line x1="634" y1="168" x2="606" y2="134" class="sv-stroke-ink" stroke-width="1.4" stroke-dasharray="4 4"></line>
+        <line x1="480" y1="240" x2="606" y2="134" class="sv-stroke-good" stroke-width="3"></line>
+        <path d="M606,134 L612.1,128.9 L617.2,135.1 L611.1,140.2 Z" class="sv-paper" stroke-width="0"></path>
+        <path d="M606,134 L612.1,128.9 L617.2,135.1 L611.1,140.2" class="sv-stroke-ink" stroke-width="1"></path>
+        <circle cx="480" cy="240" r="4" class="sv-ink3"></circle>
+        <circle cx="634" cy="168" r="6" class="sv-ink"></circle>
+        <circle cx="606" cy="134" r="5" class="sv-key"></circle>
+        <text x="557" y="222" class="sv-t">a</text>
+        <text x="644" y="150" class="sv-t">b</text>
+        <text x="528" y="192" class="sv-t" text-anchor="end">c</text>
+      </svg>
+      <figcaption>The dark point and the length \(a\) never move. As the orange line turns towards the point, the green side \(c\) grows and the dashed side \(b\) shrinks by exactly the same rule.</figcaption>
+    </figure>
+
+    <ol class="steps">
+      <li>Centre the data, then shift the cloud so the centre lands on the origin.</li>
+      <li>Draw a random line through the origin. Project every point onto it at a right angle.</li>
+      <li>Score the line. Measure each projected point's distance to the origin, square the six values, and add them up. This is SS(distances).</li>
+      <li>Rotate and repeat. Keep the line with the largest SS(distances). That winning line is PC1.</li>
+      <li>Read the recipe off PC1. Here it goes 4 across and 1 up, so PC1 is 4 parts Gene 1 and 1 part Gene 2.</li>
+      <li>Scale that recipe to one unit long. The result is the eigenvector, and its two numbers are the loading scores.</li>
+      <li>Find PC2, the perpendicular line through the origin. Its recipe is −1 part Gene 1 to 4 parts Gene 2.</li>
+      <li>Turn the sums of squares into variation. A PC's eigenvalue is the average of its squared distances.</li>
+      <li>Draw the plot. Rotate so PC1 is horizontal, then place each sample at its projected positions.</li>
+      <li>With more genes, keep adding perpendicular PCs. Their number is the count of variables or samples, whichever is smaller.</li>
+    </ol>
+
+    <p>The eigenvalues let you check the picture before you trust it. A <strong>scree plot</strong> shows the percentage of variation each PC accounts for. In Josh's three-gene example PC1 takes 79%, PC2 takes 15% and PC3 takes 6%.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 280" role="img" aria-label="Scree plot with bars of 79 percent, 15 percent and 6 percent for PC1, PC2 and PC3">
+        <line x1="100" y1="220" x2="700" y2="220" class="sv-stroke-ink" stroke-width="1.2"></line>
+        <line x1="100" y1="220" x2="100" y2="45" class="sv-stroke-ink" stroke-width="1.2"></line>
+        <text x="40" y="130" class="sv-ts" text-anchor="middle" transform="rotate(-90 40 130)">% of variation</text>
+
+        <rect x="180" y="94" width="90" height="126" class="sv-acc"></rect>
+        <rect x="340" y="196" width="90" height="24" class="sv-acc-soft" stroke-width="1"></rect>
+        <rect x="340" y="196" width="90" height="24" class="sv-stroke-acc" stroke-width="1"></rect>
+        <rect x="500" y="210" width="90" height="10" class="sv-acc-soft" stroke-width="1"></rect>
+        <rect x="500" y="210" width="90" height="10" class="sv-stroke-acc" stroke-width="1"></rect>
+
+        <text x="225" y="86" class="sv-tb" text-anchor="middle">79%</text>
+        <text x="385" y="188" class="sv-tb" text-anchor="middle">15%</text>
+        <text x="545" y="202" class="sv-tb" text-anchor="middle">6%</text>
+        <text x="225" y="242" class="sv-t" text-anchor="middle">PC1</text>
+        <text x="385" y="242" class="sv-t" text-anchor="middle">PC2</text>
+        <text x="545" y="242" class="sv-t" text-anchor="middle">PC3</text>
+        <rect x="576" y="96" width="152" height="24" rx="4" class="sv-paper2"></rect>
+        <text x="588" y="112" class="sv-tm">PC1 + PC2 = 94%</text>
+      </svg>
+      <figcaption>PC1 and PC2 together hold 94% of the variation, so a flat plot built from those two axes is a good stand-in for the full 3D picture.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Score for a candidate line</span><div class="math">$$ \text{SS(distances)} = d_1^2 + d_2^2 + \cdots + d_n^2 $$</div><p class="explain"><b>Symbols:</b> \(d_i\) is the distance from the \(i\)-th projected point to the origin. \(n\) is the number of samples, here 6. Squaring stops negative distances from cancelling positive ones. <b>What it tells you:</b> how far the data spread along that line. PCA keeps the line with the largest value, and that line is PC1.</p></div>
+
+    <div class="formula"><span class="lbl">Why maximising works</span><div class="math">$$ a^2 = b^2 + c^2 $$</div><p class="explain"><b>Symbols:</b> \(a\) is the fixed distance from a data point to the origin. \(b\) is the distance from the point to the line. \(c\) is the distance from the projected point to the origin. <b>What it tells you:</b> since \(a\) never changes, \(b\) and \(c\) move in opposite directions. Minimising \(b\) and maximising \(c\) give the same best line.</p></div>
+
+    <div class="formula"><span class="lbl">Scaling the recipe to a unit vector</span><div class="math">$$ a = \sqrt{4^2 + 1^2} = 4.12 $$</div><div class="math">$$ \left(\tfrac{4}{4.12},\ \tfrac{1}{4.12}\right) = (0.97,\ 0.242) $$</div><p class="explain"><b>Symbols:</b> 4 and 1 are the steps along Gene 1 and Gene 2 that trace PC1. \(a\) is the length of that arrow. Dividing both steps by 4.12 makes the arrow exactly one unit long. <b>What it tells you:</b> the ratio is unchanged, so PC1 still uses four times more Gene 1 than Gene 2. The pair \((0.97, 0.242)\) is the eigenvector for PC1, and the two numbers are its loading scores.</p></div>
+
+    <div class="formula"><span class="lbl">Eigenvalue and singular value</span><div class="math">$$ \lambda = \frac{\text{SS(distances)}}{n-1} \qquad s = \sqrt{\text{SS(distances)}} $$</div><p class="explain"><b>Symbols:</b> \(\lambda\) is the eigenvalue of the PC, the average of its squared distances. \(s\) is its singular value. \(n\) is the number of samples. <b>What it tells you:</b> that average is exactly the usual formula for variation, so an eigenvalue is simply the amount of variation captured by one PC.</p></div>
+
+    <div class="formula"><span class="lbl">Share of variation per PC</span><div class="math">$$ \text{share of PC}_i = \frac{\lambda_i}{\lambda_1 + \lambda_2 + \cdots + \lambda_k} $$</div><p class="explain"><b>Symbols:</b> \(\lambda_i\) is the eigenvalue of the PC you care about. \(k\) is the total number of PCs. <b>What it tells you:</b> the fraction of the total spread that this one axis explains. These fractions are the bars of the scree plot.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Two genes are measured in six mice. After centring, the best fitting line through the origin has a slope of 0.25. So PC1 goes 4 units along Gene 1 for every 1 unit along Gene 2, and its recipe is 4 parts Gene 1 to 1 part Gene 2.</p>
+      <p>The length of that arrow is \(\sqrt{4^2+1^2}=4.12\). Dividing each side by 4.12 gives \(4/4.12 = 0.97\) and \(1/4.12 = 0.242\). The eigenvector for PC1 is therefore \((0.97,\ 0.242)\), and those are the loading scores.</p>
+      <p>PC2 is perpendicular, so its recipe is −1 part Gene 1 to 4 parts Gene 2. Scaled the same way it becomes \((-0.242,\ 0.97)\). On PC2, Gene 2 counts four times as much as Gene 1.</p>
+      <p>Now suppose the variation is 15 for PC1 and 3 for PC2. The total is \(15+3=18\). PC1 holds \(15/18 = 0.83\), or 83%. PC2 holds \(3/18\), or 17%.</p>
+      <p>In the three-gene example the shares are 79%, 15% and 6%. PC1 and PC2 together give 94%, so a flat plot of them summarises the 3D graph well. With four genes the first two PCs hold 90%.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span>Every principal component must pass through the origin. That only makes sense after you have centred the data on the origin. Skip the centring step and the first component will chase the mean instead of the spread.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span>People describe PCA in two ways: it minimises the distance from points to the line, or it maximises the spread of the projected points. Both describe the same line. The Pythagorean link between \(b\) and \(c\) is the reason.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span>The number of principal components is not always the number of variables. In practice it is the smaller of the number of variables and the number of samples.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span>Do not trust a 2D PCA plot before you check the scree plot. If PC3 and PC4 also hold a lot of variation, the flat picture is only rough. It can still show clusters.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>What does PCA actually do?</summary><div class="a">PCA finds new axes that are mixtures of the original variables. The first axis is the direction along which the data spread the most, and each later axis is perpendicular to all the earlier ones. You then plot the samples on the first two axes. That gives a readable picture of data with far too many dimensions to draw.</div></details>
+
+    <details class="qa" open><summary>How does PCA decide that one line fits better than another?</summary><div class="a">It projects every point onto the line and measures how far each projected point sits from the origin. It squares those distances and adds them up, and the largest sum wins. That is also the line closest to the points, because the two distances are the short sides of a right triangle with a fixed hypotenuse.</div></details>
+
+    <details class="qa" open><summary>What are loading scores, eigenvalues and singular values?</summary><div class="a">Loading scores are the recipe for a principal component, scaled so the direction vector has length one. They say how much each original variable contributes to that component. The eigenvalue is the average of the squared projected distances, so it is the variation captured by the component. The singular value is just the square root of the sum of those squared distances.</div></details>
+
+    <details class="qa" open><summary>How do you know if a 2D PCA plot is trustworthy?</summary><div class="a">I look at the scree plot, which shows the percentage of variation each component accounts for. If PC1 and PC2 together cover most of the variation, say 90% or more, the flat plot is a fair summary. If the later components still hold a lot, the plot is only approximate. I would still check it for clusters, because they often survive.</div></details>
+
+    <details class="qa" open><summary>Which variable matters most, and how does PCA tell you?</summary><div class="a">You read the loading scores of the component you care about. The variable with the largest absolute loading drives that axis. In the two-gene example PC1 is 0.97 Gene 1 and 0.242 Gene 2, so Gene 1 drives the spread.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>PCA compresses data with many variables into a plot you can read.</li>
+      <li>You first move the centre of the data onto the origin.</li>
+      <li>PC1 is the line through the origin with the largest sum of squared projected distances.</li>
+      <li>Maximising that sum is the same as minimising the distance from the points to the line.</li>
+      <li>The slope of PC1 gives a recipe, and scaling it to unit length gives the loading scores.</li>
+      <li>PC2 is perpendicular to PC1, and each later PC is perpendicular to all before it.</li>
+      <li>Eigenvalues are variations, so they give the percentage share of each PC in a scree plot.</li>
+      <li>If the first two PCs hold most of the variation, the 2D PCA plot is a good summary of the data.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Principal Component Analysis</span><span class="board-tag">centre it, spin a line, keep the widest</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 270" role="img" aria-label="Six points centred on the origin of a Gene 1 by Gene 2 plot. PC1 runs through the origin along the cloud, rising 1 for every 4 across, and each point drops onto it at a right angle. PC2 is the dashed line at right angles to PC1.">
+            <line x1="16" y1="150" x2="318" y2="150" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="140" y1="254" x2="140" y2="40" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <line x1="116.5" y1="56" x2="164" y2="246" class="sv-stroke-acc" stroke-width="3" stroke-dasharray="8 7" stroke-linecap="round"/>
+            <path d="M140 150 H300 V110" class="sv-stroke-good" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="22" y1="179.5" x2="330" y2="102.5" class="sv-stroke-key" stroke-width="4" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2" stroke-linecap="round">
+              <line x1="241.4" y1="102" x2="246.7" y2="123.3"/>
+              <line x1="193.4" y1="116.1" x2="198.2" y2="135.5"/>
+              <line x1="179.3" y1="162.9" x2="174" y2="141.5"/>
+              <line x1="96.4" y1="140.3" x2="101.2" y2="159.7"/>
+              <line x1="87.1" y1="185.9" x2="81.8" y2="164.6"/>
+              <line x1="43" y1="194.9" x2="38.1" y2="175.5"/>
+            </g>
+            <circle cx="241.4" cy="102" r="5.5" class="sv-ink"/>
+            <circle cx="193.4" cy="116.1" r="5.5" class="sv-ink"/>
+            <circle cx="179.3" cy="162.9" r="5.5" class="sv-ink"/>
+            <circle cx="96.4" cy="140.3" r="5.5" class="sv-ink"/>
+            <circle cx="87.1" cy="185.9" r="5.5" class="sv-ink"/>
+            <circle cx="43" cy="194.9" r="5.5" class="sv-ink"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="246.7" cy="123.3" r="4" class="sv-paper"/>
+              <circle cx="198.2" cy="135.5" r="4" class="sv-paper"/>
+              <circle cx="174" cy="141.5" r="4" class="sv-paper"/>
+              <circle cx="101.2" cy="159.7" r="4" class="sv-paper"/>
+              <circle cx="81.8" cy="164.6" r="4" class="sv-paper"/>
+              <circle cx="38.1" cy="175.5" r="4" class="sv-paper"/>
+            </g>
+            <text x="324" y="156" class="sv-ts">Gene 1</text>
+            <text x="140" y="30" text-anchor="middle" class="sv-ts">Gene 2</text>
+            <text x="338" y="108" class="sv-tb">PC1</text>
+            <text x="106" y="60" text-anchor="end" class="sv-tb">PC2</text>
+            <text x="220" y="174" text-anchor="middle" class="sv-tb">4</text>
+            <text x="308" y="137" class="sv-tb">1</text>
+            <text x="386" y="32" text-anchor="end" class="sv-t">PC1 = the line with</text>
+            <text x="386" y="58" text-anchor="end" class="sv-tb">largest SS(distances)</text>
+          </svg>
+          <p>Slide the data so its centre sits on the origin, then spin a line through it. The line whose projected points spread out most is PC1, here 4 along Gene 1 for every 1 up Gene 2.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Principal component</dt><dd>A new axis through the origin, made by mixing the genes.</dd>
+            <dt>Linear combination</dt><dd>That mix, here 4 parts Gene 1 to 1 part Gene 2.</dd>
+            <dt>Loading scores</dt><dd>The mix scaled to length one: 0.97 and 0.242 for PC1.</dd>
+            <dt>Eigenvalue</dt><dd>The variation one PC captures.</dd>
+            <dt>Scree plot</dt><dd>Bars of each PC's share of the variation.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Centre</b>move the centre onto the origin</li>
+            <li><b>Find PC1</b>rotate, keep the largest SS(distances)</li>
+            <li><b>Loading scores</b>divide 4 and 1 by 4.12</li>
+            <li><b>Add PC2</b>perpendicular, through the origin</li>
+            <li><b>Eigenvalues</b>variation per PC → scree plot</li>
+            <li><b>Draw the plot</b>turn PC1 flat, place samples</li>
+          </ol>
+          <p class="loop">↺ more genes: keep adding perpendicular PCs, as many as the variables or samples, whichever is smaller</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{SS(distances)}=d_1^2+d_2^2+\cdots+d_n^2$$
+          $$\lambda=\frac{\text{SS(distances)}}{n-1}$$
+          $$\text{share of PC}_i=\frac{\lambda_i}{\lambda_1+\lambda_2+\cdots+\lambda_k}$$
+          <ul class="keys">
+            <li>\(d_i\) is projected point \(i\)'s distance to the origin; \(n\) is the number of samples, here 6.</li>
+            <li>\(\lambda\) is a PC's eigenvalue, its variation; \(k\) is the number of PCs.</li>
+            <li>The shares are the bars of the scree plot.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>two genes</th><th>PC1</th><th>PC2</th></tr>
+            <tr><td>recipe</td><td>4 : 1</td><td>−1 : 4</td></tr>
+            <tr><td>÷ 4.12</td><td>0.97, 0.242</td><td>−0.242, 0.97</td></tr>
+            <tr><td>variation</td><td>15</td><td>3</td></tr>
+            <tr class="final"><td>share of 18</td><td>83%</td><td>17%</td></tr>
+          </table>
+          <p class="hand">Gene 1 drives PC1. With three genes, PC1 and PC2 hold 79% + 15% = 94%, so the flat plot works.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Centring is optional.</span><span class="yes">Every PC passes through the origin. Skip centring and PC1 chases the mean, not the spread.</span></li>
+            <li><span class="no">Closest line and widest spread differ.</span><span class="yes">Same line: by Pythagoras, more spread means less distance to the line.</span></li>
+            <li><span class="no">The 2D plot is always trustworthy.</span><span class="yes">Check the scree plot first. If PC3 and PC4 hold a lot, the picture is rough.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="29-ridge-lasso-and-elastic-net-regression-in-r.html"><small>Previous</small>Ridge, Lasso and Elastic-Net Regression in R</a> <a href="31-pca-main-ideas-in-only-5-minutes.html"><small>Next</small>PCA main ideas in only 5 minutes</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

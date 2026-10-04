@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reinforcement Learning with Neural Networks: Mathematical Details — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-nn">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Neural Networks / Deep Learning</a><span class="sep">/</span><span>24</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Neural Networks / Deep Learning · Video 24 · 25.0 min</div>
+    <h1>Reinforcement Learning with Neural Networks: Mathematical Details</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=DVGmsnxB2UQ" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+      <span>Also in: —</span>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">This video shows every mathematical step needed to train one bias in a neural network with policy gradients. The key idea is simple. Compute a derivative based on a guess. Then multiply it by a reward that tells you if the guess was right.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>A small network takes hunger as input and outputs the probability of going to Norm's Fry Hut instead of Squatch's Fry Shack. We pick a place at random using those probabilities and guess that this choice was correct. Cross entropy measures the gap, and the chain rule gives its derivative with respect to the bias. Then we order fries. The reward is +1 for a correct guess or −1 for a wrong one, and it multiplies the derivative. Gradient descent uses this updated derivative to move the bias, and the probabilities slowly shift toward the better choice.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>In normal backpropagation we know the correct answer before training. Here we do not. We cannot know in advance if Squatch or Norm will give us a large or a small order of fries. So we cannot train the network with standard backpropagation.</p>
+    <p>Policy gradients solve this with a guess. Whatever place we randomly chose, we pretend it was the right choice. That means the ideal probability for that place is 1. Cross entropy measures how far the network's probability is from that ideal. We take the derivative of the cross entropy with respect to the bias, exactly as in backpropagation.</p>
+    <p>The derivative points the right way only if the guess was correct. So after we get our fries, we multiply the derivative by a reward. A reward of +1 keeps the direction. A reward of −1 flips it and corrects the mistake. Only then do we take the gradient descent step.</p>
+    <figure class="info">
+      <svg viewBox="0 0 760 330" role="img" aria-label="Chain of derivatives from cross entropy back to the bias, then multiplied by the reward before the gradient descent step">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink2"/></marker>
+          <marker id="ahk" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-key"/></marker>
+        </defs>
+        <text x="24" y="33" class="sv-ts">Forward: hunger flows through the network to a probability and a cross entropy</text>
+        <rect x="24" y="40" width="146" height="48" rx="8" class="sv-acc-soft"/>
+        <text x="97" y="69" text-anchor="middle" class="sv-tb">bias b</text>
+        <rect x="208" y="40" width="146" height="48" rx="8" class="sv-paper2"/>
+        <text x="281" y="69" text-anchor="middle" class="sv-tm">x = hunger·w + b</text>
+        <rect x="392" y="40" width="146" height="48" rx="8" class="sv-paper2"/>
+        <text x="465" y="69" text-anchor="middle" class="sv-tm">P_Norm = σ(x)</text>
+        <rect x="576" y="40" width="146" height="48" rx="8" class="sv-paper2"/>
+        <text x="649" y="69" text-anchor="middle" class="sv-tm">CE = −log(P)</text>
+        <line x1="172" y1="64" x2="205" y2="64" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"/>
+        <line x1="356" y1="64" x2="389" y2="64" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"/>
+        <line x1="540" y1="64" x2="573" y2="64" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"/>
+
+        <rect x="479" y="128" width="156" height="36" rx="18" class="sv-key-soft"/>
+        <text x="557" y="151" text-anchor="middle" class="sv-tm">dCE/dP = 1/(1−P)</text>
+        <rect x="295" y="128" width="156" height="36" rx="18" class="sv-key-soft"/>
+        <text x="373" y="151" text-anchor="middle" class="sv-tm">dP/dx = P(1−P)</text>
+        <rect x="111" y="128" width="156" height="36" rx="18" class="sv-key-soft"/>
+        <text x="189" y="151" text-anchor="middle" class="sv-tm">dx/db = 1</text>
+        <line x1="477" y1="146" x2="454" y2="146" class="sv-stroke-key" stroke-width="1.5" marker-end="url(#ahk)"/>
+        <line x1="293" y1="146" x2="270" y2="146" class="sv-stroke-key" stroke-width="1.5" marker-end="url(#ahk)"/>
+        <text x="24" y="190" class="sv-ts">Backward: multiply the three links (chain rule), then let the reward fix the direction</text>
+
+        <rect x="24" y="210" width="146" height="60" rx="8" class="sv-paper2"/>
+        <text x="97" y="236" text-anchor="middle" class="sv-t">derivative</text>
+        <text x="97" y="257" text-anchor="middle" class="sv-tm">0.5</text>
+        <rect x="208" y="210" width="146" height="60" rx="8" class="sv-good-soft"/>
+        <text x="281" y="236" text-anchor="middle" class="sv-tb">× reward</text>
+        <text x="281" y="257" text-anchor="middle" class="sv-tm">+1 → 0.5</text>
+        <rect x="392" y="210" width="146" height="60" rx="8" class="sv-paper2"/>
+        <text x="465" y="236" text-anchor="middle" class="sv-t">× learning rate</text>
+        <text x="465" y="257" text-anchor="middle" class="sv-tm">1.0 → step 0.5</text>
+        <rect x="576" y="210" width="146" height="60" rx="8" class="sv-acc-soft"/>
+        <text x="649" y="236" text-anchor="middle" class="sv-t">new bias</text>
+        <text x="649" y="257" text-anchor="middle" class="sv-tm">0 − 0.5 = −0.5</text>
+        <line x1="150" y1="166" x2="105" y2="207" class="sv-stroke-key" stroke-width="1.5" marker-end="url(#ahk)"/>
+        <line x1="172" y1="240" x2="205" y2="240" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"/>
+        <line x1="356" y1="240" x2="389" y2="240" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"/>
+        <line x1="540" y1="240" x2="573" y2="240" class="sv-stroke-ink" stroke-width="1.5" marker-end="url(#ah)"/>
+        <text x="380" y="304" text-anchor="middle" class="sv-ts">Numbers are from round 1: hunger 0.0, went to Squatch, reward +1.</text>
+      </svg>
+      <figcaption>The reward multiplies the chain-rule derivative before gradient descent, so a wrong guess gets its direction flipped.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Run the input through the network. With hunger 0.0, the output is P<sub>Norm</sub> = 0.5, so P<sub>Squatch</sub> = 1 − 0.5 = 0.5.</li>
+      <li>Lay the two probabilities end to end on a line from 0 to 1. Pick a random number between 0 and 1. It lands on 0.2, which is in Squatch's region, so we go to Squatch.</li>
+      <li>Guess that going to Squatch was correct. Then the ideal P<sub>Squatch</sub> is 1.0. Use cross entropy to measure the gap between 1.0 and 0.5.</li>
+      <li>Use the chain rule to get the derivative of the cross entropy with respect to the bias. The chain rule multiplies the slopes of linked steps. Here there are three links: cross entropy to P<sub>Norm</sub>, P<sub>Norm</sub> to x, and x to the bias.</li>
+      <li>Plug in P<sub>Norm</sub> = 0.5 to get a derivative of 0.5. On its own, gradient descent would shift the bias to the left.</li>
+      <li>Order the fries. We get a small serving while not hungry, so the guess was correct and the reward is 1.0. Multiply the derivative by the reward.</li>
+      <li>Compute the step size (learning rate × updated derivative) and subtract it from the old bias.</li>
+      <li>Repeat with new random choices. Over many updates, using hunger values from 0 to 1, the bias starts to hover around −10. Then training is done.</li>
+    </ol>
+    <figure class="info">
+      <svg viewBox="0 0 760 250" role="img" aria-label="Probability lines for round 1 and round 2 with the random numbers that chose the restaurant">
+        <text x="60" y="38" class="sv-t">Round 1 (bias 0.0)</text>
+        <rect x="60" y="48" width="320" height="38" class="sv-acc-soft"/>
+        <rect x="380" y="48" width="320" height="38" class="sv-key-soft"/>
+        <text x="220" y="72" text-anchor="middle" class="sv-t">Squatch 0.5</text>
+        <text x="540" y="72" text-anchor="middle" class="sv-t">Norm 0.5</text>
+        <path d="M188,98 L181,110 L195,110 z" class="sv-ink"/>
+        <text x="188" y="126" text-anchor="middle" class="sv-tm">random 0.2</text>
+
+        <text x="60" y="152" class="sv-t">Round 2 (bias −0.5)</text>
+        <rect x="60" y="162" width="384" height="38" class="sv-acc-soft"/>
+        <rect x="444" y="162" width="256" height="38" class="sv-key-soft"/>
+        <text x="252" y="186" text-anchor="middle" class="sv-t">Squatch 0.6</text>
+        <text x="572" y="186" text-anchor="middle" class="sv-t">Norm 0.4</text>
+        <path d="M636,212 L629,224 L643,224 z" class="sv-ink"/>
+        <text x="650" y="223" class="sv-tm">random 0.9</text>
+      </svg>
+      <figcaption>After round 1 the Squatch region grows, yet the random number 0.9 still sends us to Norm in round 2.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+    <div class="formula"><span class="lbl">The network</span><div class="math">$$ x = \text{hunger}\cdot w + b, \qquad P_{Norm} = \sigma(x) = \frac{1}{1+e^{-x}}, \qquad P_{Squatch} = 1 - P_{Norm} $$</div><p class="explain"><b>Symbols:</b> \(\text{hunger}\) is the input (0 means not hungry); \(w\) is the weight; \(b\) is the bias we train; \(x\) is the x-axis input to the sigmoid; \(\sigma\) is the sigmoid activation function, which squashes any number to between 0 and 1; \(P_{Norm}\) and \(P_{Squatch}\) are the probabilities of going to each place. <b>What it tells you:</b> the bias shifts \(x\), which changes both probabilities.</p></div>
+
+    <div class="formula"><span class="lbl">Cross entropy for the place we visited</span><div class="math">$$ CE_{Squatch} = -\log(P_{Squatch}) = -\log(1 - P_{Norm}), \qquad CE_{Norm} = -\log(P_{Norm}) $$</div><p class="explain"><b>Symbols:</b> \(CE\) is cross entropy; \(\log\) is the natural log (base \(e\)). <b>What it tells you:</b> we use the cross entropy of whichever place we went to, because we guessed that place was correct.</p></div>
+
+    <div class="formula"><span class="lbl">Chain rule</span><div class="math">$$ \frac{dCE}{db} = \frac{dCE}{dP_{Norm}} \cdot \frac{dP_{Norm}}{dx} \cdot \frac{dx}{db} $$</div><p class="explain"><b>Symbols:</b> each fraction is a derivative, the slope of one link in the chain. <b>What it tells you:</b> the cross entropy reaches the bias through \(P_{Norm}\) and \(x\), so we multiply the three local slopes.</p></div>
+
+    <div class="formula"><span class="lbl">First link: cross entropy to P<sub>Norm</sub></span><div class="math">$$ \frac{d}{dP_{Norm}}\big[-\log(1-P_{Norm})\big] = \frac{-1}{1-P_{Norm}}\cdot(-1) = \frac{1}{1-P_{Norm}}, \qquad \frac{d}{dP_{Norm}}\big[-\log P_{Norm}\big] = \frac{-1}{P_{Norm}} $$</div><p class="explain"><b>Symbols:</b> the left result is for visiting Squatch, the right one for visiting Norm. <b>What it tells you:</b> Josh lets "stuff" be \(1-P_{Norm}\); the derivative of \(-\log(\text{stuff})\) is \(-1/\text{stuff}\), and the derivative of stuff is \(-1\). This link is the only part that changes between the two places.</p></div>
+
+    <div class="formula"><span class="lbl">Second link: derivative of the sigmoid</span><div class="math">$$ \frac{d}{dx}(1+e^{-x})^{-1} = -1\cdot(1+e^{-x})^{-2}\cdot(-e^{-x}) = \frac{e^{-x}}{(1+e^{-x})^2} $$ $$ = \frac{1}{1+e^{-x}}\cdot\frac{1+e^{-x}-1}{1+e^{-x}} = \sigma(x)\big(1-\sigma(x)\big) $$</div><p class="explain"><b>Symbols:</b> \(e\) is Euler's number; \(\sigma(x)\) is the sigmoid output. <b>What it tells you:</b> the power rule and chain rule give the first line. Splitting the square and adding +1 and −1 in the numerator gives the familiar form. Since \(\sigma(x) = P_{Norm}\), this link equals \(P_{Norm}(1-P_{Norm})\).</p></div>
+
+    <div class="formula"><span class="lbl">Third link and the full derivatives</span><div class="math">$$ \frac{dx}{db} = 1, \qquad \frac{dCE_{Squatch}}{db} = \frac{1}{1-P_{Norm}}\cdot P_{Norm}(1-P_{Norm})\cdot 1, \qquad \frac{dCE_{Norm}}{db} = \frac{-1}{P_{Norm}}\cdot P_{Norm}(1-P_{Norm})\cdot 1 $$</div><p class="explain"><b>Symbols:</b> as above. <b>What it tells you:</b> the two derivatives differ only in the first factor. They simplify to \(P_{Norm}\) and \(-(1-P_{Norm})\).</p></div>
+
+    <div class="formula"><span class="lbl">Reward and gradient descent update</span><div class="math">$$ \text{updated derivative} = \text{reward}\times\frac{dCE}{db}, \quad \text{step size} = \text{learning rate}\times\text{updated derivative}, \quad b_{new} = b_{old} - \text{step size} $$</div><p class="explain"><b>Symbols:</b> the reward is +1 for a correct guess and −1 for a wrong one; the learning rate is 1.0 in the video. <b>What it tells you:</b> the reward decides whether the bias moves in the direction the derivative suggests or the opposite way.</p></div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p><b>Round 1.</b> Hunger is 0.0 and the bias starts at 0.0, so \(x = 0\) and \(P_{Norm} = \sigma(0) = 0.5\). The random number 0.2 sends us to Squatch. The derivative is \(\frac{1}{1-0.5}\cdot 0.5\cdot(1-0.5)\cdot 1 = 2 \times 0.25 = 0.5\). Squatch gives a small serving and we are not hungry, so the guess was correct and the reward is 1.0. The updated derivative is \(1.0 \times 0.5 = 0.5\). The step size is \(1.0 \times 0.5 = 0.5\). The new bias is \(0.0 - 0.5 = -0.5\).</p>
+      <p><b>Round 2.</b> With the new bias, \(P_{Norm}\) is 0.4 and \(P_{Squatch}\) rises to 0.6. The random number 0.9 sends us to Norm. The derivative is \(\frac{-1}{0.4}\cdot 0.4\cdot 0.6\cdot 1 = -0.6\). Norm gives a huge pile of fries while we are not hungry, so the guess was wrong and the reward is −1. The updated derivative is \(-1 \times -0.6 = 0.6\). The step size is \(1.0 \times 0.6 = 0.6\). The new bias is \(-0.5 - 0.6 = -1.1\).</p>
+      <p><b>Result.</b> With bias −1.1 and hunger 0.0, \(P_{Norm}\) drops to about 0.2. Both visits at hunger 0.0 showed we should go to Squatch, so this is the right trend. The video uses rounded probabilities. The exact values are \(\sigma(-0.5) \approx 0.38\) and \(\sigma(-1.1) \approx 0.25\).</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> The derivative is based on a guess. If you plug it straight into gradient descent, a wrong guess pushes the bias the wrong way. Always multiply by the reward first.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The cross entropy depends on where you went. Visiting Squatch uses \(-\log(1-P_{Norm})\); visiting Norm uses \(-\log P_{Norm}\). Only the first link of the chain changes; the sigmoid and bias links stay the same.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Training on hunger 0.0 alone is not enough. The video says you need inputs from 0 to 1 and many updates before the bias settles near −10.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The rewards of +1 and −1 are a simple choice. Real systems often use more elaborate rewards, but the purpose is the same: update, and possibly correct, the derivative computed from the guess.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+    <details class="qa" open><summary>Why can't we train this network with standard backpropagation?</summary><div class="a">Backpropagation needs the correct answer for each input before training. Here we do not know in advance whether a place will give us a large or small order. So we guess that our random choice was right, compute the derivative from that guess, and fix its direction with a reward afterward.</div></details>
+    <details class="qa" open><summary>Where exactly does the reward enter the policy gradient update?</summary><div class="a">We compute the derivative of the cross entropy with respect to the parameter as usual. Then we multiply that derivative by the reward before computing the step size. A positive reward keeps the direction, and a negative reward flips it.</div></details>
+    <details class="qa" open><summary>What is the derivative of the sigmoid, and how do you get it?</summary><div class="a">It is \(\sigma(x)(1-\sigma(x))\). Write the sigmoid as \((1+e^{-x})^{-1}\) and apply the chain rule to get \(e^{-x}/(1+e^{-x})^2\). Splitting that into two fractions and adding and subtracting 1 in the numerator gives the familiar form.</div></details>
+    <details class="qa" open><summary>Walk me through one update with numbers.</summary><div class="a">With hunger 0 and bias 0, the probability of Norm is 0.5, and we randomly go to Squatch. The derivative of the Squatch cross entropy with respect to the bias is 0.5. The guess was correct, so the reward is 1 and the updated derivative stays 0.5. With learning rate 1, the bias moves from 0 to −0.5.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>The network turns hunger into P<sub>Norm</sub> with a sigmoid, and P<sub>Squatch</sub> is 1 − P<sub>Norm</sub>.</li>
+      <li>We pick a place at random using these probabilities and guess that the choice was correct.</li>
+      <li>Cross entropy for the visited place measures the gap between its probability and the ideal of 1.</li>
+      <li>The chain rule gives the derivative with respect to the bias as three multiplied links, including the sigmoid derivative \(\sigma(x)(1-\sigma(x))\).</li>
+      <li>The reward, +1 for a correct guess and −1 for a wrong one, multiplies the derivative before the gradient descent step.</li>
+      <li>In the video, the bias moves from 0.0 to −0.5 to −1.1, and P<sub>Norm</sub> at hunger 0.0 falls from 0.5 to about 0.2.</li>
+      <li>With many updates over hunger values from 0 to 1, the bias settles near −10.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Policy gradient math</span><span class="board-tag">a derivative from a guess, times the reward</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 250" role="img" aria-label="On a bias number line, a right guess (0.5 × +1) moves the bias from 0 to −0.5, while a wrong guess gives −0.6, which alone would push the bias right, but reward −1 flips it, so the bias moves left to −1.1.">
+            <defs><marker id="board-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="sv-ink"/></marker></defs>
+            <text x="24" y="34" class="sv-t">right guess: 0.5 × (+1)</text>
+            <line x1="288" y1="62" x2="229" y2="62" class="sv-stroke-key" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="24" y="112" class="sv-t">wrong guess: −0.6 × (−1)</text>
+            <line x1="227" y1="140" x2="314" y2="140" class="sv-stroke-ink" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="6 6" marker-end="url(#board-arr)"/>
+            <line x1="203" y1="140" x2="129" y2="140" class="sv-stroke-key" stroke-width="3" stroke-linecap="round" marker-end="url(#board-arr)"/>
+            <text x="167" y="168" text-anchor="middle" class="sv-ts">flipped</text>
+            <text x="270" y="168" text-anchor="middle" class="sv-ts">guess alone</text>
+            <line x1="24" y1="204" x2="376" y2="204" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="300" cy="62" r="7" class="sv-paper"/>
+              <circle cx="215" cy="62" r="7" class="sv-key"/>
+              <circle cx="215" cy="140" r="7" class="sv-key"/>
+              <circle cx="113" cy="140" r="8" class="sv-good"/>
+              <circle cx="300" cy="204" r="5" class="sv-paper"/>
+              <circle cx="215" cy="204" r="5" class="sv-key"/>
+              <circle cx="113" cy="204" r="6" class="sv-good"/>
+            </g>
+            <text x="300" y="233" text-anchor="middle" class="sv-tm">0</text>
+            <text x="215" y="233" text-anchor="middle" class="sv-tm">−0.5</text>
+            <text x="113" y="233" text-anchor="middle" class="sv-tb">−1.1</text>
+            <text x="386" y="233" text-anchor="end" class="sv-ts">bias →</text>
+          </svg>
+          <p>We guess our random pick was right and take the chain-rule derivative of its cross entropy. The reward keeps (+1) or flips (−1) its direction.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Policy gradients</dt><dd>Training without known answers, via guess and reward.</dd>
+            <dt>P<sub>Norm</sub></dt><dd>Probability of Norm's; P<sub>Squatch</sub> = 1 − P<sub>Norm</sub>.</dd>
+            <dt>Cross entropy</dt><dd>Gap between the visited place's probability and 1.</dd>
+            <dt>Chain rule</dt><dd>Multiply the three links' slopes.</dd>
+            <dt>Reward</dt><dd>+1 for a right guess, else −1.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Run network</b>hunger 0.0 → P<sub>Norm</sub> 0.5</li>
+            <li><b>Random pick</b>0.2 → Squatch</li>
+            <li><b>Guess it's right</b>ideal P<sub>Squatch</sub> = 1.0</li>
+            <li><b>Chain rule</b>three links → 0.5</li>
+            <li><b>Times reward</b>right guess: 1.0</li>
+            <li><b>Update bias</b>0.0 − 0.5 = −0.5</li>
+          </ol>
+          <p class="loop">↺ repeat with new picks and hunger 0 to 1 until the bias settles near −10</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\frac{dCE}{db}=\frac{dCE}{dP}\cdot\frac{dP}{dx}\cdot\frac{dx}{db}$$
+          $$\frac{dP}{dx}=P(1-P),\qquad \frac{dx}{db}=1$$
+          $$b_{new}=b_{old}-\text{rate}\times\text{reward}\times\frac{dCE}{db}$$
+          <ul class="keys">
+            <li>\(P\) is \(P_{Norm}=\sigma(x)\), \(x=\text{hunger}\cdot w+b\), \(b\) the bias, \(CE\) the cross entropy.</li>
+            <li>First link: \(1/(1-P)\) after Squatch, \(-1/P\) after Norm, so \(dCE/db\) is \(P\) or \(-(1-P)\).</li>
+            <li>Rate is the learning rate, 1.0 here.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>bias</th><th>P<sub>Norm</sub></th><th>went to</th><th>deriv × reward</th></tr>
+            <tr><td>0.0</td><td>0.5</td><td>Squatch</td><td>0.5 × 1.0</td></tr>
+            <tr><td>−0.5</td><td>0.4</td><td>Norm</td><td>−0.6 × −1</td></tr>
+            <tr class="final"><td>−1.1</td><td>≈ 0.2 ✓</td><td>…</td><td>…</td></tr>
+          </table>
+          <p class="hand">Rate 1.0: step = deriv × reward. P<sub>Norm</sub> falls: right trend at hunger 0.0.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Feed the derivative straight to gradient descent.</span><span class="yes">It comes from a guess. Multiply by the reward first, or wrong guesses push the wrong way.</span></li>
+            <li><span class="no">Cross entropy is the same for both places.</span><span class="yes">Squatch uses \(-\log(1-P_{Norm})\), Norm uses \(-\log P_{Norm}\). Only the first chain link changes.</span></li>
+            <li><span class="no">Hunger 0.0 alone is enough to train.</span><span class="yes">You need hunger from 0 to 1 and many updates before the bias settles near −10.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="23-reinforcement-learning-with-neural-networks-essential-concep.html"><small>Previous</small>Reinforcement Learning with Neural Networks: Essential Concepts</a> <a href="25-reinforcement-learning-with-human-feedback-rlhf.html"><small>Next</small>Reinforcement Learning with Human Feedback (RLHF)</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

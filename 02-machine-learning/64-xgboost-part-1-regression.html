@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>XGBoost Part 1 (of 4): Regression — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>64</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 64 · 25.8 min</div>
+    <h1>XGBoost Part 1 (of 4): Regression</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=OtD8wVaFm6E" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">XGBoost is gradient boost with its own special regression tree. This video shows how that tree is grown, how it is pruned, and how its leaves turn into predictions.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>XGBoost starts with a flat prediction of 0.5 and computes the residuals. It fits its own kind of tree to them, scoring each node with a <b>similarity score</b>. It picks the split with the largest <b>gain</b>, and prunes branches whose gain is below a number called <b>gamma</b>. A regularization parameter called <b>lambda</b> shrinks the scores and outputs. The prediction then moves by each leaf's output times a learning rate called <b>eta</b>.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh uses a very small training set. On the x-axis is drug dosage. On the y-axis is drug effectiveness. Two observations have large positive effectiveness, so the drug helped. Two have large negative effectiveness, so the drug did more harm than good.</p>
+    <p>The first step is an initial prediction. It can be any number, but the default in XGBoost is 0.5, for both regression and classification. That is a flat horizontal line through the data. The <b>residuals</b> are the gaps between the observed values and this line. Here they are −10.5, 6.5, 7.5 and −7.5.</p>
+    <p>Like ordinary gradient boost, XGBoost now fits a regression tree to the residuals. But it does not use an off-the-shelf regression tree. It uses its own tree, built from a quantity called the <b>similarity score</b>.</p>
+    <p>The tree starts as one leaf holding all four residuals. The similarity score squares the <i>sum</i> of the residuals, not each residual on its own. So residuals with opposite signs cancel before the squaring. A node of mixed residuals gets a small score, and a node of similar residuals gets a large score.</p>
+    <p>To judge a split, we compare the two child scores with the parent score. That difference is the <b>gain</b>. A large gain means the split put similar residuals together.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 316" role="img" aria-label="A tree root holding four residuals splits on dosage less than 15, and the two leaf similarity scores give a gain of 120.33">
+        <defs>
+          <marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" class="sv-ink2"></path>
+          </marker>
+        </defs>
+        <line x1="380" y1="110" x2="175" y2="176" class="sv-line" stroke-width="1.5" marker-end="url(#ah1)"></line>
+        <line x1="380" y1="110" x2="585" y2="176" class="sv-line" stroke-width="1.5" marker-end="url(#ah1)"></line>
+        <rect x="270" y="26" width="220" height="84" rx="6" class="sv-acc-soft"></rect>
+        <rect x="270" y="26" width="220" height="84" rx="6" class="sv-line" stroke-width="1.5"></rect>
+        <text x="380" y="50" text-anchor="middle" class="sv-tm">−10.5, 6.5, 7.5, −7.5</text>
+        <text x="380" y="72" text-anchor="middle" class="sv-tb">Similarity = 4</text>
+        <text x="380" y="94" text-anchor="middle" class="sv-ts">split on: Dosage &lt; 15 ?</text>
+        <text x="258" y="140" text-anchor="middle" class="sv-ts">yes</text>
+        <text x="504" y="140" text-anchor="middle" class="sv-ts">no</text>
+        <rect x="70" y="180" width="200" height="64" rx="6" class="sv-good-soft"></rect>
+        <rect x="70" y="180" width="200" height="64" rx="6" class="sv-line" stroke-width="1.5"></rect>
+        <text x="170" y="206" text-anchor="middle" class="sv-tm">−10.5</text>
+        <text x="170" y="228" text-anchor="middle" class="sv-tb">Similarity = 110.25</text>
+        <rect x="490" y="180" width="200" height="64" rx="6" class="sv-key-soft"></rect>
+        <rect x="490" y="180" width="200" height="64" rx="6" class="sv-line" stroke-width="1.5"></rect>
+        <text x="590" y="206" text-anchor="middle" class="sv-tm">6.5, 7.5, −7.5</text>
+        <text x="590" y="228" text-anchor="middle" class="sv-tb">Similarity = 14.08</text>
+        <rect x="180" y="264" width="400" height="32" rx="6" class="sv-paper2"></rect>
+        <rect x="180" y="264" width="400" height="32" rx="6" class="sv-line" stroke-width="1.5"></rect>
+        <text x="380" y="285" text-anchor="middle" class="sv-tb">Gain = 110.25 + 14.08 − 4 = 120.33</text>
+      </svg>
+      <figcaption>Notice the lone residual on the left. It cancels with nothing, so its similarity score is huge, and the gain is large.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Make the initial prediction. The default is 0.5 for every observation. Compute the residual for each observation.</li>
+      <li>Put all residuals in one leaf and compute its similarity score. With lambda equal to 0, the four residuals give a score of 4.</li>
+      <li>Try the first threshold. Take the average dosage of the two leftmost points, which is 15, and split on dosage below 15.</li>
+      <li>Compute the similarity score of each child leaf, then compute the gain as left plus right minus parent.</li>
+      <li>Slide the threshold to the next midpoint, 22.5, then to the next, 30. Compute the gain each time.</li>
+      <li>Keep the threshold with the largest gain. Here dosage below 15 wins with a gain of 120.33.</li>
+      <li>Repeat the search inside each child node with more than one residual. Josh stops at two levels, but the default allows six.</li>
+      <li>Prune from the bottom up. Subtract gamma from the gain of the lowest branch. If the answer is negative, remove the branch and check the next one up.</li>
+      <li>Compute the output value of every surviving leaf, then update the predictions using the learning rate eta.</li>
+    </ol>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 340" role="img" aria-label="The finished two-level tree with its gains, leaf output values, and a pruning check against gamma of 130">
+        <defs>
+          <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" class="sv-ink2"></path>
+          </marker>
+        </defs>
+        <line x1="385" y1="76" x2="150" y2="126" class="sv-line" stroke-width="1.5" marker-end="url(#ah2)"></line>
+        <line x1="385" y1="76" x2="520" y2="126" class="sv-line" stroke-width="1.5" marker-end="url(#ah2)"></line>
+        <line x1="525" y1="184" x2="410" y2="246" class="sv-line" stroke-width="1.5" marker-end="url(#ah2)"></line>
+        <line x1="525" y1="184" x2="645" y2="246" class="sv-line" stroke-width="1.5" marker-end="url(#ah2)"></line>
+        <rect x="300" y="22" width="170" height="54" rx="6" class="sv-acc-soft"></rect>
+        <rect x="300" y="22" width="170" height="54" rx="6" class="sv-line" stroke-width="1.5"></rect>
+        <text x="385" y="45" text-anchor="middle" class="sv-tb">Dosage &lt; 15 ?</text>
+        <text x="385" y="65" text-anchor="middle" class="sv-ts">Gain = 120.33</text>
+        <rect x="60" y="126" width="170" height="58" rx="6" class="sv-good-soft"></rect>
+        <rect x="60" y="126" width="170" height="58" rx="6" class="sv-line" stroke-width="1.5"></rect>
+        <text x="145" y="150" text-anchor="middle" class="sv-tm">leaf: −10.5</text>
+        <text x="145" y="172" text-anchor="middle" class="sv-tb">Output = −10.5</text>
+        <rect x="440" y="126" width="170" height="54" rx="6" class="sv-acc-soft"></rect>
+        <rect x="440" y="126" width="170" height="54" rx="6" class="sv-line" stroke-width="1.5"></rect>
+        <text x="525" y="149" text-anchor="middle" class="sv-tb">Dosage &lt; 30 ?</text>
+        <text x="525" y="169" text-anchor="middle" class="sv-ts">Gain = 140.17</text>
+        <rect x="320" y="246" width="170" height="58" rx="6" class="sv-good-soft"></rect>
+        <rect x="320" y="246" width="170" height="58" rx="6" class="sv-line" stroke-width="1.5"></rect>
+        <text x="405" y="270" text-anchor="middle" class="sv-tm">leaf: 6.5, 7.5</text>
+        <text x="405" y="292" text-anchor="middle" class="sv-tb">Output = 7</text>
+        <rect x="560" y="246" width="180" height="58" rx="6" class="sv-good-soft"></rect>
+        <rect x="560" y="246" width="180" height="58" rx="6" class="sv-line" stroke-width="1.5"></rect>
+        <text x="650" y="270" text-anchor="middle" class="sv-tm">leaf: −7.5</text>
+        <text x="650" y="292" text-anchor="middle" class="sv-tb">Output = −7.5</text>
+        <rect x="40" y="246" width="250" height="58" rx="6" class="sv-key-soft"></rect>
+        <rect x="40" y="246" width="250" height="58" rx="6" class="sv-line" stroke-width="1.5"></rect>
+        <text x="165" y="270" text-anchor="middle" class="sv-tm">gamma = 130: 140.17 − 130 &gt; 0</text>
+        <text x="165" y="292" text-anchor="middle" class="sv-ts">positive, so the branch stays</text>
+      </svg>
+      <figcaption>Notice that pruning starts at the lowest branch. Because that branch survives, the root above it survives too, even though its own gain is below gamma.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Similarity score</span>
+      <div class="math">$$ \text{Similarity} = \frac{\left(\sum_{i=1}^{n} r_i\right)^2}{n + \lambda} $$</div>
+      <p class="explain"><b>Symbols:</b> \(r_i\) is the residual of observation \(i\) in this node, that is observed value minus current prediction. \(n\) is how many residuals landed in the node. \(\lambda\) (lambda) is the regularization parameter, and Josh uses its default of 0. <b>What it tells you:</b> the residuals are added before squaring, so similar residuals score high and mixed ones score low.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Gain of a split</span>
+      <div class="math">$$ \text{Gain} = \text{Sim}_{\text{left}} + \text{Sim}_{\text{right}} - \text{Sim}_{\text{parent}} $$</div>
+      <p class="explain"><b>Symbols:</b> \(\text{Sim}_{\text{left}}\) and \(\text{Sim}_{\text{right}}\) are the similarity scores of the two child leaves. \(\text{Sim}_{\text{parent}}\) is the similarity score of the node before the split. <b>What it tells you:</b> how much better the two leaves group similar residuals than the parent. The threshold with the largest gain wins.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Pruning rule</span>
+      <div class="math">$$ \text{Gain} - \gamma \;\begin{cases} < 0 & \text{remove the branch} \\ \ge 0 & \text{keep the branch} \end{cases} $$</div>
+      <p class="explain"><b>Symbols:</b> \(\gamma\) (gamma) is a tree complexity parameter that you choose. \(\text{Gain}\) is the gain of the branch being tested. <b>What it tells you:</b> a branch must earn at least gamma to stay. Start at the lowest branch, work upwards, and stop when a branch is kept.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Output value of a leaf</span>
+      <div class="math">$$ \text{Output} = \frac{\sum_{i=1}^{n} r_i}{n + \lambda} $$</div>
+      <p class="explain"><b>Symbols:</b> the same \(r_i\), \(n\) and \(\lambda\) as above. <b>What it tells you:</b> it is the similarity score without the square. When \(\lambda = 0\) it is the average residual in the leaf. When \(\lambda &gt; 0\) it is smaller, so one observation moves the prediction less.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">New prediction</span>
+      <div class="math">$$ \hat{y}_{\text{new}} = \hat{y}_{\text{old}} + \eta \cdot \text{Output} $$</div>
+      <p class="explain"><b>Symbols:</b> \(\hat{y}_{\text{old}}\) is the prediction before this tree, starting at 0.5. \(\eta\) (eta) is the learning rate, and its XGBoost default is 0.3. \(\text{Output}\) is the output value of the leaf the observation falls into. <b>What it tells you:</b> each tree moves the prediction only a small step.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>The four residuals after the initial prediction of 0.5 are −10.5, 6.5, 7.5 and −7.5, in order of dosage. Set \(\lambda = 0\) throughout.</p>
+      <p><b>Root.</b> The sum is −4, so the similarity score is \((-4)^2 / 4 = 4\). Note that 7.5 and −7.5 cancelled, and 6.5 cancelled most of −10.5.</p>
+      <p><b>Threshold search.</b> Each candidate threshold is the average of two neighbouring dosages.</p>
+      <ul>
+        <li>Dosage &lt; 15: left has one residual, \((-10.5)^2/1 = 110.25\); right has three, \(6.5^2/3 = 14.08\). Gain = 110.25 + 14.08 − 4 = <b>120.33</b>.</li>
+        <li>Dosage &lt; 22.5: gain = 8 + 0 − 4 = <b>4</b>.</li>
+        <li>Dosage &lt; 30: gain = 4.08 + 56.25 − 4 = <b>56.33</b>.</li>
+      </ul>
+      <p>Dosage &lt; 15 has the largest gain, so it becomes the first branch.</p>
+      <p><b>Second level.</b> The left leaf holds one residual, so it cannot split. The right node holds 6.5, 7.5 and −7.5, with similarity 14.08. Splitting at dosage &lt; 22.5 gives 42.25 + 0 − 14.08 = 28.17. Splitting at dosage &lt; 30 gives 98 + 56.25 − 14.08 = 140.17, so that threshold wins. Josh stops here because he capped the depth at two levels.</p>
+      <p><b>Pruning with gamma = 130.</b> The lowest branch gives 140.17 − 130, which is positive, so it stays. The root gain of 120.33 is below 130, but the root stays because the branch below it stayed. With gamma = 150, 140.17 − 150 is negative, so that branch goes. Then 120.33 − 150 is also negative, so the root goes too. Only the initial prediction of 0.5 is left.</p>
+      <p><b>Effect of lambda = 1.</b> The root score falls from 4 to \(16/5 = 3.2\), which is 80% of before. The left leaf falls from 110.25 to 55.12, which is 50%. The right node falls from 14.08 to 10.56, which is 75%. Nodes with fewer residuals shrink more. Both gains now fall below gamma = 130, so the whole tree would be pruned.</p>
+      <p><b>Output values with lambda = 0.</b> Left leaf: −10.5. Middle leaf: \((6.5 + 7.5)/2 = 7\). Right leaf: −7.5. With lambda = 1, the left leaf output is \(-10.5/2 = -5.25\) instead.</p>
+      <p><b>New predictions with eta = 0.3.</b> For dosage 10: \(0.5 + 0.3 \times (-10.5) = -2.65\). For dosage 20: \(0.5 + 0.3 \times 7 = 2.6\). Every new residual is smaller than the old one. XGBoost then builds the next tree on the new residuals.</p>
+    </div>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> The numerator squares the <i>sum</i> of the residuals, not the sum of the squares. If you square each residual first, nothing cancels, and a mixed node no longer scores low.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Setting gamma to 0 does not turn pruning off. With lambda = 1, Josh splits the node holding 6.5 and 7.5. The scores are 65.3 at the parent and 21.12 and 28.12 at the leaves. The gain is −16.06, so gain minus gamma is still negative and the branch goes.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Lambda does not shrink every node by the same fraction. It is added to \(n\) in the denominator, so small nodes shrink most. A leaf with one residual lost half its score, while the root lost only a fifth.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>How does an XGBoost tree differ from a normal regression tree?</summary><div class="a">An XGBoost tree scores each node with a similarity score. That is the squared sum of the residuals divided by the count plus lambda. It then picks the split with the largest gain, where the two children beat the parent by the most. It also prunes with gamma after the tree is built.</div></details>
+
+    <details class="qa" open><summary>What do lambda and gamma actually do?</summary><div class="a">Lambda is a regularization term in the denominator of the similarity score and the output value. It shrinks both, and it shrinks small leaves the most. Gamma is a threshold used only for pruning: a branch is removed when its gain minus gamma is negative. A larger lambda gives smaller gains, so it also leads to more pruning.</div></details>
+
+    <details class="qa" open><summary>Why does the similarity score add the residuals before squaring them?</summary><div class="a">We want to know whether the residuals in a node point the same way. Mixed positive and negative values cancel, so the score is small. Similar residuals, or a single one, do not cancel, so the score is large. A split that groups similar residuals therefore earns a high gain.</div></details>
+
+    <details class="qa" open><summary>How does XGBoost turn a tree into a prediction?</summary><div class="a">Each leaf gets an output value: the sum of its residuals over the count plus lambda. With lambda at zero, that is the average residual in the leaf. The new prediction is the old one plus eta times the output. Eta is the learning rate, and its default is 0.3.</div></details>
+
+    <details class="qa" open><summary>Does setting gamma to zero disable pruning?</summary><div class="a">No. A gain can be negative when the two child leaves score less than the parent. With gamma at zero, gain minus gamma is still negative, so the branch is removed. Josh shows this with lambda = 1 and a gain of −16.06.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap">
+      <ul>
+        <li>XGBoost begins with a flat prediction of 0.5 and fits trees to the residuals.</li>
+        <li>Each node's similarity score is the squared sum of its residuals over the count plus lambda, so mixed residuals score low.</li>
+        <li>Gain is the two child scores minus the parent score, and the threshold with the biggest gain wins.</li>
+        <li>Pruning works bottom up: remove a branch when its gain minus gamma is negative.</li>
+        <li>Lambda shrinks similarity scores and output values, which leads to more pruning.</li>
+        <li>Each leaf outputs the sum of its residuals over the count plus lambda.</li>
+        <li>The prediction moves by eta times that output, with eta defaulting to 0.3.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">XGBoost Regression</span><span class="board-tag">group similar residuals, then prune with gamma</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 270" role="img" aria-label="Four residuals around the flat start of 0.5, split at dosage 15: the lone −10.5 scores 110.25, the mixed 6.5, 7.5 and −7.5 score 14.08, and the gain is 110.25 + 14.08 − 4 = 120.33.">
+            <line x1="165" y1="16" x2="165" y2="210" class="sv-stroke-acc" stroke-width="2.5" stroke-dasharray="7 6" stroke-linecap="round"/>
+            <line x1="20" y1="130" x2="380" y2="130" class="sv-stroke-ink" stroke-width="3" stroke-linecap="round"/>
+            <line x1="100" y1="130" x2="100" y2="203.5" class="sv-stroke-good" stroke-width="3" stroke-linecap="round"/>
+            <g class="sv-stroke-key" stroke-width="3" stroke-linecap="round">
+              <line x1="215" y1="130" x2="215" y2="84.5"/>
+              <line x1="270" y1="130" x2="270" y2="77.5"/>
+              <line x1="345" y1="130" x2="345" y2="182.5"/>
+            </g>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="100" cy="203.5" r="7" class="sv-good"/>
+              <circle cx="215" cy="84.5" r="7" class="sv-key"/>
+              <circle cx="270" cy="77.5" r="7" class="sv-key"/>
+              <circle cx="345" cy="182.5" r="7" class="sv-key"/>
+            </g>
+            <text x="92" y="34" text-anchor="middle" class="sv-tb">Sim 110.25</text>
+            <text x="272" y="34" text-anchor="middle" class="sv-tb">Sim 14.08</text>
+            <text x="60" y="120" class="sv-ts">start 0.5</text>
+            <text x="90" y="180" text-anchor="end" class="sv-tm">−10.5</text>
+            <text x="215" y="68" text-anchor="middle" class="sv-tm">6.5</text>
+            <text x="270" y="61" text-anchor="middle" class="sv-tm">7.5</text>
+            <text x="345" y="212" text-anchor="middle" class="sv-tm">−7.5</text>
+            <text x="165" y="232" text-anchor="middle" class="sv-ts">dosage &lt; 15</text>
+            <text x="200" y="258" text-anchor="middle" class="sv-t">Gain = 110.25 + 14.08 − 4 = 120.33</text>
+          </svg>
+          <p>XGBoost fits its own tree to the residuals from a flat 0.5 start. Residuals are added before squaring, so the lone −10.5 scores 110.25 and the mixed three only 14.08. The gain then subtracts the root's 4.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Similarity score</dt><dd>A node's residuals summed, then squared, over count plus λ.</dd>
+            <dt>Gain</dt><dd>Left plus right similarity, minus the parent's.</dd>
+            <dt>Gamma (γ)</dt><dd>Cut a branch when its gain minus γ is negative.</dd>
+            <dt>Lambda (λ)</dt><dd>Shrinks scores and outputs, small nodes most.</dd>
+            <dt>Eta (η)</dt><dd>The learning rate, 0.3 by default.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Start at 0.5</b>residuals −10.5, 6.5, 7.5, −7.5</li>
+            <li><b>Score the root</b>similarity 4 (λ = 0)</li>
+            <li><b>Try thresholds</b>gain at 15, 22.5, 30</li>
+            <li><b>Keep the best</b>dosage &lt; 15, gain 120.33</li>
+            <li><b>Prune bottom up</b>drop branches with gain below γ</li>
+            <li><b>Output, update</b>old + η × leaf output</li>
+          </ol>
+          <p class="loop">↺ steps 3 and 4 repeat in each child; then the next tree fits the new residuals</p>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{Similarity}=\frac{\left(\sum r_i\right)^2}{n+\lambda}$$
+          $$\text{Gain}=\text{Sim}_{\text{left}}+\text{Sim}_{\text{right}}-\text{Sim}_{\text{parent}}$$
+          $$\hat{y}_{\text{new}}=\hat{y}_{\text{old}}+\eta\cdot\text{Output}$$
+          <ul class="keys">
+            <li>\(r_i\): the node's residuals; \(n\): how many.</li>
+            <li>Output \(=\sum r_i/(n+\lambda)\), the score without the square.</li>
+            <li>Prune when \(\text{Gain}-\gamma\lt 0\), lowest branch first.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>step</th><th>working</th><th>result</th></tr>
+            <tr><td>root &lt; 15</td><td>110.25 + 14.08 − 4</td><td>120.33</td></tr>
+            <tr><td>next &lt; 30</td><td>98 + 56.25 − 14.08</td><td>140.17</td></tr>
+            <tr><td>γ = 130</td><td>140.17 − 130 &gt; 0</td><td>keep</td></tr>
+            <tr><td>outputs</td><td>−10.5, 7, −7.5</td><td>λ = 0</td></tr>
+            <tr class="final"><td>dosage 10</td><td>0.5 + 0.3 × (−10.5)</td><td>−2.65 ✓</td></tr>
+          </table>
+          <p class="hand">The root's 120.33 is below 130 but stays, because the branch under it stayed.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Square each residual, then add.</span><span class="yes">Add first, then square, or nothing cancels and mixed nodes stop scoring low.</span></li>
+            <li><span class="no">Gamma = 0 turns pruning off.</span><span class="yes">Gains can be negative: with λ = 1, splitting 6.5 and 7.5 gains −16.06 and is cut.</span></li>
+            <li><span class="no">Lambda shrinks every node equally.</span><span class="yes">Small nodes shrink most: λ = 1 halves 110.25 to 55.12, the root's 4 only to 3.2.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="62-gradient-boost-part-4-classification-details.html"><small>Previous</small>Gradient Boost Part 4 (of 4): Classification Details</a> <a href="65-xgboost-part-2-classification.html"><small>Next</small>XGBoost Part 2 (of 4): Classification</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

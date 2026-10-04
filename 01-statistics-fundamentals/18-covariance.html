@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Covariance — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-stats">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Statistics Fundamentals</a><span class="sep">/</span><span>18</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Statistics Fundamentals · Video 18 · 22.4 min</div>
+    <h1>Covariance</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=qtaqvPAeEJY" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Covariance looks at two measurements taken from the same subjects and asks whether they move together. This video shows how the number is built, what its sign means, and why the size of the number is almost useless on its own.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>We measure two genes, X and Y, in the same five cells, so every cell gives a pair of numbers. For each pair we take how far X is from its mean, take how far Y is from its mean, and multiply the two differences. We add those products and divide by \(n-1\). A positive answer means a positive slope, a negative answer means a negative slope, and zero means no trend. The size of the answer changes with the scale of the data, so covariance is a stepping stone to correlation.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh starts with something familiar. We counted mRNA transcripts for gene X in five different cells, then estimated the mean and the variance. If genes are not your thing, imagine counting green apples in five grocery stores. Now we count gene Y in those same five cells, and estimate its mean and variance too.</p>
+    <p>The important part is that the measurements come in pairs. Each cell gives one value for X and one value for Y. So we can draw each cell as a single dot, using its X value for the horizontal position and its Y value for the vertical position. The question covariance tries to answer is simple: do the pairs tell us something that the two variables on their own do not?</p>
+    <p>In Josh's first data set, cells with low values for gene X also have low values for gene Y, and cells with high X have high Y. That relationship can be summarised with a line that has a positive slope. If low X had gone with high Y instead, the line would have a negative slope. And if every cell had the same Y value, knowing X would tell us nothing about Y, so there would be no trend at all.</p>
+    <p>That gives the first main idea. Covariance classifies three kinds of relationship: a positive trend, a negative trend, and no trend. The second main idea is more sobering. You never calculate a covariance and stop there. Covariance is a computational stepping stone towards something more useful, such as correlation.</p>
+    <p>The machinery behind the sign is easy to see on the graph. Draw a vertical line at the mean of X and a horizontal line at the mean of Y. Those two lines cut the plot into four quadrants, and each quadrant decides the sign of the product that its dots contribute.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 338" role="img" aria-label="Scatter plot split into four quadrants by the mean of X and the mean of Y, with the sign of each quadrant's product marked">
+        <line x1="70" y1="292" x2="700" y2="292" class="sv-line" stroke-width="1.5"/>
+        <line x1="70" y1="40" x2="70" y2="292" class="sv-line" stroke-width="1.5"/>
+        <line x1="360" y1="40" x2="360" y2="292" class="sv-stroke-good" stroke-width="2"/>
+        <line x1="70" y1="168" x2="700" y2="168" class="sv-stroke-key" stroke-width="2"/>
+        <line x1="95" y1="278" x2="678" y2="52" class="sv-stroke-ink" stroke-width="1.5" stroke-dasharray="5 5"/>
+        <circle cx="110" cy="262" r="6" class="sv-acc"/>
+        <circle cx="190" cy="226" r="6" class="sv-acc"/>
+        <circle cx="400" cy="150" r="6" class="sv-acc"/>
+        <circle cx="520" cy="105" r="6" class="sv-acc"/>
+        <circle cx="650" cy="62" r="6" class="sv-acc"/>
+        <text x="366" y="32" class="sv-tm">mean of X</text>
+        <text x="76" y="160" class="sv-tm">mean of Y</text>
+        <text x="100" y="72" class="sv-ts">below X mean, above Y mean: (−) × (+) = negative</text>
+        <text x="380" y="72" class="sv-ts">above both means: (+) × (+) = positive</text>
+        <text x="100" y="202" class="sv-ts">below both means: (−) × (−) = positive</text>
+        <text x="400" y="262" class="sv-ts">above X mean, below Y mean: (+) × (−) = negative</text>
+        <text x="385" y="322" class="sv-t" text-anchor="middle">Gene X</text>
+        <text x="36" y="166" class="sv-t" text-anchor="middle" transform="rotate(-90 36 166)">Gene Y</text>
+      </svg>
+      <figcaption>Notice that all five dots sit in the two positive quadrants, so every term in the sum pushes the covariance up.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Measure both variables on the same subjects. In the video that is gene X and gene Y counted in the same five cells, so the data arrive as five pairs.</li>
+      <li>Estimate the mean of X and the mean of Y separately. These two means are the reference points for everything that follows.</li>
+      <li>Take one pair at a time. Work out how far its X value sits from the mean of X, and how far its Y value sits from the mean of Y. Both differences can be negative or positive.</li>
+      <li>Multiply the two differences together. Two negatives give a positive product, two positives give a positive product, and one of each gives a negative product.</li>
+      <li>Add the five products together. This is what the sigma in the formula asks for.</li>
+      <li>Divide the total by \(n-1\), which is 4 for five cells. That final number is the estimated covariance.</li>
+      <li>Read only the sign. Positive means the trend has a positive slope, negative means a negative slope, and zero means there is no trend.</li>
+    </ol>
+    <p>The video works through all three cases with the same five cells and different gene Y values. The positive data set gives a covariance of 116, the negative data set gives −105.15, and the flat data set gives exactly 0.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 276" role="img" aria-label="Three small scatter plots showing a positive trend, a negative trend and no trend, with the covariance value under each">
+        <text x="143" y="34" class="sv-tb" text-anchor="middle">Positive trend</text>
+        <line x1="60" y1="200" x2="226" y2="200" class="sv-line" stroke-width="1.5"/>
+        <line x1="60" y1="50" x2="60" y2="200" class="sv-line" stroke-width="1.5"/>
+        <line x1="68" y1="196" x2="216" y2="66" class="sv-stroke-ink" stroke-width="1.3" stroke-dasharray="4 4"/>
+        <circle cx="75" cy="190" r="5" class="sv-acc"/>
+        <circle cx="105" cy="168" r="5" class="sv-acc"/>
+        <circle cx="140" cy="140" r="5" class="sv-acc"/>
+        <circle cx="175" cy="110" r="5" class="sv-acc"/>
+        <circle cx="210" cy="72" r="5" class="sv-acc"/>
+        <text x="143" y="232" class="sv-tm" text-anchor="middle">Covariance &gt; 0</text>
+        <text x="143" y="252" class="sv-ts" text-anchor="middle">the video gets 116</text>
+
+        <text x="389" y="34" class="sv-tb" text-anchor="middle">Negative trend</text>
+        <line x1="306" y1="200" x2="472" y2="200" class="sv-line" stroke-width="1.5"/>
+        <line x1="306" y1="50" x2="306" y2="200" class="sv-line" stroke-width="1.5"/>
+        <line x1="314" y1="62" x2="464" y2="196" class="sv-stroke-ink" stroke-width="1.3" stroke-dasharray="4 4"/>
+        <circle cx="320" cy="70" r="5" class="sv-acc"/>
+        <circle cx="352" cy="102" r="5" class="sv-acc"/>
+        <circle cx="388" cy="138" r="5" class="sv-acc"/>
+        <circle cx="424" cy="166" r="5" class="sv-acc"/>
+        <circle cx="458" cy="190" r="5" class="sv-acc"/>
+        <text x="389" y="232" class="sv-tm" text-anchor="middle">Covariance &lt; 0</text>
+        <text x="389" y="252" class="sv-ts" text-anchor="middle">the video gets −105.15</text>
+
+        <text x="635" y="34" class="sv-tb" text-anchor="middle">No trend</text>
+        <line x1="552" y1="200" x2="718" y2="200" class="sv-line" stroke-width="1.5"/>
+        <line x1="552" y1="50" x2="552" y2="200" class="sv-line" stroke-width="1.5"/>
+        <line x1="558" y1="130" x2="714" y2="130" class="sv-stroke-ink" stroke-width="1.3" stroke-dasharray="4 4"/>
+        <circle cx="566" cy="130" r="5" class="sv-acc"/>
+        <circle cx="600" cy="130" r="5" class="sv-acc"/>
+        <circle cx="636" cy="130" r="5" class="sv-acc"/>
+        <circle cx="672" cy="130" r="5" class="sv-acc"/>
+        <circle cx="706" cy="130" r="5" class="sv-acc"/>
+        <text x="635" y="232" class="sv-tm" text-anchor="middle">Covariance = 0</text>
+        <text x="635" y="252" class="sv-ts" text-anchor="middle">every Y value is the same</text>
+      </svg>
+      <figcaption>Notice that the sign of the covariance is the only thing that separates these three pictures.</figcaption>
+    </figure>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Estimated covariance</span>
+      <div class="math">$$ \mathrm{Cov}(X,Y)=\frac{\sum_{i=1}^{n}\left(x_i-\bar{x}\right)\left(y_i-\bar{y}\right)}{n-1} $$</div>
+      <p class="explain"><b>Symbols:</b> \(x_i\) is the X measurement from the \(i\)-th subject, and \(y_i\) is the Y measurement from that same subject. \(\bar{x}\) is the mean of all the X values and \(\bar{y}\) is the mean of all the Y values. \(\sum\) says add up one term for every subject. \(n\) is the number of subjects, five in this video, and we divide by \(n-1\) because we are estimating from a sample rather than describing a whole population. <b>What it tells you:</b> the sign of the answer classifies the trend as positive, negative, or absent.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Covariance of a variable with itself</span>
+      <div class="math">$$ \mathrm{Cov}(X,X)=\frac{\sum_{i=1}^{n}\left(x_i-\bar{x}\right)^2}{n-1}=s_x^2 $$</div>
+      <p class="explain"><b>Symbols:</b> the same symbols as above, with \(y_i\) replaced by \(x_i\) and \(\bar{y}\) replaced by \(\bar{x}\), because the same data now sit on both axes. \(s_x^2\) is the estimated variance of X. <b>What it tells you:</b> variance is just a special case of covariance, so the two ideas are the same machinery applied to one variable or to two.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">What happens when you rescale</span>
+      <div class="math">$$ \mathrm{Cov}(aX,aY)=a^2\,\mathrm{Cov}(X,Y) $$</div>
+      <p class="explain"><b>Symbols:</b> \(a\) is a constant multiplier applied to every measurement, for example 2 when you double the data. <b>What it tells you:</b> multiplying the data by 2 multiplies the covariance by 4, even though the picture of the relationship has not changed at all. This is the reason the size of a covariance cannot be interpreted on its own.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <p>To show why the size of a covariance is hard to read, Josh calculates the covariance of gene X with itself. The five counts are 3, 13, 19, 24 and 29, and their mean is 17.6.</p>
+
+    <div class="example"><span class="lbl">Example</span>
+      <p>Each difference from the mean is multiplied by itself, because X sits on both axes.</p>
+      <div class="math">$$ (-14.6)^2+(-4.6)^2+(1.4)^2+(6.4)^2+(11.4)^2=407.2 $$</div>
+      <div class="math">$$ \mathrm{Cov}(X,X)=\frac{407.2}{5-1}=101.8\approx 102 $$</div>
+      <p>The value is positive, which is correct: a variable always has a positive trend with itself, and every dot falls exactly on a straight line.</p>
+      <p>Now double every measurement, so the counts become 6, 26, 38, 48 and 58. The dots keep the same shape and still sit on the same straight line. Only the scale of the axes has changed. But each difference from the mean is now twice as large, so each product is four times as large.</p>
+      <div class="math">$$ \mathrm{Cov}(2X,2X)=\frac{4\times 407.2}{5-1}=407.2 $$</div>
+      <p>That is four times 101.8, and Josh reports it as 408. The relationship did not change, yet the covariance grew four times. He makes the same point another way. Data sitting perfectly on the line gives 102, while looser data gives 381. Rescaling the looser data flips which number is bigger.</p>
+    </div>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 268" role="img" aria-label="The same five points drawn twice, with the second copy on a doubled scale and a covariance four times larger">
+        <defs>
+          <marker id="arw3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" class="sv-ink"/>
+          </marker>
+        </defs>
+        <text x="190" y="34" class="sv-tb" text-anchor="middle">Original counts</text>
+        <line x1="60" y1="200" x2="340" y2="200" class="sv-line" stroke-width="1.5"/>
+        <line x1="60" y1="55" x2="60" y2="200" class="sv-line" stroke-width="1.5"/>
+        <line x1="72" y1="198" x2="292" y2="54" class="sv-stroke-ink" stroke-width="1.3" stroke-dasharray="4 4"/>
+        <circle cx="80" cy="190" r="5" class="sv-acc"/>
+        <circle cx="130" cy="158" r="5" class="sv-acc"/>
+        <circle cx="180" cy="126" r="5" class="sv-acc"/>
+        <circle cx="230" cy="94" r="5" class="sv-acc"/>
+        <circle cx="280" cy="62" r="5" class="sv-acc"/>
+        <text x="190" y="228" class="sv-ts" text-anchor="middle">gene X against itself</text>
+        <text x="190" y="248" class="sv-tm" text-anchor="middle">Covariance = 102</text>
+
+        <line x1="358" y1="128" x2="396" y2="128" class="sv-stroke-ink" stroke-width="1.6" marker-end="url(#arw3)"/>
+
+        <text x="570" y="34" class="sv-tb" text-anchor="middle">Every count × 2</text>
+        <line x1="440" y1="200" x2="720" y2="200" class="sv-line" stroke-width="1.5"/>
+        <line x1="440" y1="55" x2="440" y2="200" class="sv-line" stroke-width="1.5"/>
+        <line x1="452" y1="198" x2="672" y2="54" class="sv-stroke-ink" stroke-width="1.3" stroke-dasharray="4 4"/>
+        <circle cx="460" cy="190" r="5" class="sv-key"/>
+        <circle cx="510" cy="158" r="5" class="sv-key"/>
+        <circle cx="560" cy="126" r="5" class="sv-key"/>
+        <circle cx="610" cy="94" r="5" class="sv-key"/>
+        <circle cx="660" cy="62" r="5" class="sv-key"/>
+        <text x="570" y="228" class="sv-ts" text-anchor="middle">same shape, bigger scale</text>
+        <text x="570" y="248" class="sv-tm" text-anchor="middle">Covariance = 408</text>
+      </svg>
+      <figcaption>Notice that the two pictures are identical in shape, yet the covariance is four times larger on the right.</figcaption>
+    </figure>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Do not read the size of a covariance as a strength. A large covariance can come from data measured in large units, not from a strong relationship. Only the sign is safe to interpret.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>Covariance does not tell you how steep the line is. A steep relationship and a gentle one can both give the same covariance, and covariance also says nothing about how close the dots sit to the line.</p>
+    </div>
+
+    <div class="pitfall"><span class="lbl">Watch out</span>
+      <p>A covariance of zero means the positive and negative products cancelled out. In the video's last case the dots go up and then down, so each positive term is matched by a negative one. That is a missing trend, not proof that the two variables have nothing to do with each other.</p>
+    </div>
+
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>What does covariance actually tell you?</summary>
+      <div class="a">It tells you the direction of the trend between two variables measured on the same subjects. A positive covariance means they tend to rise together, a negative one means one rises as the other falls, and zero means there is no trend. What it does not tell you is how strong or how steep that relationship is, because the number depends on the units of the data.</div>
+    </details>
+
+    <details class="qa"><summary>Why do we bother calculating it if the number is hard to interpret?</summary>
+      <div class="a">Because it is a computational stepping stone. Correlation is built directly from covariance, and it removes the scale problem, so it is the thing you usually report. Covariance also feeds into methods such as principal component analysis, where the covariance matrix is the starting point. You rarely calculate a covariance and stop there.</div>
+    </details>
+
+    <details class="qa"><summary>What is the covariance of a variable with itself?</summary>
+      <div class="a">It is the variance. If you put the same data on both axes then \(y_i\) becomes \(x_i\) and \(\bar{y}\) becomes \(\bar{x}\), so the product of the two differences turns into a squared difference. That is exactly the variance formula. It is a nice way to remember that variance is just a special case of covariance.</div>
+    </details>
+
+    <details class="qa"><summary>What happens to the covariance if I change the units of my data?</summary>
+      <div class="a">It changes, even though the relationship does not. If you multiply every value by two, the covariance is multiplied by four, because both differences from the mean double before they are multiplied together. That is why comparing covariances across different data sets is meaningless, and why correlation exists.</div>
+    </details>
+
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap">
+      <ul>
+        <li>Covariance works on pairs of measurements taken from the same subjects, such as two genes counted in the same five cells.</li>
+        <li>For each pair you multiply the distance of X from its mean by the distance of Y from its mean.</li>
+        <li>You add all those products and divide by \(n-1\) to get the estimated covariance.</li>
+        <li>A positive covariance means a positive trend, a negative one means a negative trend, and zero means no trend.</li>
+        <li>The size of the covariance is not interpretable, because doubling the data multiplies it by four.</li>
+        <li>The covariance of a variable with itself is simply its variance.</li>
+        <li>Treat covariance as a stepping stone to correlation, which is the next video, and to methods such as PCA.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Covariance</span><span class="board-tag">read the sign, ignore the size</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 296" role="img" aria-label="Five cells plotted as gene X against gene Y and split into four quadrants by the mean of X and the mean of Y, each quadrant marked with the sign of its product; all five dots sit in the two positive quadrants, giving a covariance of 116.">
+            <line x1="230" y1="34" x2="230" y2="252" class="sv-stroke-ink" stroke-width="3" stroke-dasharray="7 6" stroke-linecap="round"/>
+            <line x1="20" y1="144" x2="384" y2="144" class="sv-stroke-ink" stroke-width="3" stroke-dasharray="7 6" stroke-linecap="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="62" cy="230" r="8" class="sv-acc"/>
+              <circle cx="178" cy="174" r="8" class="sv-acc"/>
+              <circle cx="246" cy="128" r="8" class="sv-acc"/>
+              <circle cx="304" cy="110" r="8" class="sv-acc"/>
+              <circle cx="362" cy="80" r="8" class="sv-acc"/>
+            </g>
+            <text x="230" y="24" text-anchor="middle" class="sv-ts">mean of X</text>
+            <text x="34" y="132" class="sv-ts">mean of Y</text>
+            <text x="34" y="74" class="sv-tm">(−)×(+) = −</text>
+            <text x="240" y="60" class="sv-tm">(+)×(+) = +</text>
+            <text x="100" y="236" class="sv-tm">(−)×(−) = +</text>
+            <text x="250" y="196" class="sv-tm">(+)×(−) = −</text>
+            <text x="200" y="282" text-anchor="middle" class="sv-tb">covariance = 116</text>
+          </svg>
+          <p>Each cell gives a pair of numbers. The means of X and Y cut the plot into four quadrants, and each dot's product takes its quadrant's sign. All five dots sit in positive quadrants, so every product pushes the covariance up.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Covariance</dt><dd>Says whether two paired measurements trend up, down, or not at all.</dd>
+            <dt>Quadrant</dt><dd>One of four regions cut by the two mean lines.</dd>
+            <dt>Variance</dt><dd>The covariance of a variable with itself.</dd>
+            <dt>Correlation</dt><dd>Built from covariance; it removes the scale problem.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Pair up</b>X and Y, same five cells</li>
+            <li><b>Find the means</b>of X and of Y</li>
+            <li><b>Differences</b>each value minus its mean</li>
+            <li><b>Multiply</b>X difference × Y difference</li>
+            <li><b>Sum, then divide</b>by \(n-1\), here 4</li>
+            <li><b>Read the sign</b>positive, negative, or no trend</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\mathrm{Cov}(X,Y)=\frac{\sum(x_i-\bar{x})(y_i-\bar{y})}{n-1}$$
+          $$\mathrm{Cov}(X,X)=s_x^2$$
+          $$\mathrm{Cov}(aX,aY)=a^2\,\mathrm{Cov}(X,Y)$$
+          <ul class="keys">
+            <li>\(\bar{x}, \bar{y}\): the means of X and Y; \(n\): cells, here 5.</li>
+            <li>\(s_x^2\): the variance of X, a special case.</li>
+            <li>Doubling the data (\(a=2\)) makes the covariance 4 times bigger.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>step</th><th>value</th></tr>
+            <tr><td>X</td><td>3, 13, 19, 24, 29</td></tr>
+            <tr><td>mean</td><td>17.6</td></tr>
+            <tr><td>Σ(x − 17.6)²</td><td>407.2</td></tr>
+            <tr><td>Cov(X,X)</td><td>407.2 / 4 = 101.8</td></tr>
+            <tr class="final"><td>Cov(2X,2X)</td><td>408 = 4 × 102</td></tr>
+          </table>
+          <p class="hand">Same shape, bigger scale, four times the covariance. Only the sign is safe to read.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">A big covariance means a strong relationship.</span><span class="yes">Large units can make it big. Only the sign is safe to interpret.</span></li>
+            <li><span class="no">Covariance tells you how steep the line is.</span><span class="yes">Steep and gentle trends can give the same covariance; it ignores how close dots sit.</span></li>
+            <li><span class="no">Zero covariance proves X and Y are unrelated.</span><span class="yes">Positive and negative products cancelled out. It is a missing trend, not proof of no link.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="17-power-analysis.html"><small>Previous</small>Power Analysis</a> <a href="19-pearson-s-correlation.html"><small>Next</small>Pearson&#x27;s Correlation</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>

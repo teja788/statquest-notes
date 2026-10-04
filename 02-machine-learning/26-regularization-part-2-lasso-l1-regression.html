@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Regularization Part 2: Lasso (L1) Regression — StatQuest Notes</title>
+<link rel="stylesheet" href="../assets/statquest.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+</head>
+<body class="pl-ml">
+<div class="page">
+  <nav class="crumbs"><a href="../index.html">StatQuest Notes</a><span class="sep">/</span><a href="index.html">Machine Learning</a><span class="sep">/</span><span>26</span></nav>
+
+  <header class="lesson">
+    <div class="eyebrow">Machine Learning · Video 26 · 8.3 min</div>
+    <h1>Regularization Part 2: Lasso (L1) Regression</h1>
+    <div class="meta">
+      <a class="yt" href="https://www.youtube.com/watch?v=NGf0voTMlcs" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+    </div>
+  </header>
+
+  <section id="what">
+    <p class="lead">Lasso regression adds a penalty to least squares, just like ridge regression does. The one change in the penalty lets lasso delete useless variables from the model.</p>
+    <div class="summary"><span class="lbl">In one breath</span><p>Ridge regression minimises the sum of the squared residuals plus lambda times the slope squared. Lasso regression uses the absolute value of the slope instead of the square. Both add a little bias and remove a lot of variance, and both pick lambda by cross validation. The big difference is that ridge can only push a parameter close to zero, while lasso can push it all the way to zero. So lasso can drop useless variables and leave you with a simpler equation.</p></div>
+  </section>
+
+  <section id="idea">
+    <h2>The main idea</h2>
+    <p>Josh starts with the mouse data from the ridge video. Weight predicts size. The red dots are the training data and the green dots are the testing data. A least squares line fits the training dots very well, so it has low bias. But it misses the testing dots badly, so it has high variance.</p>
+    <p>Ridge regression minimises the sum of the squared residuals plus lambda times the slope squared. That second part is the penalty. The ridge line fits the training data a bit worse, so it has more bias. In return the variance drops a lot.</p>
+    <p>Now change one thing. Instead of squaring the slope, take its absolute value. That is lasso regression. Everything else stays the same. Lambda is still any value from zero to infinity, chosen by cross validation.</p>
+    <p>The important difference appears when you keep raising lambda. Ridge regression shrinks the slope closer and closer to zero, but never reaches it. Lasso shrinks the slope until it is exactly zero.</p>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 330" role="img" aria-label="Line chart showing the estimated slope as lambda increases. The ridge curve approaches zero without reaching it. The lasso curve reaches exactly zero and stays there.">
+        <defs>
+          <marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sv-ink3"/></marker>
+        </defs>
+        <line x1="90" y1="45" x2="90" y2="250" class="sv-line" stroke-width="1.5"/>
+        <line x1="90" y1="250" x2="712" y2="250" class="sv-line" stroke-width="1.5" marker-end="url(#ar1)"/>
+        <path d="M 90 70 C 250 110 400 190 710 228" class="sv-stroke-acc" stroke-width="2.5"/>
+        <path d="M 90 70 C 180 130 280 250 380 250 L 710 250" class="sv-stroke-key" stroke-width="2.5"/>
+        <circle cx="90" cy="70" r="5" class="sv-ink"/>
+        <circle cx="380" cy="250" r="5" class="sv-key"/>
+        <rect x="102" y="52" width="228" height="20" rx="4" class="sv-paper"/>
+        <text x="106" y="66" class="sv-ts">least squares slope, when lambda = 0</text>
+        <line x1="146" y1="150" x2="151" y2="118" class="sv-line" stroke-width="1"/>
+        <rect x="120" y="150" width="52" height="20" rx="4" class="sv-paper"/>
+        <text x="126" y="164" class="sv-t">Lasso</text>
+        <line x1="558" y1="186" x2="558" y2="201" class="sv-line" stroke-width="1"/>
+        <rect x="470" y="166" width="176" height="20" rx="4" class="sv-paper"/>
+        <text x="476" y="180" class="sv-t">Ridge, never quite zero</text>
+        <text x="392" y="272" class="sv-ts">lasso is exactly zero from here on</text>
+        <text x="70" y="255" class="sv-ts">0</text>
+        <text x="400" y="302" class="sv-t" text-anchor="middle">lambda increases</text>
+        <text x="30" y="160" class="sv-t" text-anchor="middle" transform="rotate(-90 30 160)">estimated slope</text>
+      </svg>
+      <figcaption>Notice where each curve ends: the ridge curve flattens just above the zero line, while the lasso curve touches zero and stays on it.</figcaption>
+    </figure>
+  </section>
+
+  <section id="steps">
+    <h2>Step by step</h2>
+    <ol class="steps">
+      <li>Fit the training data with least squares. This gives the line with the smallest sum of squared residuals, and often high variance on new data.</li>
+      <li>Write down the lasso objective. It is the sum of the squared residuals plus lambda times the absolute value of the slope.</li>
+      <li>Include every estimated parameter in the penalty except the y intercept. The intercept is left alone, exactly as in ridge regression.</li>
+      <li>Try many values of lambda from zero upwards. Use cross validation to see which value predicts new data best.</li>
+      <li>Watch the parameters shrink as lambda grows. They do not shrink at the same speed, so a weak term can fall much faster than a strong one.</li>
+      <li>Keep the terms that survive. Any parameter that lasso drives to exactly zero removes its variable from the final equation.</li>
+    </ol>
+  </section>
+
+  <section id="formulas">
+    <h2>Formulas</h2>
+
+    <div class="formula"><span class="lbl">Least squares</span><div class="math">$$ \min \; \mathrm{SSR} = \sum_{i=1}^{n} \left( y_i - \hat{y}_i \right)^2 $$</div>
+      <p class="explain"><b>Symbols:</b> \(y_i\) is the measured size of mouse \(i\). \(\hat{y}_i\) is the size the line predicts. \(n\) is the number of training points. A residual is the gap between the dot and the line. <b>What it tells you:</b> least squares only cares about the training points, so it can fit them too closely.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Ridge regression (L2)</span><div class="math">$$ \min \; \mathrm{SSR} + \lambda \times \mathrm{slope}^2 $$</div>
+      <p class="explain"><b>Symbols:</b> \(\lambda\) (lambda) is the penalty strength, any value from zero to positive infinity. The slope is the estimated parameter for weight. <b>What it tells you:</b> a large slope now costs you, so the fitted line gets flatter as lambda grows.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Lasso regression (L1)</span><div class="math">$$ \min \; \mathrm{SSR} + \lambda \times \left| \mathrm{slope} \right| $$</div>
+      <p class="explain"><b>Symbols:</b> the vertical bars mean absolute value, so the size of the slope without its sign. Everything else means the same as above. <b>What it tells you:</b> this is the only change from ridge, and it is what allows a parameter to land on exactly zero.</p>
+    </div>
+
+    <div class="formula"><span class="lbl">Many parameters</span><div class="math">$$ \min \; \mathrm{SSR} + \lambda \sum_{j=1}^{p} \left| \beta_j \right| $$</div>
+      <p class="explain"><b>Symbols:</b> \(\beta_j\) is the estimated parameter for the \(j\)-th variable, such as the slope for weight or the diet difference. \(p\) is the number of such parameters. The y intercept is not in this sum. <b>What it tells you:</b> the same penalty works for many variables at once, and for logistic regression too.</p>
+    </div>
+  </section>
+
+  <section id="example">
+    <h2>Worked example from the video</h2>
+    <div class="example"><span class="lbl">Example</span>
+      <p>Josh writes a big equation that predicts size from four terms: weight, high fat diet, astrological sign, and the air speed of a swallow. The first two are sensible. The other two are nonsense.</p>
+      <p>Apply ridge regression and raise lambda. The useful parameters shrink a little and the silly ones shrink a lot. None of them ever becomes zero, so all four terms stay.</p>
+      <p>Apply lasso regression and raise lambda. The silly parameters go all the way to zero, so those two terms disappear. You are left with a prediction that uses only weight and diet.</p>
+    </div>
+
+    <figure class="info">
+      <svg viewBox="0 0 760 330" role="img" aria-label="Three bar panels comparing four estimated parameters. Least squares keeps all four. Ridge shrinks all four but keeps them non zero. Lasso sets the two useless ones to zero.">
+        <rect x="30" y="30" width="700" height="255" rx="8" class="sv-paper2"/>
+        <text x="145" y="56" class="sv-tb" text-anchor="middle">lambda = 0</text>
+        <text x="380" y="56" class="sv-tb" text-anchor="middle">Ridge, large lambda</text>
+        <text x="615" y="56" class="sv-tb" text-anchor="middle">Lasso, large lambda</text>
+
+        <line x1="50" y1="245" x2="240" y2="245" class="sv-line" stroke-width="1.5"/>
+        <rect x="60" y="155" width="34" height="90" class="sv-acc"/>
+        <rect x="106" y="175" width="34" height="70" class="sv-acc"/>
+        <rect x="152" y="190" width="34" height="55" class="sv-key"/>
+        <rect x="198" y="200" width="34" height="45" class="sv-key"/>
+        <text x="77" y="262" class="sv-ts" text-anchor="middle">weight</text>
+        <text x="123" y="262" class="sv-ts" text-anchor="middle">diet</text>
+        <text x="169" y="262" class="sv-ts" text-anchor="middle">sign</text>
+        <text x="215" y="262" class="sv-ts" text-anchor="middle">swallow</text>
+
+        <line x1="285" y1="245" x2="475" y2="245" class="sv-line" stroke-width="1.5"/>
+        <rect x="295" y="190" width="34" height="55" class="sv-acc"/>
+        <rect x="341" y="205" width="34" height="40" class="sv-acc"/>
+        <rect x="387" y="233" width="34" height="12" class="sv-key"/>
+        <rect x="433" y="237" width="34" height="8" class="sv-key"/>
+
+        <line x1="520" y1="245" x2="710" y2="245" class="sv-line" stroke-width="1.5"/>
+        <rect x="530" y="190" width="34" height="55" class="sv-acc"/>
+        <rect x="576" y="205" width="34" height="40" class="sv-acc"/>
+        <text x="639" y="238" class="sv-tm" text-anchor="middle">0</text>
+        <text x="685" y="238" class="sv-tm" text-anchor="middle">0</text>
+
+        <text x="380" y="305" class="sv-ts" text-anchor="middle">Each panel holds the same four parameters, in the same order.</text>
+      </svg>
+      <figcaption>Notice that ridge leaves two small bars for the useless terms, while lasso removes them completely.</figcaption>
+    </figure>
+
+    <p>Because lasso can throw out useless variables, it does a little better than ridge when a model is full of junk terms. When most of the variables are actually useful, ridge tends to do a little better.</p>
+  </section>
+
+  <section id="pitfalls">
+    <h2>Common mistakes and subtle points</h2>
+    <div class="pitfall"><span class="lbl">Watch out</span> Do not say that ridge regression performs variable selection. Ridge can only shrink a parameter asymptotically close to zero. The term stays in the equation no matter how large lambda gets.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> The penalty never includes the y intercept. Both ridge and lasso penalise all the other estimated parameters, but the intercept is left free.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Lambda is not a number you guess. You choose it with cross validation. At lambda equal to zero, lasso gives back the plain least squares line.</div>
+    <div class="pitfall"><span class="lbl">Watch out</span> Parameters do not shrink at the same rate. A diet difference may shrink far more than a slope. So do not read shrinkage as a ranking of the variables.</div>
+  </section>
+
+  <section id="interview">
+    <h2>If they ask you in an interview</h2>
+
+    <details class="qa" open><summary>What is the difference between ridge and lasso regression?</summary><div class="a">Both start from the sum of the squared residuals and add lambda times a penalty on the parameters. Ridge squares each parameter, and lasso takes the absolute value. That looks small, but it matters. Ridge only pushes a parameter close to zero, while lasso sets it to exactly zero and removes the variable.</div></details>
+
+    <details class="qa" open><summary>When would you choose lasso over ridge?</summary><div class="a">I would lean to lasso when I think the model contains many useless variables. Lasso removes them, so it cuts variance more in that situation and gives a simpler equation. When I believe most of my variables carry real signal, ridge usually does a little better, because it keeps them all and just shrinks them.</div></details>
+
+    <details class="qa" open><summary>How do you pick lambda, and what happens at the two extremes?</summary><div class="a">I pick it by cross validation, trying a range of values and keeping the one with the best performance on held out data. At lambda equal to zero there is no penalty, so I get the least squares fit with its high variance. As lambda grows the parameters shrink towards zero, which adds bias but reduces variance.</div></details>
+
+    <details class="qa" open><summary>Where can you apply these penalties?</summary><div class="a">Anywhere you estimate parameters, not just simple linear regression. Josh shows a model with two diets, a logistic regression that predicts obesity from weight, and a model that mixes continuous weight with a discrete diet term. The same penalty is added to whatever the model already minimises.</div></details>
+  </section>
+
+  <section id="recap">
+    <h2>Recap in 30 seconds</h2>
+    <div class="recap"><ul>
+      <li>Lasso regression minimises the sum of the squared residuals plus lambda times the absolute value of the parameters.</li>
+      <li>Ridge regression is the same idea, except it squares the parameters instead.</li>
+      <li>Both add a small amount of bias and buy a large drop in variance.</li>
+      <li>Lambda runs from zero to positive infinity and is chosen by cross validation.</li>
+      <li>Neither penalty touches the y intercept, and neither shrinks every parameter equally.</li>
+      <li>Ridge can only get asymptotically close to zero, so every variable stays in the model.</li>
+      <li>Lasso reaches exactly zero, so it removes useless variables and leaves a simpler equation.</li>
+      <li>Lasso wins when many variables are useless, and ridge wins when most are useful.</li>
+    </ul></div>
+  </section>
+
+  <section id="picture">
+    <h2>The whole page in one picture</h2>
+    <div class="board">
+      <div class="board-top"><span class="board-title">Lasso (L1) Regression</span><span class="board-tag">like ridge, but useless terms hit zero</span></div>
+      <div class="board-grid">
+
+        <div class="tile t-idea w4 tall">
+          <a class="tile-lbl" href="#idea" data-n="1">The main idea</a>
+          <svg viewBox="0 0 400 250" role="img" aria-label="As lambda grows, the slope shrinks from its least squares value. The ridge curve flattens just above zero and never reaches it; the lasso curve hits exactly zero and stays there.">
+            <path d="M40 44 V196 H385" class="sv-stroke-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M40 56 C150 120 250 165 380 170" class="sv-stroke-acc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M40 56 C80 120 120 196 170 196 L380 196" class="sv-stroke-key" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <g class="sv-stroke-ink" stroke-width="2">
+              <circle cx="40" cy="56" r="7" class="sv-ink"/>
+              <circle cx="170" cy="196" r="8" class="sv-good"/>
+            </g>
+            <text x="56" y="40" class="sv-ts">λ = 0: least squares</text>
+            <text x="24" y="126" text-anchor="middle" transform="rotate(-90 24 126)" class="sv-ts">slope</text>
+            <text x="30" y="202" text-anchor="end" class="sv-ts">0</text>
+            <text x="385" y="100" text-anchor="end" class="sv-tb">ridge: never quite 0</text>
+            <text x="170" y="232" text-anchor="middle" class="sv-tb">lasso: exactly 0</text>
+            <text x="385" y="232" text-anchor="end" class="sv-ts">λ grows →</text>
+          </svg>
+          <p>Lasso is ridge with one change: the penalty uses the absolute value of the slope, not its square. Raise lambda and ridge only creeps toward zero, but lasso lands on exactly zero, so useless variables drop out.</p>
+        </div>
+
+        <div class="tile w2 tall">
+          <span class="tile-lbl" data-n="Aa">Words to know</span>
+          <dl class="words">
+            <dt>Penalty</dt><dd>Added to the sum of squared residuals (SSR); big slopes cost you.</dd>
+            <dt>Lambda (λ)</dt><dd>Penalty strength, 0 to infinity, chosen by cross validation.</dd>
+            <dt>Absolute value</dt><dd>The slope's size without its sign.</dd>
+            <dt>Ridge (L2)</dt><dd>Squares the slope; gets close to zero, never to it.</dd>
+            <dt>Variable selection</dt><dd>Dropping a variable by setting its parameter to exactly zero.</dd>
+          </dl>
+        </div>
+
+        <div class="tile t-flow w6">
+          <a class="tile-lbl" href="#steps" data-n="2">Step by step</a>
+          <ol class="flow">
+            <li><b>Least squares</b>fits training, high variance</li>
+            <li><b>Add penalty</b>SSR + λ × |slope|</li>
+            <li><b>Skip intercept</b>never in the penalty</li>
+            <li><b>Pick λ</b>try many, cross validate</li>
+            <li><b>Watch shrinkage</b>weak terms fall faster</li>
+            <li><b>Keep survivors</b>zeros leave the equation</li>
+          </ol>
+        </div>
+
+        <div class="tile t-formula w3">
+          <a class="tile-lbl" href="#formulas" data-n="3">Formulas</a>
+          $$\text{ridge: }\mathrm{SSR}+\lambda\times\mathrm{slope}^2$$
+          $$\text{lasso: }\mathrm{SSR}+\lambda\times|\mathrm{slope}|$$
+          $$\text{many terms: }\mathrm{SSR}+\lambda\sum_{j=1}^{p}|\beta_j|$$
+          <ul class="keys">
+            <li>Minimise each. \(\lambda\): penalty strength; bars: absolute value.</li>
+            <li>\(\beta_j\): one of \(p\) parameters, never the y intercept.</li>
+            <li>\(\lambda=0\): no penalty, plain least squares.</li>
+          </ul>
+        </div>
+
+        <div class="tile t-example w3">
+          <a class="tile-lbl" href="#example" data-n="4">Worked example</a>
+          <table class="ledger">
+            <tr><th>term</th><th>ridge, big λ</th><th>lasso, big λ</th></tr>
+            <tr><td>weight</td><td>shrinks a little</td><td>kept</td></tr>
+            <tr><td>diet</td><td>shrinks a little</td><td>kept</td></tr>
+            <tr><td>sign</td><td>shrinks a lot</td><td>0</td></tr>
+            <tr><td>swallow</td><td>shrinks a lot</td><td>0</td></tr>
+            <tr class="final"><td>terms left</td><td>all 4</td><td>2</td></tr>
+          </table>
+          <p class="hand">Lasso keeps only weight and diet. With many useless variables lasso does a little better; when most are useful, ridge does.</p>
+        </div>
+
+        <div class="tile t-warn w6">
+          <a class="tile-lbl" href="#pitfalls" data-n="5">Watch out</a>
+          <ul class="vs">
+            <li><span class="no">Ridge also does variable selection.</span><span class="yes">Ridge only nears zero, so every term stays, however large lambda gets.</span></li>
+            <li><span class="no">The intercept is penalised too.</span><span class="yes">Neither ridge nor lasso ever puts the y intercept in the penalty.</span></li>
+            <li><span class="no">Shrinkage ranks the variables.</span><span class="yes">Rates differ: a diet difference may shrink far more than a slope.</span></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <nav class="pager"><a href="25-regularization-part-1-ridge-l2-regression.html"><small>Previous</small>Regularization Part 1: Ridge (L2) Regression</a><a href="27-ridge-vs-lasso-regression-visualized.html"><small>Next</small>Ridge vs Lasso Regression, Visualized</a></nav>
+</div>
+<script src="../assets/statquest.js" defer></script>
+</body>
+</html>
